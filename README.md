@@ -51,5 +51,7 @@ cd src/web && npx ng test storefront --watch=false && npx ng test admin --watch=
 
 ## Workflow
 
+Features follow spec-driven development: spec → plan → tasks → test-first implementation. See [`CLAUDE.md`](CLAUDE.md) and the templates in [`docs/specs/_template/`](docs/specs/_template).
+
 - One branch per Jira issue, e.g. `SCRUM-162-ef-core-wiring`, and a PR into `main`.
 - CI (GitHub Actions) must pass before merging.
