@@ -59,7 +59,7 @@ Small changes (typo fixes, dependency bumps, CI tweaks, refactors that change no
 Full rules and the abbreviation glossary are in [`docs/db/naming.md`](docs/db/naming.md). Read it before adding or changing any table.
 
 **Naming**
-- Every table, column, schema, index and constraint name is **UPPERCASE snake_case built from abbreviated words of 2–4 characters**: `CUSTOMER_ORDER_MAIN` → `CUST_ORDR_MAIN`, `CREATED_AT` → `CRTD_AT`.
+- Every table, column, schema, index and constraint name is **UPPERCASE snake_case built from abbreviated words of 2–4 characters**: `CUSTOMER_ORDER_MAIN` → `CUST_ORDR_MAIN`, `CREATED_AT` → `INSR_DTE`.
   - Every word must match `[A-Z0-9]{2,4}`.
   - Use the abbreviation already in the glossary for a word. Only invent one if the word isn't there, and add it to the glossary in the same PR. The same word must never get two abbreviations.
   - Avoid SQL reserved words (`DESC`, `USER`, `ORDER`); the glossary gives alternatives (`DSCR`, `USR`, `ORDR`).
@@ -69,9 +69,9 @@ Full rules and the abbreviation glossary are in [`docs/db/naming.md`](docs/db/na
 
 **Structure**
 - Normalise to at least **3NF**. No repeating groups, no comma-separated lists in a column, and no duplicated attributes. Denormalise only in read models (Redis or read tables), never in the transactional tables, and record the reason in the plan.
-- **Lookup tables** for every enumerated value (statuses, types, sizes, colours, cities, payment terms, reason codes, …). Never use free-text strings or C# enum ordinals stored as ints without a lookup row. Standard lookup shape: `ID` (smallint PK), `CODE` (unique, stable, used in code), `NAME`, `DSCR`, `SORT_SEQ`, `IS_ACTV`. Lookups are seeded through migrations.
+- **Lookup tables** for every enumerated value (statuses, types, sizes, colours, cities, payment terms, reason codes, …). Never use free-text strings or C# enum ordinals stored as ints without a lookup row. Standard lookup shape: `ID` (smallint PK), `CODE` (unique, stable, used in code), `NAME`, `DSCR`, `SORT_SEQ`, `ACT_IND`. Lookups are seeded through migrations.
 - Keys: surrogate `ID` primary keys (`bigint` identity for transactional tables, `smallint` for lookups). Real-world identifiers (PO number, SKU, GTIN) get their own columns with unique constraints. All foreign keys are declared, and every FK column is indexed.
-- Every transactional table has the audit columns `CRTD_AT`, `CRTD_BY`, `UPDT_AT`, `UPDT_BY` and a concurrency token.
+- Every transactional table has the audit columns `INSR_DTE`, `INSR_BY`, `UPDT_DTE`, `UPDT_BY` and a concurrency token.
 - Types: `timestamptz` for timestamps, `numeric(12,2)` for money (PKR), `numeric` for quantities that may be fractional, `varchar(n)` with a sensible `n`, never unbounded text for coded values.
 - Each module owns one schema, named by the same rule (`VNDR`, `CTLG`, `WHSE`, …). Nothing joins across schemas; data from another module comes through that module's contract.
 - Design for growth: no schema change should be needed for new categories, sizes, colours, couriers or statuses. Add a lookup row instead. Tables expected to grow large (orders, stock ledger, notifications, audit) note their partitioning key in the plan (BRD §12.6).
