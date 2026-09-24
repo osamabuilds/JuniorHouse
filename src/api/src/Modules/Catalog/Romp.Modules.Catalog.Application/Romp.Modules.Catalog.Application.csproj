@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Romp.Modules.Catalog.Domain\Romp.Modules.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,34 @@
+name: web
+
+on:
+  push:
+    branches: [main]
+    paths: ["src/web/**", ".github/workflows/web.yml"]
+  pull_request:
+    paths: ["src/web/**", ".github/workflows/web.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: src/web
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [storefront, admin]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+      - run: npm ci
+      # SEC-23: fail on critical-severity vulnerable npm packages.
+      - run: npm audit --audit-level=critical
+      - run: npx ng build ${{ matrix.app }}
+      - run: npx ng test ${{ matrix.app }} --watch=false

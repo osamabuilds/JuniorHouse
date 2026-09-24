@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Romp.Api/Romp.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/Romp.BuildingBlocks/Romp.BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Catalog/">
+    <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Application/Romp.Modules.Catalog.Application.csproj" />
+    <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Domain/Romp.Modules.Catalog.Domain.csproj" />
+    <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Infrastructure/Romp.Modules.Catalog.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Romp.Api.IntegrationTests/Romp.Api.IntegrationTests.csproj" />
+    <Project Path="tests/Romp.ArchitectureTests/Romp.ArchitectureTests.csproj" />
+  </Folder>
+</Solution>

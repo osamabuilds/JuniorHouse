@@ -1,0 +1,20 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Node / Angular (src/web has its own .gitignore too)
+node_modules/
+dist/
+.angular/
+
+# Local environment
+.env
+*.local.json
+
+# OS
+Thumbs.db
+.DS_Store
+~$*
