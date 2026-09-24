@@ -1,0 +1,15 @@
+# Build context: src/web
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npx ng build storefront
+
+FROM node:24-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production PORT=4000
+COPY --from=build /app/dist/storefront ./dist/storefront
+EXPOSE 4000
+USER node
+CMD ["node", "dist/storefront/server/server.mjs"]

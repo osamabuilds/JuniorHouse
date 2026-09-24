@@ -1,0 +1,9 @@
+﻿@Romp.Api_HostAddress = http://localhost:5051
+
+GET {{Romp.Api_HostAddress}}/health/live
+
+###
+
+GET {{Romp.Api_HostAddress}}/health/ready
+
+###
