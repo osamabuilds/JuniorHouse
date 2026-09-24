@@ -25,9 +25,9 @@ These rules are mandatory. `CLAUDE.md` summarises them, and this file is the ful
 |---|---|---|
 | Primary key | `ID` | `ID` |
 | Foreign key | `<REFERENCED_ENTITY>_ID` | `VNDR_ID`, `PO_STS_ID` |
-| Boolean | `IS_<X>` / `HAS_<X>` | `IS_ACTV` |
+| Boolean / indicator | `<X>_IND` | `ACT_IND` |
 | Date only | `<X>_DT` | `EXPC_DLVR_DT` |
-| Timestamp | `<X>_AT` | `CRTD_AT`, `SENT_AT` |
+| Timestamp | `<X>_DTE` | `SENT_DTE`, `PRCS_DTE`, `INSR_DTE`, `UPDT_DTE` |
 | Amount (PKR) | `<X>_AMT` | `UNIT_COST_AMT` |
 | Quantity | `<X>_QTY` | `ORDR_QTY` |
 | Business number | `<X>_NO` | `PO_NO` |
@@ -55,9 +55,11 @@ PostgreSQL identifiers are limited to 63 characters, so shorten the column part 
 | `NAME` | `varchar(100)` | Display name |
 | `DSCR` | `varchar(500)` null | Description |
 | `SORT_SEQ` | `smallint` | Display order |
-| `IS_ACTV` | `boolean` | Retire values instead of deleting them |
+| `ACT_IND` | `boolean` | Retire values instead of deleting them |
 
-**Every transactional table:** `ID bigint GENERATED ALWAYS AS IDENTITY`, `CRTD_AT timestamptz`, `CRTD_BY varchar(100)`, `UPDT_AT timestamptz null`, `UPDT_BY varchar(100) null`, plus the PostgreSQL `xmin` system column as the concurrency token.
+**Every transactional table:** `ID bigint GENERATED ALWAYS AS IDENTITY`, `INSR_DTE timestamptz`, `INSR_BY varchar(100)`, `UPDT_DTE timestamptz null`, `UPDT_BY varchar(100) null`, plus the PostgreSQL `xmin` system column as the concurrency token.
+
+Note: there is no `_AT` suffix in this convention — every timestamp column, audit or business-event, uses `_DTE` (`INSR_DTE`, `UPDT_DTE`, `SENT_DTE`, `PRCS_DTE`, …).
 
 ## 3. Design rules
 
@@ -94,51 +96,56 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 
 | Word | Abbr. | | Word | Abbr. |
 |---|---|---|---|---|
-| acknowledged | ACK | | line | LINE |
-| active | ACTV | | lookup | LKP |
-| address | ADDR | | main | MAIN |
+| acknowledged | ACK | | level | LVL |
+| active | ACT | | line | LINE |
+| address | ADDR | | lookup | LKP |
+| advance (e.g. advance %) | ADV | | main | MAIN |
 | amendment | AMND | | map (link table) | MAP |
 | amount | AMT | | message | MSG |
 | approved | APRV | | milestone | MLST |
-| at (timestamp) | AT | | name | NAME |
-| attachment | ATCH | | note | NOTE |
-| attribute | ATTR | | number | NO |
-| barcode | BRCD | | order | ORDR |
-| batch | BTCH | | outbox | OUTB |
-| bin | BIN | | parent | PRNT |
-| by (actor) | BY | | payment | PAYM |
-| cancelled | CNCL | | percent | PCT |
-| category | CATG | | phone | PHON |
-| city | CITY | | preferred | PREF |
-| code | CODE | | price | PRIC |
-| collection | COLN | | product | PRDT |
-| colour | CLR | | production | PROD |
-| comment | CMNT | | purchase order | PO |
-| contact | CNTC | | quantity | QTY |
-| cost | COST | | reason | RSN |
-| country | CTRY | | received | RCVD |
-| created | CRTD | | reference | REF |
-| currency | CURR | | retail | RTL |
-| customer | CUST | | run (e.g. size run) | RUN |
-| date | DT | | sample | SMPL |
-| default | DFLT | | segment | SGMT |
-| defect | DFCT | | sent | SENT |
-| delivered / delivery | DLVR | | sequence | SEQ |
-| description | DSCR | | size | SIZE |
-| document | DOC | | sort | SORT |
-| email | EML | | specialisation | SPCL |
-| expected | EXPC | | status | STS |
-| fabric | FBRC | | stock | STCK |
-| file | FILE | | style | STYL |
-| gender | GNDR | | target | TGT |
-| goods receipt note | GRN | | tech pack | TCPK |
-| history | HIST | | terms | TERM |
-| identifier | ID | | total | TOT |
-| is (boolean prefix) | IS | | type | TYP |
-| item | ITEM | | unit | UNIT |
-| key | KEY | | updated | UPDT |
-| label | LBL | | user | USR |
-| lead time | LEAD | | variant | VRNT |
-| level | LVL | | vendor | VNDR |
+| attachment | ATCH | | name | NAME |
+| attribute | ATTR | | note | NOTE |
+| barcode | BRCD | | number | NO |
+| batch | BTCH | | on-quantity (vendor scorecard metric) | ONQT |
+| bin | BIN | | on-time (vendor scorecard metric) | ONTM |
+| bracket (e.g. age bracket) | BRKT | | order | ORDR |
+| by (actor) | BY | | outbox | OUTB |
+| cancelled | CNCL | | parent | PRNT |
+| category | CATG | | payment | PAYM |
+| city | CITY | | percent | PCT |
+| code | CODE | | phone | PHON |
+| collection | COLN | | preferred | PREF |
+| colour | CLR | | price | PRIC |
+| comment | CMNT | | product | PRDT |
+| contact | CNTC | | production | PROD |
+| cost | COST | | purchase order | PO |
+| country | CTRY | | quantity | QTY |
+| currency | CURR | | rate | RATE |
+| customer | CUST | | reason | RSN |
+| date (date-only) | DT | | received | RCVD |
+| date/time (timestamp) | DTE | | reference | REF |
+| default | DFLT | | retail | RTL |
+| defect | DFCT | | run (e.g. size run) | RUN |
+| delivered / delivery | DLVR | | sample | SMPL |
+| description | DSCR | | segment | SGMT |
+| document | DOC | | sent | SENT |
+| email | EML | | sequence | SEQ |
+| expected | EXPC | | size | SIZE |
+| fabric | FBRC | | sort | SORT |
+| file | FILE | | specialisation | SPCL |
+| gender | GNDR | | status | STS |
+| goods receipt note | GRN | | stock | STCK |
+| history | HIST | | style | STYL |
+| identifier | ID | | target | TGT |
+| indicator | IND | | tech pack | TCPK |
+| insert | INSR | | terms | TERM |
+| item | ITEM | | total | TOT |
+| key | KEY | | type | TYP |
+| label | LBL | | unit | UNIT |
+| lead time | LEAD | | updated | UPDT |
+| | | | user | USR |
+| | | | variant | VRNT |
+| | | | vendor | VNDR |
 | | | | version | VER |
 | | | | warehouse | WHSE |
+| | | | year | YR |
