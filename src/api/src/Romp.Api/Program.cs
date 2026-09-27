@@ -64,10 +64,21 @@ if (app.Environment.IsDevelopment())
     // with nothing shared between them, so migrating them concurrently is safe and shortens local
     // startup instead of doing it needlessly one at a time.
     using var scope = app.Services.CreateScope();
+    var catalogContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+    var vendorContext = scope.ServiceProvider.GetRequiredService<VendorDbContext>();
+
     await Task.WhenAll(
         scope.ServiceProvider.GetRequiredService<ReferenceDbContext>().Database.MigrateAsync(),
-        scope.ServiceProvider.GetRequiredService<CatalogDbContext>().Database.MigrateAsync(),
-        scope.ServiceProvider.GetRequiredService<VendorDbContext>().Database.MigrateAsync());
+        catalogContext.Database.MigrateAsync(),
+        vendorContext.Database.MigrateAsync());
+
+    // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
+    // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough
+    // (README) wants them there without an extra manual step.
+    if (builder.Configuration.GetValue("Demo:SeedSampleData", false))
+    {
+        await DemoDataSeeder.SeedAsync(catalogContext, vendorContext, CancellationToken.None);
+    }
 }
 
 // Liveness: process is up. Readiness: dependencies are reachable (SEC-22).

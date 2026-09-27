@@ -1,0 +1,33 @@
+.lookup-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-5);
+}
+
+.lookup-tabs button {
+  border: none;
+  background: none;
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.lookup-tabs button.is-active {
+  color: var(--color-brass-dark);
+  border-bottom-color: var(--color-brass);
+}
+
+.lookup-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+  max-width: 640px;
+}

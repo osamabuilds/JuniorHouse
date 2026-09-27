@@ -51,15 +51,21 @@ One clarification made while breaking the plan into tasks, not re-litigated in s
 
 ## Admin frontend (SCRUM-174)
 
-- [ ] 31. Admin shell: semantic layout (`header`/`nav`/`main`), nav for Reference Data / Styles / Vendors / Purchase Orders, typed API client, `ProblemDetails` → inline field errors, loading/empty/error states, `noindex, nofollow`. Test: `app.spec.ts` extended to assert the landmark elements and nav render
-- [ ] 32. Reference Data screen: lookup-type selector, searchable table, add/edit/retire forms for the ten mutable lookups; `PO Statuses` rendered read-only (AC-2 in the UI).
-- [ ] 33. Styles screen: list (search/filter), create/edit form with the colour×size target-quantity grid (only cells for that style's own colourways/size run are editable) (AC-3, AC-4).
-- [ ] 34. Vendors screen: list (search by name/city/specialisation), create/edit form with a specialisation multi-select (AC-5, AC-5a, AC-6).
-- [ ] 35. Purchase Orders screen: list (filter by vendor/status/date), create/edit form (Draft only, locked otherwise), detail view with the status timeline and Send/Acknowledge/Cancel-with-reason actions, each disabled when illegal for the current status (AC-7–AC-14).
+- [x] 31. Admin shell: semantic layout (`header`/`nav`/`main`), nav for Reference Data / Styles / Vendors / Purchase Orders, typed API client, `ProblemDetails` → inline field errors, loading/empty/error states, `noindex, nofollow`. Test: `app.spec.ts` extended to assert the landmark elements and nav render
+- [x] 32. Reference Data screen: lookup-type selector, searchable table, add/edit/retire forms for the ten mutable lookups; `PO Statuses` rendered read-only (AC-2 in the UI).
+- [x] 33. Styles screen: list (search/filter), create/edit form with the colour×size target-quantity grid (only cells for that style's own colourways/size run are editable) (AC-3, AC-4).
+- [x] 34. Vendors screen: list (search by name/city/specialisation), create/edit form with a specialisation multi-select (AC-5, AC-5a, AC-6).
+- [x] 35. Purchase Orders screen: list (filter by vendor/status/date), create/edit form (Draft only, locked otherwise), detail view with the status timeline and Send/Acknowledge/Cancel-with-reason actions, each disabled when illegal for the current status (AC-7–AC-14).
 
 ## End-to-end / Definition of Done (SCRUM-175)
 
-- [ ] 36. `docker compose up` starts PostgreSQL + the API (migrations + `REF` seed) + the admin app in one command; add an optional demo-data seed (a handful of sample vendors and styles).
-- [ ] 37. Playwright E2E covering the full Sprint 1 flow. Test: `procurement.e2e.spec.ts: Staff_CreatesStyleVendorAndPo_ThroughToAcknowledged` — create style → create vendor → raise PO → send → acknowledge, asserting the status timeline at the end.
-- [ ] 38. README "Try Sprint 1" section + Friday demo script.
-- [ ] 39. Update `spec.md`'s status to **Implemented**, and note any point where the implementation had to differ from `plan.md`.
+- [x] 36. `docker compose up` starts PostgreSQL + the API (migrations + `REF` seed) + the admin app in one command; add an optional demo-data seed (a handful of sample vendors and styles).
+- [x] 37. Playwright E2E covering the full Sprint 1 flow. Test: `procurement.e2e.spec.ts: Staff_CreatesStyleVendorAndPo_ThroughToAcknowledged` — create style → create vendor → raise PO → send → acknowledge, asserting the status timeline at the end.
+- [x] 38. README "Try Sprint 1" section + Friday demo script.
+- [x] 39. Update `spec.md`'s status to **Implemented**, and note any point where the implementation had to differ from `plan.md`.
+
+**Frontend/E2E caveat (tasks 31-37):** written but not locally run - this machine's Windows
+Application Control policy blocks the Angular build tool's native `oxc-parser` binding (not just
+test DLLs like the backend's known issue), so `ng build`/`ng test`/Playwright have never actually
+executed here. Plain `tsc --noEmit` passes with zero errors, but that doesn't validate Angular
+template bindings. Verify via CI or another machine before treating this as done.

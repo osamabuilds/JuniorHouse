@@ -1,0 +1,153 @@
+<h1>Reference Data</h1>
+<p class="page-intro">
+  Lookups used across styles, vendors and purchase orders. Retire a value instead of deleting it -
+  records that already reference it stay valid.
+</p>
+
+<div class="lookup-tabs" role="tablist" aria-label="Lookup type">
+  @for (type of lookupTypes; track type.key) {
+    <button
+      type="button"
+      role="tab"
+      [id]="'tab-' + type.key"
+      [attr.aria-selected]="selectedType().key === type.key"
+      [class.is-active]="selectedType().key === type.key"
+      (click)="selectType(type)"
+    >
+      {{ type.label }}
+    </button>
+  }
+</div>
+
+<section role="tabpanel" [attr.aria-labelledby]="'tab-' + selectedType().key">
+  <div class="toolbar">
+    <label class="toolbar__checkbox">
+      <input type="checkbox" [checked]="includeInactive()" (change)="toggleIncludeInactive()" />
+      Show retired values
+    </label>
+
+    <label class="toolbar__search">
+      <span class="sr-only">Search</span>
+      <input
+        type="search"
+        placeholder="Search by code or name"
+        [value]="searchText()"
+        (input)="searchText.set(($event.target as HTMLInputElement).value)"
+      />
+    </label>
+
+    @if (selectedType().mutable && mode() === 'list') {
+      <button type="button" class="button button--primary" (click)="startCreate()">Add value</button>
+    }
+  </div>
+
+  @if (error() && mode() === 'list') {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  @if (mode() !== 'list') {
+    <form class="lookup-form" (ngSubmit)="save()" [formGroup]="form">
+      <h2>{{ mode() === 'create' ? 'Add' : 'Edit' }} {{ selectedType().label }} value</h2>
+
+      @if (error()) {
+        <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+      }
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="lookup-code">Code</label>
+          <input id="lookup-code" type="text" formControlName="code" />
+          <app-field-errors [messages]="fieldErrors('Code')" />
+        </div>
+
+        <div class="form-field">
+          <label for="lookup-name">Name</label>
+          <input id="lookup-name" type="text" formControlName="name" />
+          <app-field-errors [messages]="fieldErrors('Name')" />
+        </div>
+
+        <div class="form-field form-field--wide">
+          <label for="lookup-description">Description</label>
+          <input id="lookup-description" type="text" formControlName="description" />
+          <app-field-errors [messages]="fieldErrors('Description')" />
+        </div>
+
+        <div class="form-field">
+          <label for="lookup-sort">Sort order</label>
+          <input id="lookup-sort" type="number" formControlName="sortSeq" />
+          <app-field-errors [messages]="fieldErrors('SortSeq')" />
+        </div>
+
+        @if (selectedType().hasParent) {
+          <div class="form-field">
+            <label for="lookup-parent">Parent category id</label>
+            <input id="lookup-parent" type="number" formControlName="parentCategoryId" />
+          </div>
+        }
+
+        @if (selectedType().hasAdvancePercent) {
+          <div class="form-field">
+            <label for="lookup-advance">Default advance %</label>
+            <input id="lookup-advance" type="number" step="0.01" formControlName="defaultAdvancePercent" />
+          </div>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="button button--primary" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Save' }}
+        </button>
+        <button type="button" class="button" (click)="cancelEdit()">Cancel</button>
+      </div>
+    </form>
+  }
+
+  @if (mode() === 'list') {
+    @if (loading()) {
+      <p class="state-message">Loading…</p>
+    } @else if (visibleItems().length === 0) {
+      <p class="state-message">No values found.</p>
+    } @else {
+      <table>
+        <caption class="sr-only">{{ selectedType().label }}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Code</th>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Sort</th>
+            <th scope="col">Status</th>
+            @if (selectedType().mutable) {
+              <th scope="col">Actions</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of visibleItems(); track item.id) {
+            <tr>
+              <td>{{ item.code }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.description || '—' }}</td>
+              <td>{{ item.sortSeq }}</td>
+              <td>
+                <span class="badge" [class.badge--muted]="!item.isActive">
+                  {{ item.isActive ? 'Active' : 'Retired' }}
+                </span>
+              </td>
+              @if (selectedType().mutable) {
+                <td class="actions-cell">
+                  <button type="button" class="button button--small" (click)="startEdit(item)">Edit</button>
+                  @if (item.isActive) {
+                    <button type="button" class="button button--small button--danger" (click)="retire(item)">
+                      Retire
+                    </button>
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</section>

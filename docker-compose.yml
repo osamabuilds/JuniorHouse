@@ -39,6 +39,9 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Postgres: Host=postgres;Database=${POSTGRES_DB:-romp};Username=${POSTGRES_USER:-romp};Password=${POSTGRES_PASSWORD}
       ConnectionStrings__Redis: redis:6379
+      # SCRUM-175 "Try Sprint 1": a few sample styles/vendors, so the demo isn't an empty admin app.
+      # Idempotent (DemoDataSeeder) - safe to leave on every `docker compose up`.
+      Demo__SeedSampleData: "true"
     ports:
       - "8080:8080"
     depends_on:
@@ -46,6 +49,19 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  admin:
+    build:
+      context: src/web
+      dockerfile: Dockerfile.admin
+    environment:
+      # The browser (on the host, not in the Docker network) reaches the API through the port
+      # mapping above, so this is localhost:8080, not the api service's in-network hostname.
+      API_BASE_URL: http://localhost:8080
+    ports:
+      - "4201:80"
+    depends_on:
+      - api
 
   storefront:
     build:

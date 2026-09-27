@@ -1,1 +1,302 @@
-/* You can add global styles to this file, and also import other style files */
+/* Design tokens (Romp admin). Palette: warm ink/paper with a muted brass accent - a quieter,
+   more considered look than a stock admin theme, while keeping WCAG 2.1 AA contrast for text. */
+:root {
+  --color-ink: #211d16;
+  --color-ink-soft: #4a4438;
+  --color-paper: #faf8f4;
+  --color-surface: #ffffff;
+  --color-border: #e6e0d4;
+  --color-border-strong: #cfc6b3;
+  --color-brass: #a3792f;
+  --color-brass-dark: #7c5a22;
+  --color-brass-tint: #f3ead9;
+  --color-danger: #9a2e23;
+  --color-danger-tint: #fbeceb;
+  --color-success: #2f6b3a;
+  --color-success-tint: #eaf3ec;
+  --color-focus: #2d6cb4;
+
+  --font-display: 'Fraunces', georgia, serif;
+  --font-body: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --shadow-card: 0 1px 2px rgba(33, 29, 22, 0.06), 0 4px 16px rgba(33, 29, 22, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+a {
+  color: var(--color-brass-dark);
+}
+
+/* Visible focus for every interactive element (WCAG 2.1 AA, plan.md). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  text-align: left;
+}
+
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: var(--space-1);
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+}
+
+/* Shared component classes, reused across every admin screen. */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.page-intro {
+  color: var(--color-ink-soft);
+  max-width: 640px;
+  margin: var(--space-2) 0 var(--space-5);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  padding: var(--space-2) var(--space-4);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.button:hover {
+  border-color: var(--color-brass);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button--primary {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-brass-tint);
+}
+
+.button--primary:hover {
+  background: var(--color-brass-dark);
+  border-color: var(--color-brass-dark);
+}
+
+.button--small {
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8125rem;
+}
+
+.button--danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger-tint);
+}
+
+.button--danger:hover {
+  border-color: var(--color-danger);
+  background: var(--color-danger-tint);
+}
+
+.banner {
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-4);
+  font-size: 0.875rem;
+}
+
+.banner--error {
+  background: var(--color-danger-tint);
+  color: var(--color-danger);
+}
+
+.banner--success {
+  background: var(--color-success-tint);
+  color: var(--color-success);
+}
+
+.state-message {
+  color: var(--color-ink-soft);
+  padding: var(--space-6) 0;
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1875rem var(--space-2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--color-success-tint);
+  color: var(--color-success);
+}
+
+.badge--muted {
+  background: var(--color-border);
+  color: var(--color-ink-soft);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+}
+
+table {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+}
+
+thead th {
+  background: var(--color-brass-tint);
+  color: var(--color-ink);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.actions-cell {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.form-field--wide {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.toolbar__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 400;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.toolbar__search input {
+  min-width: 240px;
+}
+
+.toolbar > .button {
+  margin-left: auto;
+}
+
+.field-hint {
+  color: var(--color-ink-soft);
+  font-size: 0.75rem;
+  margin: var(--space-1) 0 0;
+}

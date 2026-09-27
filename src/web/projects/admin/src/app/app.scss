@@ -1,0 +1,88 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.shell-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shell-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.shell-header__mark {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-ink);
+  color: var(--color-brass-tint);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.shell-header__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.shell-header__title-muted {
+  color: var(--color-ink-soft);
+  font-weight: 500;
+}
+
+.shell-nav ul {
+  display: flex;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shell-nav a {
+  display: inline-block;
+  padding: var(--space-2) 0;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+
+.shell-nav a:hover {
+  color: var(--color-ink);
+}
+
+.shell-nav a.is-active {
+  color: var(--color-brass-dark);
+  border-bottom-color: var(--color-brass);
+}
+
+.shell-main {
+  flex: 1;
+  padding: var(--space-6);
+  max-width: 1120px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.shell-footer {
+  padding: var(--space-4) var(--space-6);
+  color: var(--color-ink-soft);
+  font-size: 0.8125rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.shell-footer p {
+  margin: 0;
+}
