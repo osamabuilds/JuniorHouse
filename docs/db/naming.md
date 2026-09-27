@@ -57,7 +57,7 @@ PostgreSQL identifiers are limited to 63 characters, so shorten the column part 
 | `SORT_SEQ` | `smallint` | Display order |
 | `ACT_IND` | `boolean` | Retire values instead of deleting them |
 
-**Every transactional table:** `ID bigint GENERATED ALWAYS AS IDENTITY`, `INSR_DTE timestamptz`, `INSR_BY varchar(100)`, `UPDT_DTE timestamptz null`, `UPDT_BY varchar(100) null`, plus the PostgreSQL `xmin` system column as the concurrency token.
+**Every transactional table:** `ID bigint GENERATED ALWAYS AS IDENTITY`, `INSR_DTE timestamptz`, `INSR_BY varchar(100)`, `UPDT_DTE timestamptz null`, `UPDT_BY varchar(100) null`, plus the PostgreSQL `xmin` system column as the concurrency token. `xmin` is PostgreSQL's own built-in column - it's the one exempt name in this whole document, since it isn't ours to rename. The naming-convention architecture test (SCRUM-170) knows about this one exception; don't add others without updating both.
 
 Note: there is no `_AT` suffix in this convention — every timestamp column, audit or business-event, uses `_DTE` (`INSR_DTE`, `UPDT_DTE`, `SENT_DTE`, `PRCS_DTE`, …).
 
@@ -102,47 +102,49 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | advance (e.g. advance %) | ADV | | main | MAIN |
 | amendment | AMND | | map (link table) | MAP |
 | amount | AMT | | message | MSG |
-| approved | APRV | | milestone | MLST |
-| attachment | ATCH | | name | NAME |
-| attribute | ATTR | | note | NOTE |
-| barcode | BRCD | | number | NO |
-| batch | BTCH | | on-quantity (vendor scorecard metric) | ONQT |
-| bin | BIN | | on-time (vendor scorecard metric) | ONTM |
-| bracket (e.g. age bracket) | BRKT | | order | ORDR |
-| by (actor) | BY | | outbox | OUTB |
-| cancelled | CNCL | | parent | PRNT |
-| category | CATG | | payment | PAYM |
-| city | CITY | | percent | PCT |
-| code | CODE | | phone | PHON |
-| collection | COLN | | preferred | PREF |
-| colour | CLR | | price | PRIC |
-| comment | CMNT | | product | PRDT |
-| contact | CNTC | | production | PROD |
-| cost | COST | | purchase order | PO |
-| country | CTRY | | quantity | QTY |
-| currency | CURR | | rate | RATE |
-| customer | CUST | | reason | RSN |
-| date (date-only) | DT | | received | RCVD |
-| date/time (timestamp) | DTE | | reference | REF |
-| default | DFLT | | retail | RTL |
-| defect | DFCT | | run (e.g. size run) | RUN |
-| delivered / delivery | DLVR | | sample | SMPL |
-| description | DSCR | | segment | SGMT |
-| document | DOC | | sent | SENT |
-| email | EML | | sequence | SEQ |
-| expected | EXPC | | size | SIZE |
-| fabric | FBRC | | sort | SORT |
-| file | FILE | | specialisation | SPCL |
-| gender | GNDR | | status | STS |
-| goods receipt note | GRN | | stock | STCK |
-| history | HIST | | style | STYL |
-| identifier | ID | | target | TGT |
-| indicator | IND | | tech pack | TCPK |
-| insert | INSR | | terms | TERM |
-| item | ITEM | | total | TOT |
-| key | KEY | | type | TYP |
-| label | LBL | | unit | UNIT |
-| lead time | LEAD | | updated | UPDT |
+| approved | APRV | | migration (EF Core bookkeeping table) | MIG |
+| attachment | ATCH | | milestone | MLST |
+| attribute | ATTR | | name | NAME |
+| barcode | BRCD | | note | NOTE |
+| batch | BTCH | | number | NO |
+| bin | BIN | | on-quantity (vendor scorecard metric) | ONQT |
+| bracket (e.g. age bracket) | BRKT | | on-time (vendor scorecard metric) | ONTM |
+| by (actor) | BY | | order | ORDR |
+| cancelled | CNCL | | outbox | OUTB |
+| category | CATG | | parent | PRNT |
+| city | CITY | | payload | PYLD |
+| code | CODE | | payment | PAYM |
+| collection | COLN | | percent | PCT |
+| colour | CLR | | phone | PHON |
+| comment | CMNT | | preferred | PREF |
+| contact | CNTC | | price | PRIC |
+| cost | COST | | product | PRDT |
+| country | CTRY | | production | PROD |
+| currency | CURR | | purchase order | PO |
+| customer | CUST | | quantity | QTY |
+| date (date-only) | DT | | rate | RATE |
+| date/time (timestamp) | DTE | | reason | RSN |
+| default | DFLT | | received | RCVD |
+| defect | DFCT | | reference | REF |
+| delivered / delivery | DLVR | | retail | RTL |
+| description | DSCR | | run (e.g. size run) | RUN |
+| document | DOC | | sample | SMPL |
+| email | EML | | segment | SGMT |
+| event | EVNT | | sent | SENT |
+| expected | EXPC | | sequence | SEQ |
+| fabric | FBRC | | size | SIZE |
+| file | FILE | | sort | SORT |
+| gender | GNDR | | specialisation | SPCL |
+| goods receipt note | GRN | | status | STS |
+| history | HIST | | stock | STCK |
+| identifier | ID | | style | STYL |
+| indicator | IND | | target | TGT |
+| insert | INSR | | tech pack | TCPK |
+| item | ITEM | | terms | TERM |
+| key | KEY | | total | TOT |
+| label | LBL | | type | TYP |
+| lead time | LEAD | | unit | UNIT |
+| | | | updated | UPDT |
 | | | | user | USR |
 | | | | variant | VRNT |
 | | | | vendor | VNDR |

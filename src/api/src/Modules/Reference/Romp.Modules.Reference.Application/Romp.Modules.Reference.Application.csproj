@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <!-- Just the DbSet<T> shape for IReferenceDbContext (see that file) - never UseNpgsql/migrations,
+         which stay Infrastructure-only per ADR 0002/CLAUDE.md's Domain-layer EF rule (Application
+         isn't restricted the same way, only Domain is). -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Romp.Modules.Reference.Domain\Romp.Modules.Reference.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
+</Project>

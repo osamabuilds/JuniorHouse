@@ -1,0 +1,5 @@
+# EF Core generates these files; they aren't hand-maintained, so code-analysis rules that make
+# sense for our own code don't apply here.
+[*.cs]
+dotnet_analyzer_diagnostic.severity = none
+generated_code = true
