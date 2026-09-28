@@ -15,7 +15,12 @@ public sealed class PoNumberAllocator(VendorDbContext dbContext, TimeProvider ti
     {
         var year = (short)timeProvider.GetUtcNow().Year;
 
-        var sequence = await dbContext.Database
+        // ToListAsync, not SingleAsync: EF tries to compose SingleAsync/FirstAsync/Where/etc. as
+        // an outer "SELECT ... FROM (raw sql)" subquery to apply them server-side, and rejects
+        // that for an INSERT...RETURNING statement ("non-composable SQL"). ToListAsync just
+        // streams the RETURNING rows with no wrapping, so it's the one operator safe to use here;
+        // the single-row check moves to the in-memory result instead.
+        var rows = await dbContext.Database
             .SqlQueryRaw<int>(
                 """
                 INSERT INTO "VNDR"."PO_NO_SEQ" ("YR", "SEQ") VALUES ({0}, 1)
@@ -23,7 +28,9 @@ public sealed class PoNumberAllocator(VendorDbContext dbContext, TimeProvider ti
                 RETURNING "SEQ";
                 """,
                 year)
-            .SingleAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
+
+        var sequence = rows.Single();
 
         return $"PO-{year:D4}-{sequence:D5}";
     }

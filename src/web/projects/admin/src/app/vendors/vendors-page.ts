@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiError } from '../core/api-error';
 import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
 import { FieldErrors } from '../shared/field-errors';
+import { inputChecked, inputValue, selectNumberOrNull } from '../shared/dom-events';
 import { VendorApiService, VendorDto, VendorSummaryDto } from './vendor-api.service';
 
 type Mode = 'list' | 'create' | 'edit';
@@ -55,6 +56,20 @@ export class VendorsPage {
 
   applyFilters(): void {
     this.loadVendors();
+  }
+
+  onSearchInput(event: Event): void {
+    this.searchText.set(inputValue(event));
+    this.applyFilters();
+  }
+
+  onSpecialisationFilterChange(event: Event): void {
+    this.specialisationFilter.set(selectNumberOrNull(event));
+    this.applyFilters();
+  }
+
+  onSpecialisationToggle(specialisationId: number, event: Event): void {
+    this.toggleSpecialisation(specialisationId, inputChecked(event));
   }
 
   toggleSpecialisation(specialisationId: number, checked: boolean): void {

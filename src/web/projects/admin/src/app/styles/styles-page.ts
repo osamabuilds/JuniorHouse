@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiError } from '../core/api-error';
 import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
 import { FieldErrors } from '../shared/field-errors';
+import { inputChecked, inputNumber, inputValue, selectNumberOrNull } from '../shared/dom-events';
 import { CatalogApiService, StyleDto, StyleSummaryDto } from './catalog-api.service';
 
 /** One editable cell of the colour x size target-quantity grid (AC-3). */
@@ -87,6 +88,28 @@ export class StylesPage {
 
   applyFilters(): void {
     this.loadStyles();
+  }
+
+  onSearchInput(event: Event): void {
+    this.searchText.set(inputValue(event));
+    this.applyFilters();
+  }
+
+  onCategoryFilterChange(event: Event): void {
+    this.categoryFilter.set(selectNumberOrNull(event));
+    this.applyFilters();
+  }
+
+  onColourToggle(colourId: number, event: Event): void {
+    this.toggleColour(colourId, inputChecked(event));
+  }
+
+  onSizeToggle(sizeId: number, event: Event): void {
+    this.toggleSize(sizeId, inputChecked(event));
+  }
+
+  onQtyInput(sizeId: number, colourId: number, event: Event): void {
+    this.setQty(sizeId, colourId, inputNumber(event));
   }
 
   toggleColour(colourId: number, checked: boolean): void {

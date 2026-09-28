@@ -8,10 +8,7 @@
   <div class="toolbar">
     <label class="toolbar__select">
       <span class="sr-only">Vendor</span>
-      <select
-        [value]="vendorFilter() ?? ''"
-        (change)="vendorFilter.set(($event.target as HTMLSelectElement).value ? +($event.target as HTMLSelectElement).value : null); applyFilters()"
-      >
+      <select [value]="vendorFilter() ?? ''" (change)="onVendorFilterChange($event)">
         <option value="">All vendors</option>
         @for (vendor of vendors(); track vendor.id) {
           <option [value]="vendor.id">{{ vendor.name }}</option>
@@ -21,10 +18,7 @@
 
     <label class="toolbar__select">
       <span class="sr-only">Status</span>
-      <select
-        [value]="statusFilter() ?? ''"
-        (change)="statusFilter.set(($event.target as HTMLSelectElement).value ? +($event.target as HTMLSelectElement).value : null); applyFilters()"
-      >
+      <select [value]="statusFilter() ?? ''" (change)="onStatusFilterChange($event)">
         <option value="">All statuses</option>
         @for (entry of statusLabels | keyvalue; track entry.key) {
           <option [value]="entry.key">{{ entry.value }}</option>
@@ -143,11 +137,7 @@
       <div class="cancel-panel">
         <h3>Cancel this PO</h3>
         <label for="cancel-reason">Reason</label>
-        <select
-          id="cancel-reason"
-          [value]="cancelReasonId() ?? ''"
-          (change)="cancelReasonId.set(($event.target as HTMLSelectElement).value ? +($event.target as HTMLSelectElement).value : null)"
-        >
+        <select id="cancel-reason" [value]="cancelReasonId() ?? ''" (change)="onCancelReasonChange($event)">
           <option value="">Select a reason…</option>
           @for (reason of cancelReasons(); track reason.id) {
             <option [value]="reason.id">{{ reason.name }}</option>
@@ -178,7 +168,7 @@
           id="po-vendor"
           [value]="form.controls.vendorId.value ?? ''"
           [disabled]="mode() === 'edit'"
-          (change)="onVendorChange(($event.target as HTMLSelectElement).value ? +($event.target as HTMLSelectElement).value : null)"
+          (change)="onVendorSelectChange($event)"
         >
           <option value="">Select…</option>
           @for (vendor of vendors(); track vendor.id) {
@@ -194,7 +184,7 @@
           id="po-style"
           [value]="form.controls.styleId.value ?? ''"
           [disabled]="mode() === 'edit'"
-          (change)="onStyleChange(($event.target as HTMLSelectElement).value ? +($event.target as HTMLSelectElement).value : null)"
+          (change)="onStyleSelectChange($event)"
         >
           <option value="">Select…</option>
           @for (style of styles(); track style.id) {
@@ -248,7 +238,7 @@
                   type="number"
                   min="0"
                   [value]="row.qty"
-                  (input)="setLineQty(row.sizeId, row.colourId, +($event.target as HTMLInputElement).value)"
+                  (input)="onLineQtyInput(row.sizeId, row.colourId, $event)"
                 />
               </td>
             </tr>

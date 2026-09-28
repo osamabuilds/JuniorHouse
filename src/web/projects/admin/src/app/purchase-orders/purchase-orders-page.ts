@@ -5,6 +5,7 @@ import { CatalogApiService, StyleDto, StyleSummaryDto } from '../styles/catalog-
 import { ApiError } from '../core/api-error';
 import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
 import { FieldErrors } from '../shared/field-errors';
+import { inputNumber, selectNumberOrNull } from '../shared/dom-events';
 import { VendorApiService, VendorSummaryDto } from '../vendors/vendor-api.service';
 import { PO_STATUS_LABELS, PoApiService, PoDto, PoSummaryDto } from './po-api.service';
 
@@ -86,6 +87,32 @@ export class PurchaseOrdersPage {
 
   applyFilters(): void {
     this.loadOrders();
+  }
+
+  onVendorFilterChange(event: Event): void {
+    this.vendorFilter.set(selectNumberOrNull(event));
+    this.applyFilters();
+  }
+
+  onStatusFilterChange(event: Event): void {
+    this.statusFilter.set(selectNumberOrNull(event));
+    this.applyFilters();
+  }
+
+  onCancelReasonChange(event: Event): void {
+    this.cancelReasonId.set(selectNumberOrNull(event));
+  }
+
+  onVendorSelectChange(event: Event): void {
+    this.onVendorChange(selectNumberOrNull(event));
+  }
+
+  onStyleSelectChange(event: Event): void {
+    this.onStyleChange(selectNumberOrNull(event));
+  }
+
+  onLineQtyInput(sizeId: number, colourId: number, event: Event): void {
+    this.setLineQty(sizeId, colourId, inputNumber(event));
   }
 
   onVendorChange(vendorId: number | null): void {

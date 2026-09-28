@@ -32,7 +32,7 @@
         type="search"
         placeholder="Search by code or name"
         [value]="searchText()"
-        (input)="searchText.set(($event.target as HTMLInputElement).value)"
+        (input)="onSearchInput($event)"
       />
     </label>
 

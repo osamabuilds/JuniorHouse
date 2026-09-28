@@ -12,16 +12,13 @@
         type="search"
         placeholder="Search by name"
         [value]="searchText()"
-        (input)="searchText.set(($event.target as HTMLInputElement).value); applyFilters()"
+        (input)="onSearchInput($event)"
       />
     </label>
 
     <label class="toolbar__select">
       <span class="sr-only">Specialisation</span>
-      <select
-        [value]="specialisationFilter() ?? ''"
-        (change)="specialisationFilter.set(($event.target as HTMLSelectElement).value ? +($event.target as HTMLSelectElement).value : null); applyFilters()"
-      >
+      <select [value]="specialisationFilter() ?? ''" (change)="onSpecialisationFilterChange($event)">
         <option value="">All specialisations</option>
         @for (specialisation of specialisations(); track specialisation.id) {
           <option [value]="specialisation.id">{{ specialisation.name }}</option>
@@ -146,7 +143,7 @@
           <input
             type="checkbox"
             [checked]="selectedSpecialisationIds().includes(specialisation.id)"
-            (change)="toggleSpecialisation(specialisation.id, ($event.target as HTMLInputElement).checked)"
+            (change)="onSpecialisationToggle(specialisation.id, $event)"
           />
           {{ specialisation.name }}
         </label>

@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FieldErrors } from '../shared/field-errors';
 import { ApiError } from '../core/api-error';
+import { inputValue } from '../shared/dom-events';
 import { LOOKUP_TYPES, LookupTypeConfig } from './lookup-types';
 import { LookupDto, ReferenceApiService } from './reference-api.service';
 
@@ -63,6 +64,10 @@ export class ReferenceDataPage {
     this.mode.set('list');
     this.searchText.set('');
     this.loadItems();
+  }
+
+  onSearchInput(event: Event): void {
+    this.searchText.set(inputValue(event));
   }
 
   toggleIncludeInactive(): void {
