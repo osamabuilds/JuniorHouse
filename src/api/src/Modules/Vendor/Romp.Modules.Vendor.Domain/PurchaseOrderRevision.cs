@@ -84,6 +84,27 @@ public sealed class PurchaseOrderRevision : Entity<long>, IAuditable
         StatusId = RevisionStatus.Superseded;
     }
 
+    /// <summary>AC-11: a Pending revision accepted by the decider.</summary>
+    internal void MarkInForce()
+    {
+        _statusHistory.Add(new PoRevisionStatusHistoryEntry(Id, StatusId, RevisionStatus.InForce, note: null));
+        StatusId = RevisionStatus.InForce;
+    }
+
+    /// <summary>AC-12: a Pending revision rejected by the decider - the PO's position is unchanged.</summary>
+    internal void MarkRejected(string? note)
+    {
+        _statusHistory.Add(new PoRevisionStatusHistoryEntry(Id, StatusId, RevisionStatus.Rejected, note));
+        StatusId = RevisionStatus.Rejected;
+    }
+
+    /// <summary>AC-13: a Pending revision withdrawn by its own proposer - never takes effect.</summary>
+    internal void MarkWithdrawn(string? note)
+    {
+        _statusHistory.Add(new PoRevisionStatusHistoryEntry(Id, StatusId, RevisionStatus.Withdrawn, note));
+        StatusId = RevisionStatus.Withdrawn;
+    }
+
     public long PoId { get; private set; }
 
     public short RevisionNumber { get; private set; }

@@ -52,3 +52,19 @@ public sealed record PoRevisionSupersededEvent(long PoId, string PoNo, short Rev
 
     public DateTimeOffset OccurredAt { get; } = DateTimeOffset.UtcNow;
 }
+
+/// <summary>SCRUM-93 task 24.</summary>
+public sealed record PoRevisionRejectedEvent(long PoId, string PoNo, short RevisionNumber) : IDomainEvent
+{
+    public Guid EventId { get; } = Guid.NewGuid();
+
+    public DateTimeOffset OccurredAt { get; } = DateTimeOffset.UtcNow;
+}
+
+/// <summary>SCRUM-93 task 25 (also raised by CancelPurchaseOrderCommand's auto-withdraw, task 26, AC-21).</summary>
+public sealed record PoRevisionWithdrawnEvent(long PoId, string PoNo, short RevisionNumber) : IDomainEvent
+{
+    public Guid EventId { get; } = Guid.NewGuid();
+
+    public DateTimeOffset OccurredAt { get; } = DateTimeOffset.UtcNow;
+}

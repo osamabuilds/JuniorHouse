@@ -207,30 +207,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         // new one - only relevant when the new revision itself goes immediately In-force.
         if (goesImmediatelyInForce)
         {
-            var priorInForce = _revisions.FirstOrDefault(r => r.StatusId == RevisionStatus.InForce);
-            if (priorInForce is not null)
-            {
-                priorInForce.MarkSuperseded();
-                Raise(new PoRevisionSupersededEvent(Id, PoNo, priorInForce.RevisionNumber));
-            }
-
-            // ADR 0007: the parent's mirror is updated only by the same transaction that moves a
-            // revision to InForce - this real property change on the aggregate's own row is also
-            // what protects the MAX+1 allocation above from a concurrent amendment (AC-24): a race
-            // is caught by the xmin check this update triggers, not a separate mechanism.
-            UnitCost = unitCost;
-            ExpectedDeliveryDate = expectedDeliveryDate;
-            LatestAcceptableDate = latestAcceptableDate;
-            OverTolerancePercent = overTolerancePercent;
-            UnderTolerancePercent = underTolerancePercent;
-            PaymentTermId = paymentTermId;
-            AdvancePercent = advancePercent;
-            FabricResponsibilityId = fabricResponsibilityId;
-
-            _lines.Clear();
-            _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
-
-            Raise(new PoRevisionPutInForceEvent(Id, PoNo, revisionNumber));
+            PutRevisionInForce(revision, lines);
         }
         else
         {
@@ -239,6 +216,82 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 
         _revisions.Add(revision);
         return revision;
+    }
+
+    /// <summary>
+    /// SCRUM-93 task 24 (AC-11). Accepts an existing Pending revision - same effect as a new revision
+    /// going immediately In-force (AC-9), reused here since both mean "this revision's terms become
+    /// the PO's current position in this same transaction".
+    /// </summary>
+    /// <remarks>The caller must have loaded both <see cref="Revisions"/> and <see cref="Lines"/> - see <see cref="CreateRevision"/>'s own remarks.</remarks>
+    public void AcceptPendingRevision(short revisionNumber)
+    {
+        var revision = FindRevisionOrThrow(revisionNumber);
+        RequireRevisionStatus(revision, RevisionStatus.Pending, "accepted");
+
+        revision.MarkInForce();
+        PutRevisionInForce(revision, revision.Lines.Select(l => (l.SizeId, l.ColourId, l.Qty)));
+    }
+
+    /// <summary>SCRUM-93 task 24 (AC-12). Rejects an existing Pending revision - the PO's position is unchanged, and it stays visible in history.</summary>
+    public void RejectPendingRevision(short revisionNumber, string? note)
+    {
+        var revision = FindRevisionOrThrow(revisionNumber);
+        RequireRevisionStatus(revision, RevisionStatus.Pending, "rejected");
+
+        revision.MarkRejected(note);
+        Raise(new PoRevisionRejectedEvent(Id, PoNo, revisionNumber));
+    }
+
+    /// <summary>SCRUM-93 task 25 (AC-13). Withdrawn by its own proposer - never takes effect. Also used by <see cref="Cancel"/>'s auto-withdraw (task 26, AC-21).</summary>
+    public void WithdrawPendingRevision(short revisionNumber, string? note)
+    {
+        var revision = FindRevisionOrThrow(revisionNumber);
+        RequireRevisionStatus(revision, RevisionStatus.Pending, "withdrawn");
+
+        revision.MarkWithdrawn(note);
+        Raise(new PoRevisionWithdrawnEvent(Id, PoNo, revisionNumber));
+    }
+
+    /// <summary>Mirrors <paramref name="revision"/>'s terms/lines onto this aggregate's own row and supersedes whichever other revision was previously In-force - shared by both a new revision created immediately In-force (AC-9) and an existing Pending revision being accepted (AC-11).</summary>
+    private void PutRevisionInForce(PurchaseOrderRevision revision, IEnumerable<(short SizeId, short ColourId, int Qty)> lines)
+    {
+        var priorInForce = _revisions.FirstOrDefault(r => r.StatusId == RevisionStatus.InForce && r.RevisionNumber != revision.RevisionNumber);
+        if (priorInForce is not null)
+        {
+            priorInForce.MarkSuperseded();
+            Raise(new PoRevisionSupersededEvent(Id, PoNo, priorInForce.RevisionNumber));
+        }
+
+        // ADR 0007: the parent's mirror is updated only by the same transaction that moves a
+        // revision to InForce - this real property change on the aggregate's own row is also what
+        // protects a concurrent amendment's MAX+1 allocation (AC-24): a race is caught by the xmin
+        // check this update triggers, not a separate mechanism.
+        UnitCost = revision.UnitCost;
+        ExpectedDeliveryDate = revision.ExpectedDeliveryDate;
+        LatestAcceptableDate = revision.LatestAcceptableDate;
+        OverTolerancePercent = revision.OverTolerancePercent;
+        UnderTolerancePercent = revision.UnderTolerancePercent;
+        PaymentTermId = revision.PaymentTermId;
+        AdvancePercent = revision.AdvancePercent;
+        FabricResponsibilityId = revision.FabricResponsibilityId;
+
+        _lines.Clear();
+        _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
+
+        Raise(new PoRevisionPutInForceEvent(Id, PoNo, revision.RevisionNumber));
+    }
+
+    private PurchaseOrderRevision FindRevisionOrThrow(short revisionNumber) =>
+        _revisions.FirstOrDefault(r => r.RevisionNumber == revisionNumber)
+            ?? throw new DomainException($"PO {PoNo} has no revision {revisionNumber}.");
+
+    private void RequireRevisionStatus(PurchaseOrderRevision revision, short requiredStatusId, string action)
+    {
+        if (revision.StatusId != requiredStatusId)
+        {
+            throw new DomainException($"Revision {revision.RevisionNumber} of PO {PoNo} cannot be {action} while it isn't Pending.");
+        }
     }
 
     private void RequireStatus(short requiredStatusId, string action)

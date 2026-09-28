@@ -59,7 +59,9 @@ public sealed class VendorModule : IModule
             typeof(PoCancelledEvent),
             typeof(PoRevisionProposedEvent),
             typeof(PoRevisionPutInForceEvent),
-            typeof(PoRevisionSupersededEvent));
+            typeof(PoRevisionSupersededEvent),
+            typeof(PoRevisionRejectedEvent),
+            typeof(PoRevisionWithdrawnEvent));
         services.AddScoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>));
     }
 
