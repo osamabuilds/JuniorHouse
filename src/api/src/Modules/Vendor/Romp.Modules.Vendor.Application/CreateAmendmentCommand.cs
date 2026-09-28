@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Domain;
+using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Vendor.Domain;
 
 namespace Romp.Modules.Vendor.Application;
@@ -51,7 +52,7 @@ public sealed class CreateAmendmentCommandValidator : AbstractValidator<CreateAm
     }
 }
 
-public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext)
+public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IStyleQueries styleQueries)
     : IRequestHandler<CreateAmendmentCommand, PoRevisionDto>
 {
     public async Task<PoRevisionDto> Handle(CreateAmendmentCommand request, CancellationToken cancellationToken)
@@ -78,6 +79,21 @@ public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext)
             throw new Romp.BuildingBlocks.Application.ValidationException(new Dictionary<string, string[]>
             {
                 [nameof(request.PoId)] = [$"PO {po.PoNo} already has an open Pending revision (Rev {openPending.RevisionNumber}) - decide or withdraw it before proposing another."],
+            });
+        }
+
+        // AC-15: line changes are validated against the style's size run/colourways, same rule as
+        // Sprint 1's own PO creation (AC-8) - vendor and style themselves have no field on this
+        // command at all, so they're structurally not amendable rather than checked here.
+        var style = await styleQueries.FindActiveStyleAsync(po.StyleId, cancellationToken);
+        var invalidLines = style is null
+            ? request.Lines
+            : request.Lines.Where(l => !style.SizeIds.Contains(l.SizeId) || !style.ColourIds.Contains(l.ColourId)).ToList();
+        if (invalidLines.Count > 0)
+        {
+            throw new Romp.BuildingBlocks.Application.ValidationException(new Dictionary<string, string[]>
+            {
+                [nameof(request.Lines)] = [$"{invalidLines.Count} line(s) reference a size or colour not in this PO's style."],
             });
         }
 

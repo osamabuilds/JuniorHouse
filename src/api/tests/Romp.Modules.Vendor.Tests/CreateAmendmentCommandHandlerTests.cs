@@ -123,6 +123,64 @@ public sealed class CreateAmendmentCommandHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "AC-15")]
+    public async Task Handle_AmendableFieldSet_AppliesOnlyAllowedFields()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+
+        var revision = await sender.Send(new CreateAmendmentCommand(
+            po.Id, 1, 1, "Full amendment", "Please confirm",
+            UnitCost: 999m,
+            ExpectedDeliveryDate: po.ExpectedDeliveryDate.AddDays(10),
+            LatestAcceptableDate: po.ExpectedDeliveryDate.AddDays(20),
+            OverTolerancePercent: 5m,
+            UnderTolerancePercent: 5m,
+            PaymentTermId: 2,
+            AdvancePercent: 30m,
+            FabricResponsibilityId: 2,
+            Lines: [new PoLineDto(1, 20, 999)]));
+
+        Assert.Equal(999m, revision.UnitCost);
+        Assert.Equal(po.ExpectedDeliveryDate.AddDays(10), revision.ExpectedDeliveryDate);
+        Assert.Equal(po.ExpectedDeliveryDate.AddDays(20), revision.LatestAcceptableDate);
+        Assert.Equal(5m, revision.OverTolerancePercent);
+        Assert.Equal(5m, revision.UnderTolerancePercent);
+        Assert.Equal((short)2, revision.PaymentTermId);
+        Assert.Equal(30m, revision.AdvancePercent);
+        Assert.Equal((short)2, revision.FabricResponsibilityId);
+        Assert.Single(revision.Lines);
+        Assert.Equal(999, revision.Lines.Single().Qty);
+
+        var reloadedPo = await sender.Send(new GetPurchaseOrderByIdQuery(po.Id));
+        Assert.Equal(999m, reloadedPo!.UnitCost);
+        Assert.Equal(po.VendorId, reloadedPo.VendorId); // not on the command at all - not amendable
+        Assert.Equal(po.StyleId, reloadedPo.StyleId); // not on the command at all - not amendable
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-15")]
+    public async Task Handle_VendorOrStyleChange_Rejected()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+
+        // CreateAmendmentCommand has no vendor/style field at all - the only way an amendment could
+        // implicitly reach outside the PO's own style is via a line referencing a size or colour the
+        // style doesn't have, which this rejects (Sprint 1's AC-8 pattern, reused here per AC-15).
+        var command = new CreateAmendmentCommand(
+            po.Id, 1, 1, "Invalid line", null,
+            600m, po.ExpectedDeliveryDate, po.LatestAcceptableDate,
+            null, null, po.PaymentTermId, po.AdvancePercent, po.FabricResponsibilityId,
+            Lines: [new PoLineDto(SizeId: 99, ColourId: 10, Qty: 10)]);
+
+        var exception = await Assert.ThrowsAsync<Romp.BuildingBlocks.Application.ValidationException>(() => sender.Send(command));
+        Assert.Contains(nameof(CreateAmendmentCommand.Lines), exception.Errors.Keys);
+    }
+
+    [Fact]
     [Trait("Spec", "AC-47")]
     public async Task Handle_AnyRevision_WritesOutboxEvent()
     {
