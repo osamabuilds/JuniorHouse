@@ -94,18 +94,76 @@ public sealed class OutboxDispatcherTests : IAsyncLifetime
         Assert.Equal($"{Environment.MachineName}:{Environment.ProcessId}", row.ClaimedBy);
     }
 
-    private (OutboxDispatcher Dispatcher, ServiceProvider Provider) BuildDispatcher(RecordingOutboxMessageHandler handler)
+    [Fact]
+    [Trait("Spec", "AC-57")]
+    [Trait("Spec", "AC-58")]
+    public async Task Dispatch_HandlerFailsRepeatedly_BacksOffThenDeadLetters()
+    {
+        var dbOptions = new DbContextOptionsBuilder<TestDbContext>().UseNpgsql(_postgres.GetConnectionString()).Options;
+
+        await using (var seedContext = new TestDbContext(dbOptions))
+        {
+            await seedContext.Database.EnsureCreatedAsync();
+
+            seedContext.OutboxMessages.Add(new OutboxMessage
+            {
+                EventType = nameof(TestDomainEvent),
+                Payload = JsonSerializer.Serialize(new TestDomainEvent()),
+                InsrDte = DateTimeOffset.UtcNow,
+            });
+            await seedContext.SaveChangesAsync();
+        }
+
+        var handler = new FailingOutboxMessageHandler();
+        var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var (dispatcher, provider) = BuildDispatcher(
+            handler,
+            clock,
+            o =>
+            {
+                o.MaxAttempts = 3;
+                o.RetryBaseDelay = TimeSpan.FromSeconds(1);
+                o.RetryMaxDelay = TimeSpan.FromSeconds(10);
+            });
+        await using var _ = provider;
+
+        // Attempt 1 fails and is scheduled for retry (not yet dead-lettered - AC-57).
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        // Attempt 2: advance the clock past the backoff window so the row is claimable again.
+        clock.Now = clock.Now.AddMinutes(10);
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        // Attempt 3 crosses MaxAttempts - dead-lettered (AC-58).
+        clock.Now = clock.Now.AddMinutes(10);
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+
+        Assert.Equal(3, handler.AttemptCount);
+
+        await using var verifyContext = new TestDbContext(dbOptions);
+        var row = await verifyContext.OutboxMessages.SingleAsync();
+        Assert.True(row.IsDeadLettered);
+        Assert.Equal(3, row.AttemptCount);
+        Assert.NotNull(row.DeadLetterReason);
+        Assert.Null(row.ProcessedDte);
+    }
+
+    private (OutboxDispatcher Dispatcher, ServiceProvider Provider) BuildDispatcher(RecordingOutboxMessageHandler handler) =>
+        BuildDispatcher((IOutboxMessageHandler<TestDomainEvent>)handler, TimeProvider.System, configure: null);
+
+    private (OutboxDispatcher Dispatcher, ServiceProvider Provider) BuildDispatcher(
+        IOutboxMessageHandler<TestDomainEvent> handler, TimeProvider clock, Action<OutboxDispatcherOptions>? configure)
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IOutboxMessageHandler<TestDomainEvent>>(handler);
+        services.AddSingleton(handler);
         var provider = services.BuildServiceProvider();
 
         var registration = new OutboxModuleRegistration("TEST", [typeof(TestDomainEvent)]);
         var dispatcherOptions = new OutboxDispatcherOptions { ConnectionString = _postgres.GetConnectionString() };
+        configure?.Invoke(dispatcherOptions);
+
         var dispatcher = new OutboxDispatcher(
             [registration],
             provider.GetRequiredService<IServiceScopeFactory>(),
-            TimeProvider.System,
+            clock,
             dispatcherOptions,
             NullLogger<OutboxDispatcher>.Instance);
 

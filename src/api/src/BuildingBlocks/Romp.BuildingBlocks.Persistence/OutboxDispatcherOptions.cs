@@ -20,4 +20,12 @@ public sealed class OutboxDispatcherOptions
 
     /// <summary>How long a claim is honoured before another dispatcher instance may reclaim the row (task 8 - lease expiry).</summary>
     public TimeSpan LeaseDuration { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>A message is dead-lettered once its attempt count reaches this (task 9, AC-57/AC-58).</summary>
+    public int MaxAttempts { get; set; } = 5;
+
+    /// <summary>Exponential backoff base: attempt N waits roughly <c>RetryBaseDelay * 2^N</c> (capped at <see cref="RetryMaxDelay"/>), jittered +/-50% to avoid every failed message retrying in lockstep.</summary>
+    public TimeSpan RetryBaseDelay { get; set; } = TimeSpan.FromSeconds(10);
+
+    public TimeSpan RetryMaxDelay { get; set; } = TimeSpan.FromMinutes(30);
 }

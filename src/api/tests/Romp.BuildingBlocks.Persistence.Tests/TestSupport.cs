@@ -57,7 +57,10 @@ internal sealed class TestDbContext(DbContextOptions<TestDbContext> options) : D
 
 internal sealed class FakeTimeProvider(DateTimeOffset now) : TimeProvider
 {
-    public override DateTimeOffset GetUtcNow() => now;
+    /// <summary>Mutable so dispatcher retry/backoff tests (SCRUM-93 task 9) can advance past a scheduled NXT_ATMP_DTE without a real wait.</summary>
+    public DateTimeOffset Now { get; set; } = now;
+
+    public override DateTimeOffset GetUtcNow() => Now;
 }
 
 internal sealed class FakeCurrentActor(string userName) : ICurrentActor
@@ -74,5 +77,17 @@ internal sealed class RecordingOutboxMessageHandler : IOutboxMessageHandler<Test
     {
         Received.Add(domainEvent);
         return Task.CompletedTask;
+    }
+}
+
+/// <summary>Always throws, for dispatcher retry/backoff/dead-letter tests (SCRUM-93 task 9).</summary>
+internal sealed class FailingOutboxMessageHandler : IOutboxMessageHandler<TestDomainEvent>
+{
+    public int AttemptCount { get; private set; }
+
+    public Task HandleAsync(TestDomainEvent domainEvent, CancellationToken cancellationToken)
+    {
+        AttemptCount++;
+        throw new InvalidOperationException("Simulated handler failure.");
     }
 }
