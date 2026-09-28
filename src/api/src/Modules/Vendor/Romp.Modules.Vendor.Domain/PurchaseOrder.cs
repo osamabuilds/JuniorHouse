@@ -156,6 +156,14 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
     /// checks (AC-16, AC-17) before calling this. Also computes this revision's immutable impact
     /// figures (AC-18, AC-19) from this aggregate's own current (before) state.
     /// </summary>
+    /// <remarks>
+    /// The caller must have loaded both <see cref="Revisions"/> (for the MAX+1 allocation) and
+    /// <see cref="Lines"/> (same requirement as <see cref="UpdateDraftDetails"/>) before calling this
+    /// - when <paramref name="goesImmediatelyInForce"/> is true, this mirrors the new lines onto
+    /// <see cref="Lines"/> by clearing and re-adding, same as <see cref="UpdateDraftDetails"/>; if
+    /// the old lines were never loaded, EF never sees them as removed and the new lines' insert can
+    /// collide with the untouched old rows on (PoId, SizeId, ColourId).
+    /// </remarks>
     public PurchaseOrderRevision CreateRevision(
         short initiatorId,
         short reasonId,
