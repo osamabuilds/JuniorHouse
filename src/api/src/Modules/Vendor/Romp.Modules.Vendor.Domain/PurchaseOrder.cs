@@ -56,6 +56,15 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 
     public decimal AdvancePercent { get; private set; }
 
+    /// <summary>SCRUM-93 task 16 (R10, no FR id - logged as BRD errata). Null on every PO until set by <see cref="UpdateDraftDetails"/> - Sprint 1 POs never invent a value (AC-7).</summary>
+    public DateOnly? LatestAcceptableDate { get; private set; }
+
+    public decimal? OverTolerancePercent { get; private set; }
+
+    public decimal? UnderTolerancePercent { get; private set; }
+
+    public short? FabricResponsibilityId { get; private set; }
+
     public short StatusId { get; private set; }
 
     public IReadOnlyCollection<PoLine> Lines => _lines.AsReadOnly();
@@ -73,12 +82,20 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 
     public bool IsDraft => StatusId == PoStatus.Draft;
 
-    /// <summary>AC-9: Draft only. AC-13: anything past Draft rejects with a domain error.</summary>
+    /// <summary>
+    /// AC-9: Draft only. AC-13: anything past Draft rejects with a domain error. AC-8 (task 16-18):
+    /// the 4 new commercial-terms fields save in place here too, the same as the Sprint 1 fields -
+    /// they consume no revision (revisions arrive with the ADR 0007 work later in this sprint).
+    /// </summary>
     public void UpdateDraftDetails(
         decimal unitCost,
         DateOnly expectedDeliveryDate,
         short paymentTermId,
         decimal advancePercent,
+        DateOnly? latestAcceptableDate,
+        decimal? overTolerancePercent,
+        decimal? underTolerancePercent,
+        short? fabricResponsibilityId,
         IEnumerable<(short SizeId, short ColourId, int Qty)> lines)
     {
         RequireStatus(PoStatus.Draft, "edit");
@@ -87,6 +104,10 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         ExpectedDeliveryDate = expectedDeliveryDate;
         PaymentTermId = paymentTermId;
         AdvancePercent = advancePercent;
+        LatestAcceptableDate = latestAcceptableDate;
+        OverTolerancePercent = overTolerancePercent;
+        UnderTolerancePercent = underTolerancePercent;
+        FabricResponsibilityId = fabricResponsibilityId;
 
         _lines.Clear();
         _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));

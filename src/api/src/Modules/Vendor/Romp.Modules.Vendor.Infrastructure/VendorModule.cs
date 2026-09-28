@@ -10,6 +10,7 @@ using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence;
 using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Contracts;
+using Romp.Modules.Vendor.Domain;
 
 namespace Romp.Modules.Vendor.Infrastructure;
 
@@ -35,8 +36,28 @@ public sealed class VendorModule : IModule
         services.AddScoped<IPoNumberAllocator, PoNumberAllocator>();
         services.AddScoped<IPurchaseOrderUsageQueries, PurchaseOrderUsageQueries>();
 
-        services.AddValidatorsFromAssembly(typeof(AssemblyReference).Assembly);
+        services.AddValidatorsFromAssembly(typeof(Romp.Modules.Vendor.Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(VendorTransactionBehavior<,>));
+
+        // SCRUM-93 task 17 (AC-5): "configuration, not constants" (plan.md) - defaults are spec.md's
+        // suggested starting point (5%/20%), overridable via Vndr:PoCommercialTerms:* config.
+        services.AddSingleton(new PoCommercialTermsOptions
+        {
+            DefaultTolerancePercent = configuration.GetValue("Vndr:PoCommercialTerms:DefaultTolerancePercent", 5m),
+            MaxTolerancePercent = configuration.GetValue("Vndr:PoCommercialTerms:MaxTolerancePercent", 20m),
+        });
+
+        // SCRUM-93 task 13: opt VNDR's OUTB_MSG into the shared dispatcher (SCRUM-181) and give
+        // every VNDR event a placeholder handler so messages reach Processed - no module has a
+        // real (DB-effecting) consumer yet, so no INBX row is needed for these (task 12's
+        // convention). Sprint 3's first real consumer replaces this per event type.
+        services.AddOutboxModule(
+            "VNDR",
+            typeof(PoCreatedEvent),
+            typeof(PoSentToVendorEvent),
+            typeof(PoAcknowledgedEvent),
+            typeof(PoCancelledEvent));
+        services.AddScoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>));
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

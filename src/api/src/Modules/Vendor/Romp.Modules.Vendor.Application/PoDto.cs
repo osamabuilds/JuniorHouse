@@ -14,6 +14,10 @@ public sealed record PoDto(
     DateOnly ExpectedDeliveryDate,
     short PaymentTermId,
     decimal AdvancePercent,
+    DateOnly? LatestAcceptableDate,
+    decimal? OverTolerancePercent,
+    decimal? UnderTolerancePercent,
+    short? FabricResponsibilityId,
     short StatusId,
     IReadOnlyCollection<PoLineDto> Lines,
     IReadOnlyCollection<PoStatusHistoryDto> StatusHistory);

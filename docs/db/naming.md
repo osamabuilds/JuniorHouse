@@ -89,6 +89,7 @@ Note: there is no `_AT` suffix in this convention — every timestamp column, au
 | Returns | `RTRN` |
 | Notifications | `NTFY` |
 | Outbox (per module) | the module's own schema, table `OUTB_MSG` |
+| Inbox (per module, once a module registers a handler with a DB effect) | the module's own schema, table `INBX`, composite PK (`MSG_ID`, `HNDL_NAME`) |
 
 ## 5. Abbreviation glossary
 
@@ -102,6 +103,7 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | added (e.g. added-in revision) | ADDD | | lookup | LKP |
 | address | ADDR | | main | MAIN |
 | advance (e.g. advance %) | ADV | | map (link table) | MAP |
+| after (e.g. value after) | AFT | | | |
 | aggregate | AGGR | | message | MSG |
 | amendment | AMND | | migration (EF Core bookkeeping table) | MIG |
 | amount | AMT | | milestone | MLST |
@@ -111,6 +113,8 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | attribute | ATTR | | number | NO |
 | barcode | BRCD | | on-quantity (vendor scorecard metric) | ONQT |
 | batch | BTCH | | on-time (vendor scorecard metric) | ONTM |
+| before (e.g. value before) | BEF | | | |
+| beyond (e.g. beyond latest acceptable date) | BYND | | | |
 | bin | BIN | | order | ORDR |
 | bracket (e.g. age bracket) | BRKT | | outbox | OUTB |
 | by (actor) | BY | | over (e.g. over-ship tolerance) | OVER |
@@ -141,6 +145,7 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | deleted | DELD | | segment | SGMT |
 | delivered / delivery | DLVR | | sent | SENT |
 | description | DSCR | | sequence | SEQ |
+| difference | DIFF | | shift (e.g. date shift) | SHFT |
 | document | DOC | | size | SIZE |
 | email | EML | | sort | SORT |
 | event | EVNT | | specialisation | SPCL |
@@ -149,8 +154,11 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | expiry | EXPY | | storage | STOR |
 | fabric | FBRC | | style | STYL |
 | file | FILE | | target | TGT |
+| from (e.g. from-status) | FROM | | | |
 | gender | GNDR | | tech pack | TCPK |
 | goods receipt note | GRN | | terms | TERM |
+| | | | to (e.g. to-status) | TO |
+| handler | HNDL | | | |
 | history | HIST | | tolerance | TOL |
 | identifier | ID | | total | TOT |
 | impact | IMPC | | type | TYP |
@@ -158,7 +166,8 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | indicator | IND | | unit | UNIT |
 | initiator | INIT | | updated | UPDT |
 | insert | INSR | | user | USR |
-| item | ITEM | | variant | VRNT |
+| item | ITEM | | value | VAL |
+| | | | variant | VRNT |
 | key | KEY | | vendor | VNDR |
 | label | LBL | | version | VER |
 | latest | LATE | | warehouse | WHSE |

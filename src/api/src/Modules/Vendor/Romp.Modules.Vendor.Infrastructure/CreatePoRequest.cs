@@ -8,9 +8,15 @@ public sealed record UpdatePoRequest(
     DateOnly ExpectedDeliveryDate,
     short PaymentTermId,
     decimal AdvancePercent,
-    IReadOnlyCollection<PoLineDto> Lines)
+    IReadOnlyCollection<PoLineDto> Lines,
+    DateOnly? LatestAcceptableDate = null,
+    decimal? OverTolerancePercent = null,
+    decimal? UnderTolerancePercent = null,
+    short? FabricResponsibilityId = null)
 {
-    public UpdatePurchaseOrderCommand ToCommand(long id) => new(id, UnitCost, ExpectedDeliveryDate, PaymentTermId, AdvancePercent, Lines);
+    public UpdatePurchaseOrderCommand ToCommand(long id) => new(
+        id, UnitCost, ExpectedDeliveryDate, PaymentTermId, AdvancePercent, Lines,
+        LatestAcceptableDate, OverTolerancePercent, UnderTolerancePercent, FabricResponsibilityId);
 }
 
 public sealed record CancelPoRequest(short CancelReasonId);

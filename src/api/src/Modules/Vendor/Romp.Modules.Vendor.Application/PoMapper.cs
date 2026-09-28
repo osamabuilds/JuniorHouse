@@ -13,6 +13,10 @@ internal static class PoMapper
         po.ExpectedDeliveryDate,
         po.PaymentTermId,
         po.AdvancePercent,
+        po.LatestAcceptableDate,
+        po.OverTolerancePercent,
+        po.UnderTolerancePercent,
+        po.FabricResponsibilityId,
         po.StatusId,
         po.Lines.Select(l => new PoLineDto(l.SizeId, l.ColourId, l.Qty)).ToList(),
         po.StatusHistory

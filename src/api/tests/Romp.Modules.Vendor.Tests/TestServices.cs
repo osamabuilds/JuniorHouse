@@ -54,6 +54,7 @@ internal static class TestServices
         services.AddScoped<IStyleQueries, FakeStyleQueries>();
         services.AddScoped<IPaymentTermQueries, FakePaymentTermQueries>();
         services.AddScoped<IPoNumberAllocator, StubPoNumberAllocator>();
+        services.AddSingleton(new PoCommercialTermsOptions());
 
         var applicationAssembly = typeof(AssemblyReference).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);
