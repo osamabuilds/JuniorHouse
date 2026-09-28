@@ -8,7 +8,9 @@ RUN npx ng build storefront
 
 FROM node:24-alpine AS runtime
 WORKDIR /app
-ENV NODE_ENV=production PORT=4000
+# Angular SSR's SSRF guard rejects any Host header not in this allowlist (comma-separated).
+# Override per environment (e.g. the production domain behind Cloudflare) via docker-compose.
+ENV NODE_ENV=production PORT=4000 NG_ALLOWED_HOSTS=localhost
 COPY --from=build /app/dist/storefront ./dist/storefront
 EXPOSE 4000
 USER node
