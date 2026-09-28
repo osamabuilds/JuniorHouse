@@ -94,4 +94,40 @@ public sealed class RecordVendorResponseCommandHandlerTests
         var exception = await Assert.ThrowsAsync<Romp.BuildingBlocks.Application.ValidationException>(() => sender.Send(command));
         Assert.Contains(nameof(RecordVendorResponseCommand.ChannelId), exception.Errors.Keys);
     }
+
+    [Fact]
+    [Trait("Spec", "AC-31")]
+    [Trait("Spec", "AC-34")]
+    public async Task Handle_WithEvidence_StoredAsInternalFileAndShownInHistory()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
+
+        await sender.Send(new RecordVendorResponseCommand(
+            po.Id, 1, 0, 1, "Ali Raza", null, null, [new EvidenceFileAdd("whatsapp.png", [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1])]));
+
+        var revisions = await sender.Send(new GetPurchaseOrderRevisionsQuery(po.Id));
+        var evidence = Assert.Single(Assert.Single(revisions.Single(r => r.RevisionNumber == 0).Communications!).Evidence!);
+        Assert.Equal("whatsapp.png", evidence.FileName);
+
+        var files = await sender.Send(new GetPoFileListQuery(po.Id));
+        Assert.False(Assert.Single(files).IsVendorVisible); // internal: never shown to the vendor
+        var vendorView = await sender.Send(new GetVendorFacingPoViewQuery(po.Id));
+        Assert.Empty(vendorView!.Files);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-31")]
+    public async Task Handle_EvidenceOfDisallowedType_Rejected()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
+
+        var exception = await Assert.ThrowsAsync<Romp.BuildingBlocks.Application.ValidationException>(() => sender.Send(new RecordVendorResponseCommand(
+            po.Id, 1, 0, 1, "Ali Raza", null, null, [new EvidenceFileAdd("x.exe", "MZ"u8.ToArray())])));
+
+        Assert.Contains("evidence file has a type that isn't allowed", exception.Message);
+    }
 }

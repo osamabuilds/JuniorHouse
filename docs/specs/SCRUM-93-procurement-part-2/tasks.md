@@ -94,10 +94,10 @@ Ordering here follows build dependency (what has to exist before what), not raw 
 
 ## End-to-end / Definition of Done
 
-- [ ] 56. `docker compose` demo seed: extend with a sample amendment so the Friday demo has something to show beyond the happy path.
-- [ ] 57. Playwright E2E extended: amend an Acknowledged PO, record the vendor's acceptance, assert the revision goes In force and the PO's terms update; assert the dispatcher moved the resulting event to Processed (via the logging handler's observable effect, e.g. a log line or a diagnostics counter).
+- [x] 56. `docker compose` demo seed: extend with a sample amendment so the Friday demo has something to show beyond the happy path. — done: `DemoDataSeeder` adds PO-2026-90001 (Acknowledged, with a vendor counter waiting as Pending Rev 1); each step is saved separately so events carry the real PO id.
+- [x] 57. Playwright E2E extended: amend an Acknowledged PO, record the vendor's acceptance, assert the revision goes In force and the PO's terms update; assert the dispatcher moved the resulting event to Processed (via the logging handler's observable effect, e.g. a log line or a diagnostics counter). — done and run against the docker stack (Playwright in the official image, 1 passed). The dispatcher assertion is optional (`E2E_CHECK_OUTBOX=1`, uses `docker compose exec psql`) because there is no HTTP surface for the outbox; verified separately: all outbox rows reach `PROC_DTE`, none dead-lettered.
 - [ ] 58. README "Try Sprint 2" section + demo script.
-- [ ] 59. Update `docs/db/naming.md`'s glossary with this plan's proposed abbreviations (confirm none collide with an existing entry first).
+- [x] 59. Update `docs/db/naming.md`'s glossary with this plan's proposed abbreviations (confirm none collide with an existing entry first). — added `day` (DAY) and `visible` (VSBL); everything else this sprint uses was already in the glossary.
 - [ ] 60. Update `spec.md`'s status to **Implemented**, noting any point where the implementation differed from `plan.md`.
 - [ ] 61. Jira housekeeping (spec's open question): update SCRUM-13's description to say it consumes the SCRUM-181 dispatcher rather than building its own; fix SCRUM-92's scope comment (says Cancel from Draft/Sent) to match the Sprint 1 spec's actual Draft/Sent/Acknowledged.
 - [ ] 62. Log BRD errata under SCRUM-168: the 3 new PO commercial terms with no FR ID (plan.md's R10), cost sheets having no FR/fields/table (R13), and Sprint 1's still-open "no FR for style master" question.

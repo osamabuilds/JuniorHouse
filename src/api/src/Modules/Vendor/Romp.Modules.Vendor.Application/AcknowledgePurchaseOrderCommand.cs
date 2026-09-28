@@ -10,7 +10,7 @@ namespace Romp.Modules.Vendor.Application;
 /// </summary>
 public sealed record AcknowledgePurchaseOrderCommand(long Id) : IRequest<PoDto>, IVendorCommand;
 
-public sealed class AcknowledgePurchaseOrderCommandHandler(IVendorDbContext dbContext)
+public sealed class AcknowledgePurchaseOrderCommandHandler(IVendorDbContext dbContext, IFileStorage fileStorage)
     : IRequestHandler<AcknowledgePurchaseOrderCommand, PoDto>
 {
     private const short ConfirmedOutcomeId = 1;   // PO_VNDR_COMM_TYP_LKP.Confirmed
@@ -33,7 +33,7 @@ public sealed class AcknowledgePurchaseOrderCommandHandler(IVendorDbContext dbCo
             .FirstOrDefaultAsync(cancellationToken) ?? 0;
 
         // Called directly rather than via ISender: same DbContext/transaction, no nested pipeline.
-        var result = await new RecordVendorResponseCommandHandler(dbContext).Handle(
+        var result = await new RecordVendorResponseCommandHandler(dbContext, fileStorage).Handle(
             new RecordVendorResponseCommand(
                 request.Id,
                 ConfirmedOutcomeId,

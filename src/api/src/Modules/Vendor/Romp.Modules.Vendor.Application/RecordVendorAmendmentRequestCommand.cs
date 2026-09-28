@@ -20,13 +20,15 @@ public sealed record RecordVendorAmendmentRequestCommand(
     short ChannelId,
     string ResponderName,
     DateTimeOffset? ResponseDte,
-    CounterProposal Request) : IRequest<PoRevisionDto>, IVendorCommand;
+    CounterProposal Request,
+    IReadOnlyCollection<EvidenceFileAdd>? Evidence = null) : IRequest<PoRevisionDto>, IVendorCommand;
 
 public sealed class RecordVendorAmendmentRequestCommandValidator : AbstractValidator<RecordVendorAmendmentRequestCommand>
 {
-    public RecordVendorAmendmentRequestCommandValidator(PoCommercialTermsOptions termsOptions)
+    public RecordVendorAmendmentRequestCommandValidator(PoCommercialTermsOptions termsOptions, PoFileStorageOptions fileOptions)
     {
         RuleFor(c => c.ChannelId).GreaterThan((short)0).WithMessage("A channel is required."); // AC-31
+        RuleForEach(c => c.Evidence).SetValidator(new EvidenceFileAddValidator(fileOptions));
         RuleFor(c => c.ResponderName).NotEmpty();
         RuleFor(c => c.ResponseDte)
             .Must(dte => dte is null || dte <= DateTimeOffset.UtcNow)
@@ -50,7 +52,7 @@ public sealed class RecordVendorAmendmentRequestCommandValidator : AbstractValid
     }
 }
 
-public sealed class RecordVendorAmendmentRequestCommandHandler(IVendorDbContext dbContext, IStyleQueries styleQueries)
+public sealed class RecordVendorAmendmentRequestCommandHandler(IVendorDbContext dbContext, IStyleQueries styleQueries, IFileStorage fileStorage)
     : IRequestHandler<RecordVendorAmendmentRequestCommand, PoRevisionDto>
 {
     public async Task<PoRevisionDto> Handle(RecordVendorAmendmentRequestCommand request, CancellationToken cancellationToken)
@@ -125,7 +127,9 @@ public sealed class RecordVendorAmendmentRequestCommandHandler(IVendorDbContext 
         await dbContext.SaveChangesAsync(cancellationToken);
 
         var responseDte = request.ResponseDte ?? DateTimeOffset.UtcNow;
-        po.RecordVendorCommunication(4 /* PoVndrCommType.AmendmentRequest */, request.ChannelId, request.ResponderName, responseDte, revision.Id);
+        var communication = po.RecordVendorCommunication(4 /* PoVndrCommType.AmendmentRequest */, request.ChannelId, request.ResponderName, responseDte, revision.Id);
+        await dbContext.SaveChangesAsync(cancellationToken); // the communication needs its real id before evidence can point at it
+        await VendorEvidence.AddAsync(dbContext, fileStorage, po.Id, communication, request.Evidence, cancellationToken);
 
         await dbContext.SaveChangesAsync(cancellationToken);
 

@@ -17,7 +17,8 @@ public sealed class PurchaseOrderFile : Entity<long>, IAuditable
     }
 
     public PurchaseOrderFile(
-        long poId, short categoryId, string fileName, string storageKey, string contentType, long fileSizeBytes, long? addedInRevisionId)
+        long poId, short categoryId, string fileName, string storageKey, string contentType, long fileSizeBytes, long? addedInRevisionId,
+        long? vendorCommunicationId = null)
     {
         PoId = poId;
         CategoryId = categoryId;
@@ -26,6 +27,7 @@ public sealed class PurchaseOrderFile : Entity<long>, IAuditable
         ContentType = contentType;
         FileSizeBytes = fileSizeBytes;
         AddedInRevisionId = addedInRevisionId;
+        VendorCommunicationId = vendorCommunicationId;
     }
 
     /// <summary>Draft-stage removal only (<see cref="PoFilePolicy"/> decides when); the bytes stay in storage.</summary>

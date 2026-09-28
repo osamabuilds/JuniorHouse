@@ -190,7 +190,7 @@
 
     <app-po-files-panel [poId]="current()!.id" [statusId]="current()!.statusId" [files]="files()" (changed)="refreshDetail()" />
 
-    <app-revision-history [revisions]="revisions()" [reasons]="amendmentReasons()" [channels]="channels()" [fabricOptions]="fabricOptions()" />
+    <app-revision-history [revisions]="revisions()" [downloadUrl]="evidenceUrl" [reasons]="amendmentReasons()" [channels]="channels()" [fabricOptions]="fabricOptions()" />
 
     @if (canCancel(current()!)) {
       <div class="cancel-panel">

@@ -87,6 +87,9 @@ const totalQty = (revision: PoRevisionDto): number => revision.lines.reduce((sum
                       <li>
                         {{ commTypeLabel(comm.typeId) }} via {{ channelName(comm.channelId) }}, recorded from
                         {{ comm.responderName }} on {{ comm.responseDte }}
+                        @for (file of comm.evidence ?? []; track file.fileId) {
+                          <a [href]="downloadUrl()(file.fileId)">Evidence: {{ file.fileName }}</a>
+                        }
                       </li>
                     }
                   </ul>
@@ -149,6 +152,8 @@ export class RevisionHistory {
   readonly reasons = input<readonly LookupDto[]>([]);
   readonly channels = input<readonly LookupDto[]>([]);
   readonly fabricOptions = input<readonly LookupDto[]>([]);
+  /** Builds the download link for an evidence file; supplied by the parent, which knows the PO. */
+  readonly downloadUrl = input<(fileId: number) => string>(() => '#');
 
   readonly views = computed<RevisionView[]>(() => {
     const ordered = [...this.revisions()].sort((a, b) => a.revisionNumber - b.revisionNumber);

@@ -23,6 +23,11 @@ public sealed class GetPurchaseOrderRevisionsQueryHandler(IVendorDbContext dbCon
             .FirstOrDefaultAsync(p => p.Id == request.PoId, cancellationToken)
             ?? throw new KeyNotFoundException($"Purchase order {request.PoId} was not found.");
 
+        var evidence = (await dbContext.PurchaseOrderFiles.AsNoTracking()
+                .Where(f => f.PoId == po.Id && f.VendorCommunicationId != null && !f.IsDeleted)
+                .ToListAsync(cancellationToken))
+            .ToLookup(f => f.VendorCommunicationId!.Value);
+
         return po.Revisions
             .OrderBy(r => r.RevisionNumber)
             .Select(r => r.ToDto() with
@@ -30,7 +35,9 @@ public sealed class GetPurchaseOrderRevisionsQueryHandler(IVendorDbContext dbCon
                 Communications = po.VendorCommunications
                     .Where(c => c.RevisionId == r.Id)
                     .OrderBy(c => c.ResponseDte)
-                    .Select(c => new PoRevisionCommunicationDto(c.CommunicationTypeId, c.ChannelId, c.ResponderName, c.ResponseDte))
+                    .Select(c => new PoRevisionCommunicationDto(
+                        c.CommunicationTypeId, c.ChannelId, c.ResponderName, c.ResponseDte,
+                        evidence[c.Id].Select(f => new PoEvidenceDto(f.Id, f.FileName)).ToList()))
                     .ToList(),
             })
             .ToList();

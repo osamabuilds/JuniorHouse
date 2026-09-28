@@ -4,7 +4,7 @@ import { ApiError } from '../core/api-error';
 import { LookupDto } from '../reference-data/reference-api.service';
 import { FieldErrors } from '../shared/field-errors';
 
-import { AmendForm, StyleCell } from './amend-form';
+import { AmendForm, StyleCell, fileToBase64 } from './amend-form';
 import { AmendmentValue, PoDto, PoFileDto, VendorResponseValue } from './po-api.service';
 
 export const OUTCOME_CONFIRMED = 1;
@@ -72,6 +72,22 @@ export const OUTCOME_DECLINED = 3;
 
         <p class="field-hint">Responding to revision {{ currentRevisionNumber() }}, the PO's current in-force revision.</p>
 
+        <div class="form-field">
+          <label for="vresp-evidence">Evidence (optional, e.g. a WhatsApp screenshot)</label>
+          <input id="vresp-evidence" type="file" (change)="onEvidence($event)" />
+          <app-field-errors [messages]="fieldErrors('Evidence')" />
+          @if (evidence().length > 0) {
+            <ul>
+              @for (file of evidence(); track file.fileName) {
+                <li>
+                  {{ file.fileName }}
+                  <button type="button" class="button button--small" (click)="removeEvidence(file.fileName)">Remove</button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
         @if (outcome() !== 2) {
           <div class="form-actions">
             <button type="submit" class="button button--primary" [disabled]="saving()">
@@ -127,6 +143,7 @@ export class VendorResponseForm {
   readonly cancelled = output<void>();
 
   readonly attempted = signal(false);
+  readonly evidence = signal<readonly { fileName: string; content: string }[]>([]);
 
   readonly form = this.formBuilder.group({
     outcomeTypeId: this.formBuilder.nonNullable.control(OUTCOME_CONFIRMED),
@@ -147,6 +164,20 @@ export class VendorResponseForm {
   }
 
 
+
+  async onEvidence(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.evidence.set([...this.evidence(), { fileName: file.name, content: await fileToBase64(file) }]);
+    input.value = '';
+  }
+
+  removeEvidence(fileName: string): void {
+    this.evidence.set(this.evidence().filter((file) => file.fileName !== fileName));
+  }
 
   submitSimple(): void {
     const value = this.baseValue(null);
@@ -190,6 +221,7 @@ export class VendorResponseForm {
       responderName: raw.responderName.trim(),
       responseDte: raw.responseDte ? new Date(raw.responseDte).toISOString() : null,
       counter,
+      evidence: this.evidence(),
     };
   }
 }

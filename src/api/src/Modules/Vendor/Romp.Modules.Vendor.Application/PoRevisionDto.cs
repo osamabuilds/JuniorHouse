@@ -33,4 +33,8 @@ public sealed record PoRevisionDto(
     IReadOnlyCollection<PoRevisionCommunicationDto>? Communications = null);
 
 /// <summary>SCRUM-93 task 47 (AC-31, AC-34): how and by whom the vendor's response or request behind a revision was captured. TypeId is PO_VNDR_COMM_TYP_LKP (Confirmed/Countered/Declined/AmendmentRequest/Decision).</summary>
-public sealed record PoRevisionCommunicationDto(short TypeId, short ChannelId, string ResponderName, DateTimeOffset ResponseDte);
+/// <summary>An evidence file behind a communication (internal - staff only).</summary>
+public sealed record PoEvidenceDto(long FileId, string FileName);
+
+public sealed record PoRevisionCommunicationDto(
+    short TypeId, short ChannelId, string ResponderName, DateTimeOffset ResponseDte, IReadOnlyCollection<PoEvidenceDto>? Evidence = null);

@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Vendor.Domain;
 
 namespace Romp.Modules.Vendor.Application;
 
@@ -31,16 +32,18 @@ public sealed record RecordVendorResponseCommand(
     short ChannelId,
     string ResponderName,
     DateTimeOffset? ResponseDte,
-    CounterProposal? Counter) : IRequest<RecordVendorResponseResult>, IVendorCommand;
+    CounterProposal? Counter,
+    IReadOnlyCollection<EvidenceFileAdd>? Evidence = null) : IRequest<RecordVendorResponseResult>, IVendorCommand;
 
 /// <summary>Declined carries no state change of its own - <see cref="SuggestedCancelReasonId"/> is the signal the API layer uses to pre-fill Cancel with VendorDeclined (AC-29).</summary>
 public sealed record RecordVendorResponseResult(short OutcomeTypeId, PoDto Po, PoRevisionDto? Revision, short? SuggestedCancelReasonId);
 
 public sealed class RecordVendorResponseCommandValidator : AbstractValidator<RecordVendorResponseCommand>
 {
-    public RecordVendorResponseCommandValidator()
+    public RecordVendorResponseCommandValidator(PoFileStorageOptions fileOptions)
     {
         RuleFor(c => c.ChannelId).GreaterThan((short)0).WithMessage("A channel is required."); // AC-31
+        RuleForEach(c => c.Evidence).SetValidator(new EvidenceFileAddValidator(fileOptions));
         RuleFor(c => c.ResponderName).NotEmpty();
         RuleFor(c => c.ResponseDte)
             .Must(dte => dte is null || dte <= DateTimeOffset.UtcNow)
@@ -50,7 +53,7 @@ public sealed class RecordVendorResponseCommandValidator : AbstractValidator<Rec
     }
 }
 
-public sealed class RecordVendorResponseCommandHandler(IVendorDbContext dbContext)
+public sealed class RecordVendorResponseCommandHandler(IVendorDbContext dbContext, IFileStorage fileStorage)
     : IRequestHandler<RecordVendorResponseCommand, RecordVendorResponseResult>
 {
     public async Task<RecordVendorResponseResult> Handle(RecordVendorResponseCommand request, CancellationToken cancellationToken)
@@ -78,11 +81,12 @@ public sealed class RecordVendorResponseCommandHandler(IVendorDbContext dbContex
         PoRevisionDto? revisionDto = null;
         short? suggestedCancelReasonId = null;
 
+        PoVendorCommunication communication = null!; // assigned in every case below (outcome is validated as 1-3)
         switch (request.OutcomeTypeId)
         {
             case 1: // Confirmed
                 po.Acknowledge();
-                po.RecordVendorCommunication(request.OutcomeTypeId, request.ChannelId, request.ResponderName, responseDte, inForceRevision?.Id);
+                communication = po.RecordVendorCommunication(request.OutcomeTypeId, request.ChannelId, request.ResponderName, responseDte, inForceRevision?.Id);
                 break;
 
             case 2: // Countered
@@ -107,17 +111,24 @@ public sealed class RecordVendorResponseCommandHandler(IVendorDbContext dbContex
                 // communication to it (PurchaseOrder.RecordVendorCommunication's own requirement).
                 await dbContext.SaveChangesAsync(cancellationToken);
 
-                po.RecordVendorCommunication(request.OutcomeTypeId, request.ChannelId, request.ResponderName, responseDte, revision.Id);
+                communication = po.RecordVendorCommunication(request.OutcomeTypeId, request.ChannelId, request.ResponderName, responseDte, revision.Id);
                 revisionDto = revision.ToDto();
                 break;
 
             case 3: // Declined
-                po.RecordVendorCommunication(request.OutcomeTypeId, request.ChannelId, request.ResponderName, responseDte, inForceRevision?.Id);
+                communication = po.RecordVendorCommunication(request.OutcomeTypeId, request.ChannelId, request.ResponderName, responseDte, inForceRevision?.Id);
                 suggestedCancelReasonId = 1; // PO_CNCL_RSN_LKP.VendorDeclined
                 break;
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (request.Evidence is { Count: > 0 })
+        {
+            // The communication has its real id now (saved above); evidence files point at it.
+            await VendorEvidence.AddAsync(dbContext, fileStorage, po.Id, communication, request.Evidence, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         return new RecordVendorResponseResult(request.OutcomeTypeId, po.ToDto(), revisionDto, suggestedCancelReasonId);
     }

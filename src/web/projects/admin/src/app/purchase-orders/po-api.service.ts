@@ -69,6 +69,7 @@ export interface PoRevisionCommunicationDto {
   readonly channelId: number;
   readonly responderName: string;
   readonly responseDte: string;
+  readonly evidence: readonly { readonly fileId: number; readonly fileName: string }[] | null;
 }
 
 export interface PoRevisionDto {
@@ -142,6 +143,8 @@ export interface VendorResponseValue {
   readonly responderName: string;
   readonly responseDte: string | null;
   readonly counter: CounterProposalValue | null;
+  /** Optional proof of what the vendor said (e.g. a WhatsApp screenshot); kept as internal files. */
+  readonly evidence?: readonly { readonly fileName: string; readonly content: string }[];
 }
 
 export interface VendorResponseResult {

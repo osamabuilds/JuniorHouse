@@ -139,6 +139,7 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | customer | CUST | | responsibility | RESP |
 | date (date-only) | DT | | retail | RTL |
 | date/time (timestamp) | DTE | | retired (e.g. retired-in revision) | RETD |
+| day | DAY | | | |
 | dead-letter | DEDL | | revision | REV |
 | default | DFLT | | run (e.g. size run) | RUN |
 | defect | DFCT | | sample | SMPL |
@@ -170,5 +171,6 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | | | | variant | VRNT |
 | key | KEY | | vendor | VNDR |
 | label | LBL | | version | VER |
+| | | | visible (e.g. vendor-visible) | VSBL |
 | latest | LATE | | warehouse | WHSE |
 | lead time | LEAD | | year | YR |

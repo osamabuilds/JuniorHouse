@@ -495,6 +495,9 @@ export class PurchaseOrdersPage {
     return this.error()?.fieldErrors[field] ?? [];
   }
 
+  /** Download link for an evidence file behind a vendor communication on the open PO. */
+  readonly evidenceUrl = (fileId: number): string => this.poApi.fileDownloadUrl(this.current()?.id ?? 0, fileId);
+
   fabricName(id: number | null): string {
     return id === null ? '—' : (this.fabricOptions().find((option) => option.id === id)?.name ?? `#${id}`);
   }

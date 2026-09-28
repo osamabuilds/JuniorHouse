@@ -81,7 +81,7 @@ describe('RevisionHistory (SCRUM-93 task 47, AC-34)', () => {
         poValueDiff: 15000,
         impactNote: 'Cost up after fabric price rise',
         vendorMessage: 'Please confirm',
-        communications: [{ typeId: 2, channelId: 1, responderName: 'Ali Raza', responseDte: '2026-09-29T10:00:00Z' }],
+        communications: [{ typeId: 2, channelId: 1, responderName: 'Ali Raza', responseDte: '2026-09-29T10:00:00Z', evidence: null }],
       }),
     ]);
 
@@ -97,6 +97,24 @@ describe('RevisionHistory (SCRUM-93 task 47, AC-34)', () => {
     const root = render([revision({}), revision({ id: 2, revisionNumber: 1, statusId: 1, isBeyondLatestAcceptableDate: true })]);
 
     expect(root.querySelector('[role="note"]')?.textContent).toContain('beyond the latest acceptable date');
+  });
+
+  it('links the evidence files behind a communication', () => {
+    const fixture = TestBed.createComponent(RevisionHistory);
+    fixture.componentRef.setInput('revisions', [
+      revision({
+        communications: [
+          { typeId: 1, channelId: 1, responderName: 'Ali Raza', responseDte: '2026-09-29T10:00:00Z', evidence: [{ fileId: 7, fileName: 'whatsapp.png' }] },
+        ],
+      }),
+    ]);
+    fixture.componentRef.setInput('channels', [{ id: 1, code: 'WhatsApp', name: 'WhatsApp' }]);
+    fixture.componentRef.setInput('downloadUrl', (fileId: number) => `/files/${fileId}`);
+    fixture.detectChanges();
+
+    const link = (fixture.nativeElement as HTMLElement).querySelector('a') as HTMLAnchorElement;
+    expect(link.textContent).toContain('Evidence: whatsapp.png');
+    expect(link.getAttribute('href')).toBe('/files/7');
   });
 
   it('says so when there are no revisions', () => {
