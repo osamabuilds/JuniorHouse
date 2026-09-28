@@ -15,7 +15,7 @@
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <!-- Tests -->
-    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
     <!-- Pinned to the same EF Core version as Design/Npgsql above, for the same reason. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.4" />
