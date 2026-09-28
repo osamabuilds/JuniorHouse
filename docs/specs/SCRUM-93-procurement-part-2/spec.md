@@ -1,6 +1,6 @@
 # SCRUM-93: Procurement — Part 2 (PO amendments, spec files, outbox dispatcher)
 
-- **Status:** Approved (2026-09-28). The 6 open questions below (tolerance defaults, dead-letter blocking trade-off, capacity cut line, BRD errata logging, Jira housekeeping, local compliance verification) are carried forward unresolved by the user's explicit instruction — none block starting plan.md.
+- **Status:** Implemented (2026-09-29; see "Implementation notes" for where it differs). Approved 2026-09-28. The 6 open questions below (tolerance defaults, dead-letter blocking trade-off, capacity cut line, BRD errata logging, Jira housekeeping, local compliance verification) are carried forward unresolved by the user's explicit instruction — none block starting plan.md.
 - **Jira:** SCRUM-93 (FR-SC-03), SCRUM-181 (outbox dispatcher + inbox), SCRUM-179 (Sprint 1 carry-over bug). Spec/plan gate: SCRUM-180. Epic SCRUM-14 "[Module] Vendor & Procurement (VEND)" for SCRUM-93; SCRUM-181 sits under epic SCRUM-44 "[Module] Foundation & Platform Setup".
 - **BRD sections:** §5.9 (Demand Planning & Purchase Order, edge case), §5.10–5.11 (what comes next: production, delivery, QC), §7.10 (FR-SC), §9.5/§13.8 (outbox), §12.11 (Vendor & Procurement core tables)
 - **Requirement IDs:** FR-SC-03. The tech-pack clause of FR-SC-02 (deferred from Sprint 1). Three PO commercial terms have **no FR ID** in the BRD (see Decisions R10), so they are logged for the BRD errata (SCRUM-168).
@@ -384,6 +384,21 @@ The BRD has no `TC-SC-*` test cases, so every row is sourced from FR-SC-03, the 
 - **Authentication / role checks (SEC-08)**, deferred to Sprint 8.
 - **Legal compliance validation.** The send-time checklist is design guidance only.
 
+## Implementation notes (what was built, and where it differs)
+
+Status **Implemented** on 2026-09-29 (branch `SCRUM-93-procurement-part-2`). All 62 tasks in `tasks.md` are done. Backend (unit + Testcontainers migration tests, 85 in the Vendor project), the admin app (36 tests) and the Playwright E2E were run in Linux containers on the dev machine, because Windows Smart App Control blocks locally built DLLs. CI remains the authority.
+
+Differences from `plan.md`, and gaps that remain:
+
+1. **Send confirmation needed a schema change the plan did not list.** `SendPurchaseOrderCommand` has a `SendWithoutTechPack` flag, and the choice is recorded in a new nullable `PO_STS_HIST.NOTE` column (migration `AddPoStatusHistoryNote`, hand-written because `dotnet ef` is blocked by the same policy; the migration and model-snapshot tests pass). Existing Sprint 1 tests that send a PO now pass the flag, and the E2E was rewritten for the new flow.
+2. **Amendment file changes travel as base64 in the JSON body** (`addFiles`, `retireFileIds`), not multipart. Limits come from `Vndr:PoFileStorage:*` (10 MB, 25 files by default).
+3. **Event envelope.** Events derive from `PoEvent` and implement a new `IOutboxEvent` (`Romp.BuildingBlocks`), and the outbox interceptor now stamps `AGGR_TYP`, `AGGR_ID` and `MSG_VER` on every row. Before this, nothing set them, so the dispatcher's per-aggregate ordering could not work. **Known gap:** `PoCreatedEvent` is raised in the constructor, before the database assigns the PO's id, so its payload has `PoId` 0 and its outbox row has no `AGGR_ID`. Fix in Sprint 3 (raise it after the first save, or stamp it on `SavedChanges`).
+4. **Defect found and fixed:** handlers loaded a PO's revisions without their lines, so accepting a Pending revision on a fresh database context would have replaced the PO's lines with none. Fixed with `ThenInclude`; the regression test uses a fresh scope per command (the in-memory tests share one tracked context and hid it).
+5. **Docker:** the API container's non-root user could not write PO files. `docker-compose.yml` now mounts a `po-files` volume at `/data/po-files`, created and owned in the Dockerfile.
+6. **The PO create/edit form gained the four new commercial terms** (latest acceptable date, tolerances, fabric responsibility), which no task listed, because Send now requires two of them.
+7. **No outbox health surface** (task 15's gap stands); the E2E checks the outbox through an optional `psql` step.
+8. **AC-31 is only partly met.** Channel, responder, time and optional evidence are captured for vendor responses and (API only) amendment requests. Not built: capturing them when staff *Accept/Reject* a vendor-relevant Pending revision (`DecideRevisionCommand` takes a note only), evidence in the amendment-request UI, and any admin UI for the vendor amendment request (the API exists). Staff can still propose the change themselves with *Amend*.
+9. The old `POST .../acknowledge` endpoint is kept as a wrapper around the vendor-response handler (Confirmed, channel Unspecified), so callers keep working (AC-4).
 ## Open questions
 
 - [x] ~~Amendment in Sent to Vendor or only Acknowledged?~~ Resolved: both (D1).
