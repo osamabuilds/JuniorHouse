@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiError } from '../core/api-error';
 import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
+import { ControlErrors, missingSummary } from '../shared/control-errors';
 import { FieldErrors } from '../shared/field-errors';
 import { inputChecked, inputValue, selectNumberOrNull } from '../shared/dom-events';
 import { VendorApiService, VendorDto, VendorSummaryDto } from './vendor-api.service';
@@ -11,7 +12,7 @@ type Mode = 'list' | 'create' | 'edit';
 /** SCRUM-174: vendor list (search by name/city/specialisation) plus a create/edit form (FR-SC-01, AC-5/AC-5a/AC-6). */
 @Component({
   selector: 'app-vendors-page',
-  imports: [ReactiveFormsModule, FieldErrors],
+  imports: [ReactiveFormsModule, FieldErrors, ControlErrors],
   templateUrl: './vendors-page.html',
   styleUrl: './vendors-page.scss',
 })
@@ -115,6 +116,15 @@ export class VendorsPage {
   save(): void {
     if (this.form.invalid || this.selectedSpecialisationIds().length === 0) {
       this.form.markAllAsTouched();
+      this.error.set({
+        status: 0,
+        message: missingSummary(
+          this.form.controls,
+          { name: 'Name', contactName: 'Contact name', contactPhone: 'Contact phone', cityId: 'City', paymentTermId: 'Default payment term' },
+          this.selectedSpecialisationIds().length === 0 ? ['at least one specialisation'] : [],
+        ),
+        fieldErrors: {},
+      });
       return;
     }
 

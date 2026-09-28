@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { PoRevisionDto } from './po-api.service';
 import { RevisionHistory } from './revision-history';
@@ -36,6 +38,10 @@ function revision(overrides: Partial<PoRevisionDto>): PoRevisionDto {
 }
 
 describe('RevisionHistory (SCRUM-93 task 47, AC-34)', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+  });
+
   function render(revisions: PoRevisionDto[]): HTMLElement {
     const fixture = TestBed.createComponent(RevisionHistory);
     fixture.componentRef.setInput('revisions', revisions);
@@ -89,7 +95,7 @@ describe('RevisionHistory (SCRUM-93 task 47, AC-34)', () => {
     expect(text).toContain('PKR 75000 → PKR 90000 (+15000)');
     expect(text).toContain('Cost up after fabric price rise');
     expect(text).toContain('Please confirm');
-    expect(text).toContain('Countered via WhatsApp');
+    expect(text).toContain('Countered: Ali Raza told us via WhatsApp');
     expect(text).toContain('Ali Raza');
   });
 

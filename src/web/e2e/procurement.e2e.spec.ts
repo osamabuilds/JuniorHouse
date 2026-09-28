@@ -64,7 +64,7 @@ test('Staff creates a PO, sends and confirms it, then amends it and the new term
   await poForm.getByLabel('Expected delivery date').fill('2026-12-01');
   // Required before a PO can be sent (SCRUM-93 AC-6).
   await poForm.getByLabel('Latest acceptable delivery date').fill('2026-12-15');
-  await poForm.getByLabel('Fabric responsibility').selectOption({ label: 'Vendor Supplied' });
+  await poForm.getByLabel('Who supplies the fabric').selectOption({ label: 'Vendor Supplied' });
 
   // The size x colour grid only appears once the style's size run/colourways have loaded.
   const qtyInputs = page.locator('.line-grid input[type="number"]');
@@ -77,7 +77,7 @@ test('Staff creates a PO, sends and confirms it, then amends it and the new term
   const statusBadge = page.locator('.po-detail__header .badge');
   await expect(page.getByRole('heading', { name: /^PO-\d{4}-\d{5}$/ })).toBeVisible();
   await expect(statusBadge).toHaveText('Draft');
-  await expect(page.getByText('Latest acceptable date')).toBeVisible();
+  await expect(page.locator('.po-detail__facts')).toContainText('Latest acceptable delivery');
 
   // --- Send: no tech pack attached, so an explicit "send anyway" is needed (AC-39) ---
   await page.getByRole('button', { name: 'Send to Vendor' }).click();

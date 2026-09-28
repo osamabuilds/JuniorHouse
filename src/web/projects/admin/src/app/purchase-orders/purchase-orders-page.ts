@@ -6,7 +6,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CatalogApiService, StyleDto, StyleSummaryDto } from '../styles/catalog-api.service';
 import { ApiError } from '../core/api-error';
 import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
+import { AppDatePipe } from '../shared/app-date.pipe';
+import { ControlErrors, missingSummary } from '../shared/control-errors';
 import { FieldErrors } from '../shared/field-errors';
+import { LookupNames } from '../shared/lookup-names';
 import { inputNumber, selectNumberOrNull } from '../shared/dom-events';
 import { VendorApiService, VendorSummaryDto } from '../vendors/vendor-api.service';
 import { AmendForm, StyleCell } from './amend-form';
@@ -51,6 +54,8 @@ interface LineRow {
     ReactiveFormsModule,
     RouterLink,
     FieldErrors,
+    AppDatePipe,
+    ControlErrors,
     KeyValuePipe,
     AmendForm,
     PendingRevisionActions,
@@ -68,6 +73,7 @@ export class PurchaseOrdersPage {
   private readonly catalogApi = inject(CatalogApiService);
   private readonly referenceApi = inject(ReferenceApiService);
   private readonly formBuilder = inject(FormBuilder);
+  readonly names = inject(LookupNames);
 
   readonly statusLabels = PO_STATUS_LABELS;
   readonly orders = signal<PoSummaryDto[]>([]);
@@ -82,6 +88,7 @@ export class PurchaseOrdersPage {
   readonly vendors = signal<VendorSummaryDto[]>([]);
   readonly styles = signal<StyleSummaryDto[]>([]);
   readonly cancelReasons = signal<LookupDto[]>([]);
+  readonly paymentTerms = signal<LookupDto[]>([]);
   readonly amendmentReasons = signal<LookupDto[]>([]);
   readonly channels = signal<LookupDto[]>([]);
   readonly fabricOptions = signal<LookupDto[]>([]);
@@ -131,6 +138,7 @@ export class PurchaseOrdersPage {
   });
 
   constructor() {
+    this.referenceApi.list('payment-terms', false).subscribe((items) => this.paymentTerms.set(items));
     this.referenceApi.list('amendment-reasons', false).subscribe((items) => this.amendmentReasons.set(items));
     this.referenceApi.list('vendor-comm-channels', false).subscribe((items) => this.channels.set(items));
     this.referenceApi.list('fabric-responsibilities', false).subscribe((items) => this.fabricOptions.set(items));
@@ -294,6 +302,16 @@ export class PurchaseOrdersPage {
   save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set({
+        status: 0,
+        message: missingSummary(this.form.controls, {
+          vendorId: 'Vendor',
+          styleId: 'Style',
+          unitCost: 'Unit cost',
+          expectedDeliveryDate: 'Expected delivery date',
+        }),
+        fieldErrors: {},
+      });
       return;
     }
 
@@ -493,6 +511,20 @@ export class PurchaseOrdersPage {
 
   fieldErrors(field: string): readonly string[] {
     return this.error()?.fieldErrors[field] ?? [];
+  }
+
+  /** One plain sentence telling staff where this PO stands and what they can do next. */
+  statusHelp(po: PoDto): string {
+    switch (po.statusId) {
+      case DRAFT:
+        return 'This order is still a draft, so only you can see it. Check the details, attach the tech pack, then send it to the vendor.';
+      case SENT_TO_VENDOR:
+        return 'This order has been sent and is waiting for the vendor. Record what the vendor says, or amend the order if something changes.';
+      case ACKNOWLEDGED:
+        return 'The vendor has confirmed this order. From now on, any change to the price, dates or quantities has to be agreed as an amendment.';
+      default:
+        return 'This order is cancelled and closed. Its details and files are kept for the record.';
+    }
   }
 
   /** Download link for an evidence file behind a vendor communication on the open PO. */

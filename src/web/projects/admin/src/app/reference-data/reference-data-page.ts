@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ControlErrors, missingSummary } from '../shared/control-errors';
 import { FieldErrors } from '../shared/field-errors';
 import { ApiError } from '../core/api-error';
 import { inputValue } from '../shared/dom-events';
@@ -14,7 +15,7 @@ type Mode = 'list' | 'create' | 'edit';
  */
 @Component({
   selector: 'app-reference-data-page',
-  imports: [ReactiveFormsModule, FieldErrors],
+  imports: [ReactiveFormsModule, FieldErrors, ControlErrors],
   templateUrl: './reference-data-page.html',
   styleUrl: './reference-data-page.scss',
 })
@@ -104,6 +105,11 @@ export class ReferenceDataPage {
   save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.error.set({
+        status: 0,
+        message: missingSummary(this.form.controls, { code: 'Code', name: 'Name', sortSeq: 'Sort order' }),
+        fieldErrors: {},
+      });
       return;
     }
 
