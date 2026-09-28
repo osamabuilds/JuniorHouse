@@ -20,7 +20,7 @@ Ordering here follows build dependency (what has to exist before what), not raw 
 
 ## Platform: outbox dispatcher + inbox (P1 — blocks Sprint 3, build early)
 
-- [ ] 6. Additive `OUTB_MSG` migration (+9 columns: `AGGR_TYP`, `AGGR_ID`, `SCHM_VER`, `ATMP_CNT`, `NXT_ATMP_DTE`, `CLMD_BY`, `LEAS_EXPY_DTE`, `PROC_DTE`, `DEDL_IND`, `DEDL_RSN`), safe defaults. Test: `OutboxMigrationTests.Migrate_AddsDispatcherColumns_ExistingRowsGetSafeDefaults` (AC-52)
+- [x] 6. Additive `OUTB_MSG` migration (+10 columns: `AGGR_TYP`, `AGGR_ID`, `MSG_VER`, `ATMP_CNT`, `NXT_ATMP_DTE`, `CLM_BY`, `LEAS_EXPY_DTE`, `PROC_DTE`, `DEDL_IND`, `DEDL_RSN` — column names/count corrected to match plan.md's Data section and the glossary; this task's own text had drifted to `SCHM_VER`/`CLMD_BY`/"+9", neither of which the glossary backs), safe defaults. Test: `OutboxMigrationTests.Migrate_AddsDispatcherColumns_ExistingRowsGetSafeDefaults` (AC-52)
 - [ ] 7. `IOutboxDispatcher` / `IOutboxMessageHandler<TEvent>` interfaces + generic hosted service: lease-based claim (`FOR UPDATE SKIP LOCKED` in a short transaction, stamps `CLMD_BY`/`LEAS_EXPY_DTE`), handler runs outside that transaction, marks `PROC_DTE` only after success. Test: `OutboxDispatcherTests.Dispatch_CommittedRow_DeliveredAndMarkedProcessed` (AC-53, AC-54)
 - [ ] 8. Lease expiry redelivery. Test: `OutboxDispatcherTests.Dispatch_ExpiredLease_RowBecomesClaimableAgain` (AC-55)
 - [ ] 9. Retry with exponential backoff + jitter; dead-letter after configured max attempts, payload/history retained, error-level log written. Test: `OutboxDispatcherTests.Dispatch_HandlerFailsRepeatedly_BacksOffThenDeadLetters` (AC-57, AC-58)

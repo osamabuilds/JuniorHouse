@@ -121,6 +121,7 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | city | CITY | | phone | PHON |
 | claim | CLM | | preferred | PREF |
 | code | CODE | | price | PRIC |
+| | | | process (e.g. processed date) | PROC |
 | collection | COLN | | product | PRDT |
 | colour | CLR | | production | PROD |
 | comment | CMNT | | purchase order | PO |
