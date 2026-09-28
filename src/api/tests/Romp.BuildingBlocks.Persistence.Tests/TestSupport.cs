@@ -64,3 +64,15 @@ internal sealed class FakeCurrentActor(string userName) : ICurrentActor
 {
     public string UserName => userName;
 }
+
+/// <summary>Records every delivery it receives, for dispatcher tests to assert against (SCRUM-93 task 7).</summary>
+internal sealed class RecordingOutboxMessageHandler : IOutboxMessageHandler<TestDomainEvent>
+{
+    public List<TestDomainEvent> Received { get; } = [];
+
+    public Task HandleAsync(TestDomainEvent domainEvent, CancellationToken cancellationToken)
+    {
+        Received.Add(domainEvent);
+        return Task.CompletedTask;
+    }
+}
