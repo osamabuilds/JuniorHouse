@@ -47,6 +47,14 @@ public sealed class VendorModule : IModule
             MaxTolerancePercent = configuration.GetValue("Vndr:PoCommercialTerms:MaxTolerancePercent", 20m),
         });
 
+        // SCRUM-93 task 34 (AC-45): local-disk IFileStorage for dev/Docker Compose - overridable via
+        // Vndr:PoFileStorage:RootPath (e.g. a mounted volume in Docker Compose).
+        services.AddSingleton(new PoFileStorageOptions
+        {
+            RootPath = configuration.GetValue("Vndr:PoFileStorage:RootPath", new PoFileStorageOptions().RootPath)!,
+        });
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
+
         // SCRUM-93 task 13: opt VNDR's OUTB_MSG into the shared dispatcher (SCRUM-181) and give
         // every VNDR event a placeholder handler so messages reach Processed - no module has a
         // real (DB-effecting) consumer yet, so no INBX row is needed for these (task 12's
