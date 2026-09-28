@@ -153,15 +153,29 @@ public sealed partial class OutboxDispatcher(
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
 
+        // AC-59 (per-aggregate ordering): a row is claimable only if no strictly-earlier,
+        // still-open (unprocessed, not dead-lettered) row shares its AGGR_ID - so a later message
+        // for the same aggregate waits behind an earlier one that's pending/in-flight/retry-
+        // scheduled, while a dead-lettered earlier row (DEDL_IND = true, so excluded from the
+        // NOT EXISTS) does not block the ones after it. Rows without an AGGR_ID (nullable,
+        // task 6) are never blocked - "IS NOT NULL" makes the self-join a no-op for them.
         var sql = $"""
             UPDATE "{schema}"."OUTB_MSG"
             SET "CLM_BY" = @claimant, "LEAS_EXPY_DTE" = @leaseExpiry
             WHERE "ID" IN (
-                SELECT "ID" FROM "{schema}"."OUTB_MSG"
-                WHERE "PROC_DTE" IS NULL AND "DEDL_IND" = false
-                  AND ("CLM_BY" IS NULL OR "LEAS_EXPY_DTE" < @now)
-                  AND ("NXT_ATMP_DTE" IS NULL OR "NXT_ATMP_DTE" <= @now)
-                ORDER BY "ID"
+                SELECT m."ID" FROM "{schema}"."OUTB_MSG" m
+                WHERE m."PROC_DTE" IS NULL AND m."DEDL_IND" = false
+                  AND (m."CLM_BY" IS NULL OR m."LEAS_EXPY_DTE" < @now)
+                  AND (m."NXT_ATMP_DTE" IS NULL OR m."NXT_ATMP_DTE" <= @now)
+                  AND NOT EXISTS (
+                      SELECT 1 FROM "{schema}"."OUTB_MSG" earlier
+                      WHERE earlier."AGGR_ID" IS NOT NULL
+                        AND earlier."AGGR_ID" = m."AGGR_ID"
+                        AND earlier."ID" < m."ID"
+                        AND earlier."PROC_DTE" IS NULL
+                        AND earlier."DEDL_IND" = false
+                  )
+                ORDER BY m."ID"
                 FOR UPDATE SKIP LOCKED
                 LIMIT @batchSize
             )

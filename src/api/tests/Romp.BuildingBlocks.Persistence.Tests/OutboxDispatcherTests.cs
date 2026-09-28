@@ -146,8 +146,87 @@ public sealed class OutboxDispatcherTests : IAsyncLifetime
         Assert.Null(row.ProcessedDte);
     }
 
+    [Fact]
+    [Trait("Spec", "AC-59")]
+    public async Task Dispatch_SameAggregateMultipleMessages_DeliveredInOrder_DeadLetterDoesNotBlockLater()
+    {
+        var dbOptions = new DbContextOptionsBuilder<TestDbContext>().UseNpgsql(_postgres.GetConnectionString()).Options;
+
+        // Aggregate 100 has three messages (A1-A3); aggregate 200 (a different aggregate) has one
+        // (B1), inserted in this order so ID order matches insertion order.
+        await using (var seedContext = new TestDbContext(dbOptions))
+        {
+            await seedContext.Database.EnsureCreatedAsync();
+
+            foreach (var (label, aggregateId) in new[] { ("A1", 100L), ("A2", 100L), ("A3", 100L), ("B1", 200L) })
+            {
+                seedContext.OutboxMessages.Add(new OutboxMessage
+                {
+                    EventType = nameof(TestDomainEvent),
+                    Payload = JsonSerializer.Serialize(new TestDomainEvent { Label = label }),
+                    InsrDte = DateTimeOffset.UtcNow,
+                    AggregateId = aggregateId,
+                });
+            }
+
+            await seedContext.SaveChangesAsync();
+        }
+
+        // A1 always fails; A2/A3/B1 always succeed. MaxAttempts = 2, so A1 dead-letters on its
+        // second failed attempt.
+        var handler = new SelectiveFailureOutboxMessageHandler("A1");
+        var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var (dispatcher, provider) = BuildDispatcher(
+            handler,
+            clock,
+            o =>
+            {
+                o.MaxAttempts = 2;
+                o.RetryBaseDelay = TimeSpan.FromSeconds(1);
+                o.RetryMaxDelay = TimeSpan.FromSeconds(10);
+            });
+        await using var _ = provider;
+
+        // Pass 1: A1 (earliest open row for aggregate 100) and B1 (independent aggregate) are
+        // claimable; A2/A3 are blocked behind A1. A1's attempt 1 fails (not yet dead-lettered).
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        Assert.Contains("A1", handler.Received);
+        Assert.Contains("B1", handler.Received);
+        Assert.DoesNotContain("A2", handler.Received);
+        Assert.DoesNotContain("A3", handler.Received);
+
+        // Pass 2: A1 is still the sole open row for aggregate 100 (still not dead-lettered going
+        // into the claim), so A2/A3 stay blocked. This attempt crosses MaxAttempts -> dead-lettered.
+        clock.Now = clock.Now.AddMinutes(10);
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        Assert.Equal(2, handler.Received.Count(l => l == "A1"));
+        Assert.DoesNotContain("A2", handler.Received);
+
+        // Pass 3: A1 is now dead-lettered, so it no longer blocks - A2 becomes claimable, A3 still
+        // blocked behind A2.
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        Assert.Contains("A2", handler.Received);
+        Assert.DoesNotContain("A3", handler.Received);
+
+        // Pass 4: A2 is Processed, so A3 is finally claimable.
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        Assert.Contains("A3", handler.Received);
+
+        await using var verifyContext = new TestDbContext(dbOptions);
+        var aggregate100Rows = await verifyContext.OutboxMessages
+            .Where(m => m.AggregateId == 100)
+            .OrderBy(m => m.Id)
+            .ToListAsync();
+        Assert.True(aggregate100Rows[0].IsDeadLettered); // A1
+        Assert.NotNull(aggregate100Rows[1].ProcessedDte); // A2
+        Assert.NotNull(aggregate100Rows[2].ProcessedDte); // A3
+    }
+
     private (OutboxDispatcher Dispatcher, ServiceProvider Provider) BuildDispatcher(RecordingOutboxMessageHandler handler) =>
         BuildDispatcher((IOutboxMessageHandler<TestDomainEvent>)handler, TimeProvider.System, configure: null);
+
+    private (OutboxDispatcher Dispatcher, ServiceProvider Provider) BuildDispatcher(SelectiveFailureOutboxMessageHandler handler, TimeProvider clock, Action<OutboxDispatcherOptions> configure) =>
+        BuildDispatcher((IOutboxMessageHandler<TestDomainEvent>)handler, clock, configure);
 
     private (OutboxDispatcher Dispatcher, ServiceProvider Provider) BuildDispatcher(
         IOutboxMessageHandler<TestDomainEvent> handler, TimeProvider clock, Action<OutboxDispatcherOptions>? configure)
