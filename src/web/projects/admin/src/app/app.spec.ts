@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter, withComponentInputBinding } from '@angular/router';
 import { App } from './app';
 import { routes } from './app.routes';
 
@@ -9,7 +9,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideRouter(routes, withComponentInputBinding()), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
   });
 
@@ -36,5 +36,19 @@ describe('App', () => {
     const linkText = Array.from(nav?.querySelectorAll('a') ?? []).map((a) => a.textContent?.trim());
 
     expect(linkText).toEqual(['Reference Data', 'Styles', 'Vendors', 'Purchase Orders']);
+  });
+
+  it('hides the admin header, nav and footer on the vendor-facing PO view (SCRUM-93 task 51)', async () => {
+    const fixture = TestBed.createComponent(App);
+    const router = TestBed.inject(Router);
+    fixture.detectChanges();
+    await router.navigateByUrl('/purchase-orders/10/vendor-view');
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.querySelector('header')).toBeNull();
+    expect(root.querySelector('nav')).toBeNull();
+    expect(root.querySelector('footer')).toBeNull();
+    expect(root.querySelectorAll('main').length).toBe(1);
   });
 });

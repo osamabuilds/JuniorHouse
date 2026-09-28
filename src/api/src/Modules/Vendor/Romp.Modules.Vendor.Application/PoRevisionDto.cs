@@ -29,4 +29,8 @@ public sealed record PoRevisionDto(
     int? LatestAcceptableDateShiftDays,
     int QuantityDiff,
     bool IsBeyondLatestAcceptableDate,
-    IReadOnlyCollection<PoRevisionLineDto> Lines);
+    IReadOnlyCollection<PoRevisionLineDto> Lines,
+    IReadOnlyCollection<PoRevisionCommunicationDto>? Communications = null);
+
+/// <summary>SCRUM-93 task 47 (AC-31, AC-34): how and by whom the vendor's response or request behind a revision was captured. TypeId is PO_VNDR_COMM_TYP_LKP (Confirmed/Countered/Declined/AmendmentRequest/Decision).</summary>
+public sealed record PoRevisionCommunicationDto(short TypeId, short ChannelId, string ResponderName, DateTimeOffset ResponseDte);

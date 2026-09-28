@@ -1,5 +1,7 @@
 import { KeyValuePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Component, computed, inject, signal } from '@angular/core';
+import { Observable, of, switchMap } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CatalogApiService, StyleDto, StyleSummaryDto } from '../styles/catalog-api.service';
 import { ApiError } from '../core/api-error';
@@ -7,7 +9,24 @@ import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.
 import { FieldErrors } from '../shared/field-errors';
 import { inputNumber, selectNumberOrNull } from '../shared/dom-events';
 import { VendorApiService, VendorSummaryDto } from '../vendors/vendor-api.service';
-import { PO_STATUS_LABELS, PoApiService, PoDto, PoSummaryDto } from './po-api.service';
+import { AmendForm, StyleCell } from './amend-form';
+import { PendingRevisionActions } from './pending-revision-actions';
+import { PoFilesPanel } from './po-files-panel';
+import {
+  AmendmentValue,
+  PO_STATUS_LABELS,
+  PoApiService,
+  PoDto,
+  PoFileDto,
+  PoRevisionDto,
+  PoSummaryDto,
+  TECH_PACK_SPEC,
+  UpdatePoValue,
+  VendorResponseValue,
+} from './po-api.service';
+import { RevisionHistory } from './revision-history';
+import { SendConfirm } from './send-confirm';
+import { VendorResponseForm } from './vendor-response-form';
 
 const DRAFT = 1;
 const SENT_TO_VENDOR = 2;
@@ -28,7 +47,18 @@ interface LineRow {
  */
 @Component({
   selector: 'app-purchase-orders-page',
-  imports: [ReactiveFormsModule, FieldErrors, KeyValuePipe],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    FieldErrors,
+    KeyValuePipe,
+    AmendForm,
+    PendingRevisionActions,
+    PoFilesPanel,
+    RevisionHistory,
+    SendConfirm,
+    VendorResponseForm,
+  ],
   templateUrl: './purchase-orders-page.html',
   styleUrl: './purchase-orders-page.scss',
 })
@@ -52,6 +82,24 @@ export class PurchaseOrdersPage {
   readonly vendors = signal<VendorSummaryDto[]>([]);
   readonly styles = signal<StyleSummaryDto[]>([]);
   readonly cancelReasons = signal<LookupDto[]>([]);
+  readonly amendmentReasons = signal<LookupDto[]>([]);
+  readonly channels = signal<LookupDto[]>([]);
+  readonly fabricOptions = signal<LookupDto[]>([]);
+  readonly revisions = signal<PoRevisionDto[]>([]);
+  readonly files = signal<PoFileDto[]>([]);
+
+  /** Which inline panel is open in the detail view (amend / vendor response / send confirmation). */
+  readonly panel = signal<'none' | 'amend' | 'response' | 'send'>('none');
+  readonly panelSaving = signal(false);
+  readonly panelError = signal<ApiError | null>(null);
+
+  readonly pendingRevision = computed(() => this.revisions().find((revision) => revision.statusId === 1) ?? null);
+  readonly currentRevisionNumber = computed(() => this.revisions().find((revision) => revision.statusId === 2)?.revisionNumber ?? 0);
+  readonly hasTechPack = computed(() => this.files().some((file) => file.categoryId === TECH_PACK_SPEC));
+  readonly styleCells = computed<StyleCell[]>(() => {
+    const style = this.selectedStyle();
+    return style ? style.sizeIds.flatMap((sizeId) => style.colourIds.map((colourId) => ({ sizeId, colourId }))) : [];
+  });
   readonly selectedStyle = signal<StyleDto | null>(null);
   readonly current = signal<PoDto | null>(null);
 
@@ -76,9 +124,16 @@ export class PurchaseOrdersPage {
     expectedDeliveryDate: ['', Validators.required],
     paymentTermId: this.formBuilder.control<number | null>(null),
     advancePercent: this.formBuilder.control<number | null>(null),
+    latestAcceptableDate: [''],
+    overTolerancePercent: this.formBuilder.control<number | null>(null),
+    underTolerancePercent: this.formBuilder.control<number | null>(null),
+    fabricResponsibilityId: this.formBuilder.control<number | null>(null),
   });
 
   constructor() {
+    this.referenceApi.list('amendment-reasons', false).subscribe((items) => this.amendmentReasons.set(items));
+    this.referenceApi.list('vendor-comm-channels', false).subscribe((items) => this.channels.set(items));
+    this.referenceApi.list('fabric-responsibilities', false).subscribe((items) => this.fabricOptions.set(items));
     this.loadOrders();
     this.vendorApi.search('', null, true).subscribe((items) => this.vendors.set(items));
     this.catalogApi.search('', null, true).subscribe((items) => this.styles.set(items));
@@ -148,7 +203,18 @@ export class PurchaseOrdersPage {
   startCreate(): void {
     this.mode.set('create');
     this.error.set(null);
-    this.form.reset({ vendorId: null, styleId: null, unitCost: 0, expectedDeliveryDate: '', paymentTermId: null, advancePercent: null });
+    this.form.reset({
+      vendorId: null,
+      styleId: null,
+      unitCost: 0,
+      expectedDeliveryDate: '',
+      paymentTermId: null,
+      advancePercent: null,
+      latestAcceptableDate: '',
+      overTolerancePercent: null,
+      underTolerancePercent: null,
+      fabricResponsibilityId: null,
+    });
     this.selectedStyle.set(null);
     this.lineQtyById.set(new Map());
   }
@@ -156,9 +222,41 @@ export class PurchaseOrdersPage {
   openDetail(summary: PoSummaryDto): void {
     this.loading.set(true);
     this.poApi.getById(summary.id).subscribe((po) => {
-      this.current.set(po);
-      this.mode.set('detail');
+      this.showDetail(po);
       this.loading.set(false);
+    });
+  }
+
+  /** Opens the detail view for a PO and loads what sits beside it: revisions, files and the style's size run. */
+  private showDetail(po: PoDto): void {
+    this.current.set(po);
+    this.mode.set('detail');
+    this.panel.set('none');
+    this.panelError.set(null);
+    this.loadDetailExtras(po);
+    if (this.selectedStyle()?.id !== po.styleId) {
+      this.catalogApi.getById(po.styleId).subscribe((style) => this.selectedStyle.set(style));
+    }
+  }
+
+  private loadDetailExtras(po: PoDto): void {
+    this.poApi.listFiles(po.id).subscribe((files) => this.files.set(files));
+    if (po.statusId === DRAFT) {
+      this.revisions.set([]);
+      return;
+    }
+    this.poApi.getRevisions(po.id).subscribe((revisions) => this.revisions.set(revisions));
+  }
+
+  /** Re-reads the PO and its side data after any change made from the detail view. */
+  refreshDetail(): void {
+    const po = this.current();
+    if (!po) {
+      return;
+    }
+    this.poApi.getById(po.id).subscribe((updated) => {
+      this.current.set(updated);
+      this.loadDetailExtras(updated);
     });
   }
 
@@ -176,6 +274,10 @@ export class PurchaseOrdersPage {
       expectedDeliveryDate: po.expectedDeliveryDate,
       paymentTermId: po.paymentTermId,
       advancePercent: po.advancePercent,
+      latestAcceptableDate: po.latestAcceptableDate ?? '',
+      overTolerancePercent: po.overTolerancePercent,
+      underTolerancePercent: po.underTolerancePercent,
+      fabricResponsibilityId: po.fabricResponsibilityId,
     });
     this.catalogApi.getById(po.styleId).subscribe((style) => {
       this.selectedStyle.set(style);
@@ -205,30 +307,45 @@ export class PurchaseOrdersPage {
     this.error.set(null);
     const raw = this.form.getRawValue();
 
+    // The commercial terms (latest acceptable date, tolerances, fabric responsibility) are set on
+    // update; the create call takes only the core fields, so a new PO with terms is created and
+    // then updated in one go.
+    const updateValue = (po: { paymentTermId: number; advancePercent: number }): UpdatePoValue => ({
+      unitCost: raw.unitCost,
+      expectedDeliveryDate: raw.expectedDeliveryDate,
+      paymentTermId: raw.paymentTermId ?? po.paymentTermId,
+      advancePercent: raw.advancePercent ?? po.advancePercent,
+      lines,
+      latestAcceptableDate: raw.latestAcceptableDate || null,
+      overTolerancePercent: raw.overTolerancePercent,
+      underTolerancePercent: raw.underTolerancePercent,
+      fabricResponsibilityId: raw.fabricResponsibilityId,
+    });
+    const hasTerms =
+      !!raw.latestAcceptableDate ||
+      raw.overTolerancePercent !== null ||
+      raw.underTolerancePercent !== null ||
+      raw.fabricResponsibilityId !== null;
+
     const request =
       this.mode() === 'create'
-        ? this.poApi.create({
-            vendorId: raw.vendorId!,
-            styleId: raw.styleId!,
-            unitCost: raw.unitCost,
-            expectedDeliveryDate: raw.expectedDeliveryDate,
-            lines,
-            paymentTermId: raw.paymentTermId,
-            advancePercent: raw.advancePercent,
-          })
-        : this.poApi.update(this.current()!.id, {
-            unitCost: raw.unitCost,
-            expectedDeliveryDate: raw.expectedDeliveryDate,
-            paymentTermId: raw.paymentTermId!,
-            advancePercent: raw.advancePercent!,
-            lines,
-          });
+        ? this.poApi
+            .create({
+              vendorId: raw.vendorId!,
+              styleId: raw.styleId!,
+              unitCost: raw.unitCost,
+              expectedDeliveryDate: raw.expectedDeliveryDate,
+              lines,
+              paymentTermId: raw.paymentTermId,
+              advancePercent: raw.advancePercent,
+            })
+            .pipe(switchMap((created) => (hasTerms ? this.poApi.update(created.id, updateValue(created)) : of(created))))
+        : this.poApi.update(this.current()!.id, updateValue(this.current()!));
 
     request.subscribe({
       next: (po) => {
         this.saving.set(false);
-        this.current.set(po);
-        this.mode.set('detail');
+        this.showDetail(po);
       },
       error: (error: ApiError) => {
         this.saving.set(false);
@@ -237,24 +354,101 @@ export class PurchaseOrdersPage {
     });
   }
 
-  send(): void {
+  openPanel(panel: 'amend' | 'response' | 'send'): void {
+    this.panel.set(panel);
+    this.panelError.set(null);
+    this.error.set(null);
+  }
+
+  closePanel(): void {
+    this.panel.set('none');
+    this.panelError.set(null);
+  }
+
+  /** AC-39: `sendWithoutTechPack` is the explicit "send anyway" from the confirmation step. */
+  send(sendWithoutTechPack: boolean): void {
     const po = this.current();
     if (!po) {
       return;
     }
-    this.poApi.send(po.id).subscribe({
-      next: (updated) => this.current.set(updated),
-      error: (error: ApiError) => this.error.set(error),
+    this.error.set(null);
+    this.poApi.send(po.id, sendWithoutTechPack).subscribe({
+      next: (updated) => {
+        this.current.set(updated);
+        this.closePanel();
+        this.loadDetailExtras(updated);
+      },
+      error: (error: ApiError) => {
+        this.error.set(error);
+        this.closePanel();
+      },
     });
   }
 
-  acknowledge(): void {
+  amend(value: AmendmentValue): void {
     const po = this.current();
     if (!po) {
       return;
     }
-    this.poApi.acknowledge(po.id).subscribe({
-      next: (updated) => this.current.set(updated),
+    this.runPanelAction(this.poApi.createAmendment(po.id, value));
+  }
+
+  recordVendorResponse(value: VendorResponseValue): void {
+    const po = this.current();
+    if (!po) {
+      return;
+    }
+    this.panelSaving.set(true);
+    this.panelError.set(null);
+    this.poApi.recordVendorResponse(po.id, value).subscribe({
+      next: (result) => {
+        this.panelSaving.set(false);
+        this.closePanel();
+        this.refreshDetail();
+        if (result.suggestedCancelReasonId !== null) {
+          // AC-29: a declined PO isn't cancelled automatically - Cancel opens with the reason pre-filled.
+          this.cancelReasonId.set(result.suggestedCancelReasonId);
+        }
+      },
+      error: (error: ApiError) => {
+        this.panelSaving.set(false);
+        this.panelError.set(error);
+      },
+    });
+  }
+
+  acceptPending(revision: PoRevisionDto): void {
+    this.runRevisionAction(this.poApi.acceptRevision(revision.poId, revision.revisionNumber));
+  }
+
+  rejectPending(revision: PoRevisionDto, note: string | null): void {
+    this.runRevisionAction(this.poApi.rejectRevision(revision.poId, revision.revisionNumber, note));
+  }
+
+  withdrawPending(revision: PoRevisionDto, note: string | null): void {
+    this.runRevisionAction(this.poApi.withdrawRevision(revision.poId, revision.revisionNumber, note));
+  }
+
+  private runPanelAction(action: Observable<unknown>): void {
+    this.panelSaving.set(true);
+    this.panelError.set(null);
+    action.subscribe({
+      next: () => {
+        this.panelSaving.set(false);
+        this.closePanel();
+        this.refreshDetail();
+      },
+      error: (error: ApiError) => {
+        this.panelSaving.set(false);
+        this.panelError.set(error);
+      },
+    });
+  }
+
+  private runRevisionAction(action: Observable<unknown>): void {
+    this.error.set(null);
+    action.subscribe({
+      next: () => this.refreshDetail(),
       error: (error: ApiError) => this.error.set(error),
     });
   }
@@ -268,6 +462,7 @@ export class PurchaseOrdersPage {
     this.poApi.cancel(po.id, reasonId).subscribe({
       next: (updated) => {
         this.current.set(updated);
+        this.loadDetailExtras(updated); // an open Pending revision is auto-withdrawn by the cancel (AC-21)
         this.cancelReasonId.set(null);
       },
       error: (error: ApiError) => this.error.set(error),
@@ -282,8 +477,14 @@ export class PurchaseOrdersPage {
     return po.statusId === DRAFT;
   }
 
-  canAcknowledge(po: PoDto): boolean {
+  /** AC-25..AC-31: a vendor response is recorded against a PO that has been sent and not yet acknowledged. */
+  canRecordResponse(po: PoDto): boolean {
     return po.statusId === SENT_TO_VENDOR;
+  }
+
+  /** AC-9/AC-10: only a sent or acknowledged PO is amended; a Draft is simply edited. */
+  canAmend(po: PoDto): boolean {
+    return po.statusId === SENT_TO_VENDOR || po.statusId === ACKNOWLEDGED;
   }
 
   canCancel(po: PoDto): boolean {
@@ -292,6 +493,10 @@ export class PurchaseOrdersPage {
 
   fieldErrors(field: string): readonly string[] {
     return this.error()?.fieldErrors[field] ?? [];
+  }
+
+  fabricName(id: number | null): string {
+    return id === null ? '—' : (this.fabricOptions().find((option) => option.id === id)?.name ?? `#${id}`);
   }
 
   vendorName(vendorId: number): string {

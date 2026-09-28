@@ -19,12 +19,20 @@ public sealed class GetPurchaseOrderRevisionsQueryHandler(IVendorDbContext dbCon
         var po = await dbContext.PurchaseOrders
             .AsNoTracking()
             .Include(p => p.Revisions).ThenInclude(r => r.Lines)
+            .Include(p => p.VendorCommunications)
             .FirstOrDefaultAsync(p => p.Id == request.PoId, cancellationToken)
             ?? throw new KeyNotFoundException($"Purchase order {request.PoId} was not found.");
 
         return po.Revisions
             .OrderBy(r => r.RevisionNumber)
-            .Select(r => r.ToDto())
+            .Select(r => r.ToDto() with
+            {
+                Communications = po.VendorCommunications
+                    .Where(c => c.RevisionId == r.Id)
+                    .OrderBy(c => c.ResponseDte)
+                    .Select(c => new PoRevisionCommunicationDto(c.CommunicationTypeId, c.ChannelId, c.ResponderName, c.ResponseDte))
+                    .ToList(),
+            })
             .ToList();
     }
 }

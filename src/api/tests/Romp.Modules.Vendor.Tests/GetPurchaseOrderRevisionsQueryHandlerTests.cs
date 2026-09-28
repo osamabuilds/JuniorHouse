@@ -34,4 +34,21 @@ public sealed class GetPurchaseOrderRevisionsQueryHandlerTests
         Assert.Equal(5, revision.ExpectedDateShiftDays);
         Assert.NotEmpty(revision.Lines);
     }
+
+    [Fact]
+    [Trait("Spec", "AC-34")]
+    public async Task Handle_IncludesCommunicationBehindEachRevision()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
+        await sender.Send(new RecordVendorResponseCommand(po.Id, 1, 0, 1, "Ali Raza", null, null)); // Confirmed via WhatsApp
+
+        var revisions = await sender.Send(new GetPurchaseOrderRevisionsQuery(po.Id));
+
+        var communication = Assert.Single(revisions.Single(r => r.RevisionNumber == 0).Communications!);
+        Assert.Equal((short)1, communication.TypeId);
+        Assert.Equal((short)1, communication.ChannelId);
+        Assert.Equal("Ali Raza", communication.ResponderName);
+    }
 }

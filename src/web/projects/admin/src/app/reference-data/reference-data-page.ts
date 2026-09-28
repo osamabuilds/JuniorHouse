@@ -9,8 +9,8 @@ import { LookupDto, ReferenceApiService } from './reference-api.service';
 type Mode = 'list' | 'create' | 'edit';
 
 /**
- * SCRUM-174: one screen for all eleven REF lookups - a type selector, a searchable table, and
- * add/edit/retire forms for the ten staff-maintained ones. PO Statuses renders read-only (AC-1/AC-2).
+ * SCRUM-174: one screen for the staff-facing REF lookups - a type selector, a searchable table, and
+ * add/edit/retire forms for the staff-maintained ones. PO Statuses renders read-only (AC-1/AC-2).
  */
 @Component({
   selector: 'app-reference-data-page',

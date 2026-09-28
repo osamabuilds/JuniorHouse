@@ -82,15 +82,15 @@ Ordering here follows build dependency (what has to exist before what), not raw 
 
 ## Admin frontend
 
-- [ ] 47. PO detail view: revision-history panel (number, initiator, status, terms diff, impact figures, reason, note, message to vendor, comm details, evidence, before/after). Test: `po-detail.component.spec.ts` extended to assert the panel renders a given revision list.
-- [ ] 48. Amend action/form: any subset of terms/lines/files, reason, mandatory internal note, optional vendor message.
-- [ ] 49. Record vendor response action (replaces bare Acknowledge): Confirmed as sent / Countered / Declined, with Countered opening the amendment form pre-flagged vendor-initiated.
-- [ ] 50. Pending-revision actions (Accept/Reject/Withdraw), shown only when a Pending revision exists, naming the decider.
-- [ ] 51. New route `/purchase-orders/{id}/vendor-view`: minimal, no admin chrome, phone-readable, print-friendly (A4).
-- [ ] 52. File management panel: grouped vendor-visible/internal, upload with category selector, download, remove (Draft vendor-visible; pre-Send internal); disabled + tooltip pointing to Amend where a direct action is blocked.
-- [ ] 53. Send confirmation dialog: non-blocking checklist, explicit "send anyway" when no tech pack attached.
-- [ ] 54. Reference Data screen: add `amendment-reasons`, `vendor-comm-channels` to the existing lookup-type selector (system-owned ones stay unexposed, same as `po-statuses`).
-- [ ] 55. Verify the Styles screen's existing `ProblemDetails` field-error rendering surfaces the style-guard's rejection message (blocking PO numbers) without new UI code — add a test if it doesn't already cover this shape.
+- [x] 47. PO detail view: revision-history panel (number, initiator, status, terms diff, impact figures, reason, note, message to vendor, comm details, evidence, before/after). Test: `po-detail.component.spec.ts` extended to assert the panel renders a given revision list. — revision panel shows communications (type/channel/responder/time) via a new `Communications` list on the revisions query; vendor-evidence files are still not linkable to a communication (no upload path sets `VNDR_COMM_ID`), so evidence is not shown.
+- [x] 48. Amend action/form: any subset of terms/lines/files, reason, mandatory internal note, optional vendor message.
+- [x] 49. Record vendor response action (replaces bare Acknowledge): Confirmed as sent / Countered / Declined, with Countered opening the amendment form pre-flagged vendor-initiated.
+- [x] 50. Pending-revision actions (Accept/Reject/Withdraw), shown only when a Pending revision exists, naming the decider.
+- [x] 51. New route `/purchase-orders/{id}/vendor-view`: minimal, no admin chrome, phone-readable, print-friendly (A4).
+- [x] 52. File management panel: grouped vendor-visible/internal, upload with category selector, download, remove (Draft vendor-visible; pre-Send internal); disabled + tooltip pointing to Amend where a direct action is blocked.
+- [x] 53. Send confirmation dialog: non-blocking checklist, explicit "send anyway" when no tech pack attached.
+- [x] 54. Reference Data screen: add `amendment-reasons`, `vendor-comm-channels` to the existing lookup-type selector (system-owned ones stay unexposed, same as `po-statuses`).
+- [x] 55. Verify the Styles screen's existing `ProblemDetails` field-error rendering surfaces the style-guard's rejection message (blocking PO numbers) without new UI code — add a test if it doesn't already cover this shape. — verified: the Styles screen already shows `error.message` and renders `SizeIds` field errors, and the API now returns the actual message ("Size/colour still used by PO(s) … cannot be removed."); no new UI code, covered by `api-error.spec.ts`.
 
 ## End-to-end / Definition of Done
 
