@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Romp.Modules.Vendor.Application\Romp.Modules.Vendor.Application.csproj" />
+    <ProjectReference Include="..\Romp.Modules.Vendor.Contracts\Romp.Modules.Vendor.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Persistence\Romp.BuildingBlocks.Persistence.csproj" />
   </ItemGroup>
 

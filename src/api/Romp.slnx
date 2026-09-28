@@ -22,6 +22,7 @@
   </Folder>
   <Folder Name="/src/Modules/Vendor/">
     <Project Path="src/Modules/Vendor/Romp.Modules.Vendor.Application/Romp.Modules.Vendor.Application.csproj" />
+    <Project Path="src/Modules/Vendor/Romp.Modules.Vendor.Contracts/Romp.Modules.Vendor.Contracts.csproj" />
     <Project Path="src/Modules/Vendor/Romp.Modules.Vendor.Domain/Romp.Modules.Vendor.Domain.csproj" />
     <Project Path="src/Modules/Vendor/Romp.Modules.Vendor.Infrastructure/Romp.Modules.Vendor.Infrastructure.csproj" />
   </Folder>

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence;
 using Romp.Modules.Vendor.Application;
+using Romp.Modules.Vendor.Contracts;
 
 namespace Romp.Modules.Vendor.Infrastructure;
 
@@ -32,6 +33,7 @@ public sealed class VendorModule : IModule
 
         services.AddScoped<IVendorDbContext>(sp => sp.GetRequiredService<VendorDbContext>());
         services.AddScoped<IPoNumberAllocator, PoNumberAllocator>();
+        services.AddScoped<IPurchaseOrderUsageQueries, PurchaseOrderUsageQueries>();
 
         services.AddValidatorsFromAssembly(typeof(AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(VendorTransactionBehavior<,>));

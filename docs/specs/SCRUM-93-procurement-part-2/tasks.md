@@ -15,8 +15,8 @@ Ordering here follows build dependency (what has to exist before what), not raw 
 
 ## VNDR: style guard (P0)
 
-- [ ] 4. New `Romp.Modules.Vendor.Contracts` project + `IPurchaseOrderUsageQueries.GetActiveSizeColourUsage(styleId)` (queries `PO_LINE` only at this point — extended in task 20 once `PO_REV_LINE`/Pending revisions exist). Test: `PurchaseOrderUsageQueriesTests.GetActiveSizeColourUsage_ReturnsSizesAndColoursInNonCancelledPos`
-- [ ] 5. Extend `UpdateStyleCommand`'s validator to call it and reject removal of an in-use size/colour, naming the blocking PO number(s). Test: `UpdateStyleCommandHandlerTests.Handle_RemovingSizeOrColourInUseByActivePo_RejectedWithPoNumbers` (AC-2, AC-3)
+- [x] 4. New `Romp.Modules.Vendor.Contracts` project + `IPurchaseOrderUsageQueries.GetActiveSizeColourUsage(styleId)` (queries `PO_LINE` only at this point — extended in task 20 once `PO_REV_LINE`/Pending revisions exist). Test: `PurchaseOrderUsageQueriesTests.GetActiveSizeColourUsage_ReturnsSizesAndColoursInNonCancelledPos`
+- [x] 5. Extend `UpdateStyleCommand`'s validator to call it and reject removal of an in-use size/colour, naming the blocking PO number(s). Test: `UpdateStyleCommandHandlerTests.Handle_RemovingSizeOrColourInUseByActivePo_RejectedWithPoNumbers` (AC-2, AC-3)
 
 ## Platform: outbox dispatcher + inbox (P1 — blocks Sprint 3, build early)
 
