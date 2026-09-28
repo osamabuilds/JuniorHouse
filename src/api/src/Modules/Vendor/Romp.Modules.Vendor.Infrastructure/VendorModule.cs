@@ -138,14 +138,14 @@ public sealed class VendorModule : IModule
                 CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
 
-        group.MapPost("/{id:long}/amendments/{revNo:short}/accept", async (
+        group.MapPost("/{id:long}/amendments/{revNo}/accept", async (
                 long id,
                 short revNo,
                 ISender sender,
                 CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: true, Note: null), cancellationToken)));
 
-        group.MapPost("/{id:long}/amendments/{revNo:short}/reject", async (
+        group.MapPost("/{id:long}/amendments/{revNo}/reject", async (
                 long id,
                 short revNo,
                 RevisionNoteRequest body,
@@ -153,7 +153,7 @@ public sealed class VendorModule : IModule
                 CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: false, body.Note), cancellationToken)));
 
-        group.MapPost("/{id:long}/amendments/{revNo:short}/withdraw", async (
+        group.MapPost("/{id:long}/amendments/{revNo}/withdraw", async (
                 long id,
                 short revNo,
                 RevisionNoteRequest body,
