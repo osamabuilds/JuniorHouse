@@ -91,6 +91,7 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
 
             builder.Metadata.FindNavigation(nameof(PurchaseOrder.Lines))!.SetPropertyAccessMode(PropertyAccessMode.Field);
             builder.Metadata.FindNavigation(nameof(PurchaseOrder.StatusHistory))!.SetPropertyAccessMode(PropertyAccessMode.Field);
+            builder.Metadata.FindNavigation(nameof(PurchaseOrder.Revisions))!.SetPropertyAccessMode(PropertyAccessMode.Field);
         });
 
         modelBuilder.Entity<PoLine>(builder =>
@@ -182,7 +183,7 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
             // 22 adds).
             builder.HasIndex(r => r.PoId).IsUnique().HasFilter("\"STS_ID\" = 1").HasDatabaseName("IX_PO_REV_PO_ID_PEND");
 
-            builder.HasOne<PurchaseOrder>().WithMany()
+            builder.HasOne<PurchaseOrder>().WithMany(p => p.Revisions)
                 .HasForeignKey(r => r.PoId)
                 .HasConstraintName("FK_PO_REV_PO_ID")
                 .OnDelete(DeleteBehavior.Cascade);

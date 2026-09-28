@@ -12,6 +12,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 {
     private readonly List<PoLine> _lines = [];
     private readonly List<PoStatusHistoryEntry> _statusHistory = [];
+    private readonly List<PurchaseOrderRevision> _revisions = [];
 
     private PurchaseOrder()
     {
@@ -71,6 +72,9 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 
     /// <summary>Oldest first (AC-14).</summary>
     public IReadOnlyCollection<PoStatusHistoryEntry> StatusHistory => _statusHistory.AsReadOnly();
+
+    /// <summary>ADR 0007. Requires the caller to have loaded this navigation (e.g. `.Include(p =&gt; p.Revisions)`) before calling <see cref="CreateRevision"/> - the MAX+1 allocation below reads this in-memory collection, not a fresh query.</summary>
+    public IReadOnlyCollection<PurchaseOrderRevision> Revisions => _revisions.AsReadOnly();
 
     public DateTimeOffset InsrDte { get; set; }
 
@@ -142,6 +146,81 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         StatusId = PoStatus.Cancelled;
         _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.Cancelled, cancelReasonId));
         Raise(new PoCancelledEvent(Id, PoNo, cancelReasonId));
+    }
+
+    /// <summary>
+    /// SCRUM-93 task 20 (ADR 0007). Allocates the next revision number as MAX(existing)+1 from this
+    /// aggregate's own already-loaded <see cref="Revisions"/> - the caller (task 22's handler) is
+    /// responsible for deciding <paramref name="goesImmediatelyInForce"/> from the PO's own status
+    /// (AC-9: SentToVendor -&gt; true; AC-10: Acknowledged -&gt; false) and for the no-op/reason/note
+    /// checks (AC-16, AC-17) before calling this. Also computes this revision's immutable impact
+    /// figures (AC-18, AC-19) from this aggregate's own current (before) state.
+    /// </summary>
+    public PurchaseOrderRevision CreateRevision(
+        short initiatorId,
+        short reasonId,
+        string impactNote,
+        string? vendorMessage,
+        decimal unitCost,
+        DateOnly expectedDeliveryDate,
+        DateOnly? latestAcceptableDate,
+        decimal? overTolerancePercent,
+        decimal? underTolerancePercent,
+        short paymentTermId,
+        decimal advancePercent,
+        short? fabricResponsibilityId,
+        IReadOnlyCollection<(short SizeId, short ColourId, int Qty)> lines,
+        bool goesImmediatelyInForce)
+    {
+        var revisionNumber = (short)((_revisions.Count == 0 ? 0 : _revisions.Max(r => r.RevisionNumber)) + 1);
+        var initialStatusId = goesImmediatelyInForce ? RevisionStatus.InForce : RevisionStatus.Pending;
+
+        var poValueBefore = _lines.Sum(l => l.Qty) * UnitCost;
+        var poValueAfter = lines.Sum(l => l.Qty) * unitCost;
+        var advanceAmountBefore = poValueBefore * AdvancePercent / 100m;
+        var advanceAmountAfter = poValueAfter * advancePercent / 100m;
+        var expectedDateShiftDays = expectedDeliveryDate.DayNumber - ExpectedDeliveryDate.DayNumber;
+        int? latestAcceptableDateShiftDays = LatestAcceptableDate.HasValue && latestAcceptableDate.HasValue
+            ? latestAcceptableDate.Value.DayNumber - LatestAcceptableDate.Value.DayNumber
+            : null;
+        var quantityDiff = lines.Sum(l => l.Qty) - _lines.Sum(l => l.Qty);
+        var isBeyondLatestAcceptableDate = latestAcceptableDate.HasValue && expectedDeliveryDate > latestAcceptableDate.Value;
+
+        var revision = new PurchaseOrderRevision(
+            Id, revisionNumber, initiatorId, initialStatusId, reasonId, impactNote, vendorMessage,
+            unitCost, expectedDeliveryDate, latestAcceptableDate, overTolerancePercent, underTolerancePercent,
+            paymentTermId, advancePercent, fabricResponsibilityId,
+            poValueBefore, poValueAfter, poValueAfter - poValueBefore,
+            advanceAmountBefore, advanceAmountAfter,
+            expectedDateShiftDays, latestAcceptableDateShiftDays, quantityDiff, isBeyondLatestAcceptableDate,
+            lines);
+
+        // AC-9: the previous In-force revision becomes Superseded in the same call that creates the
+        // new one - only relevant when the new revision itself goes immediately In-force.
+        if (goesImmediatelyInForce)
+        {
+            var priorInForce = _revisions.FirstOrDefault(r => r.StatusId == RevisionStatus.InForce);
+            priorInForce?.MarkSuperseded();
+
+            // ADR 0007: the parent's mirror is updated only by the same transaction that moves a
+            // revision to InForce - this real property change on the aggregate's own row is also
+            // what protects the MAX+1 allocation above from a concurrent amendment (AC-24): a race
+            // is caught by the xmin check this update triggers, not a separate mechanism.
+            UnitCost = unitCost;
+            ExpectedDeliveryDate = expectedDeliveryDate;
+            LatestAcceptableDate = latestAcceptableDate;
+            OverTolerancePercent = overTolerancePercent;
+            UnderTolerancePercent = underTolerancePercent;
+            PaymentTermId = paymentTermId;
+            AdvancePercent = advancePercent;
+            FabricResponsibilityId = fabricResponsibilityId;
+
+            _lines.Clear();
+            _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
+        }
+
+        _revisions.Add(revision);
+        return revision;
     }
 
     private void RequireStatus(short requiredStatusId, string action)

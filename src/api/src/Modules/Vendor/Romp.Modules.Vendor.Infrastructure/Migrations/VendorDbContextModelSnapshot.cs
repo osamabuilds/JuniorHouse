@@ -923,7 +923,7 @@ namespace Romp.Modules.Vendor.Infrastructure.Migrations
             modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrderRevision", b =>
                 {
                     b.HasOne("Romp.Modules.Vendor.Domain.PurchaseOrder", null)
-                        .WithMany()
+                        .WithMany("Revisions")
                         .HasForeignKey("PoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -959,6 +959,8 @@ namespace Romp.Modules.Vendor.Infrastructure.Migrations
             modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrder", b =>
                 {
                     b.Navigation("Lines");
+
+                    b.Navigation("Revisions");
 
                     b.Navigation("StatusHistory");
                 });
