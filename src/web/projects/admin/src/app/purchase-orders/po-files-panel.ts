@@ -24,7 +24,7 @@ const CANCELLED = 4;
 
       <h4>Sent to the vendor</h4>
       @if (vendorVisible().length === 0) {
-        <p class="state-message">No vendor-visible files. A tech pack spec is expected before sending.</p>
+        <p class="state-message state-message--inline">No vendor-visible files. A tech pack spec is expected before sending.</p>
       } @else {
         <ul class="files__list">
           @for (file of vendorVisible(); track file.id) {
@@ -54,7 +54,7 @@ const CANCELLED = 4;
 
       <h4>Internal only</h4>
       @if (internal().length === 0) {
-        <p class="state-message">No internal files.</p>
+        <p class="state-message state-message--inline">No internal files.</p>
       } @else {
         <ul class="files__list">
           @for (file of internal(); track file.id) {

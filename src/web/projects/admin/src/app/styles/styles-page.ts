@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiError } from '../core/api-error';
 import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
+import { ControlErrors, missingSummary } from '../shared/control-errors';
 import { FieldErrors } from '../shared/field-errors';
 import { inputChecked, inputNumber, inputValue, selectNumberOrNull } from '../shared/dom-events';
 import { CatalogApiService, StyleDto, StyleSummaryDto } from './catalog-api.service';
@@ -18,7 +19,7 @@ type Mode = 'list' | 'create' | 'edit';
 /** SCRUM-174: style list (search/filter) plus a create/edit form with the colour x size target-quantity grid. */
 @Component({
   selector: 'app-styles-page',
-  imports: [ReactiveFormsModule, FieldErrors],
+  imports: [ReactiveFormsModule, FieldErrors, ControlErrors],
   templateUrl: './styles-page.html',
   styleUrl: './styles-page.scss',
 })
@@ -183,6 +184,27 @@ export class StylesPage {
   save(): void {
     if (this.form.invalid || this.selectedColourIds().length === 0 || this.selectedSizeIds().length === 0) {
       this.form.markAllAsTouched();
+      this.error.set({
+        status: 0,
+        message: missingSummary(
+          this.form.controls,
+          {
+            code: 'Code',
+            name: 'Name',
+            categoryId: 'Category',
+            genderId: 'Gender',
+            ageBracketId: 'Age bracket',
+            fabricId: 'Fabric',
+            targetUnitCost: 'Target unit cost',
+            targetRetailPrice: 'Target retail price',
+          },
+          [
+            ...(this.selectedColourIds().length === 0 ? ['at least one colourway'] : []),
+            ...(this.selectedSizeIds().length === 0 ? ['at least one size'] : []),
+          ],
+        ),
+        fieldErrors: {},
+      });
       return;
     }
 

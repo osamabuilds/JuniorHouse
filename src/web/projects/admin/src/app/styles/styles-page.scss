@@ -1,42 +1,30 @@
-.toolbar__select select {
-  min-width: 200px;
-}
-
 .style-form {
-  max-width: 760px;
+  max-width: 48rem;
 }
 
 .picker {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-4);
-  margin: 0 0 var(--space-2);
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3) var(--space-5);
-}
-
-.picker legend {
-  font-weight: 500;
-  padding: 0 var(--space-2);
+  gap: 0 var(--space-5);
 }
 
 .picker__option {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: var(--tap);
   font-weight: 400;
+  font-size: var(--text-base);
   margin: 0;
-  white-space: nowrap;
 }
 
 .target-grid-wrapper {
   margin: var(--space-5) 0;
+  overflow-x: auto;
 }
 
 .target-grid-wrapper h3 {
-  font-size: 1rem;
-  margin-bottom: var(--space-3);
+  font-size: var(--text-base);
 }
 
 .target-grid th,
@@ -46,5 +34,6 @@
 
 .target-grid input[type='number'] {
   width: 4.5rem;
+  min-width: 0;
   text-align: center;
 }

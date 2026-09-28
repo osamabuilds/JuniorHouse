@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AmendForm } from './amend-form';
 import { AmendmentValue, PoDto, VendorResponseValue } from './po-api.service';
@@ -36,6 +38,10 @@ function setText(root: HTMLElement, selector: string, value: string): void {
   element.value = value;
   element.dispatchEvent(new Event('input'));
 }
+
+beforeEach(() => {
+  TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+});
 
 describe('AmendForm (SCRUM-93 task 48, AC-15..AC-17)', () => {
   function create() {

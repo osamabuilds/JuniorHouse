@@ -1,5 +1,7 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { LookupDto } from '../reference-data/reference-api.service';
+import { AppDatePipe, formatDate } from '../shared/app-date.pipe';
+import { LookupNames } from '../shared/lookup-names';
 import { COMM_TYPE_LABELS, INITIATOR_LABELS, PoRevisionDto, REVISION_STATUS_LABELS } from './po-api.service';
 
 interface DiffRow {
@@ -25,6 +27,7 @@ const totalQty = (revision: PoRevisionDto): number => revision.lines.reduce((sum
  */
 @Component({
   selector: 'app-revision-history',
+  imports: [AppDatePipe],
   template: `
     <section class="revisions" aria-labelledby="revision-history-heading">
       <h3 id="revision-history-heading">Revision history</h3>
@@ -85,8 +88,11 @@ const totalQty = (revision: PoRevisionDto): number => revision.lines.reduce((sum
                   <ul class="revision__comms">
                     @for (comm of view.revision.communications; track comm.responseDte + comm.typeId) {
                       <li>
-                        {{ commTypeLabel(comm.typeId) }} via {{ channelName(comm.channelId) }}, recorded from
-                        {{ comm.responderName }} on {{ comm.responseDte }}
+                        @if (isUnrecorded(comm.channelId)) {
+                          {{ commTypeLabel(comm.typeId) }} on {{ comm.responseDte | appDate: "datetime" }} (how and by whom was not recorded).
+                        } @else {
+                          {{ commTypeLabel(comm.typeId) }}: {{ comm.responderName }} told us via {{ channelName(comm.channelId) }} on {{ comm.responseDte | appDate: "datetime" }}.
+                        }
                         @for (file of comm.evidence ?? []; track file.fileId) {
                           <a [href]="downloadUrl()(file.fileId)">Evidence: {{ file.fileName }}</a>
                         }
@@ -148,6 +154,7 @@ const totalQty = (revision: PoRevisionDto): number => revision.lines.reduce((sum
   `,
 })
 export class RevisionHistory {
+  private readonly names = inject(LookupNames);
   readonly revisions = input.required<readonly PoRevisionDto[]>();
   readonly reasons = input<readonly LookupDto[]>([]);
   readonly channels = input<readonly LookupDto[]>([]);
@@ -179,6 +186,11 @@ export class RevisionHistory {
     return this.reasons().find((reason) => reason.id === reasonId)?.name ?? `#${reasonId}`;
   }
 
+  /** Records made before channels were captured (or by the old Acknowledge button) carry the Unspecified channel. */
+  isUnrecorded(channelId: number): boolean {
+    return this.channelName(channelId) === 'Unspecified';
+  }
+
   channelName(channelId: number): string {
     return this.channels().find((channel) => channel.id === channelId)?.name ?? `#${channelId}`;
   }
@@ -200,13 +212,13 @@ export class RevisionHistory {
     };
 
     add('Unit cost', show(before.unitCost, ' PKR'), show(after.unitCost, ' PKR'));
-    add('Expected delivery', show(before.expectedDeliveryDate), show(after.expectedDeliveryDate));
-    add('Latest acceptable date', show(before.latestAcceptableDate), show(after.latestAcceptableDate));
-    add('Over-ship tolerance', show(before.overTolerancePercent, '%'), show(after.overTolerancePercent, '%'));
-    add('Under-ship tolerance', show(before.underTolerancePercent, '%'), show(after.underTolerancePercent, '%'));
-    add('Advance', show(before.advancePercent, '%'), show(after.advancePercent, '%'));
-    add('Payment term', show(before.paymentTermId), show(after.paymentTermId));
-    add('Fabric responsibility', this.fabricName(before.fabricResponsibilityId), this.fabricName(after.fabricResponsibilityId));
+    add('Expected delivery', formatDate(before.expectedDeliveryDate), formatDate(after.expectedDeliveryDate));
+    add('Latest acceptable delivery', formatDate(before.latestAcceptableDate), formatDate(after.latestAcceptableDate));
+    add('Extra pieces allowed', show(before.overTolerancePercent, '%'), show(after.overTolerancePercent, '%'));
+    add('Fewer pieces allowed', show(before.underTolerancePercent, '%'), show(after.underTolerancePercent, '%'));
+    add('Advance payment', show(before.advancePercent, '%'), show(after.advancePercent, '%'));
+    add('Payment terms', this.names.paymentTermName(before.paymentTermId), this.names.paymentTermName(after.paymentTermId));
+    add('Who supplies the fabric', this.fabricName(before.fabricResponsibilityId), this.fabricName(after.fabricResponsibilityId));
     add('Total quantity', show(totalQty(before), ' pcs'), show(totalQty(after), ' pcs'));
 
     const cell = (line: { sizeId: number; colourId: number }): string => `${line.sizeId}-${line.colourId}`;
@@ -214,7 +226,7 @@ export class RevisionHistory {
     const afterLines = new Map(after.lines.map((line) => [cell(line), line.qty]));
     for (const key of new Set([...beforeLines.keys(), ...afterLines.keys()])) {
       const [size, colour] = key.split('-');
-      add(`Size ${size} / colour ${colour}`, show(beforeLines.get(key) ?? 0, ' pcs'), show(afterLines.get(key) ?? 0, ' pcs'));
+      add(`${this.names.sizeName(+size)}, ${this.names.colourName(+colour)}`, show(beforeLines.get(key) ?? 0, ' pcs'), show(afterLines.get(key) ?? 0, ' pcs'));
     }
 
     return rows;

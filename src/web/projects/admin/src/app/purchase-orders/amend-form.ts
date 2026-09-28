@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiError } from '../core/api-error';
 import { LookupDto } from '../reference-data/reference-api.service';
 import { FieldErrors } from '../shared/field-errors';
+import { LookupNames } from '../shared/lookup-names';
 import { inputChecked, inputNumber, selectNumberOrNull } from '../shared/dom-events';
 import {
   AmendmentFileAdd,
@@ -43,8 +44,7 @@ export async function fileToBase64(file: File): Promise<string> {
     <form class="amend card" [formGroup]="form" (ngSubmit)="submit()" [attr.aria-labelledby]="'amend-heading'">
       <h3 id="amend-heading">{{ mode() === 'counter' ? 'Counter-proposal from the vendor' : 'Amend this PO' }}</h3>
       <p class="field-hint">
-        Change only what differs; everything else keeps the PO's current terms. A change identical to the
-        current terms is rejected.
+        Change only what is different; everything else stays as it is now. If nothing changes, the amendment is not accepted.
       </p>
 
       @if (error()) {
@@ -79,30 +79,30 @@ export async function fileToBase64(file: File): Promise<string> {
         </div>
 
         <div class="form-field">
-          <label for="amend-latest">Latest acceptable date</label>
+          <label for="amend-latest">Latest acceptable delivery date</label>
           <input id="amend-latest" type="date" formControlName="latestAcceptableDate" />
           <app-field-errors [messages]="fieldErrors('LatestAcceptableDate')" />
         </div>
 
         <div class="form-field">
-          <label for="amend-over">Over-ship tolerance %</label>
+          <label for="amend-over">Extra pieces allowed (%)</label>
           <input id="amend-over" type="number" step="0.01" formControlName="overTolerancePercent" />
           <app-field-errors [messages]="fieldErrors('OverTolerancePercent')" />
         </div>
 
         <div class="form-field">
-          <label for="amend-under">Under-ship tolerance %</label>
+          <label for="amend-under">Fewer pieces allowed (%)</label>
           <input id="amend-under" type="number" step="0.01" formControlName="underTolerancePercent" />
           <app-field-errors [messages]="fieldErrors('UnderTolerancePercent')" />
         </div>
 
         <div class="form-field">
-          <label for="amend-advance">Advance %</label>
+          <label for="amend-advance">Advance payment (%)</label>
           <input id="amend-advance" type="number" step="0.01" formControlName="advancePercent" />
         </div>
 
         <div class="form-field">
-          <label for="amend-fabric">Fabric responsibility</label>
+          <label for="amend-fabric">Who supplies the fabric</label>
           <select id="amend-fabric" formControlName="fabricResponsibilityId">
             <option [ngValue]="null">Not set</option>
             @for (option of fabricOptions(); track option.id) {
@@ -112,7 +112,7 @@ export async function fileToBase64(file: File): Promise<string> {
         </div>
 
         <div class="form-field form-field--wide">
-          <label for="amend-note">Internal impact note (never shown to the vendor)</label>
+          <label for="amend-note">Internal note: why this change, and what it costs (the vendor never sees this)</label>
           <textarea id="amend-note" rows="2" formControlName="impactNote"></textarea>
           @if (submitted() && form.controls.impactNote.invalid) {
             <p class="field-error" role="alert">Explain the impact of this change for the record.</p>
@@ -121,31 +121,31 @@ export async function fileToBase64(file: File): Promise<string> {
         </div>
 
         <div class="form-field form-field--wide">
-          <label for="amend-message">Message to vendor (optional)</label>
+          <label for="amend-message">Message to the vendor (optional)</label>
           <textarea id="amend-message" rows="2" formControlName="vendorMessage"></textarea>
         </div>
       </div>
 
       <fieldset class="amend__lines">
-        <legend>Size &times; colour quantities (set 0 to remove a line)</legend>
+        <legend>Quantity for each size and colour (enter 0 to remove one)</legend>
         <table class="line-grid">
           <thead>
             <tr>
-              <th scope="col">Size ID</th>
-              <th scope="col">Colour ID</th>
+              <th scope="col">Size</th>
+              <th scope="col">Colour</th>
               <th scope="col">Quantity</th>
             </tr>
           </thead>
           <tbody>
             @for (row of lineRows(); track row.sizeId + '-' + row.colourId) {
               <tr>
-                <th scope="row">{{ row.sizeId }}</th>
-                <td>{{ row.colourId }}</td>
+                <th scope="row">{{ names.sizeName(row.sizeId) }}</th>
+                <td>{{ names.colourName(row.colourId) }}</td>
                 <td>
                   <input
                     type="number"
                     min="0"
-                    [attr.aria-label]="'Quantity for size ' + row.sizeId + ' colour ' + row.colourId"
+                    [attr.aria-label]="'Quantity for ' + names.sizeName(row.sizeId) + ', ' + names.colourName(row.colourId)"
                     [value]="row.qty"
                     (input)="onQty(row.sizeId, row.colourId, $event)"
                   />
@@ -228,6 +228,7 @@ export async function fileToBase64(file: File): Promise<string> {
 })
 export class AmendForm implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
+  readonly names = inject(LookupNames);
 
   readonly po = input.required<PoDto>();
   readonly initiatorId = input(1);

@@ -1,7 +1,7 @@
 <h1>Reference Data</h1>
 <p class="page-intro">
-  Lookups used across styles, vendors and purchase orders. Retire a value instead of deleting it -
-  records that already reference it stay valid.
+  Lists that other screens choose from, such as sizes, colours and cities. Retire a value you no
+  longer use instead of deleting it, so older records stay correct.
 </p>
 
 <div class="lookup-tabs" role="tablist" aria-label="Lookup type">
@@ -57,24 +57,28 @@
         <div class="form-field">
           <label for="lookup-code">Code</label>
           <input id="lookup-code" type="text" formControlName="code" />
+        <app-control-errors [control]="form.controls.code" label="Code" kind="enter" />
           <app-field-errors [messages]="fieldErrors('Code')" />
         </div>
 
         <div class="form-field">
           <label for="lookup-name">Name</label>
           <input id="lookup-name" type="text" formControlName="name" />
+        <app-control-errors [control]="form.controls.name" label="Name" kind="enter" />
           <app-field-errors [messages]="fieldErrors('Name')" />
         </div>
 
         <div class="form-field form-field--wide">
           <label for="lookup-description">Description</label>
           <input id="lookup-description" type="text" formControlName="description" />
+        <app-control-errors [control]="form.controls.description" label="Description" kind="enter" />
           <app-field-errors [messages]="fieldErrors('Description')" />
         </div>
 
         <div class="form-field">
           <label for="lookup-sort">Sort order</label>
           <input id="lookup-sort" type="number" formControlName="sortSeq" />
+        <app-control-errors [control]="form.controls.sortSeq" label="Sort order" kind="enter" />
           <app-field-errors [messages]="fieldErrors('SortSeq')" />
         </div>
 
@@ -82,6 +86,7 @@
           <div class="form-field">
             <label for="lookup-parent">Parent category id</label>
             <input id="lookup-parent" type="number" formControlName="parentCategoryId" />
+        <app-control-errors [control]="form.controls.parentCategoryId" label="Parent category id" kind="enter" />
           </div>
         }
 
@@ -89,6 +94,7 @@
           <div class="form-field">
             <label for="lookup-advance">Default advance %</label>
             <input id="lookup-advance" type="number" step="0.01" formControlName="defaultAdvancePercent" />
+        <app-control-errors [control]="form.controls.defaultAdvancePercent" label="Default advance %" kind="enter" />
           </div>
         }
       </div>
@@ -108,7 +114,7 @@
     } @else if (visibleItems().length === 0) {
       <p class="state-message">No values found.</p>
     } @else {
-      <table>
+      <table class="responsive">
         <caption class="sr-only">{{ selectedType().label }}</caption>
         <thead>
           <tr>
@@ -125,23 +131,25 @@
         <tbody>
           @for (item of visibleItems(); track item.id) {
             <tr>
-              <td>{{ item.code }}</td>
-              <td>{{ item.name }}</td>
-              <td>{{ item.description || '—' }}</td>
-              <td>{{ item.sortSeq }}</td>
-              <td>
+              <td data-label="Code">{{ item.code }}</td>
+              <td data-label="Name">{{ item.name }}</td>
+              <td data-label="Description">{{ item.description || '—' }}</td>
+              <td data-label="Sort order">{{ item.sortSeq }}</td>
+              <td data-label="Status">
                 <span class="badge" [class.badge--muted]="!item.isActive">
                   {{ item.isActive ? 'Active' : 'Retired' }}
                 </span>
               </td>
               @if (selectedType().mutable) {
-                <td class="actions-cell">
+                <td data-label="Actions">
+                  <div class="actions-cell">
                   <button type="button" class="button button--small" (click)="startEdit(item)">Edit</button>
                   @if (item.isActive) {
                     <button type="button" class="button button--small button--danger" (click)="retire(item)">
                       Retire
                     </button>
                   }
+                </div>
                 </td>
               }
             </tr>

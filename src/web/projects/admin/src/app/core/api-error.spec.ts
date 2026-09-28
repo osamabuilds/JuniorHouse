@@ -41,9 +41,22 @@ describe('toApiError', () => {
     expect(error.fieldErrors['SizeIds']?.[0]).toContain('PO-2026-00009');
   });
 
-  it('falls back to a plain message when the body is not problem details', () => {
-    const error = toApiError(new HttpErrorResponse({ status: 500, error: null }));
+  it('explains a network failure in plain words', () => {
+    const error = toApiError(new HttpErrorResponse({ status: 0, statusText: 'Unknown Error', url: 'http://api/x' }));
 
-    expect(error.message.length).toBeGreaterThan(0);
+    expect(error.message).toContain("couldn't reach the server");
+    expect(error.message).not.toContain('Http failure');
+  });
+
+  it('hides a raw server error behind a plain sentence', () => {
+    const error = toApiError(
+      new HttpErrorResponse({ status: 500, error: { title: 'An error occurred while processing your request.' } }),
+    );
+
+    expect(error.message).toBe('Something went wrong on our side. Please try again in a moment.');
+  });
+
+  it('says an item was not found for a 404', () => {
+    expect(toApiError(new HttpErrorResponse({ status: 404, error: null })).message).toContain("couldn't find that");
   });
 });

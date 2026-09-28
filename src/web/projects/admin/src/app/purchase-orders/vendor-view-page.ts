@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { ApiError } from '../core/api-error';
-import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
+import { AppDatePipe } from '../shared/app-date.pipe';
+import { LookupNames } from '../shared/lookup-names';
 import { FILE_CATEGORY_LABELS, INITIATOR_LABELS, PO_STATUS_LABELS, PoApiService, VendorPoViewDto } from './po-api.service';
 
 /**
@@ -11,6 +12,7 @@ import { FILE_CATEGORY_LABELS, INITIATOR_LABELS, PO_STATUS_LABELS, PoApiService,
  */
 @Component({
   selector: 'app-vendor-view-page',
+  imports: [AppDatePipe],
   template: `
     <article class="vv">
       @if (error()) {
@@ -30,8 +32,7 @@ import { FILE_CATEGORY_LABELS, INITIATOR_LABELS, PO_STATUS_LABELS, PoApiService,
         @if (po.pendingRevision; as pending) {
           <aside class="banner banner--error vv__pending" aria-label="Proposed change">
             <strong>A change is proposed and not yet agreed</strong> (Revision {{ pending.revisionNumber }}, from
-            {{ initiatorLabel(pending.initiatorId) }}): PKR {{ pending.unitCost }} per piece, delivery
-            {{ pending.expectedDeliveryDate }}.
+            {{ initiatorLabel(pending.initiatorId) }}): PKR {{ pending.unitCost }} per piece, delivery {{ pending.expectedDeliveryDate | appDate }}.
             @if (pending.vendorMessage) { <span> &ldquo;{{ pending.vendorMessage }}&rdquo;</span> }
             The terms below stay in force until it is agreed.
           </aside>
@@ -41,12 +42,13 @@ import { FILE_CATEGORY_LABELS, INITIATOR_LABELS, PO_STATUS_LABELS, PoApiService,
           <h2 id="vv-terms">Agreed terms</h2>
           <dl class="vv__facts">
             <div><dt>Unit cost</dt><dd>PKR {{ po.unitCost }}</dd></div>
-            <div><dt>Expected delivery</dt><dd>{{ po.expectedDeliveryDate }}</dd></div>
-            <div><dt>Latest acceptable date</dt><dd>{{ po.latestAcceptableDate ?? '—' }}</dd></div>
-            <div><dt>Over-ship tolerance</dt><dd>{{ po.overTolerancePercent ?? '—' }}{{ po.overTolerancePercent === null ? '' : '%' }}</dd></div>
-            <div><dt>Under-ship tolerance</dt><dd>{{ po.underTolerancePercent ?? '—' }}{{ po.underTolerancePercent === null ? '' : '%' }}</dd></div>
-            <div><dt>Advance</dt><dd>{{ po.advancePercent }}%</dd></div>
-            <div><dt>Fabric</dt><dd>{{ fabricName(po.fabricResponsibilityId) }}</dd></div>
+            <div><dt>Expected delivery</dt><dd>{{ po.expectedDeliveryDate | appDate }}</dd></div>
+            <div><dt>Latest acceptable delivery</dt><dd>{{ po.latestAcceptableDate | appDate }}</dd></div>
+            <div><dt>Extra pieces allowed</dt><dd>{{ po.overTolerancePercent ?? '—' }}{{ po.overTolerancePercent === null ? '' : '%' }}</dd></div>
+            <div><dt>Fewer pieces allowed</dt><dd>{{ po.underTolerancePercent ?? '—' }}{{ po.underTolerancePercent === null ? '' : '%' }}</dd></div>
+            <div><dt>Payment terms</dt><dd>{{ names.paymentTermName(po.paymentTermId) }}</dd></div>
+            <div><dt>Advance payment</dt><dd>{{ po.advancePercent }}%</dd></div>
+            <div><dt>Who supplies the fabric</dt><dd>{{ names.fabricName(po.fabricResponsibilityId) }}</dd></div>
           </dl>
         </section>
 
@@ -64,8 +66,8 @@ import { FILE_CATEGORY_LABELS, INITIATOR_LABELS, PO_STATUS_LABELS, PoApiService,
             <tbody>
               @for (line of po.lines; track line.sizeId + '-' + line.colourId) {
                 <tr>
-                  <td>{{ line.sizeId }}</td>
-                  <td>{{ line.colourId }}</td>
+                  <td>{{ names.sizeName(line.sizeId) }}</td>
+                  <td>{{ names.colourName(line.colourId) }}</td>
                   <td>{{ line.qty }}</td>
                 </tr>
               }
@@ -139,14 +141,13 @@ import { FILE_CATEGORY_LABELS, INITIATOR_LABELS, PO_STATUS_LABELS, PoApiService,
 })
 export class VendorViewPage implements OnInit {
   private readonly poApi = inject(PoApiService);
-  private readonly referenceApi = inject(ReferenceApiService);
+  readonly names = inject(LookupNames);
 
   /** Bound from the route's `:id` (withComponentInputBinding). */
   readonly id = input.required<string>();
 
   readonly view = signal<VendorPoViewDto | null>(null);
   readonly error = signal<ApiError | null>(null);
-  private readonly fabricOptions = signal<readonly LookupDto[]>([]);
 
   readonly total = computed(() => this.view()?.lines.reduce((sum, line) => sum + line.qty, 0) ?? 0);
 
@@ -166,18 +167,10 @@ export class VendorViewPage implements OnInit {
     return FILE_CATEGORY_LABELS[categoryId] ?? '';
   }
 
-  fabricName(id: number | null): string {
-    return id === null ? '—' : (this.fabricOptions().find((option) => option.id === id)?.name ?? `#${id}`);
-  }
-
   private load(): void {
     this.poApi.getVendorView(+this.id()).subscribe({
       next: (view) => this.view.set(view),
       error: (error: ApiError) => this.error.set(error),
-    });
-    this.referenceApi.list('fabric-responsibilities', false).subscribe({
-      next: (options) => this.fabricOptions.set(options),
-      error: () => undefined, // names fall back to ids; never blocks the page
     });
   }
 }

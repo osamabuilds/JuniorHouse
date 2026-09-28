@@ -1,7 +1,7 @@
 <h1>Vendors</h1>
 <p class="page-intro">
-  Vendor master: contact, specialisation, payment terms and (from Sprint 4) a running on-time /
-  on-quantity / defect-rate scorecard.
+  Vendors are the factories and suppliers you buy from. Keep their contact details, what they make
+  and how you pay them.
 </p>
 
 @if (mode() === 'list') {
@@ -43,7 +43,7 @@
   } @else if (vendors().length === 0) {
     <p class="state-message">No vendors found.</p>
   } @else {
-    <table>
+    <table class="responsive">
       <caption class="sr-only">Vendors</caption>
       <thead>
         <tr>
@@ -56,14 +56,14 @@
       <tbody>
         @for (vendor of vendors(); track vendor.id) {
           <tr>
-            <td>{{ vendor.name }}</td>
-            <td>{{ cityName(vendor.cityId) }}</td>
-            <td>
+            <td data-label="Name">{{ vendor.name }}</td>
+            <td data-label="City">{{ cityName(vendor.cityId) }}</td>
+            <td data-label="Status">
               <span class="badge" [class.badge--muted]="!vendor.isActive">
                 {{ vendor.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td>
+            <td data-label="Actions">
               <button type="button" class="button button--small" (click)="startEdit(vendor)">Edit</button>
             </td>
           </tr>
@@ -85,24 +85,28 @@
       <div class="form-field form-field--wide">
         <label for="vendor-name">Name</label>
         <input id="vendor-name" type="text" formControlName="name" />
+        <app-control-errors [control]="form.controls.name" label="Name" kind="enter" />
         <app-field-errors [messages]="fieldErrors('Name')" />
       </div>
 
       <div class="form-field">
         <label for="vendor-contact-name">Contact name</label>
         <input id="vendor-contact-name" type="text" formControlName="contactName" />
+        <app-control-errors [control]="form.controls.contactName" label="Contact name" kind="enter" />
         <app-field-errors [messages]="fieldErrors('ContactName')" />
       </div>
 
       <div class="form-field">
         <label for="vendor-contact-phone">Contact phone</label>
         <input id="vendor-contact-phone" type="tel" formControlName="contactPhone" />
+        <app-control-errors [control]="form.controls.contactPhone" label="Contact phone" kind="enter" />
         <app-field-errors [messages]="fieldErrors('ContactPhone')" />
       </div>
 
       <div class="form-field form-field--wide">
         <label for="vendor-contact-email">Contact email</label>
         <input id="vendor-contact-email" type="email" formControlName="contactEmail" />
+        <app-control-errors [control]="form.controls.contactEmail" label="Contact email" kind="enter" />
         <app-field-errors [messages]="fieldErrors('ContactEmail')" />
       </div>
 
@@ -114,6 +118,7 @@
             <option [value]="city.id">{{ city.name }}</option>
           }
         </select>
+        <app-control-errors [control]="form.controls.cityId" label="City" kind="choose" />
       </div>
 
       <div class="form-field">
@@ -124,6 +129,7 @@
             <option [value]="term.id">{{ term.name }}</option>
           }
         </select>
+        <app-control-errors [control]="form.controls.paymentTermId" label="Default payment term" kind="choose" />
       </div>
 
       @if (mode() === 'edit') {
