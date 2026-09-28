@@ -16,6 +16,8 @@ public interface IVendorDbContext
 
     DbSet<PurchaseOrder> PurchaseOrders { get; }
 
+    DbSet<PurchaseOrderFile> PurchaseOrderFiles { get; }
+
     /// <summary>A handler calls this itself only when it needs a DB-generated value back in its response before returning.</summary>
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

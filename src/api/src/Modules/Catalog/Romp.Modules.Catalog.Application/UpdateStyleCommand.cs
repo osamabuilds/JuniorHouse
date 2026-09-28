@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Catalog.Domain;
+using Romp.Modules.Vendor.Contracts;
 
 namespace Romp.Modules.Catalog.Application;
 
@@ -37,7 +38,8 @@ public sealed class UpdateStyleCommandValidator : AbstractValidator<UpdateStyleC
     }
 }
 
-public sealed class UpdateStyleCommandHandler(ICatalogDbContext dbContext) : IRequestHandler<UpdateStyleCommand, StyleDto>
+public sealed class UpdateStyleCommandHandler(ICatalogDbContext dbContext, IPurchaseOrderUsageQueries poUsageQueries)
+    : IRequestHandler<UpdateStyleCommand, StyleDto>
 {
     public async Task<StyleDto> Handle(UpdateStyleCommand request, CancellationToken cancellationToken)
     {
@@ -47,6 +49,31 @@ public sealed class UpdateStyleCommandHandler(ICatalogDbContext dbContext) : IRe
             .Include(s => s.TargetLines)
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Style {request.Id} was not found.");
+
+        // AC-2, AC-3: a size/colour still used by a non-cancelled PO's line can't be removed -
+        // only VNDR's contract query is consulted, never VNDR's own tables (ADR 0002).
+        var removedSizeIds = style.Sizes.Select(s => s.SizeId).Except(request.SizeIds).ToHashSet();
+        var removedColourIds = style.Colourways.Select(c => c.ColourId).Except(request.ColourIds).ToHashSet();
+
+        if (removedSizeIds.Count > 0 || removedColourIds.Count > 0)
+        {
+            var usage = await poUsageQueries.GetActiveSizeColourUsageAsync(request.Id, cancellationToken);
+            var blockingPoNos = usage
+                .Where(u => removedSizeIds.Contains(u.SizeId) || removedColourIds.Contains(u.ColourId))
+                .Select(u => u.PoNo)
+                .Distinct()
+                .Order()
+                .ToList();
+
+            if (blockingPoNos.Count > 0)
+            {
+                throw new Romp.BuildingBlocks.Application.ValidationException(new Dictionary<string, string[]>
+                {
+                    [nameof(request.SizeIds)] =
+                        [$"Size/colour still used by PO(s) {string.Join(", ", blockingPoNos)} cannot be removed."],
+                });
+            }
+        }
 
         style.UpdateDetails(
             request.Name,

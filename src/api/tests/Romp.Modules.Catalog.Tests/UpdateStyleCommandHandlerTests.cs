@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Romp.BuildingBlocks.Application;
 using Romp.Modules.Catalog.Application;
+using Romp.Modules.Vendor.Contracts;
 
 namespace Romp.Modules.Catalog.Tests;
 
@@ -30,5 +32,34 @@ public sealed class UpdateStyleCommandHandlerTests
         var reloaded = await sender.Send(new GetStyleByIdQuery(created.Id));
         Assert.NotNull(reloaded);
         Assert.Equal("Basic Tee V2", reloaded.Name);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-2")]
+    [Trait("Spec", "AC-3")]
+    public async Task Handle_RemovingSizeOrColourInUseByActivePo_RejectedWithPoNumbers()
+    {
+        var poUsage = new FakePurchaseOrderUsageQueries();
+        var services = TestServices.Build(Guid.NewGuid().ToString(), poUsage);
+        var sender = services.GetRequiredService<ISender>();
+
+        var created = await sender.Send(new CreateStyleCommand(
+            "STY-GUARD", "Basic Tee", null, 1, 1, 1, 1, 200m, 600m,
+            ColourIds: [1, 2], SizeIds: [1, 2], TargetLines: [new StyleTargetLineDto(1, 1, 20)]));
+
+        // Size 2 / colour 2 are used by PO-2026-00001, a non-cancelled PO (fake stands in for VNDR - the guard never reads VNDR's tables directly, ADR 0002).
+        poUsage.Usage.Add(new PoSizeColourUsage(SizeId: 2, ColourId: 2, PoNo: "PO-2026-00001"));
+
+        var ex = await Assert.ThrowsAsync<ValidationException>(() => sender.Send(new UpdateStyleCommand(
+            created.Id, "Basic Tee", null, 1, 1, 1, 1, 200m, 600m,
+            ColourIds: [1, 2], SizeIds: [1], TargetLines: [new StyleTargetLineDto(1, 1, 20)])));
+
+        Assert.Contains("PO-2026-00001", ex.Errors[nameof(UpdateStyleCommand.SizeIds)].Single());
+
+        // Adding sizes/colours and editing other fields remains allowed (AC-2).
+        var stillUnaffected = await sender.Send(new UpdateStyleCommand(
+            created.Id, "Basic Tee V2", null, 1, 1, 1, 1, 200m, 600m,
+            ColourIds: [1, 2, 3], SizeIds: [1, 2], TargetLines: [new StyleTargetLineDto(1, 1, 20)]));
+        Assert.Equal("Basic Tee V2", stillUnaffected.Name);
     }
 }

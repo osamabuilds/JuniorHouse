@@ -72,6 +72,51 @@ Then, in the admin app at **http://localhost:4201**:
 
 The API's OpenAPI document is at `http://localhost:8080/openapi/v1.json` in Development.
 
+## Try Sprint 2 (amendments, files, event dispatch)
+
+Sprint 2 adds versioned PO amendments, spec-file attachments, a vendor-facing view and the outbox
+dispatcher (`docs/specs/SCRUM-93-procurement-part-2/`). Same stack as Sprint 1
+(`docker compose up --build`); the demo seed also creates **PO-2026-90001**: an Acknowledged PO
+with the vendor's counter-proposal already waiting as a Pending revision.
+
+**Demo script** (admin app, **Purchase Orders**):
+
+1. **See an amendment waiting.** Open PO-2026-90001. The *Revision 1 awaits a decision* panel says
+   who proposed it and whose decision it is. The *Revision history* below shows Rev 0 (the terms as
+   sent) and Rev 1 with a before/after of every changed term, the impact (PO value, advance amount,
+   delivery shift) and the internal note.
+2. **Decide it.** Choose *Accept*. Rev 1 goes *In force*, Rev 0 becomes *Superseded* and the PO's
+   terms above now show PKR 480 and the new delivery date. (*Reject* would leave the terms alone;
+   *Withdraw* is the proposer taking it back.)
+3. **Send a PO properly.** Raise a PO (the form now has *Latest acceptable delivery date* and
+   *Fabric responsibility*, both required before Send; tolerances are optional). Under **Files**,
+   upload a Tech Pack Spec (PDF, PNG, JPEG, Excel or Word). Click *Send to Vendor*: the checklist
+   is a reminder, and without a tech pack you must tick *Send anyway*, which is recorded on the
+   status timeline.
+4. **Record what the vendor said.** *Record vendor response* replaces the old Acknowledge button.
+   Pick *Confirmed*, *Countered* (opens the counter-proposal form) or *Declined*, plus the channel
+   (WhatsApp, phone, ...), who responded, when, and optionally an evidence screenshot. A declined
+   PO is not cancelled for you; *Cancel* opens with "Vendor declined" already selected.
+5. **Amend it.** On a Sent or Acknowledged PO, *Amend* lets you change terms, quantities and
+   vendor-visible files; a reason and an internal note are mandatory. On a *Sent* PO the change is
+   in force immediately; on an *Acknowledged* PO it waits as Pending. A change that alters nothing
+   is rejected.
+6. **See what the vendor sees.** *Vendor view* opens a read-only page with no admin navigation
+   (print it to A4). It never shows the internal note, cost sheets, evidence or target prices.
+7. **Watch events flow.** Every change writes an event to the outbox in the same transaction; a
+   background dispatcher delivers it (the placeholder handler just logs it):
+
+   ```bash
+   docker compose exec postgres psql -U romp -d romp -c \
+     'SELECT "EVNT_TYP", "AGGR_ID", "PROC_DTE", "ATMP_CNT" FROM "VNDR"."OUTB_MSG" ORDER BY "ID"'
+   ```
+
+   Rows with a `PROC_DTE` were delivered; a row that keeps failing is retried with back-off and
+   finally marked dead-lettered (`DEDL_IND`).
+
+Uploaded PO files live in the `po-files` Docker volume. Validation problems name the actual rule
+that was broken (for example "A channel is required.") instead of a generic message.
+
 ## Tests
 
 ```bash

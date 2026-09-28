@@ -45,4 +45,30 @@ public sealed class RefMigrationTests : IAsyncLifetime
         var draft = await context.Set<PoStatusLookup>().SingleAsync(s => s.Code == "Draft");
         Assert.True(draft.IsActive);
     }
+
+    /// <summary>SCRUM-93, plan.md's Data section: the 7 Sprint 2 REF lookup tables and their seed rows.</summary>
+    [Fact]
+    [Trait("Spec", "SCRUM-93")]
+    public async Task Migrate_CreatesSprint2LookupTables_WithSeedRows()
+    {
+        var options = new DbContextOptionsBuilder<ReferenceDbContext>()
+            .UseNpgsql(_postgres.GetConnectionString())
+            .Options;
+
+        await using var context = new ReferenceDbContext(options);
+        await context.Database.MigrateAsync();
+
+        Assert.Equal(11, await context.Set<AmendmentReasonLookup>().CountAsync());
+        Assert.Equal(5, await context.Set<VendorCommChannelLookup>().CountAsync());
+        Assert.Equal(2, await context.Set<FabricResponsibilityLookup>().CountAsync());
+        Assert.Equal(5, await context.Set<RevisionStatusLookup>().CountAsync());
+        Assert.Equal(2, await context.Set<AmendmentInitiatorLookup>().CountAsync());
+        Assert.Equal(5, await context.Set<PoVendorCommTypeLookup>().CountAsync());
+        Assert.Equal(9, await context.Set<PoFileCategoryLookup>().CountAsync());
+
+        var techPackSpec = await context.Set<PoFileCategoryLookup>().SingleAsync(c => c.Code == "TechPackSpec");
+        Assert.True(techPackSpec.IsVendorVisible);
+        var costSheet = await context.Set<PoFileCategoryLookup>().SingleAsync(c => c.Code == "CostSheet");
+        Assert.False(costSheet.IsVendorVisible);
+    }
 }

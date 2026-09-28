@@ -42,6 +42,14 @@ foreach (var module in modules)
     module.RegisterServices(builder.Services, builder.Configuration);
 }
 
+// SCRUM-93 task 13: the shared dispatcher (SCRUM-181), started once every module has registered
+// its own OUTB_MSG schema/event types above via AddOutboxModule.
+builder.Services.AddOutboxDispatcher(new OutboxDispatcherOptions
+{
+    ConnectionString = builder.Configuration.GetConnectionString("Postgres")
+        ?? throw new InvalidOperationException("Missing 'Postgres' connection string."),
+});
+
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();

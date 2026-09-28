@@ -13,6 +13,7 @@ dist/
 # Local environment
 .env
 *.local.json
+docker-compose.override.yml
 
 # OS
 Thumbs.db

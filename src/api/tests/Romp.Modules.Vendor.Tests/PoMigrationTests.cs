@@ -43,4 +43,28 @@ public sealed class PoMigrationTests : IAsyncLifetime
         Assert.Equal(2, reloaded.StatusHistory.Count);
         Assert.Equal(2, reloaded.StatusId);
     }
+
+    /// <summary>SCRUM-93 task 16 (AC-7): the 4 new commercial-terms columns are additive and nullable - an existing (or freshly-created, pre-task-17) PO never has a value invented for them.</summary>
+    [Fact]
+    [Trait("Spec", "AC-7")]
+    public async Task Migrate_AddsCommercialTermsColumns_ExistingRowsNull()
+    {
+        var options = new DbContextOptionsBuilder<VendorDbContext>().UseNpgsql(_postgres.GetConnectionString()).Options;
+        await using var context = new VendorDbContext(options);
+        await context.Database.MigrateAsync();
+
+        var po = new Domain.PurchaseOrder(
+            "PO-2026-00003", vendorId: 1, styleId: 1, unitCost: 100m,
+            expectedDeliveryDate: new DateOnly(2026, 12, 1), paymentTermId: 1, advancePercent: 50m,
+            lines: [(1, 1, 10)]);
+        context.PurchaseOrders.Add(po);
+        await context.SaveChangesAsync();
+
+        var reloaded = await context.PurchaseOrders.SingleAsync(p => p.Id == po.Id);
+
+        Assert.Null(reloaded.LatestAcceptableDate);
+        Assert.Null(reloaded.OverTolerancePercent);
+        Assert.Null(reloaded.UnderTolerancePercent);
+        Assert.Null(reloaded.FabricResponsibilityId);
+    }
 }

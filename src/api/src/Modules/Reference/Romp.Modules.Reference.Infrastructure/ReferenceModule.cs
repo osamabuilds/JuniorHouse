@@ -59,6 +59,15 @@ public sealed class ReferenceModule : IModule
         RegisterOne<VendorSpecialisationLookup>(services, mutable: true);
         RegisterOne<PoCancelReasonLookup>(services, mutable: true);
         RegisterOne<PoStatusLookup>(services, mutable: false);
+
+        // Sprint 2 (SCRUM-93)
+        RegisterOne<AmendmentReasonLookup>(services, mutable: true);
+        RegisterOne<VendorCommChannelLookup>(services, mutable: true);
+        RegisterOne<FabricResponsibilityLookup>(services, mutable: false);
+        RegisterOne<RevisionStatusLookup>(services, mutable: false);
+        RegisterOne<AmendmentInitiatorLookup>(services, mutable: false);
+        RegisterOne<PoVendorCommTypeLookup>(services, mutable: false);
+        RegisterOne<PoFileCategoryLookup>(services, mutable: false);
     }
 
     private static void RegisterOne<TLookup>(IServiceCollection services, bool mutable)
@@ -91,5 +100,14 @@ public sealed class ReferenceModule : IModule
 
         // System-owned (spec AC-1): read-only, no create/update/retire endpoints.
         endpoints.MapLookupType<PoStatusLookup>("po-statuses", mutable: false);
+
+        // Sprint 2 (SCRUM-93)
+        endpoints.MapLookupType<AmendmentReasonLookup>("amendment-reasons", mutable: true);
+        endpoints.MapLookupType<VendorCommChannelLookup>("vendor-comm-channels", mutable: true);
+        endpoints.MapLookupType<FabricResponsibilityLookup>("fabric-responsibilities", mutable: false);
+        endpoints.MapLookupType<RevisionStatusLookup>("revision-statuses", mutable: false);
+        endpoints.MapLookupType<AmendmentInitiatorLookup>("amendment-initiators", mutable: false);
+        endpoints.MapLookupType<PoVendorCommTypeLookup>("vendor-comm-types", mutable: false);
+        endpoints.MapLookupType<PoFileCategoryLookup>("po-file-categories", mutable: false);
     }
 }

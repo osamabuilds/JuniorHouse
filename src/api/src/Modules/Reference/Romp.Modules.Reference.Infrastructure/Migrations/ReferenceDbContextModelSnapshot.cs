@@ -106,6 +106,198 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.AmendmentInitiatorLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("AMND_INIT_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "Buyer",
+                            IsActive = true,
+                            Name = "Buyer",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "Vendor",
+                            IsActive = true,
+                            Name = "Vendor",
+                            SortSeq = (short)2
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.AmendmentReasonLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("AMND_RSN_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "VendorCostIncrease",
+                            IsActive = true,
+                            Name = "Vendor Cost Increase",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "MoqConstraint",
+                            IsActive = true,
+                            Name = "MOQ Constraint",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "FabricOrTrimUnavailable",
+                            IsActive = true,
+                            Name = "Fabric or Trim Unavailable",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "CapacityDelay",
+                            IsActive = true,
+                            Name = "Capacity Delay",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "AdvanceRequest",
+                            IsActive = true,
+                            Name = "Advance Request",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "SizeMixChange",
+                            IsActive = true,
+                            Name = "Size Mix Change",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "ColourChange",
+                            IsActive = true,
+                            Name = "Colour Change",
+                            SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "SpecChange",
+                            IsActive = true,
+                            Name = "Spec Change",
+                            SortSeq = (short)8
+                        },
+                        new
+                        {
+                            Id = (short)9,
+                            Code = "SafetyOrCompliance",
+                            IsActive = true,
+                            Name = "Safety or Compliance",
+                            SortSeq = (short)9
+                        },
+                        new
+                        {
+                            Id = (short)10,
+                            Code = "BuyerDemandChange",
+                            IsActive = true,
+                            Name = "Buyer Demand Change",
+                            SortSeq = (short)10
+                        },
+                        new
+                        {
+                            Id = (short)11,
+                            Code = "Other",
+                            IsActive = true,
+                            Name = "Other",
+                            SortSeq = (short)11
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Reference.Domain.CategoryLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -504,6 +696,66 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.FabricResponsibilityLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("FBRC_RESP_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "VendorSupplied",
+                            IsActive = true,
+                            Name = "Vendor Supplied",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "RompSupplied",
+                            IsActive = true,
+                            Name = "Romp Supplied",
+                            SortSeq = (short)2
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Reference.Domain.GenderLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -748,6 +1000,135 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.PoFileCategoryLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<bool>("IsVendorVisible")
+                        .HasColumnType("boolean")
+                        .HasColumnName("VNDR_VSBL_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PO_FILE_CATG_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "TechPackSpec",
+                            IsActive = true,
+                            IsVendorVisible = true,
+                            Name = "Tech Pack Spec",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "ArtworkLabels",
+                            IsActive = true,
+                            IsVendorVisible = true,
+                            Name = "Artwork / Labels",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "TrimCardBom",
+                            IsActive = true,
+                            IsVendorVisible = true,
+                            Name = "Trim Card / BOM",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "ColourStandard",
+                            IsActive = true,
+                            IsVendorVisible = true,
+                            Name = "Colour Standard",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "PackingInstructions",
+                            IsActive = true,
+                            IsVendorVisible = true,
+                            Name = "Packing Instructions",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "CostSheet",
+                            IsActive = true,
+                            IsVendorVisible = false,
+                            Name = "Cost Sheet",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "ComplianceTestReport",
+                            IsActive = true,
+                            IsVendorVisible = false,
+                            Name = "Compliance / Test Report",
+                            SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "VendorEvidence",
+                            IsActive = true,
+                            IsVendorVisible = false,
+                            Name = "Vendor Evidence",
+                            SortSeq = (short)8
+                        },
+                        new
+                        {
+                            Id = (short)9,
+                            Code = "Other",
+                            IsActive = true,
+                            IsVendorVisible = false,
+                            Name = "Other",
+                            SortSeq = (short)9
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Reference.Domain.PoStatusLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -821,6 +1202,174 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Cancelled",
                             SortSeq = (short)4
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.PoVendorCommTypeLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PO_VNDR_COMM_TYP_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "Confirmed",
+                            IsActive = true,
+                            Name = "Confirmed",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "Countered",
+                            IsActive = true,
+                            Name = "Countered",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "Declined",
+                            IsActive = true,
+                            Name = "Declined",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "AmendmentRequest",
+                            IsActive = true,
+                            Name = "Amendment Request",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "Decision",
+                            IsActive = true,
+                            Name = "Decision",
+                            SortSeq = (short)5
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.RevisionStatusLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PO_REV_STS_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "Pending",
+                            IsActive = true,
+                            Name = "Pending",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "InForce",
+                            IsActive = true,
+                            Name = "In Force",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "Superseded",
+                            IsActive = true,
+                            Name = "Superseded",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "Rejected",
+                            IsActive = true,
+                            Name = "Rejected",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "Withdrawn",
+                            IsActive = true,
+                            Name = "Withdrawn",
+                            SortSeq = (short)5
                         });
                 });
 
@@ -945,6 +1494,90 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             IsActive = true,
                             Name = "7-8 Years",
                             SortSeq = (short)10
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.VendorCommChannelLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("VNDR_COMM_CHNL_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "WhatsApp",
+                            IsActive = true,
+                            Name = "WhatsApp",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "PhoneCall",
+                            IsActive = true,
+                            Name = "Phone Call",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "Email",
+                            IsActive = true,
+                            Name = "Email",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "InPerson",
+                            IsActive = true,
+                            Name = "In Person",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "Unspecified",
+                            IsActive = true,
+                            Name = "Unspecified",
+                            SortSeq = (short)5
                         });
                 });
 

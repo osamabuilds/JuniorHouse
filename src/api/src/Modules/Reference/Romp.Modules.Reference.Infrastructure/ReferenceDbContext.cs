@@ -44,6 +44,16 @@ public sealed class ReferenceDbContext(DbContextOptions<ReferenceDbContext> opti
         modelBuilder.ConfigureLookup<PaymentTermLookup>("PAYM_TERM_LKP")
             .Property(p => p.DefaultAdvancePercent).HasColumnName("DFLT_ADV_PCT").HasColumnType("numeric(5,2)");
 
+        // Sprint 2 (SCRUM-93)
+        modelBuilder.ConfigureLookup<AmendmentReasonLookup>("AMND_RSN_LKP");
+        modelBuilder.ConfigureLookup<VendorCommChannelLookup>("VNDR_COMM_CHNL_LKP");
+        modelBuilder.ConfigureLookup<FabricResponsibilityLookup>("FBRC_RESP_LKP");
+        modelBuilder.ConfigureLookup<RevisionStatusLookup>("PO_REV_STS_LKP");
+        modelBuilder.ConfigureLookup<AmendmentInitiatorLookup>("AMND_INIT_LKP");
+        modelBuilder.ConfigureLookup<PoVendorCommTypeLookup>("PO_VNDR_COMM_TYP_LKP");
+        modelBuilder.ConfigureLookup<PoFileCategoryLookup>("PO_FILE_CATG_LKP")
+            .Property(c => c.IsVendorVisible).HasColumnName("VNDR_VSBL_IND").IsRequired();
+
         ReferenceSeedData.Apply(modelBuilder);
 
         base.OnModelCreating(modelBuilder);

@@ -45,6 +45,8 @@ services:
       # SCRUM-175 "Try Sprint 1": a few sample styles/vendors, so the demo isn't an empty admin app.
       # Idempotent (DemoDataSeeder) - safe to leave on every `docker compose up`.
       Demo__SeedSampleData: "true"
+    volumes:
+      - po-files:/data/po-files
     ports:
       - "8080:8080"
     depends_on:
@@ -77,3 +79,4 @@ services:
 
 volumes:
   postgres-data:
+  po-files:

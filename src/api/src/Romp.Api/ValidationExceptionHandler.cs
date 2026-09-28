@@ -29,7 +29,8 @@ public sealed class ValidationExceptionHandler : IExceptionHandler
             new ValidationProblemDetails(validationException.Errors)
             {
                 Status = StatusCodes.Status400BadRequest,
-                Title = "One or more validation errors occurred.",
+                Title = "The request has invalid details.",
+                Detail = ValidationException.Summarise(validationException.Errors),
             },
             cancellationToken);
 

@@ -1,23 +1,27 @@
-<header class="shell-header">
-  <div class="shell-header__brand">
-    <span class="shell-header__mark" aria-hidden="true">R</span>
-    <span class="shell-header__title">Romp <span class="shell-header__title-muted">Admin</span></span>
-  </div>
+@if (!chromeless()) {
+  <header class="shell-header">
+    <div class="shell-header__brand">
+      <span class="shell-header__mark" aria-hidden="true">R</span>
+      <span class="shell-header__title">Romp <span class="shell-header__title-muted">Admin</span></span>
+    </div>
 
-  <nav class="shell-nav" aria-label="Primary">
-    <ul>
-      <li><a routerLink="/reference-data" routerLinkActive="is-active">Reference Data</a></li>
-      <li><a routerLink="/styles" routerLinkActive="is-active">Styles</a></li>
-      <li><a routerLink="/vendors" routerLinkActive="is-active">Vendors</a></li>
-      <li><a routerLink="/purchase-orders" routerLinkActive="is-active">Purchase Orders</a></li>
-    </ul>
-  </nav>
-</header>
+    <nav class="shell-nav" aria-label="Primary">
+      <ul>
+        <li><a routerLink="/reference-data" routerLinkActive="is-active">Reference Data</a></li>
+        <li><a routerLink="/styles" routerLinkActive="is-active">Styles</a></li>
+        <li><a routerLink="/vendors" routerLinkActive="is-active">Vendors</a></li>
+        <li><a routerLink="/purchase-orders" routerLinkActive="is-active">Purchase Orders</a></li>
+      </ul>
+    </nav>
+  </header>
+}
 
 <main class="shell-main">
   <router-outlet />
 </main>
 
-<footer class="shell-footer">
-  <p>Romp Admin &middot; Sprint 1 (Procurement)</p>
-</footer>
+@if (!chromeless()) {
+  <footer class="shell-footer">
+    <p>Romp Admin &middot; Sprint 2 (Procurement, part 2)</p>
+  </footer>
+}

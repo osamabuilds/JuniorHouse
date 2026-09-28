@@ -23,11 +23,17 @@ export function toApiError(error: HttpErrorResponse): ApiError {
 
   return {
     status: error.status,
-    message: body?.detail ?? body?.title ?? error.message ?? 'Something went wrong. Please try again.',
+    message: body?.detail ?? summariseFieldErrors(body?.errors) ?? body?.title ?? error.message ?? 'Something went wrong. Please try again.',
     fieldErrors: body?.errors ?? {},
   };
 }
 
 function isProblemDetailsBody(value: unknown): value is ProblemDetailsBody {
   return typeof value === 'object' && value !== null;
+}
+
+/** The actual rule violations, so a banner never says just "one or more errors occurred". */
+function summariseFieldErrors(errors: Record<string, string[]> | undefined): string | undefined {
+  const messages = Object.values(errors ?? {}).flat();
+  return messages.length > 0 ? messages.join(' ') : undefined;
 }

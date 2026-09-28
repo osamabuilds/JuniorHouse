@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Romp.Modules.Catalog.Domain\Romp.Modules.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\..\Vendor\Romp.Modules.Vendor.Contracts\Romp.Modules.Vendor.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />
   </ItemGroup>

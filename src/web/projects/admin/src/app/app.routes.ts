@@ -19,6 +19,13 @@ export const routes: Routes = [
     title: 'Vendors · Romp Admin',
   },
   {
+    // SCRUM-93 task 51: what a vendor sees of a PO. The shell hides its navigation on this route.
+    path: 'purchase-orders/:id/vendor-view',
+    loadComponent: () =>
+      import('./purchase-orders/vendor-view-page').then((m) => m.VendorViewPage),
+    title: 'Purchase Order · Romp',
+  },
+  {
     path: 'purchase-orders',
     loadComponent: () =>
       import('./purchase-orders/purchase-orders-page').then((m) => m.PurchaseOrdersPage),

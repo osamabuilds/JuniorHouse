@@ -22,6 +22,7 @@ public sealed class CancelPurchaseOrderCommandHandler(IVendorDbContext dbContext
         var po = await dbContext.PurchaseOrders
             .Include(p => p.Lines)
             .Include(p => p.StatusHistory)
+            .Include(p => p.Revisions).ThenInclude(r => r.Lines)
             .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Purchase order {request.Id} was not found.");
 

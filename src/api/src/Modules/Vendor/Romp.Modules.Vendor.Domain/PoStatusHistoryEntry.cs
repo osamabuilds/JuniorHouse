@@ -16,11 +16,12 @@ public sealed class PoStatusHistoryEntry : Entity<long>, IAuditable
     {
     }
 
-    internal PoStatusHistoryEntry(long poId, short poStatusId, short? cancelReasonId)
+    internal PoStatusHistoryEntry(long poId, short poStatusId, short? cancelReasonId, string? note = null)
     {
         PoId = poId;
         PoStatusId = poStatusId;
         CancelReasonId = cancelReasonId;
+        Note = note;
     }
 
     public long PoId { get; private set; }
@@ -28,6 +29,9 @@ public sealed class PoStatusHistoryEntry : Entity<long>, IAuditable
     public short PoStatusId { get; private set; }
 
     public short? CancelReasonId { get; private set; }
+
+    /// <summary>Free-text context for the transition, e.g. a Send confirmed without a tech pack (AC-39).</summary>
+    public string? Note { get; private set; }
 
     public DateTimeOffset InsrDte { get; set; }
 

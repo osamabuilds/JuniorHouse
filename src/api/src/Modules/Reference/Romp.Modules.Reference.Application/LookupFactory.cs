@@ -33,6 +33,16 @@ internal static class LookupFactory
             var t when t == typeof(VendorSpecialisationLookup) => new VendorSpecialisationLookup(code, name, description, sortSeq),
             var t when t == typeof(PoCancelReasonLookup) => new PoCancelReasonLookup(code, name, description, sortSeq),
             var t when t == typeof(PoStatusLookup) => new PoStatusLookup(code, name, description, sortSeq),
+            // Sprint 2 (SCRUM-93). PoFileCategoryLookup isn't listed here - it needs an extra
+            // IsVendorVisible argument this shared shape doesn't carry, and it's never mutable
+            // (spec section F: the vendor-visible/internal split is structural), so its Create/
+            // Update handlers are never registered and this factory is never asked to build one.
+            var t when t == typeof(AmendmentReasonLookup) => new AmendmentReasonLookup(code, name, description, sortSeq),
+            var t when t == typeof(VendorCommChannelLookup) => new VendorCommChannelLookup(code, name, description, sortSeq),
+            var t when t == typeof(FabricResponsibilityLookup) => new FabricResponsibilityLookup(code, name, description, sortSeq),
+            var t when t == typeof(RevisionStatusLookup) => new RevisionStatusLookup(code, name, description, sortSeq),
+            var t when t == typeof(AmendmentInitiatorLookup) => new AmendmentInitiatorLookup(code, name, description, sortSeq),
+            var t when t == typeof(PoVendorCommTypeLookup) => new PoVendorCommTypeLookup(code, name, description, sortSeq),
             _ => throw new NotSupportedException($"{typeof(TLookup).Name} is not a known lookup type."),
         };
 

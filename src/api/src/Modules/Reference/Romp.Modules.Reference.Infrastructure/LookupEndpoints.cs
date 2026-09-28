@@ -20,7 +20,7 @@ internal static class LookupEndpoints
     {
         var group = endpoints.MapGroup($"/api/ref/{routeSegment}").WithTags("Reference");
 
-        group.MapGet("/", async (bool includeInactive, ISender sender, CancellationToken cancellationToken) =>
+        group.MapGet("/", async (ISender sender, CancellationToken cancellationToken, bool includeInactive = false) =>
             Results.Ok(await sender.Send(new ListLookupQuery<TLookup>(includeInactive), cancellationToken)));
 
         if (!mutable)

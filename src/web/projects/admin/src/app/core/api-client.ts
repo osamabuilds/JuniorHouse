@@ -35,6 +35,24 @@ export class ApiClient {
       .pipe(catchError((error: HttpErrorResponse) => throwError(() => toApiError(error))));
   }
 
+  delete<T>(path: string): Observable<T> {
+    return this.http
+      .delete<T>(`${this.baseUrl}${path}`)
+      .pipe(catchError((error: HttpErrorResponse) => throwError(() => toApiError(error))));
+  }
+
+  /** Multipart upload (PO files). The browser sets the multipart boundary header itself. */
+  postForm<T>(path: string, body: FormData): Observable<T> {
+    return this.http
+      .post<T>(`${this.baseUrl}${path}`, body)
+      .pipe(catchError((error: HttpErrorResponse) => throwError(() => toApiError(error))));
+  }
+
+  /** Absolute URL for a plain link (e.g. a file download `<a href>`). */
+  url(path: string): string {
+    return `${this.baseUrl}${path}`;
+  }
+
   private buildParams(params?: QueryParams): HttpParams {
     let httpParams = new HttpParams();
 
