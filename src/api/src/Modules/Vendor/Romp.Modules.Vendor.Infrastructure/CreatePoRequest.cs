@@ -35,12 +35,14 @@ public sealed record CreateAmendmentRequest(
     short PaymentTermId,
     decimal AdvancePercent,
     short? FabricResponsibilityId,
-    IReadOnlyCollection<PoLineDto> Lines)
+    IReadOnlyCollection<PoLineDto> Lines,
+    IReadOnlyCollection<AmendmentFileAdd>? AddFiles = null,
+    IReadOnlyCollection<long>? RetireFileIds = null)
 {
     public CreateAmendmentCommand ToCommand(long poId) => new(
         poId, InitiatorId, ReasonId, ImpactNote, VendorMessage,
         UnitCost, ExpectedDeliveryDate, LatestAcceptableDate, OverTolerancePercent, UnderTolerancePercent,
-        PaymentTermId, AdvancePercent, FabricResponsibilityId, Lines);
+        PaymentTermId, AdvancePercent, FabricResponsibilityId, Lines, AddFiles, RetireFileIds);
 }
 
 /// <summary>SCRUM-93 task 29. POST body for rejecting or withdrawing a revision - both are optional-note actions, the PO id and revision number come from the route.</summary>

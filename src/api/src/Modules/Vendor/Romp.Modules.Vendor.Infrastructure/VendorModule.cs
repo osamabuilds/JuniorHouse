@@ -127,8 +127,8 @@ public sealed class VendorModule : IModule
                 CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
 
-        group.MapPost("/{id:long}/send", async (long id, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SendPurchaseOrderCommand(id), cancellationToken)));
+        group.MapPost("/{id:long}/send", async (long id, bool? sendWithoutTechPack, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new SendPurchaseOrderCommand(id, sendWithoutTechPack ?? false), cancellationToken)));
 
         group.MapPost("/{id:long}/acknowledge", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new AcknowledgePurchaseOrderCommand(id), cancellationToken)));
@@ -173,6 +173,49 @@ public sealed class VendorModule : IModule
 
         group.MapGet("/{id:long}/revisions", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetPurchaseOrderRevisionsQuery(id), cancellationToken)));
+
+        // SCRUM-93 task 43. 404 for a missing or never-sent PO - a vendor can't tell those apart.
+        group.MapGet("/{id:long}/vendor-view", async (long id, ISender sender, CancellationToken cancellationToken) =>
+        {
+            var view = await sender.Send(new GetVendorFacingPoViewQuery(id), cancellationToken);
+            return view is null ? Results.NotFound() : Results.Ok(view);
+        });
+
+        // SCRUM-93 task 40. Multipart upload; the content type is detected from the bytes, never trusted from the client.
+        group.MapGet("/{id:long}/files", async (long id, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new GetPoFileListQuery(id), cancellationToken)));
+
+        group.MapPost("/{id:long}/files", async (
+                long id,
+                [Microsoft.AspNetCore.Mvc.FromForm] short categoryId,
+                IFormFile file,
+                ISender sender,
+                CancellationToken cancellationToken) =>
+            {
+                await using var stream = file.OpenReadStream();
+                using var buffer = new MemoryStream();
+                await stream.CopyToAsync(buffer, cancellationToken);
+                return Results.Ok(await sender.Send(new UploadPoFileCommand(id, categoryId, file.FileName, buffer.ToArray()), cancellationToken));
+            })
+            .DisableAntiforgery();
+
+        group.MapDelete("/{id:long}/files/{fileId:long}", async (long id, long fileId, ISender sender, CancellationToken cancellationToken) =>
+        {
+            await sender.Send(new RemovePoFileCommand(id, fileId), cancellationToken);
+            return Results.NoContent();
+        });
+
+        group.MapGet("/{id:long}/files/{fileId:long}", async (
+            long id, long fileId, HttpContext http, ISender sender, CancellationToken cancellationToken) =>
+        {
+            var download = await sender.Send(new DownloadPoFileQuery(id, fileId), cancellationToken);
+            foreach (var (name, value) in download.Headers)
+            {
+                http.Response.Headers[name] = value;
+            }
+
+            return Results.File(download.Content, download.ContentType);
+        });
 
         // SCRUM-93 task 33. The route's id always wins over any PoId in the body.
         group.MapPost("/{id:long}/vendor-response", async (

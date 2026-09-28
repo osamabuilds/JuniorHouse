@@ -26,13 +26,32 @@ public sealed record CreateAmendmentCommand(
     short PaymentTermId,
     decimal AdvancePercent,
     short? FabricResponsibilityId,
-    IReadOnlyCollection<PoLineDto> Lines) : IRequest<PoRevisionDto>, IVendorCommand;
+    IReadOnlyCollection<PoLineDto> Lines,
+    IReadOnlyCollection<AmendmentFileAdd>? AddFiles = null,
+    IReadOnlyCollection<long>? RetireFileIds = null) : IRequest<PoRevisionDto>, IVendorCommand;
+
+/// <summary>SCRUM-93 task 37 (AC-38, AC-43). A vendor-visible file introduced by an amendment - the only way to add one after Send.</summary>
+public sealed record AmendmentFileAdd(short CategoryId, string FileName, byte[] Content);
 
 public sealed class CreateAmendmentCommandValidator : AbstractValidator<CreateAmendmentCommand>
 {
-    public CreateAmendmentCommandValidator(PoCommercialTermsOptions termsOptions)
+    public CreateAmendmentCommandValidator(PoCommercialTermsOptions termsOptions, PoFileStorageOptions fileOptions)
     {
         RuleFor(c => c.UnitCost).GreaterThan(0);
+
+        // AC-38/AC-45: same content rules as a direct upload; an amendment only ever adds vendor-visible files.
+        RuleForEach(c => c.AddFiles).ChildRules(file =>
+        {
+            file.RuleFor(f => f.CategoryId).Must(id => Romp.Modules.Vendor.Domain.PoFileCategory.IsVendorVisible(id))
+                .WithMessage("An amendment can only add vendor-visible files (tech pack, artwork, trim card, colour standard, packing instructions).");
+            file.RuleFor(f => f.FileName).NotEmpty().WithMessage("Each added file needs a name.");
+            file.RuleFor(f => f.Content)
+                .Must(content => content.Length > 0).WithMessage("An added file is empty.")
+                .Must(content => content.LongLength <= fileOptions.MaxFileSizeBytes)
+                .WithMessage($"An added file is larger than the {fileOptions.MaxFileSizeBytes / (1024 * 1024)} MB limit.")
+                .Must(content => content.Length == 0 || PoFileContent.DetectContentType(content) is not null)
+                .WithMessage($"An added file has a type that isn't allowed. Use {PoFileContent.AllowedTypesDescription}.");
+        });
         RuleFor(c => c.ReasonId).GreaterThan((short)0).WithMessage("A reason is required.");
         RuleFor(c => c.ImpactNote).NotEmpty().WithMessage("An internal impact note is required."); // AC-17
         RuleFor(c => c.Lines).NotEmpty().WithMessage("At least one size/colour line is required.");
@@ -52,7 +71,7 @@ public sealed class CreateAmendmentCommandValidator : AbstractValidator<CreateAm
     }
 }
 
-public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IStyleQueries styleQueries)
+public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IStyleQueries styleQueries, IFileStorage fileStorage, PoFileStorageOptions fileOptions)
     : IRequestHandler<CreateAmendmentCommand, PoRevisionDto>
 {
     public async Task<PoRevisionDto> Handle(CreateAmendmentCommand request, CancellationToken cancellationToken)
@@ -99,11 +118,35 @@ public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IS
 
         // AC-16: a true no-op (identical terms and lines to the PO's current position) is rejected.
         var requestedLines = request.Lines.Select(l => (l.SizeId, l.ColourId, l.Qty)).ToList();
-        if (IsNoOp(po, request, requestedLines))
+        var addFiles = request.AddFiles ?? [];
+        var retireFileIds = request.RetireFileIds ?? [];
+        if (IsNoOp(po, request, requestedLines) && addFiles.Count == 0 && retireFileIds.Count == 0)
         {
             throw new Romp.BuildingBlocks.Application.ValidationException(new Dictionary<string, string[]>
             {
                 [nameof(request.PoId)] = ["This amendment doesn't change anything from the PO's current terms or lines."],
+            });
+        }
+
+        // AC-38/AC-43: only a vendor-visible file that is effective right now can be retired, and the
+        // PO's file count limit still applies to what the amendment would add.
+        var poFiles = await dbContext.PurchaseOrderFiles.Where(f => f.PoId == po.Id && !f.IsDeleted).ToListAsync(cancellationToken);
+        var currentRevisionNumber = po.Revisions.FirstOrDefault(r => r.StatusId == 2 /* InForce */)?.RevisionNumber ?? (short)0;
+        var effectiveNow = PoFileEffectiveSet.At(poFiles, po.Revisions, currentRevisionNumber).Select(f => f.Id).ToHashSet();
+        var notRetirable = retireFileIds.Where(id => !effectiveNow.Contains(id)).ToList();
+        if (notRetirable.Count > 0)
+        {
+            throw new Romp.BuildingBlocks.Application.ValidationException(new Dictionary<string, string[]>
+            {
+                [nameof(request.RetireFileIds)] = [$"{notRetirable.Count} file(s) can't be retired: only vendor-visible files currently in effect on PO {po.PoNo} can be."],
+            });
+        }
+
+        if (poFiles.Count + addFiles.Count > fileOptions.MaxFilesPerPo)
+        {
+            throw new Romp.BuildingBlocks.Application.ValidationException(new Dictionary<string, string[]>
+            {
+                [nameof(request.AddFiles)] = [$"PO {po.PoNo} would exceed the maximum of {fileOptions.MaxFilesPerPo} files."],
             });
         }
 
@@ -126,7 +169,26 @@ public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IS
             requestedLines,
             goesImmediatelyInForce);
 
+        // The revision's id only exists once saved; the files' effective window refers to it (AC-43).
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (addFiles.Count > 0 || retireFileIds.Count > 0)
+        {
+            foreach (var added in addFiles)
+            {
+                var storageKey = await fileStorage.SaveAsync(added.Content, cancellationToken);
+                dbContext.PurchaseOrderFiles.Add(new PurchaseOrderFile(
+                    po.Id, added.CategoryId, PoFileContent.SanitiseFileName(added.FileName), storageKey,
+                    PoFileContent.DetectContentType(added.Content)!, added.Content.LongLength, revision.Id));
+            }
+
+            foreach (var file in poFiles.Where(f => retireFileIds.Contains(f.Id)))
+            {
+                file.RetireIn(revision.Id);
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         return revision.ToDto();
     }

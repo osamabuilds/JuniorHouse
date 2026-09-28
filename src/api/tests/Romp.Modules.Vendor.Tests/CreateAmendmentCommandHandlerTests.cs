@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Infrastructure;
@@ -196,5 +197,93 @@ public sealed class CreateAmendmentCommandHandlerTests
 
         var dbContext = provider.GetRequiredService<VendorDbContext>();
         Assert.Contains(dbContext.Set<Romp.BuildingBlocks.Persistence.OutboxMessage>(), m => m.EventType == "PoRevisionPutInForceEvent");
+    }
+
+    private static CreateAmendmentCommand FileOnlyAmendment(
+        PoDto po, IReadOnlyCollection<AmendmentFileAdd>? add = null, IReadOnlyCollection<long>? retire = null) =>
+        new(po.Id, 1, 8, "Spec changed", null,
+            po.UnitCost, po.ExpectedDeliveryDate, po.LatestAcceptableDate,
+            po.OverTolerancePercent, po.UnderTolerancePercent, po.PaymentTermId, po.AdvancePercent, po.FabricResponsibilityId, po.Lines,
+            add, retire);
+
+    [Fact]
+    [Trait("Spec", "AC-38")]
+    [Trait("Spec", "AC-43")]
+    [Trait("Spec", "AC-44")]
+    public async Task Handle_FileChanges_UpdatesEffectiveWindow()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        var original = await sender.Send(new UploadPoFileCommand(po.Id, PoTestFiles.TechPack, "spec-v1.pdf", PoTestFiles.Pdf("v1")));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+
+        // A file-only amendment (no term or line change) is a real amendment, not a no-op.
+        var revision = await sender.Send(FileOnlyAmendment(
+            po,
+            add: [new AmendmentFileAdd(PoTestFiles.TechPack, "spec-v2.pdf", PoTestFiles.Pdf("v2"))],
+            retire: [original.Id]));
+
+        Assert.Equal((short)1, revision.RevisionNumber);
+        var files = await sender.Send(new GetPoFileListQuery(po.Id));
+        var v1 = Assert.Single(files, f => f.FileName == "spec-v1.pdf");
+        var v2 = Assert.Single(files, f => f.FileName == "spec-v2.pdf");
+        Assert.Null(v1.AddedInRevisionNumber);
+        Assert.Equal((short)1, v1.RetiredInRevisionNumber);
+        Assert.Equal((short)1, v2.AddedInRevisionNumber);
+        Assert.Null(v2.RetiredInRevisionNumber);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-44")]
+    public async Task RevZero_EffectiveSetIsFilesPresentAtSend()
+    {
+        var provider = TestServices.Build(Guid.NewGuid().ToString());
+        var sender = provider.GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        var original = await sender.Send(new UploadPoFileCommand(po.Id, PoTestFiles.TechPack, "spec-v1.pdf", PoTestFiles.Pdf("v1")));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(FileOnlyAmendment(
+            po,
+            add: [new AmendmentFileAdd(PoTestFiles.TechPack, "spec-v2.pdf", PoTestFiles.Pdf("v2"))],
+            retire: [original.Id]));
+
+        var dbContext = provider.GetRequiredService<VendorDbContext>();
+        var files = dbContext.Set<Romp.Modules.Vendor.Domain.PurchaseOrderFile>().ToList();
+        var revisions = dbContext.PurchaseOrders.Include(p => p.Revisions).Single(p => p.Id == po.Id).Revisions;
+
+        Assert.Equal(["spec-v1.pdf"], Romp.Modules.Vendor.Domain.PoFileEffectiveSet.At(files, revisions, 0).Select(f => f.FileName));
+        Assert.Equal(["spec-v2.pdf"], Romp.Modules.Vendor.Domain.PoFileEffectiveSet.At(files, revisions, 1).Select(f => f.FileName));
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-38")]
+    public async Task Handle_RetiringAnInternalOrUnknownFile_Rejected()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        var internalFile = await sender.Send(new UploadPoFileCommand(po.Id, PoTestFiles.CostSheet, "cost.pdf", PoTestFiles.Pdf()));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
+
+        var exception = await Assert.ThrowsAsync<Romp.BuildingBlocks.Application.ValidationException>(
+            () => sender.Send(FileOnlyAmendment(po, retire: [internalFile.Id])));
+
+        Assert.Contains("can't be retired", exception.Message);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-45")]
+    public async Task Handle_AddingInternalCategoryOrBadFile_Rejected()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
+
+        var internalCategory = await Assert.ThrowsAsync<Romp.BuildingBlocks.Application.ValidationException>(
+            () => sender.Send(FileOnlyAmendment(po, add: [new AmendmentFileAdd(PoTestFiles.CostSheet, "cost.pdf", PoTestFiles.Pdf())])));
+        Assert.Contains("only add vendor-visible files", internalCategory.Message);
+
+        var badType = await Assert.ThrowsAsync<Romp.BuildingBlocks.Application.ValidationException>(
+            () => sender.Send(FileOnlyAmendment(po, add: [new AmendmentFileAdd(PoTestFiles.TechPack, "x.pdf", "MZ"u8.ToArray())])));
+        Assert.Contains("isn't allowed", badType.Message);
     }
 }
