@@ -9,8 +9,9 @@ namespace Romp.Modules.Vendor.Contracts;
 public interface IPurchaseOrderUsageQueries
 {
     /// <summary>
-    /// One row per size x colour cell a non-cancelled PO's lines still use for this style (task
-    /// 28 will extend this to also cover a Pending revision's lines once PO_REV_LINE exists).
+    /// One row per size x colour cell a non-cancelled PO's lines still use for this style - covers
+    /// both the current (In-force) PO_LINE mirror and, since task 28, any open Pending revision's
+    /// own proposed lines (AC-2's own wording: "an In-force revision or a Pending revision").
     /// </summary>
     Task<IReadOnlyCollection<PoSizeColourUsage>> GetActiveSizeColourUsageAsync(
         long styleId, CancellationToken cancellationToken);

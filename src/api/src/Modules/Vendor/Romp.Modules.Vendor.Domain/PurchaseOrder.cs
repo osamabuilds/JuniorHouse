@@ -136,11 +136,19 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
     }
 
     /// <summary>AC-12: Draft/SentToVendor/Acknowledged -&gt; Cancelled, with a mandatory reason (AC-12a is enforced by the command validator, not here).</summary>
+    /// <remarks>SCRUM-93 task 26 (AC-21): the caller must have loaded <see cref="Revisions"/> - an open Pending revision is auto-withdrawn in this same call.</remarks>
     public void Cancel(short cancelReasonId)
     {
         if (StatusId == PoStatus.Cancelled)
         {
             throw new DomainException($"PO {PoNo} is already cancelled.");
+        }
+
+        var openPending = _revisions.FirstOrDefault(r => r.StatusId == RevisionStatus.Pending);
+        if (openPending is not null)
+        {
+            openPending.MarkWithdrawn("Auto-withdrawn: PO cancelled.");
+            Raise(new PoRevisionWithdrawnEvent(Id, PoNo, openPending.RevisionNumber));
         }
 
         StatusId = PoStatus.Cancelled;
