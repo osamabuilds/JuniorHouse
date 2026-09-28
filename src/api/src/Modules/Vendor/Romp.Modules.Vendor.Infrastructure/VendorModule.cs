@@ -164,6 +164,21 @@ public sealed class VendorModule : IModule
         group.MapGet("/{id:long}/revisions", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetPurchaseOrderRevisionsQuery(id), cancellationToken)));
 
+        // SCRUM-93 task 33. The route's id always wins over any PoId in the body.
+        group.MapPost("/{id:long}/vendor-response", async (
+                long id,
+                RecordVendorResponseCommand body,
+                ISender sender,
+                CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(body with { PoId = id }, cancellationToken)));
+
+        group.MapPost("/{id:long}/vendor-amendment-request", async (
+                long id,
+                RecordVendorAmendmentRequestCommand body,
+                ISender sender,
+                CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(body with { PoId = id }, cancellationToken)));
+
         group.MapGet("/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
         {
             var po = await sender.Send(new GetPurchaseOrderByIdQuery(id), cancellationToken);
