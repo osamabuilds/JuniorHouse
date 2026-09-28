@@ -106,7 +106,7 @@ Same "no auth yet" caveat as Sprint 1 — flagged again, more sharply, under NFR
 | `GET` | `/api/purchase-orders/{id}/files` | None (S2) | N/A |
 | `PUT` | `/api/catalog/styles/{id}` (unchanged route, extended validation) | None (S2) | N/A |
 | `GET`/`POST`/`PUT`/`.../retire` | `/api/ref/{lookup}` for `amendment-reasons`, `vendor-comm-channels` (staff-maintained) | None (S2) | N/A |
-| `GET` | `/api/ref/{lookup}` for `revision-statuses`, `amendment-initiators`, `fabric-responsibilities`, `attachment-categories` (system-owned, read-only — same treatment as Sprint 1's `po-statuses`) | None (S2) | N/A |
+| `GET` | `/api/ref/{lookup}` for `revision-statuses`, `amendment-initiators`, `fabric-responsibilities`, `po-file-categories`, `vendor-comm-types` (system-owned, read-only — same treatment as Sprint 1's `po-statuses`) | None (S2) | N/A |
 
 ## Events
 
@@ -136,10 +136,10 @@ All new/changed columns follow `docs/db/naming.md`; every new transactional tabl
 
 **`REF` schema — new lookups (standard shape unless noted):**
 - `PO_REV_STS_LKP` (system-owned, no admin CRUD — same treatment as Sprint 1's `PO_STS_LKP`): `Pending`, `InForce`, `Superseded`, `Rejected`, `Withdrawn`.
-- `AMND_INITR_LKP` (system-owned): `Buyer`, `Vendor`.
+- `AMND_INIT_LKP` (system-owned): `Buyer`, `Vendor`.
 - `AMND_RSN_LKP` (staff CRUD): seeds per spec section on Non-functional constraints (`VendorCostIncrease`, `MoqConstraint`, `FabricOrTrimUnavailable`, `CapacityDelay`, `AdvanceRequest`, `SizeMixChange`, `ColourChange`, `SpecChange`, `SafetyOrCompliance`, `BuyerDemandChange`, `Other`).
 - `VNDR_COMM_CHNL_LKP` (staff CRUD): `WhatsApp`, `PhoneCall`, `Email`, `InPerson`, `Unspecified`.
-- `FBRC_RESP_LKP` (staff CRUD): `VendorSupplied`, `RompSupplied`.
+- `FBRC_RESP_LKP` (system-owned — drives real branching logic in Sprint 3's milestone list, same treatment as `PO_STS_LKP`): `VendorSupplied`, `RompSupplied`.
 - `PO_FILE_CATG_LKP` (system-owned — the vendor-visible flag is structural, not admin-editable): standard shape + `VNDR_VSBL_IND boolean` — seeds `TechPackSpec`(true), `ArtworkLabels`(true), `TrimCardBom`(true), `ColourStandard`(true), `PackingInstructions`(true), `CostSheet`(false), `ComplianceTestReport`(false), `VendorEvidence`(false), `Other`(false).
 - `PO_VNDR_COMM_TYP_LKP` (system-owned): `Confirmed`, `Countered`, `Declined`, `AmendmentRequest`, `Decision`.
 
@@ -167,7 +167,7 @@ Admin app, `Purchase Orders` section, extended:
 - **New route:** `/purchase-orders/{id}/vendor-view` — a separate, minimal, phone-readable/print-friendly layout (no admin chrome, no nav) built from `VendorPoViewDto` only.
 - **File management panel** on the PO detail view: grouped by vendor-visible vs. internal, upload with category selector, download, remove (Draft-only for vendor-visible; internal removable pre-Send only) — greyed out / explained via tooltip where a direct action is blocked and points to Amend instead (AC-40's UI-level mirror).
 - **Send confirmation dialog** gains the non-blocking checklist (spec section F) with an explicit "send anyway" when no `TechPackSpec` file is attached.
-- **Reference Data screen** gains the two new staff-maintained lookup types (`amendment-reasons`, `vendor-comm-channels`) in its existing type selector; the four system-owned ones are not exposed there at all (same treatment as Sprint 1's `po-statuses`).
+- **Reference Data screen** gains the two new staff-maintained lookup types (`amendment-reasons`, `vendor-comm-channels`) in its existing type selector; the five system-owned ones are not exposed there at all (same treatment as Sprint 1's `po-statuses`).
 - **Styles screen:** no new UI, but the existing size/colour removal action now surfaces the style-guard's rejection message (listing blocking PO numbers) via the existing `ProblemDetails` field-error rendering — no new component needed.
 
 All screens: same baseline as Sprint 1 (semantic layout, `<label>` on every control, WCAG 2.1 AA, `noindex, nofollow`, no SSR/SEO requirements — admin only).

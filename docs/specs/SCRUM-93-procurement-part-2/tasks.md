@@ -10,8 +10,8 @@ Ordering here follows build dependency (what has to exist before what), not raw 
 
 ## REF: new lookups (P0/P1/P2/P3 foundation — everything below depends on these existing)
 
-- [ ] 2. Migration: 7 new `REF` lookup tables — `PO_REV_STS_LKP`, `AMND_INITR_LKP`, `PO_VNDR_COMM_TYP_LKP`, `PO_FILE_CATG_LKP` (+ `VNDR_VSBL_IND boolean`) as system-owned/read-only (same treatment as `PO_STS_LKP`); `AMND_RSN_LKP`, `VNDR_COMM_CHNL_LKP`, `FBRC_RESP_LKP` as staff-maintained CRUD (same treatment as the other nine Sprint 1 lookups). Seed rows per plan.md's Data section. Test: `RefMigrationTests.Migrate_CreatesSprint2LookupTables_WithSeedRows`
-- [ ] 3. `ListLookupQuery`/CRUD wiring for the 3 new staff-maintained lookups, read-only listing for the 4 system-owned ones — reuses Sprint 1's generic lookup machinery, no new handler code expected. Test: `ListLookupQueryHandlerTests.Handle_Sprint2Lookups_ReturnActiveRowsByDefault`
+- [x] 2. Migration: 7 new `REF` lookup tables — `PO_REV_STS_LKP`, `AMND_INIT_LKP`, `PO_VNDR_COMM_TYP_LKP`, `PO_FILE_CATG_LKP` (+ `VNDR_VSBL_IND boolean`), `FBRC_RESP_LKP` as system-owned/read-only (same treatment as `PO_STS_LKP` — `FBRC_RESP_LKP` moved here from the original staff-CRUD plan since it drives real branching logic, same reasoning as the other four); `AMND_RSN_LKP`, `VNDR_COMM_CHNL_LKP` as staff-maintained CRUD. Seed rows per plan.md's Data section. Test: `RefMigrationTests.Migrate_CreatesSprint2LookupTables_WithSeedRows`
+- [x] 3. `ListLookupQuery`/CRUD wiring for the 2 new staff-maintained lookups, read-only listing for the 5 system-owned ones — reuses Sprint 1's generic lookup machinery, no new handler code expected. Test: `ListLookupQueryHandlerTests.Handle_Sprint2Lookups_ReturnActiveRowsByDefault`
 
 ## VNDR: style guard (P0)
 

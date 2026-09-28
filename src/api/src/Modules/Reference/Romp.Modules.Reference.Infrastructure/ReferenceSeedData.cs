@@ -101,6 +101,64 @@ internal static class ReferenceSeedData
             Row<PoCancelReasonLookup>(4, "StyleDiscontinued", "Style Discontinued", 4),
             Row<PoCancelReasonLookup>(5, "DuplicateEntry", "Duplicate Entry", 5),
             Row<PoCancelReasonLookup>(6, "Other", "Other", 6));
+
+        // Sprint 2 (SCRUM-93). Staff-maintained (plan.md Data section, exact seed list from the
+        // spec's Non-functional constraints).
+        modelBuilder.Entity<AmendmentReasonLookup>().HasData(
+            Row<AmendmentReasonLookup>(1, "VendorCostIncrease", "Vendor Cost Increase", 1),
+            Row<AmendmentReasonLookup>(2, "MoqConstraint", "MOQ Constraint", 2),
+            Row<AmendmentReasonLookup>(3, "FabricOrTrimUnavailable", "Fabric or Trim Unavailable", 3),
+            Row<AmendmentReasonLookup>(4, "CapacityDelay", "Capacity Delay", 4),
+            Row<AmendmentReasonLookup>(5, "AdvanceRequest", "Advance Request", 5),
+            Row<AmendmentReasonLookup>(6, "SizeMixChange", "Size Mix Change", 6),
+            Row<AmendmentReasonLookup>(7, "ColourChange", "Colour Change", 7),
+            Row<AmendmentReasonLookup>(8, "SpecChange", "Spec Change", 8),
+            Row<AmendmentReasonLookup>(9, "SafetyOrCompliance", "Safety or Compliance", 9),
+            Row<AmendmentReasonLookup>(10, "BuyerDemandChange", "Buyer Demand Change", 10),
+            Row<AmendmentReasonLookup>(11, "Other", "Other", 11));
+
+        modelBuilder.Entity<VendorCommChannelLookup>().HasData(
+            Row<VendorCommChannelLookup>(1, "WhatsApp", "WhatsApp", 1),
+            Row<VendorCommChannelLookup>(2, "PhoneCall", "Phone Call", 2),
+            Row<VendorCommChannelLookup>(3, "Email", "Email", 3),
+            Row<VendorCommChannelLookup>(4, "InPerson", "In Person", 4),
+            Row<VendorCommChannelLookup>(5, "Unspecified", "Unspecified", 5));
+
+        modelBuilder.Entity<FabricResponsibilityLookup>().HasData(
+            Row<FabricResponsibilityLookup>(1, "VendorSupplied", "Vendor Supplied", 1),
+            Row<FabricResponsibilityLookup>(2, "RompSupplied", "Romp Supplied", 2));
+
+        // Sprint 2, system-owned (spec section D / ADR 0007): the PO revision state machine.
+        modelBuilder.Entity<RevisionStatusLookup>().HasData(
+            Row<RevisionStatusLookup>(1, "Pending", "Pending", 1),
+            Row<RevisionStatusLookup>(2, "InForce", "In Force", 2),
+            Row<RevisionStatusLookup>(3, "Superseded", "Superseded", 3),
+            Row<RevisionStatusLookup>(4, "Rejected", "Rejected", 4),
+            Row<RevisionStatusLookup>(5, "Withdrawn", "Withdrawn", 5));
+
+        modelBuilder.Entity<AmendmentInitiatorLookup>().HasData(
+            Row<AmendmentInitiatorLookup>(1, "Buyer", "Buyer", 1),
+            Row<AmendmentInitiatorLookup>(2, "Vendor", "Vendor", 2));
+
+        modelBuilder.Entity<PoVendorCommTypeLookup>().HasData(
+            Row<PoVendorCommTypeLookup>(1, "Confirmed", "Confirmed", 1),
+            Row<PoVendorCommTypeLookup>(2, "Countered", "Countered", 2),
+            Row<PoVendorCommTypeLookup>(3, "Declined", "Declined", 3),
+            Row<PoVendorCommTypeLookup>(4, "AmendmentRequest", "Amendment Request", 4),
+            Row<PoVendorCommTypeLookup>(5, "Decision", "Decision", 5));
+
+        // Sprint 2, system-owned (spec section F): the vendor-visible/internal split is structural,
+        // not staff-editable.
+        modelBuilder.Entity<PoFileCategoryLookup>().HasData(
+            new { Id = (short)1, Code = "TechPackSpec", Name = "Tech Pack Spec", Description = (string?)null, SortSeq = (short)1, IsActive = true, IsVendorVisible = true },
+            new { Id = (short)2, Code = "ArtworkLabels", Name = "Artwork / Labels", Description = (string?)null, SortSeq = (short)2, IsActive = true, IsVendorVisible = true },
+            new { Id = (short)3, Code = "TrimCardBom", Name = "Trim Card / BOM", Description = (string?)null, SortSeq = (short)3, IsActive = true, IsVendorVisible = true },
+            new { Id = (short)4, Code = "ColourStandard", Name = "Colour Standard", Description = (string?)null, SortSeq = (short)4, IsActive = true, IsVendorVisible = true },
+            new { Id = (short)5, Code = "PackingInstructions", Name = "Packing Instructions", Description = (string?)null, SortSeq = (short)5, IsActive = true, IsVendorVisible = true },
+            new { Id = (short)6, Code = "CostSheet", Name = "Cost Sheet", Description = (string?)null, SortSeq = (short)6, IsActive = true, IsVendorVisible = false },
+            new { Id = (short)7, Code = "ComplianceTestReport", Name = "Compliance / Test Report", Description = (string?)null, SortSeq = (short)7, IsActive = true, IsVendorVisible = false },
+            new { Id = (short)8, Code = "VendorEvidence", Name = "Vendor Evidence", Description = (string?)null, SortSeq = (short)8, IsActive = true, IsVendorVisible = false },
+            new { Id = (short)9, Code = "Other", Name = "Other", Description = (string?)null, SortSeq = (short)9, IsActive = true, IsVendorVisible = false });
     }
 
     /// <summary>The standard lookup shape's HasData row, for the nine types with no extra column.</summary>
