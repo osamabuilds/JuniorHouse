@@ -30,3 +30,25 @@ public sealed record PoCancelledEvent(long PoId, string PoNo, short CancelReason
 
     public DateTimeOffset OccurredAt { get; } = DateTimeOffset.UtcNow;
 }
+
+/// <summary>SCRUM-93 task 22 (plan.md's Events section). Minimal v1 shape - task 44 finalises the full envelope/snapshot payload additively, same as Sprint 1's own events extend v1-&gt;v2.</summary>
+public sealed record PoRevisionProposedEvent(long PoId, string PoNo, short RevisionNumber) : IDomainEvent
+{
+    public Guid EventId { get; } = Guid.NewGuid();
+
+    public DateTimeOffset OccurredAt { get; } = DateTimeOffset.UtcNow;
+}
+
+public sealed record PoRevisionPutInForceEvent(long PoId, string PoNo, short RevisionNumber) : IDomainEvent
+{
+    public Guid EventId { get; } = Guid.NewGuid();
+
+    public DateTimeOffset OccurredAt { get; } = DateTimeOffset.UtcNow;
+}
+
+public sealed record PoRevisionSupersededEvent(long PoId, string PoNo, short RevisionNumber) : IDomainEvent
+{
+    public Guid EventId { get; } = Guid.NewGuid();
+
+    public DateTimeOffset OccurredAt { get; } = DateTimeOffset.UtcNow;
+}

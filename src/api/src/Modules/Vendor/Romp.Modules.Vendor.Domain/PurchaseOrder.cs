@@ -208,7 +208,11 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         if (goesImmediatelyInForce)
         {
             var priorInForce = _revisions.FirstOrDefault(r => r.StatusId == RevisionStatus.InForce);
-            priorInForce?.MarkSuperseded();
+            if (priorInForce is not null)
+            {
+                priorInForce.MarkSuperseded();
+                Raise(new PoRevisionSupersededEvent(Id, PoNo, priorInForce.RevisionNumber));
+            }
 
             // ADR 0007: the parent's mirror is updated only by the same transaction that moves a
             // revision to InForce - this real property change on the aggregate's own row is also
@@ -225,6 +229,12 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 
             _lines.Clear();
             _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
+
+            Raise(new PoRevisionPutInForceEvent(Id, PoNo, revisionNumber));
+        }
+        else
+        {
+            Raise(new PoRevisionProposedEvent(Id, PoNo, revisionNumber));
         }
 
         _revisions.Add(revision);
