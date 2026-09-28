@@ -13,7 +13,7 @@ public sealed class WithdrawRevisionCommandHandler(IVendorDbContext dbContext)
     {
         var po = await dbContext.PurchaseOrders
             .Include(p => p.Lines)
-            .Include(p => p.Revisions)
+            .Include(p => p.Revisions).ThenInclude(r => r.Lines)
             .Include(p => p.StatusHistory)
             .FirstOrDefaultAsync(p => p.Id == request.PoId, cancellationToken)
             ?? throw new KeyNotFoundException($"Purchase order {request.PoId} was not found.");

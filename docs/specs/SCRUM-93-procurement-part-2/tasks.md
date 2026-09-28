@@ -76,9 +76,9 @@ Ordering here follows build dependency (what has to exist before what), not raw 
 
 ## Events: contract finalization
 
-- [ ] 44. Extend Sprint 1's 4 events additively to schema v2 (+ revision number, + terms snapshot); define v1 payloads for the 5 new revision events; shared envelope (message id, event type, schema version, occurred-at UTC, aggregate type/id, `PO_NO`) on every payload. Test: `EventPayloadTests.Sprint1Events_V2_AdditiveOnly_NoFieldMeaningChanges` / `RevisionEvents_CarryFullEnvelopeAndSnapshot` (AC-48, AC-49)
-- [ ] 45. Payload builder excludes internal impact note, vendor evidence, internal files from every payload. Test: `EventPayloadTests.Payload_NeverContainsInternalData` (AC-50)
-- [ ] 46. Finalize `Romp.Modules.Vendor.Contracts`: in-force terms query, revision-list query, effective-file-set query, style-usage query (task 4/28) — all read-only, for Sprint 3's future consumption. Test: `VendorContractsTests.Queries_ReturnExpectedShapesForFutureConsumers` (AC-51)
+- [x] 44. Extend Sprint 1's 4 events additively to schema v2 (+ revision number, + terms snapshot); define v1 payloads for the 5 new revision events; shared envelope (message id, event type, schema version, occurred-at UTC, aggregate type/id, `PO_NO`) on every payload. Test: `EventPayloadTests.Sprint1Events_V2_AdditiveOnly_NoFieldMeaningChanges` / `RevisionEvents_CarryFullEnvelopeAndSnapshot` (AC-48, AC-49)
+- [x] 45. Payload builder excludes internal impact note, vendor evidence, internal files from every payload. Test: `EventPayloadTests.Payload_NeverContainsInternalData` (AC-50)
+- [x] 46. Finalize `Romp.Modules.Vendor.Contracts`: in-force terms query, revision-list query, effective-file-set query, style-usage query (task 4/28) — all read-only, for Sprint 3's future consumption. Test: `VendorContractsTests.Queries_ReturnExpectedShapesForFutureConsumers` (AC-51) — also found and fixed while here: (a) outbox rows never got AGGR_TYP/AGGR_ID/MSG_VER set, so per-aggregate ordering could not work — interceptor now stamps them from the new `IOutboxEvent` envelope; (b) handlers loaded `Revisions` without their `Lines`, so accepting a Pending revision on a fresh context would have replaced the PO's lines with none — fixed with `ThenInclude`, regression test uses a fresh scope per call. Known gap left: `PoCreatedEvent.PoId` is 0 (id not assigned until insert), so its outbox row has no AGGR_ID.
 
 ## Admin frontend
 

@@ -53,6 +53,7 @@ internal static class TestServices
         services.AddScoped<IVendorDbContext>(sp => sp.GetRequiredService<VendorDbContext>());
         services.AddScoped<IStyleQueries, FakeStyleQueries>();
         services.AddScoped<IPaymentTermQueries, FakePaymentTermQueries>();
+        services.AddScoped<Romp.Modules.Vendor.Contracts.IPurchaseOrderQueries, PurchaseOrderQueries>();
         services.AddScoped<IPoNumberAllocator, StubPoNumberAllocator>();
         services.AddSingleton(new PoCommercialTermsOptions());
         services.AddSingleton(new PoFileStorageOptions { MaxFileSizeBytes = 1024, MaxFilesPerPo = 3 });

@@ -57,4 +57,33 @@ public sealed class DecideRevisionCommandHandlerTests
             .SingleAsync(r => r.PoId == po.Id && r.RevisionNumber == pendingRevision.RevisionNumber);
         Assert.Equal(4, revision.StatusId); // RevisionStatus.Rejected - still visible/queryable in history
     }
+
+    /// <summary>
+    /// Regression: the other tests share one tracked DbContext across calls, which hides a handler
+    /// that forgets to load a revision's lines. A fresh scope per command behaves like real requests.
+    /// </summary>
+    [Fact]
+    [Trait("Spec", "AC-11")]
+    public async Task Handle_Accept_FreshContext_CarriesRevisionLinesOntoPo()
+    {
+        var provider = TestServices.Build(Guid.NewGuid().ToString());
+        async Task<T> InNewScope<T>(Func<ISender, Task<T>> action)
+        {
+            using var scope = provider.CreateScope();
+            return await action(scope.ServiceProvider.GetRequiredService<ISender>());
+        }
+
+        var po = await InNewScope(s => PoTestHelpers.CreateDraftPoAsync(s));
+        await InNewScope(s => s.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true)));
+        await InNewScope(s => s.Send(new AcknowledgePurchaseOrderCommand(po.Id)));
+        var newLines = new[] { new PoLineDto(1, 10, 300), new PoLineDto(2, 20, 25) };
+        var revision = await InNewScope(s => s.Send(new CreateAmendmentCommand(
+            po.Id, 1, 6, "Size mix change", null,
+            po.UnitCost, po.ExpectedDeliveryDate, po.LatestAcceptableDate,
+            null, null, po.PaymentTermId, po.AdvancePercent, po.FabricResponsibilityId, newLines)));
+
+        var accepted = await InNewScope(s => s.Send(new DecideRevisionCommand(po.Id, revision.RevisionNumber, Accept: true, Note: null)));
+
+        Assert.Equal(newLines.OrderBy(l => l.SizeId), accepted.Lines.OrderBy(l => l.SizeId));
+    }
 }

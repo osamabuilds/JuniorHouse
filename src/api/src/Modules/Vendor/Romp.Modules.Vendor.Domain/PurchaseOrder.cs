@@ -41,7 +41,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 
         _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
         _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.Draft, cancelReasonId: null));
-        Raise(new PoCreatedEvent(Id, poNo, vendorId, styleId));
+        Raise(new PoCreatedEvent(Id, poNo, vendorId, styleId, CurrentTerms()));
     }
 
     public string PoNo { get; private set; }
@@ -129,7 +129,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         StatusId = PoStatus.SentToVendor;
         _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.SentToVendor, cancelReasonId: null, note));
         CreateBaselineRevision();
-        Raise(new PoSentToVendorEvent(Id, PoNo));
+        Raise(new PoSentToVendorEvent(Id, PoNo, 0, CurrentTerms()));
     }
 
     /// <summary>AC-63: Rev 0, captured as-is (no diff from itself) - not raised as its own outbox event; plan.md's events table only ties PoRevisionPutInForceEvent to CreateAmendmentCommand/DecideRevisionCommand, not Send.</summary>
@@ -158,7 +158,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         RequireStatus(PoStatus.SentToVendor, "acknowledge");
         StatusId = PoStatus.Acknowledged;
         _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.Acknowledged, cancelReasonId: null));
-        Raise(new PoAcknowledgedEvent(Id, PoNo));
+        Raise(new PoAcknowledgedEvent(Id, PoNo, InForceRevisionNumber(), CurrentTerms()));
     }
 
     /// <summary>AC-12: Draft/SentToVendor/Acknowledged -&gt; Cancelled, with a mandatory reason (AC-12a is enforced by the command validator, not here).</summary>
@@ -174,12 +174,12 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         if (openPending is not null)
         {
             openPending.MarkWithdrawn("Auto-withdrawn: PO cancelled.");
-            Raise(new PoRevisionWithdrawnEvent(Id, PoNo, openPending.RevisionNumber));
+            Raise(new PoRevisionWithdrawnEvent(Id, PoNo, openPending.RevisionNumber, openPending.InitiatorId, PoTermsSnapshot.From(openPending)));
         }
 
         StatusId = PoStatus.Cancelled;
         _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.Cancelled, cancelReasonId));
-        Raise(new PoCancelledEvent(Id, PoNo, cancelReasonId));
+        Raise(new PoCancelledEvent(Id, PoNo, cancelReasonId, InForceRevisionNumber(), CurrentTerms()));
     }
 
     /// <summary>
@@ -245,7 +245,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         }
         else
         {
-            Raise(new PoRevisionProposedEvent(Id, PoNo, revisionNumber));
+            Raise(new PoRevisionProposedEvent(Id, PoNo, revisionNumber, initiatorId, PoTermsSnapshot.From(revision)));
         }
 
         _revisions.Add(revision);
@@ -274,7 +274,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         RequireRevisionStatus(revision, RevisionStatus.Pending, "rejected");
 
         revision.MarkRejected(note);
-        Raise(new PoRevisionRejectedEvent(Id, PoNo, revisionNumber));
+        Raise(new PoRevisionRejectedEvent(Id, PoNo, revisionNumber, revision.InitiatorId, PoTermsSnapshot.From(revision)));
     }
 
     /// <summary>SCRUM-93 task 25 (AC-13). Withdrawn by its own proposer - never takes effect. Also used by <see cref="Cancel"/>'s auto-withdraw (task 26, AC-21).</summary>
@@ -284,7 +284,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         RequireRevisionStatus(revision, RevisionStatus.Pending, "withdrawn");
 
         revision.MarkWithdrawn(note);
-        Raise(new PoRevisionWithdrawnEvent(Id, PoNo, revisionNumber));
+        Raise(new PoRevisionWithdrawnEvent(Id, PoNo, revisionNumber, revision.InitiatorId, PoTermsSnapshot.From(revision)));
     }
 
     /// <summary>Mirrors <paramref name="revision"/>'s terms/lines onto this aggregate's own row and supersedes whichever other revision was previously In-force - shared by both a new revision created immediately In-force (AC-9) and an existing Pending revision being accepted (AC-11).</summary>
@@ -294,7 +294,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         if (priorInForce is not null)
         {
             priorInForce.MarkSuperseded();
-            Raise(new PoRevisionSupersededEvent(Id, PoNo, priorInForce.RevisionNumber));
+            Raise(new PoRevisionSupersededEvent(Id, PoNo, priorInForce.RevisionNumber, priorInForce.InitiatorId, CurrentTerms()));
         }
 
         // ADR 0007: the parent's mirror is updated only by the same transaction that moves a
@@ -313,7 +313,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         _lines.Clear();
         _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
 
-        Raise(new PoRevisionPutInForceEvent(Id, PoNo, revision.RevisionNumber));
+        Raise(new PoRevisionPutInForceEvent(Id, PoNo, revision.RevisionNumber, revision.InitiatorId, PoTermsSnapshot.From(revision)));
     }
 
     /// <summary>
@@ -330,6 +330,16 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         _vendorCommunications.Add(communication);
         return communication;
     }
+
+    /// <summary>The terms as this aggregate currently holds them (the mirror of the in-force revision), for event snapshots.</summary>
+    private PoTermsSnapshot CurrentTerms() => new(
+        UnitCost, ExpectedDeliveryDate, LatestAcceptableDate, OverTolerancePercent, UnderTolerancePercent,
+        PaymentTermId, AdvancePercent, FabricResponsibilityId,
+        _lines.Select(l => new PoTermsLine(l.SizeId, l.ColourId, l.Qty)).ToList());
+
+    /// <summary>Null until a revision is In force (a Draft has none). Needs <see cref="Revisions"/> loaded, as the callers already require.</summary>
+    private short? InForceRevisionNumber() =>
+        _revisions.FirstOrDefault(r => r.StatusId == RevisionStatus.InForce)?.RevisionNumber;
 
     private PurchaseOrderRevision FindRevisionOrThrow(short revisionNumber) =>
         _revisions.FirstOrDefault(r => r.RevisionNumber == revisionNumber)

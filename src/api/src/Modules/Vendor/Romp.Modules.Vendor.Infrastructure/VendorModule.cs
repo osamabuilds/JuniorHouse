@@ -35,6 +35,7 @@ public sealed class VendorModule : IModule
         services.AddScoped<IVendorDbContext>(sp => sp.GetRequiredService<VendorDbContext>());
         services.AddScoped<IPoNumberAllocator, PoNumberAllocator>();
         services.AddScoped<IPurchaseOrderUsageQueries, PurchaseOrderUsageQueries>();
+        services.AddScoped<IPurchaseOrderQueries, PurchaseOrderQueries>();
 
         services.AddValidatorsFromAssembly(typeof(Romp.Modules.Vendor.Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(VendorTransactionBehavior<,>));

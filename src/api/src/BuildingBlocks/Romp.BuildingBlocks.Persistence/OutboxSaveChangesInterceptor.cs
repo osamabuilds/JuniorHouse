@@ -45,11 +45,15 @@ public sealed class OutboxSaveChangesInterceptor(TimeProvider timeProvider) : Sa
         {
             foreach (var domainEvent in entry.Entity.DomainEvents)
             {
+                var envelope = domainEvent as IOutboxEvent;
                 context.Set<OutboxMessage>().Add(new OutboxMessage
                 {
                     EventType = domainEvent.GetType().Name,
                     Payload = JsonSerializer.Serialize(domainEvent, domainEvent.GetType()),
                     InsrDte = now,
+                    AggregateType = envelope?.AggregateType ?? "PurchaseOrder",
+                    AggregateId = envelope is { AggregateId: > 0 } ? envelope.AggregateId : null,
+                    MessageVersion = envelope?.SchemaVersion ?? 1,
                 });
             }
 

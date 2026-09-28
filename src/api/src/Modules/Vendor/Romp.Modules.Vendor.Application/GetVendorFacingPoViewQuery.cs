@@ -18,7 +18,7 @@ public sealed class GetVendorFacingPoViewQueryHandler(IVendorDbContext dbContext
     {
         var po = await dbContext.PurchaseOrders.AsNoTracking()
             .Include(p => p.Lines)
-            .Include(p => p.Revisions)
+            .Include(p => p.Revisions).ThenInclude(r => r.Lines)
             .FirstOrDefaultAsync(p => p.Id == request.PoId, cancellationToken);
 
         if (po is null || po.StatusId == DraftStatusId)
