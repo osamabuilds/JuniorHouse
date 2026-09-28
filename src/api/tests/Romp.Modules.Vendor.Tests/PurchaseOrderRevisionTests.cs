@@ -105,14 +105,18 @@ public sealed class PurchaseOrderRevisionTests : IAsyncLifetime
             .OrderBy(r => r.RevisionNumber)
             .ToListAsync();
 
-        // Only A's revision (Rev 1) landed; B's failed save wrote nothing.
-        Assert.Single(revisions);
-        Assert.Equal(1, revisions[0].RevisionNumber);
-        Assert.Equal(RevisionStatusInForce, revisions[0].StatusId);
+        // Send() itself creates Rev 0 (AC-63), now Superseded by A's winning Rev 1; B's failed save
+        // wrote nothing.
+        Assert.Equal(2, revisions.Count);
+        Assert.Equal(0, revisions[0].RevisionNumber);
+        Assert.Equal(RevisionStatusSuperseded, revisions[0].StatusId);
+        Assert.Equal(1, revisions[1].RevisionNumber);
+        Assert.Equal(RevisionStatusInForce, revisions[1].StatusId);
 
         var reloadedPo = await verifyContext.PurchaseOrders.SingleAsync(p => p.Id == poId);
         Assert.Equal(110m, reloadedPo.UnitCost);
     }
 
     private const short RevisionStatusInForce = 2;
+    private const short RevisionStatusSuperseded = 3;
 }

@@ -21,8 +21,12 @@ public sealed class GetPurchaseOrderRevisionsQueryHandlerTests
 
         var revisions = await sender.Send(new GetPurchaseOrderRevisionsQuery(po.Id));
 
-        var revision = Assert.Single(revisions);
-        Assert.Equal((short)1, revision.RevisionNumber);
+        // Send() itself creates Rev 0 (AC-63) - the amendment above is Rev 1.
+        Assert.Equal(2, revisions.Count);
+        var baseline = revisions.Single(r => r.RevisionNumber == 0);
+        Assert.Equal(3, baseline.StatusId); // RevisionStatus.Superseded, by Rev 1 below
+
+        var revision = revisions.Single(r => r.RevisionNumber == 1);
         Assert.Equal(600m, revision.UnitCost);
         Assert.Equal(po.UnitCost * po.Lines.Sum(l => l.Qty), revision.PoValueBefore); // before-figure reflects the prior unit cost
         Assert.Equal(600m * po.Lines.Sum(l => l.Qty), revision.PoValueAfter);

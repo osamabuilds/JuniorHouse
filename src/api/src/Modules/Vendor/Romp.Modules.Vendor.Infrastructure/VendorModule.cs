@@ -130,6 +130,40 @@ public sealed class VendorModule : IModule
                 CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new CancelPurchaseOrderCommand(id, body.CancelReasonId), cancellationToken)));
 
+        // SCRUM-93 task 29.
+        group.MapPost("/{id:long}/amendments", async (
+                long id,
+                CreateAmendmentRequest body,
+                ISender sender,
+                CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
+
+        group.MapPost("/{id:long}/amendments/{revNo:short}/accept", async (
+                long id,
+                short revNo,
+                ISender sender,
+                CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: true, Note: null), cancellationToken)));
+
+        group.MapPost("/{id:long}/amendments/{revNo:short}/reject", async (
+                long id,
+                short revNo,
+                RevisionNoteRequest body,
+                ISender sender,
+                CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: false, body.Note), cancellationToken)));
+
+        group.MapPost("/{id:long}/amendments/{revNo:short}/withdraw", async (
+                long id,
+                short revNo,
+                RevisionNoteRequest body,
+                ISender sender,
+                CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new WithdrawRevisionCommand(id, revNo, body.Note), cancellationToken)));
+
+        group.MapGet("/{id:long}/revisions", async (long id, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new GetPurchaseOrderRevisionsQuery(id), cancellationToken)));
+
         group.MapGet("/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
         {
             var po = await sender.Send(new GetPurchaseOrderByIdQuery(id), cancellationToken);

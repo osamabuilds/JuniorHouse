@@ -10,6 +10,17 @@ public sealed class PoVendorCommunication : Entity<long>, IAuditable
         ResponderName = string.Empty;
     }
 
+    /// <summary>Created only via <see cref="PurchaseOrder.RecordVendorCommunication"/> (SCRUM-93 task 30) - <paramref name="revisionId"/> must already be a real (saved) id, since this entity is added directly to the aggregate's own collection, not fixed up through a navigation.</summary>
+    internal PoVendorCommunication(long poId, long? revisionId, short communicationTypeId, short channelId, string responderName, DateTimeOffset responseDte)
+    {
+        PoId = poId;
+        RevisionId = revisionId;
+        CommunicationTypeId = communicationTypeId;
+        ChannelId = channelId;
+        ResponderName = responderName;
+        ResponseDte = responseDte;
+    }
+
     public long PoId { get; private set; }
 
     public long? RevisionId { get; private set; }

@@ -13,6 +13,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
     private readonly List<PoLine> _lines = [];
     private readonly List<PoStatusHistoryEntry> _statusHistory = [];
     private readonly List<PurchaseOrderRevision> _revisions = [];
+    private readonly List<PoVendorCommunication> _vendorCommunications = [];
 
     private PurchaseOrder()
     {
@@ -76,6 +77,9 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
     /// <summary>ADR 0007. Requires the caller to have loaded this navigation (e.g. `.Include(p =&gt; p.Revisions)`) before calling <see cref="CreateRevision"/> - the MAX+1 allocation below reads this in-memory collection, not a fresh query.</summary>
     public IReadOnlyCollection<PurchaseOrderRevision> Revisions => _revisions.AsReadOnly();
 
+    /// <summary>SCRUM-93 task 30 (AC-31): every vendor response/counter/decision, with channel/responder/time captured.</summary>
+    public IReadOnlyCollection<PoVendorCommunication> VendorCommunications => _vendorCommunications.AsReadOnly();
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; } = string.Empty;
@@ -118,12 +122,34 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
     }
 
     /// <summary>AC-10: Draft -&gt; SentToVendor.</summary>
+    /// <remarks>SCRUM-93 task 18/task 63 (AC-63): also creates a Rev 0 baseline snapshot in this same call, so every Sent-and-later PO (new or backfilled by task 21's migration) has a real In-force revision to compare/acknowledge against.</remarks>
     public void Send()
     {
         RequireStatus(PoStatus.Draft, "send");
         StatusId = PoStatus.SentToVendor;
         _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.SentToVendor, cancelReasonId: null));
+        CreateBaselineRevision();
         Raise(new PoSentToVendorEvent(Id, PoNo));
+    }
+
+    /// <summary>AC-63: Rev 0, captured as-is (no diff from itself) - not raised as its own outbox event; plan.md's events table only ties PoRevisionPutInForceEvent to CreateAmendmentCommand/DecideRevisionCommand, not Send.</summary>
+    private void CreateBaselineRevision()
+    {
+        var poValue = _lines.Sum(l => l.Qty) * UnitCost;
+        var advanceAmount = poValue * AdvancePercent / 100m;
+        var isBeyondLatestAcceptableDate = LatestAcceptableDate.HasValue && ExpectedDeliveryDate > LatestAcceptableDate.Value;
+
+        var revision = new PurchaseOrderRevision(
+            Id, revisionNumber: 0, initiatorId: 1 /* AmendmentInitiator.Buyer */, statusId: RevisionStatus.InForce, reasonId: 11 /* AmendmentReason.Other */,
+            impactNote: "Baseline revision captured at Send.", vendorMessage: null,
+            UnitCost, ExpectedDeliveryDate, LatestAcceptableDate, OverTolerancePercent, UnderTolerancePercent,
+            PaymentTermId, AdvancePercent, FabricResponsibilityId,
+            poValueBefore: poValue, poValueAfter: poValue, poValueDiff: 0m,
+            advanceAmountBefore: advanceAmount, advanceAmountAfter: advanceAmount,
+            expectedDateShiftDays: 0, latestAcceptableDateShiftDays: null, quantityDiff: 0, isBeyondLatestAcceptableDate,
+            _lines.Select(l => (l.SizeId, l.ColourId, l.Qty)));
+
+        _revisions.Add(revision);
     }
 
     /// <summary>AC-11: SentToVendor -&gt; Acknowledged.</summary>
@@ -288,6 +314,21 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
 
         Raise(new PoRevisionPutInForceEvent(Id, PoNo, revision.RevisionNumber));
+    }
+
+    /// <summary>
+    /// SCRUM-93 task 30 (AC-31). <paramref name="revisionId"/> must already be a real (saved) id -
+    /// pass an existing revision's id directly, or, for a revision created in the same handler call
+    /// (task 30's Countered path via <see cref="CreateRevision"/>), save once first so its id is
+    /// realized before calling this (this entity is added directly to this aggregate's own
+    /// collection, not fixed up through a navigation to the revision).
+    /// </summary>
+    public PoVendorCommunication RecordVendorCommunication(
+        short communicationTypeId, short channelId, string responderName, DateTimeOffset responseDte, long? revisionId)
+    {
+        var communication = new PoVendorCommunication(Id, revisionId, communicationTypeId, channelId, responderName, responseDte);
+        _vendorCommunications.Add(communication);
+        return communication;
     }
 
     private PurchaseOrderRevision FindRevisionOrThrow(short revisionNumber) =>

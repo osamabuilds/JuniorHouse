@@ -92,6 +92,7 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
             builder.Metadata.FindNavigation(nameof(PurchaseOrder.Lines))!.SetPropertyAccessMode(PropertyAccessMode.Field);
             builder.Metadata.FindNavigation(nameof(PurchaseOrder.StatusHistory))!.SetPropertyAccessMode(PropertyAccessMode.Field);
             builder.Metadata.FindNavigation(nameof(PurchaseOrder.Revisions))!.SetPropertyAccessMode(PropertyAccessMode.Field);
+            builder.Metadata.FindNavigation(nameof(PurchaseOrder.VendorCommunications))!.SetPropertyAccessMode(PropertyAccessMode.Field);
         });
 
         modelBuilder.Entity<PoLine>(builder =>
@@ -294,7 +295,7 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
             builder.Property(c => c.ResponseDte).HasColumnName("RSPN_DTE").IsRequired();
             builder.HasAuditColumns();
 
-            builder.HasOne<PurchaseOrder>().WithMany()
+            builder.HasOne<PurchaseOrder>().WithMany(p => p.VendorCommunications)
                 .HasForeignKey(c => c.PoId)
                 .HasConstraintName("FK_PO_VNDR_COMM_PO_ID")
                 .OnDelete(DeleteBehavior.Cascade);
