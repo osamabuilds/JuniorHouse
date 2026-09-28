@@ -56,6 +56,7 @@ public sealed class ValidationBehaviorTests
 
         Assert.Contains("Name", exception.Errors.Keys);
         Assert.Contains("Name is required.", exception.Errors["Name"]);
+        Assert.Equal("Name is required.", exception.Message); // never a generic "one or more errors" line
     }
 
     [Fact]
