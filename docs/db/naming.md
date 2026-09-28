@@ -96,58 +96,69 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 
 | Word | Abbr. | | Word | Abbr. |
 |---|---|---|---|---|
+| acceptable | ACPT | | lease | LEAS |
 | acknowledged | ACK | | level | LVL |
 | active | ACT | | line | LINE |
-| address | ADDR | | lookup | LKP |
-| advance (e.g. advance %) | ADV | | main | MAIN |
-| amendment | AMND | | map (link table) | MAP |
-| amount | AMT | | message | MSG |
-| approved | APRV | | migration (EF Core bookkeeping table) | MIG |
-| attachment | ATCH | | milestone | MLST |
-| attribute | ATTR | | name | NAME |
-| barcode | BRCD | | note | NOTE |
-| batch | BTCH | | number | NO |
-| bin | BIN | | on-quantity (vendor scorecard metric) | ONQT |
-| bracket (e.g. age bracket) | BRKT | | on-time (vendor scorecard metric) | ONTM |
-| by (actor) | BY | | order | ORDR |
-| cancelled | CNCL | | outbox | OUTB |
-| category | CATG | | parent | PRNT |
-| city | CITY | | payload | PYLD |
-| code | CODE | | payment | PAYM |
-| collection | COLN | | percent | PCT |
-| colour | CLR | | phone | PHON |
-| comment | CMNT | | preferred | PREF |
-| contact | CNTC | | price | PRIC |
-| cost | COST | | product | PRDT |
-| country | CTRY | | production | PROD |
-| currency | CURR | | purchase order | PO |
-| customer | CUST | | quantity | QTY |
-| date (date-only) | DT | | rate | RATE |
-| date/time (timestamp) | DTE | | reason | RSN |
-| default | DFLT | | received | RCVD |
-| defect | DFCT | | reference | REF |
-| delivered / delivery | DLVR | | retail | RTL |
-| description | DSCR | | run (e.g. size run) | RUN |
-| document | DOC | | sample | SMPL |
-| email | EML | | segment | SGMT |
-| event | EVNT | | sent | SENT |
-| expected | EXPC | | sequence | SEQ |
-| fabric | FBRC | | size | SIZE |
-| file | FILE | | sort | SORT |
-| gender | GNDR | | specialisation | SPCL |
-| goods receipt note | GRN | | status | STS |
-| history | HIST | | stock | STCK |
-| identifier | ID | | style | STYL |
-| indicator | IND | | target | TGT |
-| insert | INSR | | tech pack | TCPK |
-| item | ITEM | | terms | TERM |
-| key | KEY | | total | TOT |
-| label | LBL | | type | TYP |
-| lead time | LEAD | | unit | UNIT |
-| | | | updated | UPDT |
-| | | | user | USR |
-| | | | variant | VRNT |
-| | | | vendor | VNDR |
-| | | | version | VER |
-| | | | warehouse | WHSE |
-| | | | year | YR |
+| added (e.g. added-in revision) | ADDD | | lookup | LKP |
+| address | ADDR | | main | MAIN |
+| advance (e.g. advance %) | ADV | | map (link table) | MAP |
+| aggregate | AGGR | | message | MSG |
+| amendment | AMND | | migration (EF Core bookkeeping table) | MIG |
+| amount | AMT | | milestone | MLST |
+| approved | APRV | | name | NAME |
+| attachment | ATCH | | next | NXT |
+| attempt | ATMP | | note | NOTE |
+| attribute | ATTR | | number | NO |
+| barcode | BRCD | | on-quantity (vendor scorecard metric) | ONQT |
+| batch | BTCH | | on-time (vendor scorecard metric) | ONTM |
+| bin | BIN | | order | ORDR |
+| bracket (e.g. age bracket) | BRKT | | outbox | OUTB |
+| by (actor) | BY | | over (e.g. over-ship tolerance) | OVER |
+| byte | BYT | | parent | PRNT |
+| cancelled | CNCL | | payload | PYLD |
+| category | CATG | | payment | PAYM |
+| channel | CHNL | | percent | PCT |
+| city | CITY | | phone | PHON |
+| claim | CLM | | preferred | PREF |
+| code | CODE | | price | PRIC |
+| collection | COLN | | product | PRDT |
+| colour | CLR | | production | PROD |
+| comment | CMNT | | purchase order | PO |
+| communication | COMM | | quantity | QTY |
+| contact | CNTC | | rate | RATE |
+| content (e.g. content type) | CNTT | | reason | RSN |
+| cost | COST | | received | RCVD |
+| count | CNT | | reference | REF |
+| country | CTRY | | response (e.g. response date) | RSPN |
+| currency | CURR | | responder | RSPR |
+| customer | CUST | | responsibility | RESP |
+| date (date-only) | DT | | retail | RTL |
+| date/time (timestamp) | DTE | | retired (e.g. retired-in revision) | RETD |
+| dead-letter | DEDL | | revision | REV |
+| default | DFLT | | run (e.g. size run) | RUN |
+| defect | DFCT | | sample | SMPL |
+| deleted | DELD | | segment | SGMT |
+| delivered / delivery | DLVR | | sent | SENT |
+| description | DSCR | | sequence | SEQ |
+| document | DOC | | size | SIZE |
+| email | EML | | sort | SORT |
+| event | EVNT | | specialisation | SPCL |
+| evidence | EVDN | | status | STS |
+| expected | EXPC | | stock | STCK |
+| expiry | EXPY | | storage | STOR |
+| fabric | FBRC | | style | STYL |
+| file | FILE | | target | TGT |
+| gender | GNDR | | tech pack | TCPK |
+| goods receipt note | GRN | | terms | TERM |
+| history | HIST | | tolerance | TOL |
+| identifier | ID | | total | TOT |
+| impact | IMPC | | type | TYP |
+| inbox | INBX | | under (e.g. under-ship tolerance) | UNDR |
+| indicator | IND | | unit | UNIT |
+| initiator | INIT | | updated | UPDT |
+| insert | INSR | | user | USR |
+| item | ITEM | | variant | VRNT |
+| key | KEY | | vendor | VNDR |
+| label | LBL | | version | VER |
+| latest | LATE | | warehouse | WHSE |
+| lead time | LEAD | | year | YR |
