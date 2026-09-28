@@ -47,6 +47,18 @@ builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
+// Storefront and admin are separate origins (SSR/SPA hosts, different ports). No auth yet
+// (CLAUDE.md: "No authentication yet"), so no credentialed requests - an explicit origin
+// allowlist from config is enough; never AllowAnyOrigin once cookies/tokens are added later.
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Default", policy => policy
+        .WithOrigins(corsOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
+
 // "ready" checks (PostgreSQL, Redis) are added with their infrastructure (SCRUM-162, SCRUM-166).
 builder.Services.AddHealthChecks();
 
@@ -54,6 +66,7 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+app.UseCors("Default");
 
 if (app.Environment.IsDevelopment())
 {
