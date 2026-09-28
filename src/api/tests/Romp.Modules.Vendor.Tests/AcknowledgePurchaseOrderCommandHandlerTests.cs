@@ -15,7 +15,7 @@ public sealed class AcknowledgePurchaseOrderCommandHandlerTests
         var provider = TestServices.Build(Guid.NewGuid().ToString());
         var sender = provider.GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var acknowledged = await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
@@ -33,7 +33,7 @@ public sealed class AcknowledgePurchaseOrderCommandHandlerTests
         var provider = TestServices.Build(Guid.NewGuid().ToString());
         var sender = provider.GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var acknowledged = await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 

@@ -52,6 +52,8 @@ public sealed class VendorModule : IModule
         services.AddSingleton(new PoFileStorageOptions
         {
             RootPath = configuration.GetValue("Vndr:PoFileStorage:RootPath", new PoFileStorageOptions().RootPath)!,
+            MaxFileSizeBytes = configuration.GetValue("Vndr:PoFileStorage:MaxFileSizeBytes", new PoFileStorageOptions().MaxFileSizeBytes),
+            MaxFilesPerPo = configuration.GetValue("Vndr:PoFileStorage:MaxFilesPerPo", new PoFileStorageOptions().MaxFilesPerPo),
         });
         services.AddSingleton<IFileStorage, LocalFileStorage>();
 

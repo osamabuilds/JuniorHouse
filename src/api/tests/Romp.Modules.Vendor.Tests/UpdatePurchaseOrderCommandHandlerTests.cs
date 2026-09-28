@@ -87,7 +87,7 @@ public sealed class UpdatePurchaseOrderCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
         await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
         await Assert.ThrowsAsync<Romp.BuildingBlocks.Domain.DomainException>(() => sender.Send(

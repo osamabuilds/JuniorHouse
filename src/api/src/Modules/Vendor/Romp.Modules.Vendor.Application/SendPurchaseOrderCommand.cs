@@ -1,10 +1,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Vendor.Domain;
 
 namespace Romp.Modules.Vendor.Application;
 
 /// <summary>AC-10: Draft -&gt; SentToVendor.</summary>
-public sealed record SendPurchaseOrderCommand(long Id) : IRequest<PoDto>, IVendorCommand;
+/// <param name="SendWithoutTechPack">AC-39: must be true to send a PO that has no TechPackSpec file attached; recorded in the status history.</param>
+public sealed record SendPurchaseOrderCommand(long Id, bool SendWithoutTechPack = false) : IRequest<PoDto>, IVendorCommand;
 
 public sealed class SendPurchaseOrderCommandHandler(IVendorDbContext dbContext) : IRequestHandler<SendPurchaseOrderCommand, PoDto>
 {
@@ -35,7 +37,20 @@ public sealed class SendPurchaseOrderCommandHandler(IVendorDbContext dbContext) 
             throw new Romp.BuildingBlocks.Application.ValidationException(errors);
         }
 
-        po.Send();
+        // SCRUM-93 task 41 (AC-39): a missing tech pack is a non-blocking warning - staff can still
+        // send, but only by saying so explicitly, and that choice is kept in the status history.
+        var hasTechPack = await dbContext.PurchaseOrderFiles.AnyAsync(
+            f => f.PoId == po.Id && !f.IsDeleted && f.CategoryId == PoFileCategory.TechPackSpec, cancellationToken);
+        if (!hasTechPack && !request.SendWithoutTechPack)
+        {
+            throw new Romp.BuildingBlocks.Application.ValidationException(new Dictionary<string, string[]>
+            {
+                [nameof(request.SendWithoutTechPack)] =
+                    [$"PO {po.PoNo} has no Tech Pack Spec attached. Attach one, or confirm you want to send it without a tech pack."],
+            });
+        }
+
+        po.Send(hasTechPack ? null : "Sent without a Tech Pack Spec attached (confirmed by staff).");
 
         // Saved here (not left to VendorTransactionBehavior) so the response DTO's new
         // PoStatusHistoryEntry reflects INSR_DTE/BY as stamped by AuditSaveChangesInterceptor, not

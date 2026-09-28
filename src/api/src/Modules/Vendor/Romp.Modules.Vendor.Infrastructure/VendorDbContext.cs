@@ -19,6 +19,8 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
 
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
 
+    public DbSet<PurchaseOrderFile> PurchaseOrderFiles => Set<PurchaseOrderFile>();
+
     async Task IVendorDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 
@@ -121,6 +123,7 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
             builder.Property(h => h.PoId).HasColumnName("PO_ID").IsRequired();
             builder.Property(h => h.PoStatusId).HasColumnName("PO_STS_ID").IsRequired();
             builder.Property(h => h.CancelReasonId).HasColumnName("PO_CNCL_RSN_ID");
+            builder.Property(h => h.Note).HasColumnName("NOTE").HasMaxLength(500);
             builder.Property(h => h.InsrDte).HasColumnName("INSR_DTE").IsRequired();
             builder.Property(h => h.InsrBy).HasColumnName("INSR_BY").HasMaxLength(100).IsRequired();
             builder.Ignore(h => h.UpdtDte);

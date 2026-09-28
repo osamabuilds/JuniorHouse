@@ -55,6 +55,8 @@ internal static class TestServices
         services.AddScoped<IPaymentTermQueries, FakePaymentTermQueries>();
         services.AddScoped<IPoNumberAllocator, StubPoNumberAllocator>();
         services.AddSingleton(new PoCommercialTermsOptions());
+        services.AddSingleton(new PoFileStorageOptions { MaxFileSizeBytes = 1024, MaxFilesPerPo = 3 });
+        services.AddSingleton<IFileStorage, InMemoryFileStorage>();
 
         var applicationAssembly = typeof(AssemblyReference).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);

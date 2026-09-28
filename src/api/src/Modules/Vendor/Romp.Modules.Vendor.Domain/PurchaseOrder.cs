@@ -123,11 +123,11 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 
     /// <summary>AC-10: Draft -&gt; SentToVendor.</summary>
     /// <remarks>SCRUM-93 task 18/task 63 (AC-63): also creates a Rev 0 baseline snapshot in this same call, so every Sent-and-later PO (new or backfilled by task 21's migration) has a real In-force revision to compare/acknowledge against.</remarks>
-    public void Send()
+    public void Send(string? note = null)
     {
         RequireStatus(PoStatus.Draft, "send");
         StatusId = PoStatus.SentToVendor;
-        _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.SentToVendor, cancelReasonId: null));
+        _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.SentToVendor, cancelReasonId: null, note));
         CreateBaselineRevision();
         Raise(new PoSentToVendorEvent(Id, PoNo));
     }

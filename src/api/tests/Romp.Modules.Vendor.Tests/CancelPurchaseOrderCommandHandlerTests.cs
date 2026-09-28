@@ -44,7 +44,7 @@ public sealed class CancelPurchaseOrderCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
         await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
         var cancelled = await sender.Send(new CancelPurchaseOrderCommand(po.Id, CancelReasonId: 1));
@@ -59,7 +59,7 @@ public sealed class CancelPurchaseOrderCommandHandlerTests
         var provider = TestServices.Build(Guid.NewGuid().ToString());
         var sender = provider.GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
         await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
         var pendingRevision = await sender.Send(new CreateAmendmentCommand(

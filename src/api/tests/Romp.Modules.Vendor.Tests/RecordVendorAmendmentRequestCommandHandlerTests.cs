@@ -13,7 +13,7 @@ public sealed class RecordVendorAmendmentRequestCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
         await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
         var request = new CounterProposal(
@@ -40,7 +40,7 @@ public sealed class RecordVendorAmendmentRequestCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id)); // SentToVendor, not Acknowledged
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true)); // SentToVendor, not Acknowledged
 
         var request = new CounterProposal(
             ReasonId: 1, ImpactNote: "Vendor asking for more lead time", VendorMessage: null,
@@ -59,7 +59,7 @@ public sealed class RecordVendorAmendmentRequestCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
         await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
         var request = new CounterProposal(
@@ -80,7 +80,7 @@ public sealed class RecordVendorAmendmentRequestCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
         await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
         var firstRequest = new CounterProposal(

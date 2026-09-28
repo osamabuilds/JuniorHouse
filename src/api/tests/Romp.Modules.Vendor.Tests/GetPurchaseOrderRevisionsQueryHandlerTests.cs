@@ -12,7 +12,7 @@ public sealed class GetPurchaseOrderRevisionsQueryHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         await sender.Send(new CreateAmendmentCommand(
             po.Id, 1, 1, "Cost increase", "Please confirm",

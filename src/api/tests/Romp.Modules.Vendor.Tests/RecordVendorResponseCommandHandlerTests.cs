@@ -12,7 +12,7 @@ public sealed class RecordVendorResponseCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var result = await sender.Send(new RecordVendorResponseCommand(
             po.Id, OutcomeTypeId: 1, RevisionNumber: 0, ChannelId: 1, ResponderName: "Vendor Rep",
@@ -28,7 +28,7 @@ public sealed class RecordVendorResponseCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var command = new RecordVendorResponseCommand(
             po.Id, OutcomeTypeId: 1, RevisionNumber: 5 /* not the real current revision (0) */, ChannelId: 1,
@@ -44,7 +44,7 @@ public sealed class RecordVendorResponseCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var counter = new CounterProposal(
             ReasonId: 1, ImpactNote: "Vendor wants more", VendorMessage: null,
@@ -69,7 +69,7 @@ public sealed class RecordVendorResponseCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var result = await sender.Send(new RecordVendorResponseCommand(
             po.Id, OutcomeTypeId: 3, RevisionNumber: 0, ChannelId: 1, ResponderName: "Vendor Rep",
@@ -85,7 +85,7 @@ public sealed class RecordVendorResponseCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var command = new RecordVendorResponseCommand(
             po.Id, OutcomeTypeId: 1, RevisionNumber: 0, ChannelId: 0, ResponderName: "Vendor Rep",

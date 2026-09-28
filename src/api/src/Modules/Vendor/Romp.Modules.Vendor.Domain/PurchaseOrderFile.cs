@@ -16,6 +16,26 @@ public sealed class PurchaseOrderFile : Entity<long>, IAuditable
         ContentType = string.Empty;
     }
 
+    public PurchaseOrderFile(
+        long poId, short categoryId, string fileName, string storageKey, string contentType, long fileSizeBytes, long? addedInRevisionId)
+    {
+        PoId = poId;
+        CategoryId = categoryId;
+        FileName = fileName;
+        StorageKey = storageKey;
+        ContentType = contentType;
+        FileSizeBytes = fileSizeBytes;
+        AddedInRevisionId = addedInRevisionId;
+    }
+
+    /// <summary>Draft-stage removal only (<see cref="PoFilePolicy"/> decides when); the bytes stay in storage.</summary>
+    public void SoftDelete() => IsDeleted = true;
+
+    /// <summary>A vendor-visible file taken out of effect by an amendment's revision.</summary>
+    public void RetireIn(long revisionId) => RetiredInRevisionId = revisionId;
+
+    public void SetAddedInRevision(long revisionId) => AddedInRevisionId = revisionId;
+
     public long PoId { get; private set; }
 
     public short CategoryId { get; private set; }

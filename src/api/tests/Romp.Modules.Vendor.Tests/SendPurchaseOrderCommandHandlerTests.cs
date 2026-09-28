@@ -15,7 +15,7 @@ public sealed class SendPurchaseOrderCommandHandlerTests
         var sender = provider.GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
 
-        var sent = await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        var sent = await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         Assert.Equal(2, sent.StatusId); // PoStatus.SentToVendor
         Assert.Equal(2, sent.StatusHistory.Count);
@@ -47,9 +47,38 @@ public sealed class SendPurchaseOrderCommandHandlerTests
             Lines: [new PoLineDto(1, 10, 100)]));
 
         var exception = await Assert.ThrowsAsync<Romp.BuildingBlocks.Application.ValidationException>(
-            () => sender.Send(new SendPurchaseOrderCommand(po.Id)));
+            () => sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true)));
 
         Assert.Contains("LatestAcceptableDate", exception.Errors.Keys);
         Assert.Contains("FabricResponsibilityId", exception.Errors.Keys);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-39")]
+    public async Task Handle_NoTechPackSpecFile_RequiresExplicitConfirmAndRecordsIt()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+
+        var rejected = await Assert.ThrowsAsync<Romp.BuildingBlocks.Application.ValidationException>(
+            () => sender.Send(new SendPurchaseOrderCommand(po.Id)));
+        Assert.Contains("no Tech Pack Spec attached", rejected.Message);
+
+        var sent = await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
+        Assert.Contains(sent.StatusHistory, h => h.PoStatusId == 2 && h.Note!.Contains("without a Tech Pack Spec"));
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-39")]
+    public async Task Handle_TechPackSpecAttached_SendsWithoutConfirmation()
+    {
+        var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
+        var po = await PoTestHelpers.CreateDraftPoAsync(sender);
+        await sender.Send(new UploadPoFileCommand(po.Id, PoTestFiles.TechPack, "spec.pdf", PoTestFiles.Pdf()));
+
+        var sent = await sender.Send(new SendPurchaseOrderCommand(po.Id));
+
+        Assert.Equal(2, sent.StatusId);
+        Assert.All(sent.StatusHistory, h => Assert.Null(h.Note));
     }
 }

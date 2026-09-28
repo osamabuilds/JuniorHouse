@@ -13,7 +13,7 @@ public sealed class CreateAmendmentCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var revision = await sender.Send(new CreateAmendmentCommand(
             po.Id, InitiatorId: 1, ReasonId: 1, ImpactNote: "Vendor cost increase", VendorMessage: null,
@@ -34,7 +34,7 @@ public sealed class CreateAmendmentCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
         await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
         var revision = await sender.Send(new CreateAmendmentCommand(
@@ -55,7 +55,7 @@ public sealed class CreateAmendmentCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var command = new CreateAmendmentCommand(
             po.Id, 1, 1, "No real change", null,
@@ -72,7 +72,7 @@ public sealed class CreateAmendmentCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var command = new CreateAmendmentCommand(
             po.Id, 1, ReasonId: 0, ImpactNote: "", VendorMessage: null,
@@ -105,7 +105,7 @@ public sealed class CreateAmendmentCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
         await sender.Send(new AcknowledgePurchaseOrderCommand(po.Id));
 
         await sender.Send(new CreateAmendmentCommand(
@@ -128,7 +128,7 @@ public sealed class CreateAmendmentCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         var revision = await sender.Send(new CreateAmendmentCommand(
             po.Id, 1, 1, "Full amendment", "Please confirm",
@@ -165,7 +165,7 @@ public sealed class CreateAmendmentCommandHandlerTests
     {
         var sender = TestServices.Build(Guid.NewGuid().ToString()).GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         // CreateAmendmentCommand has no vendor/style field at all - the only way an amendment could
         // implicitly reach outside the PO's own style is via a line referencing a size or colour the
@@ -187,7 +187,7 @@ public sealed class CreateAmendmentCommandHandlerTests
         var provider = TestServices.Build(Guid.NewGuid().ToString());
         var sender = provider.GetRequiredService<ISender>();
         var po = await PoTestHelpers.CreateDraftPoAsync(sender);
-        await sender.Send(new SendPurchaseOrderCommand(po.Id));
+        await sender.Send(new SendPurchaseOrderCommand(po.Id, SendWithoutTechPack: true));
 
         await sender.Send(new CreateAmendmentCommand(
             po.Id, 1, 1, "note", null,
