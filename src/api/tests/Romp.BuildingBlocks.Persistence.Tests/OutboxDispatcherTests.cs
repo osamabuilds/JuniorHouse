@@ -266,6 +266,106 @@ public sealed class OutboxDispatcherTests : IAsyncLifetime
         Assert.Null(outboxRow.ProcessedDte);
     }
 
+    /// <summary>
+    /// SCRUM-93 task 13 (AC-61): the placeholder setup registered for a real module (VNDR) is a
+    /// recording double on the happy path and a failing double on the failure path - this proves
+    /// the *pattern* those registrations rely on (a batch of committed messages, each delivered
+    /// exactly once, with a second dispatch pass touching nothing already Processed), distinct
+    /// from task 7's single-message happy path.
+    /// </summary>
+    [Fact]
+    [Trait("Spec", "AC-61")]
+    public async Task RecordingHandler_ReceivesEachMessageExactlyOnce()
+    {
+        var dbOptions = new DbContextOptionsBuilder<TestDbContext>().UseNpgsql(_postgres.GetConnectionString()).Options;
+
+        await using (var seedContext = new TestDbContext(dbOptions))
+        {
+            await seedContext.Database.EnsureCreatedAsync();
+
+            foreach (var label in new[] { "M1", "M2", "M3" })
+            {
+                seedContext.OutboxMessages.Add(new OutboxMessage
+                {
+                    EventType = nameof(TestDomainEvent),
+                    Payload = JsonSerializer.Serialize(new TestDomainEvent { Label = label }),
+                    InsrDte = DateTimeOffset.UtcNow,
+                });
+            }
+
+            await seedContext.SaveChangesAsync();
+        }
+
+        var handler = new RecordingOutboxMessageHandler();
+        var (dispatcher, provider) = BuildDispatcher(handler);
+        await using var _ = provider;
+
+        var delivered = await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        Assert.Equal(3, delivered);
+        // A single UPDATE...RETURNING batch doesn't guarantee it returns rows in claim order, so
+        // this asserts the set (each message delivered, none duplicated), not a sequence.
+        string[] expectedLabels = ["M1", "M2", "M3"];
+        Assert.Equal(expectedLabels, handler.Received.Select(e => e.Label).Order(StringComparer.Ordinal).ToArray());
+
+        // A second pass finds nothing left unclaimed - each message was handled exactly once.
+        var deliveredAgain = await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        Assert.Equal(0, deliveredAgain);
+        Assert.Equal(3, handler.Received.Count);
+
+        await using var verifyContext = new TestDbContext(dbOptions);
+        Assert.Equal(3, await verifyContext.OutboxMessages.CountAsync(m => m.ProcessedDte != null));
+    }
+
+    /// <summary>SCRUM-93 task 13 (AC-61): same failure->backoff->dead-letter arc as task 9's test, named per tasks.md so AC-61's own test-case reference is traceable independent of AC-57/AC-58's.</summary>
+    [Fact]
+    [Trait("Spec", "AC-61")]
+    public async Task FailingHandler_DrivesRetryBackoffDeadLetter()
+    {
+        var dbOptions = new DbContextOptionsBuilder<TestDbContext>().UseNpgsql(_postgres.GetConnectionString()).Options;
+
+        await using (var seedContext = new TestDbContext(dbOptions))
+        {
+            await seedContext.Database.EnsureCreatedAsync();
+
+            seedContext.OutboxMessages.Add(new OutboxMessage
+            {
+                EventType = nameof(TestDomainEvent),
+                Payload = JsonSerializer.Serialize(new TestDomainEvent()),
+                InsrDte = DateTimeOffset.UtcNow,
+            });
+            await seedContext.SaveChangesAsync();
+        }
+
+        var handler = new FailingOutboxMessageHandler();
+        var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var (dispatcher, provider) = BuildDispatcher(
+            handler,
+            clock,
+            o =>
+            {
+                o.MaxAttempts = 2;
+                o.RetryBaseDelay = TimeSpan.FromSeconds(1);
+                o.RetryMaxDelay = TimeSpan.FromSeconds(10);
+            });
+        await using var _ = provider;
+
+        // Attempt 1 fails and is scheduled for retry - immediately re-dispatching finds nothing
+        // claimable yet (still within the backoff window).
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+        Assert.Equal(0, await dispatcher.DispatchOnceAsync(CancellationToken.None));
+
+        // Advancing past the backoff window lets attempt 2 run, crossing MaxAttempts -> dead-letters.
+        clock.Now = clock.Now.AddMinutes(10);
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+
+        Assert.Equal(2, handler.AttemptCount);
+
+        await using var verifyContext = new TestDbContext(dbOptions);
+        var row = await verifyContext.OutboxMessages.SingleAsync();
+        Assert.True(row.IsDeadLettered);
+        Assert.Null(row.ProcessedDte);
+    }
+
     private (OutboxDispatcher Dispatcher, ServiceProvider Provider) BuildDispatcher(RecordingOutboxMessageHandler handler) =>
         BuildDispatcher((IOutboxMessageHandler<TestDomainEvent>)handler, TimeProvider.System, configure: null);
 
