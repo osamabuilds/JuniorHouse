@@ -17,7 +17,7 @@ public sealed class VendorDbContextFactory : IDesignTimeDbContextFactory<VendorD
         // the API container) is the one override point, falling back to the local default that
         // matches .env.example's placeholder credentials.
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres")
-            ?? "Host=localhost;Port=5432;Database=romp;Username=romp;Password=change-me-locally";
+            ?? "Host=localhost;Port=5433;Database=romp;Username=romp;Password=change-me-locally";
 
         var optionsBuilder = new DbContextOptionsBuilder<VendorDbContext>()
             .UseNpgsql(connectionString, npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "VNDR"));
