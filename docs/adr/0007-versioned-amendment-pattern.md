@@ -1,0 +1,34 @@
+# 0007 — Versioned amendment pattern for business documents (revisions, not edits)
+
+- Status: Accepted
+- Date: 2026-09-28
+
+## Context
+
+FR-SC-03 requires that a Purchase Order's agreed terms can change after the vendor has committed to them — "without overwriting the original agreed terms," with a full audit trail. Sprint 2's spec (`docs/specs/SCRUM-93-procurement-part-2/spec.md`) works this out for the PO in detail: every change becomes a new numbered, immutable revision; exactly one revision is ever "in force" at a time; a proposed revision sits in a `Pending` state until the counter-party (buyer or vendor) accepts or rejects it; and commercial terms, line quantities, and specification files are all versioned together as one snapshot, because a vendor must always be able to say exactly which revision — terms and files together — they agreed to.
+
+This is not a PO-specific problem. The same shape will recur: GRN counts get reconciled and disputed (S4), a vendor scorecard needs to know which revision's dates a delivery should be judged against (S4), and any future business document with an external counter-party (a courier waybill, a return authorisation) can hit the same "renegotiated after the other party already committed" problem. Deciding the pattern once, here, avoids each future module inventing its own shape — the same reasoning ADR 0006 already applied to business document numbering.
+
+Two things make this different from Sprint 1's `PO_STS_HIST` append-only ledger pattern, which only had to record a linear sequence of status transitions with no going back and no "proposed but not yet agreed" state:
+1. A revision can be **rejected or withdrawn without ever taking effect** — the ledger has to represent "this was tried and didn't stick," not just "this happened."
+2. **Only one thing is ever the current truth** at a time (the in-force revision), and every consumer (a UI, a downstream module, an event handler) needs an unambiguous, cheap way to ask "what are this document's terms right now?" without folding a whole history.
+
+## Decision
+
+- **A revision is an immutable snapshot**, never updated after creation: it captures every versioned field's value, not a diff. (A diff-only design was considered — see Alternatives.)
+- **Revision status is its own small state machine**, tracked with the same append-only-ledger pattern as `PO_STS_HIST` (a `*_REV_STS_HIST` table: from-status, to-status, who, when, note) — consistent with the existing pattern rather than inventing a second one. States: `Pending → InForce | Rejected | Withdrawn`, and `InForce → Superseded` when a later revision takes over.
+- **The parent document keeps a live, denormalised copy of the in-force revision's terms** on its own root row (e.g. `PO_MAIN.UNIT_COST_AMT` continues to exist and always equals the in-force `PO_REV`'s value). This is a deliberate, documented denormalisation (`docs/db/naming.md`'s "denormalise only in read models, record the reason" rule): every existing Sprint 1 query and endpoint keeps working unchanged against the parent row, and nothing has to join through the revision history just to answer "what are the PO's current terms."
+- **Exactly one revision may be `Pending` at a time** per parent document. This isn't a technical constraint (nothing stops storing more) — it's a deliberate business rule (spec R2) enforced at the application layer, because two simultaneous open negotiations on the same document is a process smell, not a feature.
+- **Revision number is scoped to the parent document, not global**, allocated as `MAX(existing) + 1` inside the same transaction that updates the parent row's concurrency token — the existing per-row optimistic concurrency check (an `xmin` conflict) is sufficient to prevent two concurrent amendments from allocating the same number, so this does *not* need ADR 0006's atomic-counter-table treatment (that pattern exists for *cross-transaction, high-contention, prefix-scoped* numbers like `PO-2026-00001`; a per-document revision number has a much smaller contention surface — one document is rarely amended by two people in the same instant, and a conflict here is correctly surfaced to the user as "someone else changed this, reload," not silently retried).
+- **Whatever is versioned (terms, lines, files) is versioned as one unit.** A later addition to what's versioned (e.g. a new commercial term) is a new column on the revision snapshot table, not a new parallel versioning scheme.
+
+## Consequences
+
+- Every future module that needs "renegotiate this after the other party agreed, keep the audit trail" (GRN disputes, RMA terms, courier rate agreements) copies this shape: an immutable snapshot table, a status-history ledger table for it, a denormalised current-value mirror on the parent, and a single-`Pending`-at-a-time rule enforced in application code. No new ADR needed for those unless the pattern itself needs to change (same closing clause as ADR 0006).
+- The denormalised mirror on the parent row means **two write locations look authoritative** unless discipline is maintained: the mirror is updated *only* by the same transaction that moves a revision to `InForce`, never independently. A test asserting "parent's current terms always equal the in-force revision's terms" (spec AC-65) is the safety net for this, not a database constraint (Postgres can't easily express "these two rows across two tables must agree" declaratively).
+- Optimistic concurrency (the parent's `xmin`) is the *only* thing preventing a duplicate revision number under a race — this is weaker than ADR 0006's atomic-counter guarantee, but is the correct trade-off here: the two amendments in a genuine race are semantically conflicting business actions (two different changes proposed at once), not two independent actions that both deserve to succeed with different numbers (unlike two different vendors' POs, which really can be created in the same instant with no conflict between them).
+
+## Alternatives considered
+
+- **Diff-only revisions** (store only what changed, not a full snapshot) — rejected. A full snapshot means "what are this revision's terms" never requires walking backward through history to reconstruct a value, which matters for a vendor-facing view that must render quickly and correctly, and for downstream event consumers (ADR 0004) that shouldn't have to replay history to know a revision's terms.
+- **Event-sourcing the whole aggregate** (derive current state by folding all revision events, no denormalised mirror) — rejected as more machinery than this system needs anywhere else; every other aggregate in this codebase (Sprint 1's `Vendor`, `Style`) is a conventional mutable-row aggregate, and introducing event-sourcing for exactly one aggregate would be an inconsistent, hard-to-justify exception.
