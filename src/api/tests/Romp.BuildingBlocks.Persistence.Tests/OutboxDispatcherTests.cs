@@ -222,6 +222,50 @@ public sealed class OutboxDispatcherTests : IAsyncLifetime
         Assert.NotNull(aggregate100Rows[2].ProcessedDte); // A3
     }
 
+    [Fact]
+    [Trait("Spec", "AC-60")]
+    [Trait("Spec", "NFR-FT-08")]
+    public async Task HandlerFailure_DoesNotAffectAlreadyCommittedBusinessRow()
+    {
+        var dbOptions = new DbContextOptionsBuilder<TestDbContext>().UseNpgsql(_postgres.GetConnectionString()).Options;
+
+        await using (var createSchemaContext = new TestDbContext(dbOptions))
+        {
+            await createSchemaContext.Database.EnsureCreatedAsync();
+        }
+
+        // The business transaction: the aggregate and its domain event commit together through
+        // the real OutboxSaveChangesInterceptor, exactly as production code does (ADR 0004) - the
+        // dispatcher plays no part in this transaction and never could, since it only ever reads
+        // rows that already committed.
+        Guid aggregateId;
+        await using (var businessContext = new TestDbContext(new DbContextOptionsBuilder<TestDbContext>()
+            .UseNpgsql(_postgres.GetConnectionString())
+            .AddInterceptors(new OutboxSaveChangesInterceptor(TimeProvider.System))
+            .Options))
+        {
+            var aggregate = new TestAggregate("widget");
+            aggregate.RaiseTestEvent();
+            aggregateId = aggregate.Id;
+            businessContext.Aggregates.Add(aggregate);
+            await businessContext.SaveChangesAsync();
+        }
+
+        var handler = new FailingOutboxMessageHandler();
+        var (dispatcher, provider) = BuildDispatcher(handler, TimeProvider.System, o => o.MaxAttempts = 1);
+        await using var _ = provider;
+
+        await dispatcher.DispatchOnceAsync(CancellationToken.None);
+
+        await using var verifyContext = new TestDbContext(dbOptions);
+        var aggregateRow = await verifyContext.Aggregates.SingleAsync(a => a.Id == aggregateId);
+        Assert.Equal("widget", aggregateRow.Name);
+
+        var outboxRow = await verifyContext.OutboxMessages.SingleAsync();
+        Assert.True(outboxRow.IsDeadLettered); // MaxAttempts = 1: the one failed attempt dead-letters it immediately.
+        Assert.Null(outboxRow.ProcessedDte);
+    }
+
     private (OutboxDispatcher Dispatcher, ServiceProvider Provider) BuildDispatcher(RecordingOutboxMessageHandler handler) =>
         BuildDispatcher((IOutboxMessageHandler<TestDomainEvent>)handler, TimeProvider.System, configure: null);
 
