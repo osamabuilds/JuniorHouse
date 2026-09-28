@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
+/**
+ * The admin shell (SCRUM-174): semantic landmarks (header/nav/main/footer), one per page, with
+ * the four Sprint 1 sections in the nav. Every routed screen renders inside <main>.
+ */
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
-  styleUrl: './app.scss',
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.html',
+  styleUrl: './app.scss',
 })
-export class App {
-  protected readonly title = signal('admin');
-}
+export class App {}

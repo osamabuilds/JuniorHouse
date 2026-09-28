@@ -4,15 +4,34 @@
   </Folder>
   <Folder Name="/src/BuildingBlocks/">
     <Project Path="src/BuildingBlocks/Romp.BuildingBlocks/Romp.BuildingBlocks.csproj" />
+    <Project Path="src/BuildingBlocks/Romp.BuildingBlocks.Application/Romp.BuildingBlocks.Application.csproj" />
+    <Project Path="src/BuildingBlocks/Romp.BuildingBlocks.Persistence/Romp.BuildingBlocks.Persistence.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
   <Folder Name="/src/Modules/Catalog/">
     <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Application/Romp.Modules.Catalog.Application.csproj" />
+    <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Contracts/Romp.Modules.Catalog.Contracts.csproj" />
     <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Domain/Romp.Modules.Catalog.Domain.csproj" />
     <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Infrastructure/Romp.Modules.Catalog.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Reference/">
+    <Project Path="src/Modules/Reference/Romp.Modules.Reference.Application/Romp.Modules.Reference.Application.csproj" />
+    <Project Path="src/Modules/Reference/Romp.Modules.Reference.Contracts/Romp.Modules.Reference.Contracts.csproj" />
+    <Project Path="src/Modules/Reference/Romp.Modules.Reference.Domain/Romp.Modules.Reference.Domain.csproj" />
+    <Project Path="src/Modules/Reference/Romp.Modules.Reference.Infrastructure/Romp.Modules.Reference.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Vendor/">
+    <Project Path="src/Modules/Vendor/Romp.Modules.Vendor.Application/Romp.Modules.Vendor.Application.csproj" />
+    <Project Path="src/Modules/Vendor/Romp.Modules.Vendor.Domain/Romp.Modules.Vendor.Domain.csproj" />
+    <Project Path="src/Modules/Vendor/Romp.Modules.Vendor.Infrastructure/Romp.Modules.Vendor.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Romp.Api.IntegrationTests/Romp.Api.IntegrationTests.csproj" />
     <Project Path="tests/Romp.ArchitectureTests/Romp.ArchitectureTests.csproj" />
+    <Project Path="tests/Romp.BuildingBlocks.Application.Tests/Romp.BuildingBlocks.Application.Tests.csproj" />
+    <Project Path="tests/Romp.BuildingBlocks.Persistence.Tests/Romp.BuildingBlocks.Persistence.Tests.csproj" />
+    <Project Path="tests/Romp.Modules.Reference.Tests/Romp.Modules.Reference.Tests.csproj" />
+    <Project Path="tests/Romp.Modules.Catalog.Tests/Romp.Modules.Catalog.Tests.csproj" />
+    <Project Path="tests/Romp.Modules.Vendor.Tests/Romp.Modules.Vendor.Tests.csproj" />
   </Folder>
 </Solution>

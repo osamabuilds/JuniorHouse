@@ -9,7 +9,7 @@ namespace Romp.ArchitectureTests;
 /// </summary>
 public sealed class ModuleBoundaryTests
 {
-    private static readonly string[] ModuleNames = ["Catalog"];
+    private static readonly string[] ModuleNames = ["Catalog", "Reference", "Vendor"];
 
     public static TheoryData<string> Modules => new(ModuleNames);
 
@@ -45,12 +45,20 @@ public sealed class ModuleBoundaryTests
     [MemberData(nameof(Modules))]
     public void Module_DoesNotDependOnOtherModules(string module)
     {
-        var otherModules = ModuleNames
+        // Explicitly Domain/Application/Infrastructure, not the bare "Romp.Modules.Catalog"
+        // prefix - that would also flag "Romp.Modules.Catalog.Contracts", which is the one
+        // sanctioned way another module reaches this module's data (ADR 0002).
+        var forbiddenNamespaces = ModuleNames
             .Where(other => other != module)
-            .Select(other => $"Romp.Modules.{other}")
+            .SelectMany(other => new[]
+            {
+                $"Romp.Modules.{other}.Domain",
+                $"Romp.Modules.{other}.Application",
+                $"Romp.Modules.{other}.Infrastructure",
+            })
             .ToArray();
 
-        if (otherModules.Length == 0)
+        if (forbiddenNamespaces.Length == 0)
         {
             return;
         }
@@ -59,7 +67,7 @@ public sealed class ModuleBoundaryTests
         {
             var result = Types.InAssembly(LoadLayer(module, layer))
                 .ShouldNot()
-                .HaveDependencyOnAny(otherModules)
+                .HaveDependencyOnAny(forbiddenNamespaces)
                 .GetResult();
 
             Assert.True(result.IsSuccessful, Describe(result));

@@ -1,10 +1,9 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Romp.Api.IntegrationTests;
 
-public sealed class HealthEndpointTests(WebApplicationFactory<Program> factory)
-    : IClassFixture<WebApplicationFactory<Program>>
+public sealed class HealthEndpointTests(RompApiWebApplicationFactory factory)
+    : IClassFixture<RompApiWebApplicationFactory>
 {
     [Theory]
     [InlineData("/health/live")]

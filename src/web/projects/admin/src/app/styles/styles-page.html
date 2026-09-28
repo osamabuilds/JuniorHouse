@@ -1,0 +1,233 @@
+<h1>Styles</h1>
+<p class="page-intro">
+  The style/collection to produce: fabric, colourways, size run, target cost, target retail price
+  and target quantity per size &times; colour.
+</p>
+
+@if (mode() === 'list') {
+  <div class="toolbar">
+    <label class="toolbar__search">
+      <span class="sr-only">Search</span>
+      <input
+        type="search"
+        placeholder="Search by code or name"
+        [value]="searchText()"
+        (input)="onSearchInput($event)"
+      />
+    </label>
+
+    <label class="toolbar__select">
+      <span class="sr-only">Category</span>
+      <select [value]="categoryFilter() ?? ''" (change)="onCategoryFilterChange($event)">
+        <option value="">All categories</option>
+        @for (category of categories(); track category.id) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="toolbar__checkbox">
+      <input
+        type="checkbox"
+        [checked]="activeOnly()"
+        (change)="activeOnly.set(!activeOnly()); applyFilters()"
+      />
+      Active only
+    </label>
+
+    <button type="button" class="button button--primary" (click)="startCreate()">Add style</button>
+  </div>
+
+  @if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  @if (loading()) {
+    <p class="state-message">Loading…</p>
+  } @else if (styles().length === 0) {
+    <p class="state-message">No styles found.</p>
+  } @else {
+    <table>
+      <caption class="sr-only">Styles</caption>
+      <thead>
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Name</th>
+          <th scope="col">Category</th>
+          <th scope="col">Status</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (style of styles(); track style.id) {
+          <tr>
+            <td>{{ style.code }}</td>
+            <td>{{ style.name }}</td>
+            <td>{{ categoryName(style.categoryId) }}</td>
+            <td>
+              <span class="badge" [class.badge--muted]="!style.isActive">
+                {{ style.isActive ? 'Active' : 'Retired' }}
+              </span>
+            </td>
+            <td>
+              <button type="button" class="button button--small" (click)="startEdit(style)">Edit</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}
+
+@if (mode() !== 'list') {
+  <form class="style-form card" (ngSubmit)="save()" [formGroup]="form">
+    <h2>{{ mode() === 'create' ? 'Add' : 'Edit' }} style</h2>
+
+    @if (error()) {
+      <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+    }
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="style-code">Code</label>
+        <input id="style-code" type="text" formControlName="code" />
+        <app-field-errors [messages]="fieldErrors('Code')" />
+      </div>
+
+      <div class="form-field">
+        <label for="style-name">Name</label>
+        <input id="style-name" type="text" formControlName="name" />
+        <app-field-errors [messages]="fieldErrors('Name')" />
+      </div>
+
+      <div class="form-field form-field--wide">
+        <label for="style-collection">Collection</label>
+        <input id="style-collection" type="text" formControlName="collectionName" />
+      </div>
+
+      <div class="form-field">
+        <label for="style-category">Category</label>
+        <select id="style-category" formControlName="categoryId">
+          <option [value]="null">Select…</option>
+          @for (category of categories(); track category.id) {
+            <option [value]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="style-gender">Gender</label>
+        <select id="style-gender" formControlName="genderId">
+          <option [value]="null">Select…</option>
+          @for (gender of genders(); track gender.id) {
+            <option [value]="gender.id">{{ gender.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="style-age-bracket">Age bracket</label>
+        <select id="style-age-bracket" formControlName="ageBracketId">
+          <option [value]="null">Select…</option>
+          @for (ageBracket of ageBrackets(); track ageBracket.id) {
+            <option [value]="ageBracket.id">{{ ageBracket.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="style-fabric">Fabric</label>
+        <select id="style-fabric" formControlName="fabricId">
+          <option [value]="null">Select…</option>
+          @for (fabric of fabrics(); track fabric.id) {
+            <option [value]="fabric.id">{{ fabric.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="style-unit-cost">Target unit cost (PKR)</label>
+        <input id="style-unit-cost" type="number" step="0.01" formControlName="targetUnitCost" />
+        <app-field-errors [messages]="fieldErrors('TargetUnitCost')" />
+      </div>
+
+      <div class="form-field">
+        <label for="style-retail-price">Target retail price (PKR)</label>
+        <input id="style-retail-price" type="number" step="0.01" formControlName="targetRetailPrice" />
+        <app-field-errors [messages]="fieldErrors('TargetRetailPrice')" />
+      </div>
+    </div>
+
+    <fieldset class="picker">
+      <legend>Colourways</legend>
+      @for (colour of colours(); track colour.id) {
+        <label class="picker__option">
+          <input
+            type="checkbox"
+            [checked]="selectedColourIds().includes(colour.id)"
+            (change)="onColourToggle(colour.id, $event)"
+          />
+          {{ colour.name }}
+        </label>
+      }
+    </fieldset>
+    <app-field-errors [messages]="fieldErrors('ColourIds')" />
+
+    <fieldset class="picker">
+      <legend>Size run</legend>
+      @for (size of sizes(); track size.id) {
+        <label class="picker__option">
+          <input
+            type="checkbox"
+            [checked]="selectedSizeIds().includes(size.id)"
+            (change)="onSizeToggle(size.id, $event)"
+          />
+          {{ size.name }}
+        </label>
+      }
+    </fieldset>
+    <app-field-errors [messages]="fieldErrors('SizeIds')" />
+
+    @if (gridRows().length > 0) {
+      <div class="target-grid-wrapper">
+        <h3>Target quantity per size &times; colour</h3>
+        <table class="target-grid">
+          <thead>
+            <tr>
+              <th scope="col">Size</th>
+              @for (colourId of selectedColourIds(); track colourId) {
+                <th scope="col">{{ colours().find((c) => c.id === colourId)?.name }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of gridRows(); track row.size.id) {
+              <tr>
+                <th scope="row">{{ row.size.name }}</th>
+                @for (cell of row.cells; track cell.colourId) {
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      [value]="cell.qty"
+                      (input)="onQtyInput(cell.sizeId, cell.colourId, $event)"
+                      [attr.aria-label]="row.size.name + ' × ' + (colours().find((c) => c.id === cell.colourId)?.name) + ' target quantity'"
+                    />
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    <app-field-errors [messages]="fieldErrors('TargetLines')" />
+
+    <div class="form-actions">
+      <button type="submit" class="button button--primary" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : 'Save' }}
+      </button>
+      <button type="button" class="button" (click)="cancelEdit()">Cancel</button>
+    </div>
+  </form>
+}

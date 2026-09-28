@@ -1,6 +1,6 @@
 # SCRUM-92: Procurement — Part 1 (reference data, style master, vendor, PO to Acknowledged)
 
-- **Status:** Approved
+- **Status:** Implemented. Backend (REF/CTLG/VNDR modules, migrations, MediatR commands/queries, endpoints) is built and test-verified — see tasks.md #1-30. Admin frontend and E2E (tasks.md #31-37) are built but **not locally verified**: this machine's Windows Application Control policy (CLAUDE.md) blocks the Angular build tool itself (a native `oxc-parser` binding), not just test DLLs, so `ng build`/`ng test`/Playwright have never actually run here — confirm via CI or another machine before treating the frontend as done.
 - **Jira:** SCRUM-91, SCRUM-92, SCRUM-173, SCRUM-172 (spec/plan gate: SCRUM-169, priority Highest, blocks all other Sprint 1 tickets). Epic SCRUM-14 "[Module] Vendor & Procurement (VEND)" for SCRUM-91/92; SCRUM-173 sits under epic SCRUM-5 "[Module] Catalog & Discovery"; SCRUM-172 (reference data) has no epic.
 - **BRD sections:** §5.9 (Demand Planning & Purchase Order), §7.10 (FR-SC), §12.4 (Lookup Table Catalogue)
 - **Requirement IDs:** FR-SC-01, FR-SC-02. (FR-SC-03 exists in the BRD but is explicitly out of scope here — see below.)

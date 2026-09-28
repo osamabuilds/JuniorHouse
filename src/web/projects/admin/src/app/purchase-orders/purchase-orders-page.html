@@ -1,0 +1,260 @@
+<h1>Purchase Orders</h1>
+<p class="page-intro">
+  Raised against a vendor and style: size &times; colour quantity breakdown, unit cost, expected
+  delivery date and payment terms. Draft &rarr; Sent to Vendor &rarr; Acknowledged, or Cancelled.
+</p>
+
+@if (mode() === 'list') {
+  <div class="toolbar">
+    <label class="toolbar__select">
+      <span class="sr-only">Vendor</span>
+      <select [value]="vendorFilter() ?? ''" (change)="onVendorFilterChange($event)">
+        <option value="">All vendors</option>
+        @for (vendor of vendors(); track vendor.id) {
+          <option [value]="vendor.id">{{ vendor.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="toolbar__select">
+      <span class="sr-only">Status</span>
+      <select [value]="statusFilter() ?? ''" (change)="onStatusFilterChange($event)">
+        <option value="">All statuses</option>
+        @for (entry of statusLabels | keyvalue; track entry.key) {
+          <option [value]="entry.key">{{ entry.value }}</option>
+        }
+      </select>
+    </label>
+
+    <button type="button" class="button button--primary" (click)="startCreate()">Raise PO</button>
+  </div>
+
+  @if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  @if (loading()) {
+    <p class="state-message">Loading…</p>
+  } @else if (orders().length === 0) {
+    <p class="state-message">No purchase orders found.</p>
+  } @else {
+    <table>
+      <caption class="sr-only">Purchase orders</caption>
+      <thead>
+        <tr>
+          <th scope="col">PO No.</th>
+          <th scope="col">Vendor</th>
+          <th scope="col">Expected delivery</th>
+          <th scope="col">Status</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (order of orders(); track order.id) {
+          <tr>
+            <td>{{ order.poNo }}</td>
+            <td>{{ vendorName(order.vendorId) }}</td>
+            <td>{{ order.expectedDeliveryDate }}</td>
+            <td>
+              <span class="badge" [class.badge--muted]="order.statusId !== 1">
+                {{ statusLabels[order.statusId] }}
+              </span>
+            </td>
+            <td>
+              <button type="button" class="button button--small" (click)="openDetail(order)">View</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}
+
+@if (mode() === 'detail' && current()) {
+  <div class="po-detail card">
+    <div class="po-detail__header">
+      <div>
+        <h2>{{ current()!.poNo }}</h2>
+        <span class="badge">{{ statusLabels[current()!.statusId] }}</span>
+      </div>
+      <div class="po-detail__actions">
+        @if (canEdit(current()!)) {
+          <button type="button" class="button" (click)="startEditDraft()">Edit</button>
+        }
+        <button type="button" class="button" [disabled]="!canSend(current()!)" (click)="send()">Send to Vendor</button>
+        <button type="button" class="button" [disabled]="!canAcknowledge(current()!)" (click)="acknowledge()">
+          Acknowledge
+        </button>
+      </div>
+    </div>
+
+    @if (error()) {
+      <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+    }
+
+    <dl class="po-detail__facts">
+      <div><dt>Vendor</dt><dd>{{ vendorName(current()!.vendorId) }}</dd></div>
+      <div><dt>Unit cost</dt><dd>PKR {{ current()!.unitCost }}</dd></div>
+      <div><dt>Expected delivery</dt><dd>{{ current()!.expectedDeliveryDate }}</dd></div>
+      <div><dt>Advance %</dt><dd>{{ current()!.advancePercent }}%</dd></div>
+    </dl>
+
+    <h3>Lines</h3>
+    <table>
+      <caption class="sr-only">PO lines</caption>
+      <thead>
+        <tr>
+          <th scope="col">Size</th>
+          <th scope="col">Colour</th>
+          <th scope="col">Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of current()!.lines; track line.sizeId + '-' + line.colourId) {
+          <tr>
+            <td>{{ line.sizeId }}</td>
+            <td>{{ line.colourId }}</td>
+            <td>{{ line.qty }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <h3>Status timeline</h3>
+    <ol class="timeline">
+      @for (entry of current()!.statusHistory; track entry.insrDte) {
+        <li>
+          <span class="timeline__status">{{ statusLabels[entry.poStatusId] }}</span>
+          <span class="timeline__meta">{{ entry.insrDte }} &middot; {{ entry.insrBy }}</span>
+          @if (entry.cancelReasonId) {
+            <span class="timeline__reason">Reason: {{ cancelReasonName(entry.cancelReasonId) }}</span>
+          }
+        </li>
+      }
+    </ol>
+
+    @if (canCancel(current()!)) {
+      <div class="cancel-panel">
+        <h3>Cancel this PO</h3>
+        <label for="cancel-reason">Reason</label>
+        <select id="cancel-reason" [value]="cancelReasonId() ?? ''" (change)="onCancelReasonChange($event)">
+          <option value="">Select a reason…</option>
+          @for (reason of cancelReasons(); track reason.id) {
+            <option [value]="reason.id">{{ reason.name }}</option>
+          }
+        </select>
+        <button type="button" class="button button--danger" [disabled]="cancelReasonId() === null" (click)="cancel()">
+          Cancel PO
+        </button>
+      </div>
+    }
+
+    <button type="button" class="button" (click)="backToList()">Back to list</button>
+  </div>
+}
+
+@if (mode() === 'create' || mode() === 'edit') {
+  <form class="po-form card" (ngSubmit)="save()" [formGroup]="form">
+    <h2>{{ mode() === 'create' ? 'Raise' : 'Edit' }} purchase order</h2>
+
+    @if (error()) {
+      <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+    }
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="po-vendor">Vendor</label>
+        <select
+          id="po-vendor"
+          [value]="form.controls.vendorId.value ?? ''"
+          [disabled]="mode() === 'edit'"
+          (change)="onVendorSelectChange($event)"
+        >
+          <option value="">Select…</option>
+          @for (vendor of vendors(); track vendor.id) {
+            <option [value]="vendor.id">{{ vendor.name }}</option>
+          }
+        </select>
+        <app-field-errors [messages]="fieldErrors('VendorId')" />
+      </div>
+
+      <div class="form-field">
+        <label for="po-style">Style</label>
+        <select
+          id="po-style"
+          [value]="form.controls.styleId.value ?? ''"
+          [disabled]="mode() === 'edit'"
+          (change)="onStyleSelectChange($event)"
+        >
+          <option value="">Select…</option>
+          @for (style of styles(); track style.id) {
+            <option [value]="style.id">{{ style.code }} &mdash; {{ style.name }}</option>
+          }
+        </select>
+        <app-field-errors [messages]="fieldErrors('StyleId')" />
+      </div>
+
+      <div class="form-field">
+        <label for="po-unit-cost">Unit cost (PKR)</label>
+        <input id="po-unit-cost" type="number" step="0.01" formControlName="unitCost" />
+        <app-field-errors [messages]="fieldErrors('UnitCost')" />
+      </div>
+
+      <div class="form-field">
+        <label for="po-delivery-date">Expected delivery date</label>
+        <input id="po-delivery-date" type="date" formControlName="expectedDeliveryDate" />
+        <app-field-errors [messages]="fieldErrors('ExpectedDeliveryDate')" />
+      </div>
+
+      <div class="form-field">
+        <label for="po-payment-term">Payment term id</label>
+        <input id="po-payment-term" type="number" formControlName="paymentTermId" />
+        <p class="field-hint">Pre-filled from the vendor's default when a vendor is selected; change it to override.</p>
+      </div>
+
+      <div class="form-field">
+        <label for="po-advance-pct">Advance %</label>
+        <input id="po-advance-pct" type="number" step="0.01" formControlName="advancePercent" />
+      </div>
+    </div>
+
+    @if (lineRows().length > 0) {
+      <h3>Size &times; colour quantity</h3>
+      <table class="line-grid">
+        <thead>
+          <tr>
+            <th scope="col">Size ID</th>
+            <th scope="col">Colour ID</th>
+            <th scope="col">Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of lineRows(); track row.sizeId + '-' + row.colourId) {
+            <tr>
+              <th scope="row">{{ row.sizeId }}</th>
+              <td>{{ row.colourId }}</td>
+              <td>
+                <input
+                  type="number"
+                  min="0"
+                  [value]="row.qty"
+                  (input)="onLineQtyInput(row.sizeId, row.colourId, $event)"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-field-errors [messages]="fieldErrors('Lines')" />
+    } @else if (form.controls.styleId.value) {
+      <p class="state-message">Loading style size run and colourways…</p>
+    }
+
+    <div class="form-actions">
+      <button type="submit" class="button button--primary" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : 'Save' }}
+      </button>
+      <button type="button" class="button" (click)="mode.set(current() ? 'detail' : 'list')">Cancel</button>
+    </div>
+  </form>
+}

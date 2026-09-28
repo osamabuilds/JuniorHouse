@@ -2,10 +2,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <!-- Required by the EF Core CLI tools (`dotnet ef migrations add`), which check the startup
+         project's own direct references rather than a transitive one. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\Catalog\Romp.Modules.Catalog.Infrastructure\Romp.Modules.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Reference\Romp.Modules.Reference.Infrastructure\Romp.Modules.Reference.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Vendor\Romp.Modules.Vendor.Infrastructure\Romp.Modules.Vendor.Infrastructure.csproj" />
     <ProjectReference Include="..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
   </ItemGroup>
 

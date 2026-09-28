@@ -18,6 +18,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Romp.Api\Romp.Api.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Catalog\Romp.Modules.Catalog.Infrastructure\Romp.Modules.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Reference\Romp.Modules.Reference.Infrastructure\Romp.Modules.Reference.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Vendor\Romp.Modules.Vendor.Infrastructure\Romp.Modules.Vendor.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

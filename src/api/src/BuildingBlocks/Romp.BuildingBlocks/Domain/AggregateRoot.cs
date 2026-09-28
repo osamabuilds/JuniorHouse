@@ -4,7 +4,7 @@ namespace Romp.BuildingBlocks.Domain;
 /// Consistency boundary. Domain events raised here are persisted to the transactional outbox
 /// in the same database transaction as the aggregate (BRD §9.5, §9.10).
 /// </summary>
-public abstract class AggregateRoot<TId> : Entity<TId>
+public abstract class AggregateRoot<TId> : Entity<TId>, IHasDomainEvents
     where TId : notnull
 {
     private readonly List<IDomainEvent> _domainEvents = [];
