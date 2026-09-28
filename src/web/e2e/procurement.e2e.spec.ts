@@ -26,9 +26,9 @@ test('Staff creates a style, a vendor, and a PO, and walks it through to Acknowl
   await page.getByLabel('Target retail price (PKR)').fill('1000');
 
   await page.getByRole('group', { name: 'Colourways' }).getByLabel('White').check();
-  await page.getByRole('group', { name: 'Size run' }).getByLabel('1-2Y').check();
+  await page.getByRole('group', { name: 'Size run' }).getByLabel('1-2 Years').check();
 
-  await page.getByLabel('1-2Y × White target quantity').fill('20');
+  await page.getByLabel('1-2 Years × White target quantity').fill('20');
   await page.getByRole('button', { name: 'Save' }).click();
 
   await expect(page.getByRole('cell', { name: styleCode })).toBeVisible();
@@ -37,7 +37,7 @@ test('Staff creates a style, a vendor, and a PO, and walks it through to Acknowl
   await page.goto('/vendors');
   await page.getByRole('button', { name: 'Add vendor' }).click();
 
-  await page.getByLabel('Name').fill(vendorName);
+  await page.getByLabel('Name', { exact: true }).fill(vendorName);
   await page.getByLabel('Contact name').fill('E2E Contact');
   await page.getByLabel('Contact phone').fill('+92-300-0000000');
   await page.getByLabel('City').selectOption({ label: 'Sialkot' });
@@ -51,10 +51,11 @@ test('Staff creates a style, a vendor, and a PO, and walks it through to Acknowl
   await page.goto('/purchase-orders');
   await page.getByRole('button', { name: 'Raise PO' }).click();
 
-  await page.getByLabel('Vendor').selectOption({ label: vendorName });
-  await page.getByLabel('Style').selectOption({ label: new RegExp(styleCode) });
-  await page.getByLabel('Unit cost (PKR)').fill('420');
-  await page.getByLabel('Expected delivery date').fill('2026-12-01');
+  const poForm = page.locator('form.po-form');
+  await poForm.getByLabel('Vendor').selectOption({ label: vendorName });
+  await poForm.getByLabel('Style').selectOption({ label: `${styleCode} — E2E Test Dress` });
+  await poForm.getByLabel('Unit cost (PKR)').fill('420');
+  await poForm.getByLabel('Expected delivery date').fill('2026-12-01');
 
   // The size x colour grid only appears once the style's size run/colourways have loaded.
   const qtyInputs = page.locator('.line-grid input[type="number"]');
@@ -64,14 +65,15 @@ test('Staff creates a style, a vendor, and a PO, and walks it through to Acknowl
   await page.getByRole('button', { name: 'Save' }).click();
 
   // Now on the detail view (AC-7: created in Draft with a generated PO number).
+  const statusBadge = page.locator('.po-detail__header .badge');
   await expect(page.getByRole('heading', { name: /^PO-\d{4}-\d{5}$/ })).toBeVisible();
-  await expect(page.getByText('Draft', { exact: true })).toBeVisible();
+  await expect(statusBadge).toHaveText('Draft');
 
   await page.getByRole('button', { name: 'Send to Vendor' }).click();
-  await expect(page.getByText('Sent to Vendor', { exact: true })).toBeVisible();
+  await expect(statusBadge).toHaveText('Sent to Vendor');
 
   await page.getByRole('button', { name: 'Acknowledge' }).click();
-  await expect(page.getByText('Acknowledged', { exact: true })).toBeVisible();
+  await expect(statusBadge).toHaveText('Acknowledged');
 
   // AC-14: the timeline shows all three transitions, oldest first.
   const timelineEntries = page.locator('.timeline li .timeline__status');
