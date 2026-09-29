@@ -14,6 +14,7 @@ using Romp.Modules.Quality.Contracts;
 using Romp.Modules.Quality.Infrastructure.InboundDeliveries;
 using Romp.Modules.Quality.Infrastructure.Outcomes;
 using Romp.Modules.Quality.Infrastructure.Persistence;
+using Romp.Modules.Quality.Infrastructure.Receiving;
 using Romp.Modules.Vendor.Contracts;
 
 namespace Romp.Modules.Quality.Infrastructure;
@@ -39,6 +40,7 @@ public sealed class QualityModule : IModule
 
         services.AddScoped<IQualityDbContext>(sp => sp.GetRequiredService<QcDbContext>());
         services.AddScoped<IQualityQueries, EmptyQualityQueries>();
+        services.AddScoped<IGrnNumberAllocator, GrnNumberAllocator>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(QcTransactionBehavior<,>));
@@ -72,5 +74,6 @@ public sealed class QualityModule : IModule
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapInboundDeliveryEndpoints();
+        endpoints.MapGoodsReceiptEndpoints();
     }
 }
