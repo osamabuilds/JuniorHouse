@@ -8,13 +8,11 @@ export const routes: Routes = [
   },
   {
     path: 'styles',
-    loadComponent: () => import('./styles/styles-page').then((m) => m.StylesPage),
-    title: 'Styles · Romp Admin',
+    loadChildren: () => import('@features/styles/styles.routes').then((m) => m.STYLES_ROUTES),
   },
   {
     path: 'vendors',
-    loadComponent: () => import('./vendors/vendors-page').then((m) => m.VendorsPage),
-    title: 'Vendors · Romp Admin',
+    loadChildren: () => import('@features/vendors/vendors.routes').then((m) => m.VENDORS_ROUTES),
   },
   {
     // SCRUM-93 task 51: what a vendor sees of a PO. The shell hides its navigation on this route.

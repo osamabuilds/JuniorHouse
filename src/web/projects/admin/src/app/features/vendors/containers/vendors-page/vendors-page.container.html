@@ -1,0 +1,56 @@
+<h1>Vendors</h1>
+<p class="page-intro">
+  Vendors are the factories and suppliers you buy from. Keep their contact details, what they make
+  and how you pay them.
+</p>
+
+@if (mode() === 'list') {
+  <div class="toolbar">
+    <label class="toolbar__search">
+      <span class="sr-only">Search</span>
+      <input
+        type="search"
+        placeholder="Search by name"
+        [value]="searchText()"
+        (input)="onSearchInput($event)"
+      />
+    </label>
+
+    <label class="toolbar__select">
+      <span class="sr-only">Specialisation</span>
+      <select [value]="specialisationFilter() ?? ''" (change)="onSpecialisationFilterChange($event)">
+        <option value="">All specialisations</option>
+        @for (specialisation of specialisations(); track specialisation.id) {
+          <option [value]="specialisation.id">{{ specialisation.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="toolbar__checkbox">
+      <input type="checkbox" [checked]="activeOnly()" (change)="toggleActiveOnly()" />
+      Active only
+    </label>
+
+    <button type="button" class="button button--primary" (click)="startCreate()">Add vendor</button>
+  </div>
+
+  @if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  <app-vendor-table [vendors]="vendors()" [loading]="loading()" [cities]="cities()" (edit)="startEdit($event)" />
+} @else {
+  <app-vendor-form
+    [form]="form"
+    [mode]="mode()"
+    [saving]="saving()"
+    [error]="error()"
+    [cities]="cities()"
+    [paymentTerms]="paymentTerms()"
+    [specialisations]="specialisations()"
+    [selectedSpecialisationIds]="selectedSpecialisationIds()"
+    (submitted)="save()"
+    (cancelled)="cancelEdit()"
+    (specialisationToggled)="toggleSpecialisation($event)"
+  />
+}
