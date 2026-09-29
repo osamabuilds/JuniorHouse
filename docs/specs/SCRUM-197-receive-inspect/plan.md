@@ -129,7 +129,7 @@ New glossary words B must add (none exists today for these): `INSP` inspection, 
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `INBD_DLVR` | `ID`, `RUN_ID`, `PO_ID`, `PO_NO`, `VNDR_DN_NO`, `DSPT_DT`, `FNL_SHIP_IND`, `CNCL_IND`, `PROD_TMNG_CODE`? no: none (facts stay in PROD) | unique `(RUN_ID, VNDR_DN_NO)`; index on `PO_ID`. QC's own copy of the DN so the receiving queue needs no cross-module read (AC-1). |
+| `INBD_DLVR` | `ID`, `RUN_ID`, `PO_ID`, `PO_NO`, `VNDR_DN_NO`, `DSPT_DT`, `FNL_SHIP_IND`, `CNCL_IND` | unique `(RUN_ID, VNDR_DN_NO)`; index on `PO_ID`. QC's own copy of the DN so the receiving queue needs no cross-module read (AC-1). |
 | `INBD_DLVR_LINE` | `INBD_DLVR_ID`, `SIZE_ID`, `CLR_ID`, `CLM_QTY` | unique per delivery/size/colour |
 | `GRN_MAIN` | `ID`, `GRN_NO` (unique), `INBD_DLVR_ID` (unique, one GRN per DN), `RUN_ID`, `PO_ID`, `PO_NO`, `VNDR_DN_NO`, `RCVD_DT`, `GRN_STS_ID`, `GRN_RCNL_ID`, `CLM_TOT_QTY`, `CNTD_TOT_QTY`, `ACTR_NAME`, `NOTE` | audit + `ROW_VER` |
 | `GRN_LINE` | `GRN_ID`, `SIZE_ID`, `CLR_ID`, `CLM_QTY`, `CNTD_QTY`, `DIFF_QTY`, `EXCS_IND` | unique per grn/size/colour |
