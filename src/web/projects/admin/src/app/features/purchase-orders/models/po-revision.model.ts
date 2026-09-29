@@ -36,6 +36,10 @@ export interface PoRevisionDto {
   readonly isBeyondLatestAcceptableDate: boolean;
   readonly lines: readonly PoLineDto[];
   readonly communications: readonly PoRevisionCommunicationDto[] | null;
+  /** Sprint 3 (D17): the amendment adds or retires a file, changes who supplies the fabric, or adds a colour: a new PP sample is then strongly suggested. */
+  readonly isConstructionChange?: boolean;
+  /** Set on the response to creating an amendment: a PP sample was already approved, so the change is costly. */
+  readonly isCostlyAfterPpApproval?: boolean;
 }
 
 /** A vendor-visible file an amendment introduces; `content` is the file's bytes (the API's `byte[]`). */

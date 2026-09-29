@@ -1,0 +1,41 @@
+<h1>Production</h1>
+<p class="page-intro">
+  Once a vendor acknowledges a purchase order, its production shows up here: the pre-production sample, when
+  cutting starts, when the vendor expects to finish, and what has been delivered. Open a run to record what the
+  vendor tells you.
+</p>
+
+<div class="toolbar">
+  <label class="toolbar__search">
+    <span class="sr-only">Search by purchase order number</span>
+    <input type="search" placeholder="Search by PO number" [value]="searchText()" (input)="onSearchInput($event)" />
+  </label>
+
+  <label class="toolbar__select">
+    <span class="sr-only">Run status</span>
+    <select [value]="statusFilter() ?? ''" (change)="onStatusChange($event)">
+      <option value="">All runs</option>
+      @for (status of statuses; track status.id) {
+        <option [value]="status.id">{{ status.name }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="toolbar__checkbox">
+    <input type="checkbox" [checked]="atRiskOnly()" (change)="onAtRiskChange($event)" />
+    At risk of being late
+  </label>
+</div>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<app-run-table [runs]="runs()" [loading]="loading()" />
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

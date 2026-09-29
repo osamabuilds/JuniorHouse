@@ -134,11 +134,12 @@ export const purchaseOrdersReducer = createReducer(
     // AC-29: a declined PO isn't cancelled automatically - Cancel opens with the reason pre-filled.
     cancelReasonId: suggestedCancelReasonId !== null ? suggestedCancelReasonId : state.cancelReasonId,
   })),
-  on(PurchaseOrdersApiActions.revisionDecisionFailed, PurchaseOrdersApiActions.cancelFailed, (state, { error }) => ({
+  on(PurchaseOrdersApiActions.revisionDecisionFailed, PurchaseOrdersApiActions.cancelFailed, PurchaseOrdersApiActions.closeFailed, (state, { error }) => ({
     ...state,
     error,
   })),
   on(PurchaseOrdersApiActions.cancelSucceeded, (state, { po }) => ({ ...withCurrent(state, po), cancelReasonId: null })),
+  on(PurchaseOrdersApiActions.closeSucceeded, (state, { po }) => withCurrent(state, po)),
   on(PurchaseOrdersApiActions.fileUploadSucceeded, (state) => ({ ...state, fileUploading: false })),
   on(PurchaseOrdersApiActions.fileUploadFailed, (state, { error }) => ({ ...state, fileUploading: false, fileError: error })),
   on(PurchaseOrdersApiActions.fileRemovalFailed, (state, { error }) => ({ ...state, fileError: error })),

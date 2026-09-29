@@ -151,6 +151,7 @@ export const loadDetailExtras$ = createEffect(
         PurchaseOrdersApiActions.saveSucceeded,
         PurchaseOrdersApiActions.sendSucceeded,
         PurchaseOrdersApiActions.cancelSucceeded,
+        PurchaseOrdersApiActions.closeSucceeded,
         PurchaseOrdersApiActions.refreshDetailSucceeded,
       ),
       map(({ po }) => po),

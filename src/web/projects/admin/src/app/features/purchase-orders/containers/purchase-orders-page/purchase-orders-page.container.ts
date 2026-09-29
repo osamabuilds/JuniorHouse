@@ -1,7 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { catchError, of } from 'rxjs';
 import { LookupNames, ReferenceLookupActions, selectLookup } from '@features/reference-data';
+import { ProductionApiService, RunDetailDto } from '@features/production';
 import { VendorDto } from '@features/vendors';
 import { missingSummary, PaginationComponent } from '@shared';
 import { PoDetailComponent, RevisionNoteDecision } from '../../components/po-detail/po-detail.component';
@@ -12,6 +16,7 @@ import {
   AmendmentValue,
   LineQtyChange,
   LineRow,
+  PoDto,
   PoFileDto,
   PoFileUpload,
   PoPanel,
@@ -69,6 +74,9 @@ const LOOKUP_TYPES = ['payment-terms', 'amendment-reasons', 'vendor-comm-channel
 export class PurchaseOrdersPageContainer {
   private readonly store = inject(Store);
   private readonly poApi = inject(PoApiService);
+  private readonly productionApi = inject(ProductionApiService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
   readonly names = inject(LookupNames);
 
@@ -120,10 +128,27 @@ export class PurchaseOrdersPageContainer {
 
   readonly form = buildPoForm(this.formBuilder);
 
+  /** Sprint 3: the PO's production run (once it has one), for the link to Production and the costly-amendment notice. */
+  private readonly productionRun = signal<RunDetailDto | null>(null);
+  readonly productionRunId = computed(() => this.productionRun()?.id ?? null);
+  readonly sampleApproved = computed(() => this.productionRun()?.hasApprovedSample ?? false);
+
   readonly fileUrlFor = (fileId: number): string => this.poApi.fileDownloadUrl(this.current()?.id ?? 0, fileId);
 
   constructor() {
     this.store.dispatch(PurchaseOrdersPageActions.opened());
+
+    // Production links here with ?po=<id> to open that order straight away.
+    const linkedPo = Number(this.route.snapshot.queryParamMap.get('po'));
+    if (linkedPo > 0) {
+      this.store.dispatch(PurchaseOrdersPageActions.detailRequested({ id: linkedPo }));
+    }
+
+    // The run link and the sample notice follow the open PO, and are reloaded when its status changes.
+    effect(() => {
+      const po = this.current();
+      untracked(() => this.loadProductionRun(po));
+    });
     for (const typeKey of LOOKUP_TYPES) {
       this.store.dispatch(ReferenceLookupActions.requested({ typeKey, includeInactive: false }));
     }
@@ -312,6 +337,14 @@ export class PurchaseOrdersPageContainer {
     this.store.dispatch(PurchaseOrdersPageActions.cancelReasonChosen({ reasonId }));
   }
 
+  /** Sprint 3 (D2): closing a Delivered order is a manual step. */
+  close(): void {
+    const po = this.current();
+    if (po) {
+      this.store.dispatch(PurchaseOrdersPageActions.closeConfirmed({ poId: po.id }));
+    }
+  }
+
   cancel(): void {
     const po = this.current();
     const reasonId = this.cancelReasonId();
@@ -333,6 +366,22 @@ export class PurchaseOrdersPageContainer {
     if (po) {
       this.store.dispatch(PurchaseOrdersPageActions.fileRemovalSubmitted({ poId: po.id, fileId: file.id }));
     }
+  }
+
+  private loadProductionRun(po: PoDto | null): void {
+    // A draft or an order only sent to the vendor has no production run yet.
+    if (!po || po.statusId < 3) {
+      this.productionRun.set(null);
+      return;
+    }
+
+    this.productionApi
+      .getByPo(po.id)
+      .pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((run) => this.productionRun.set(run));
   }
 
   private decide(revision: PoRevisionDto, kind: 'accept' | 'reject' | 'withdraw', note: string | null): void {

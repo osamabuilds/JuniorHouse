@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiError } from '@core/http';
 import { LookupDto, LookupNameResolver } from '@features/reference-data';
 import { VendorSummaryDto } from '@features/vendors';
-import { AppDatePipe, selectNumberOrNull } from '@shared';
+import { AppDatePipe, inputChecked, selectNumberOrNull } from '@shared';
 import {
   AmendmentValue,
   PoDto,
@@ -14,8 +14,8 @@ import {
   StyleCell,
   VendorResponseValue,
 } from '../../models';
-import { PO_STATUS_DRAFT, PO_STATUS_LABELS } from '../../purchase-orders.constants';
-import { canAmend, canCancel, canEdit, canRecordResponse, canSend, statusHelp } from '../../utils/po-status-rules.util';
+import { CANCEL_REASON_PRODUCTION_STARTED, PO_STATUS_DRAFT, PO_STATUS_LABELS } from '../../purchase-orders.constants';
+import { canAmend, canCancel, canClose, canEdit, canRecordResponse, canSend, cancelNeedsProductionWarning, statusHelp } from '../../utils/po-status-rules.util';
 import { AmendFormComponent } from '../amend-form/amend-form.component';
 import { PendingRevisionActionsComponent } from '../pending-revision-actions/pending-revision-actions.component';
 import { PoFilesPanelComponent } from '../po-files-panel/po-files-panel.component';
@@ -65,6 +65,10 @@ export class PoDetailComponent {
   readonly revisions = input.required<readonly PoRevisionDto[]>();
   readonly files = input.required<readonly PoFileDto[]>();
   readonly styleCells = input.required<readonly StyleCell[]>();
+  /** Sprint 3: the PO's production run, once it has one, so the screen can link to it. */
+  readonly productionRunId = input<number | null>(null);
+  /** Sprint 3 (D17): a pre-production sample has been approved, so an amendment is costly. */
+  readonly sampleApproved = input(false);
 
   readonly channels = input.required<readonly LookupDto[]>();
   readonly amendmentReasons = input.required<readonly LookupDto[]>();
@@ -90,6 +94,7 @@ export class PoDetailComponent {
   readonly fileRemoveRequested = output<PoFileDto>();
   readonly cancelReasonChanged = output<number | null>();
   readonly cancelRequested = output<void>();
+  readonly closeRequested = output<void>();
   readonly backRequested = output<void>();
 
   readonly statusLabels = PO_STATUS_LABELS;
@@ -100,6 +105,16 @@ export class PoDetailComponent {
   readonly canRecordResponse = canRecordResponse;
   readonly canAmend = canAmend;
   readonly canCancel = canCancel;
+  readonly canClose = canClose;
+  readonly needsProductionWarning = cancelNeedsProductionWarning;
+  readonly productionReasonId = CANCEL_REASON_PRODUCTION_STARTED;
+
+  /** D5: before cancelling an order that is already in production, staff confirm they understand the cost. */
+  readonly understood = signal(false);
+
+  onUnderstood(event: Event): void {
+    this.understood.set(inputChecked(event));
+  }
   readonly statusHelp = statusHelp;
 
   onCancelReasonChange(event: Event): void {

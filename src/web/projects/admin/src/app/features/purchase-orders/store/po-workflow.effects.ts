@@ -113,3 +113,18 @@ export const removePoFile$ = createEffect(
     ),
   { functional: true },
 );
+
+/** Sprint 3 (D2): closing a Delivered PO is a manual step. */
+export const closePo$ = createEffect(
+  (actions$ = inject(Actions), api = inject(PoApiService)) =>
+    actions$.pipe(
+      ofType(PurchaseOrdersPageActions.closeConfirmed),
+      switchMap(({ poId }) =>
+        api.close(poId).pipe(
+          map((po) => PurchaseOrdersApiActions.closeSucceeded({ po })),
+          catchError((error: ApiError) => of(PurchaseOrdersApiActions.closeFailed({ error }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);

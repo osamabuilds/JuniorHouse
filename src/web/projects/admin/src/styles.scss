@@ -620,3 +620,93 @@ app-revision-history {
     letter-spacing: 0;
   }
 }
+
+/* ---- Timeline (Sprint 3) ------------------------------------------------------------------
+   The status timeline of a PO and the milestone timeline of a production run share one look. */
+.timeline {
+  list-style: none;
+  margin: 0 0 var(--space-5) var(--space-2);
+  padding: 0;
+  border-left: 2px solid var(--color-border-strong);
+}
+
+.timeline li {
+  position: relative;
+  padding: 0 0 var(--space-4) var(--space-5);
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-brass);
+}
+
+.timeline__status {
+  display: block;
+  font-weight: 600;
+}
+
+.timeline__meta {
+  display: block;
+  color: var(--color-ink-soft);
+  font-size: var(--text-xs);
+}
+
+.timeline__reason {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-ink-soft);
+}
+
+/* A row of label / value facts (a run summary, a delivery note). */
+.facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 var(--space-5);
+  margin: 0 0 var(--space-4);
+}
+
+.facts div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-2) 0;
+}
+
+.facts dt {
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+  min-width: 0;
+}
+
+@media (min-width: 40rem) {
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* A block of related content on a detail screen: a heading, its content and its actions. */
+.panel {
+  margin: 0 0 var(--space-5);
+}
+
+.panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}

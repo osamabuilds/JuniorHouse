@@ -3,6 +3,13 @@ export const PO_STATUS_DRAFT = 1;
 export const PO_STATUS_SENT_TO_VENDOR = 2;
 export const PO_STATUS_ACKNOWLEDGED = 3;
 export const PO_STATUS_CANCELLED = 4;
+export const PO_STATUS_IN_PRODUCTION = 5;
+export const PO_STATUS_PARTIALLY_DELIVERED = 6;
+export const PO_STATUS_DELIVERED = 7;
+export const PO_STATUS_CLOSED = 8;
+
+/** PO_CNCL_RSN_LKP id of "Cancelled after production started" (Sprint 3, D16). */
+export const CANCEL_REASON_PRODUCTION_STARTED = 7;
 
 /** REF.PO_STS_LKP's seed order (Romp.Modules.Reference.Infrastructure/ReferenceSeedData.cs) - system-owned and stable, so it's safe to mirror here for display. */
 export const PO_STATUS_LABELS: Readonly<Record<number, string>> = {
@@ -10,6 +17,10 @@ export const PO_STATUS_LABELS: Readonly<Record<number, string>> = {
   2: 'Sent to Vendor',
   3: 'Acknowledged',
   4: 'Cancelled',
+  5: 'In Production',
+  6: 'Partially Delivered',
+  7: 'Delivered',
+  8: 'Closed',
 };
 
 /** Revision status ids (REF.PO_REV_STS_LKP). */

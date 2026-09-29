@@ -26,6 +26,19 @@ const cellKey = (sizeId: number, colourId: number): string => `${sizeId}-${colou
         Change only what is different; everything else stays as it is now. If nothing changes, the amendment is not accepted.
       </p>
 
+      @if (sampleApproved() && mode() === 'amend') {
+        <p class="banner banner--error" role="note">
+          <strong>A pre-production sample was already approved for this order.</strong> Fabric and sampling are committed, so any change now is
+          costly for the vendor.
+          @if (isConstructionChange()) {
+            <strong>A new sample is strongly recommended:</strong> this change affects how the garment is made (files, who supplies the fabric, or
+            a new colour). After saving, record a new sample round under Production.
+          } @else {
+            A new sample is optional for a change to price, dates or terms only.
+          }
+        </p>
+      }
+
       @if (error()) {
         <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
       }
@@ -211,6 +224,8 @@ export class AmendFormComponent implements OnInit {
   readonly names = input.required<LookupNameResolver>();
   readonly po = input.required<PoDto>();
   readonly initiatorId = input(1);
+  /** Sprint 3 (D17): a pre-production sample was already approved, so any change is costly and a construction change needs a new sample. */
+  readonly sampleApproved = input(false);
   readonly mode = input<'amend' | 'counter'>('amend');
   readonly cells = input<readonly StyleCell[]>([]);
   readonly reasons = input<readonly LookupDto[]>([]);
@@ -276,6 +291,22 @@ export class AmendFormComponent implements OnInit {
       fabricResponsibilityId: po.fabricResponsibilityId,
     });
     this.qtyByCell.set(new Map(po.lines.map((line) => [cellKey(line.sizeId, line.colourId), line.qty])));
+  }
+
+  /**
+   * Mirrors the server's rule (D17) so staff are warned before saving: a change is a construction change when it adds or
+   * retires a file, changes who supplies the fabric, or brings in a colour the order does not have yet.
+   */
+  isConstructionChange(): boolean {
+    const po = this.po();
+    const raw = this.form.getRawValue();
+    const knownColours = new Set(po.lines.map((line) => line.colourId));
+    return (
+      this.addedFiles().length > 0 ||
+      this.retired().size > 0 ||
+      raw.fabricResponsibilityId !== po.fabricResponsibilityId ||
+      this.lineRows().some((row) => row.qty > 0 && !knownColours.has(row.colourId))
+    );
   }
 
   fieldErrors(field: string): readonly string[] {

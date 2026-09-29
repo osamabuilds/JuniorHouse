@@ -52,6 +52,11 @@ export class PoApiService {
     return this.api.post<PoDto>(`/api/purchase-orders/${id}/cancel`, { cancelReasonId });
   }
 
+  /** Sprint 3 (D2): staff close a Delivered order. */
+  close(id: number): Observable<PoDto> {
+    return this.api.post<PoDto>(`/api/purchase-orders/${id}/close`, {});
+  }
+
   getRevisions(id: number): Observable<PoRevisionDto[]> {
     return this.api.get<PoRevisionDto[]>(`/api/purchase-orders/${id}/revisions`);
   }

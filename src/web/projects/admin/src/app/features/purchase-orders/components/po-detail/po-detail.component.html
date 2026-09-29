@@ -17,6 +17,12 @@
       @if (canAmend(po())) {
         <button type="button" class="button" (click)="panelOpened.emit('amend')">Amend</button>
       }
+      @if (canClose(po())) {
+        <button type="button" class="button button--primary" (click)="closeRequested.emit()">Close order</button>
+      }
+      @if (productionRunId(); as runId) {
+        <a class="button" [routerLink]="['/production', runId]">Production</a>
+      }
       @if (po().statusId !== draftStatusId) {
         <a class="button" [routerLink]="['/purchase-orders', po().id, 'vendor-view']" target="_blank">Vendor view</a>
       }
@@ -60,6 +66,7 @@
       [names]="names()"
       [po]="po()"
       [initiatorId]="1"
+      [sampleApproved]="sampleApproved()"
       [cells]="styleCells()"
       [reasons]="amendmentReasons()"
       [fabricOptions]="fabricOptions()"
@@ -151,6 +158,17 @@
   @if (canCancel(po())) {
     <div class="cancel-panel">
       <h3>Cancel this PO</h3>
+      @if (needsProductionWarning(po())) {
+        <div class="banner banner--error" role="alert">
+          <strong>Production has already started.</strong> The vendor may have bought fabric, cut cloth and finished pieces for this order.
+          Cancelling now can leave you owing for that work, and the vendor may not accept it. Talk to the vendor first, then choose
+          "Cancelled after production started" as the reason. Nothing is refunded or credited by this system.
+        </div>
+        <label class="check" for="cancel-understood">
+          <input id="cancel-understood" type="checkbox" [checked]="understood()" (change)="onUnderstood($event)" />
+          I understand the vendor may already have spent money on this order
+        </label>
+      }
       <label for="cancel-reason">Reason</label>
       <select id="cancel-reason" [value]="cancelReasonId() ?? ''" (change)="onCancelReasonChange($event)">
         <option value="">Select a reason…</option>
@@ -158,7 +176,12 @@
           <option [value]="reason.id">{{ reason.name }}</option>
         }
       </select>
-      <button type="button" class="button button--danger" [disabled]="cancelReasonId() === null" (click)="cancelRequested.emit()">
+      <button
+        type="button"
+        class="button button--danger"
+        [disabled]="cancelReasonId() === null || (needsProductionWarning(po()) && !understood())"
+        (click)="cancelRequested.emit()"
+      >
         Cancel PO
       </button>
     </div>

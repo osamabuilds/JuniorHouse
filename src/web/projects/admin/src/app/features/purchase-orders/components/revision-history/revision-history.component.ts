@@ -75,6 +75,12 @@ const totalQty = (revision: PoRevisionDto): number => revision.lines.reduce((sum
                     <div><dt>Delivery date shift</dt><dd>{{ signed(view.revision.expectedDateShiftDays) }} days</dd></div>
                     <div><dt>Quantity change</dt><dd>{{ signed(view.revision.quantityDiff) }} pcs</dd></div>
                   </dl>
+                  @if (view.revision.isConstructionChange) {
+                    <p class="banner banner--info" role="note">
+                      Construction change: this revision affects how the garment is made (files, fabric supplier or a new colour), so a new
+                      pre-production sample is recommended.
+                    </p>
+                  }
                   @if (view.revision.isBeyondLatestAcceptableDate) {
                     <p class="banner banner--error" role="note">Expected delivery is beyond the latest acceptable date.</p>
                   }

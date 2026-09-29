@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  max-width: 52rem;
+}
+
+.run-summary {
+  margin-top: var(--space-4);
+}
+
+/* Sections stack with a heading each; a section heading follows content, so it gets air above it. */
+section h2 {
+  margin-top: 0;
+}
