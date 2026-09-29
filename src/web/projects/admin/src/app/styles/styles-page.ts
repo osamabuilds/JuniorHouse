@@ -1,10 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ApiError } from '../core/api-error';
-import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
-import { ControlErrors, missingSummary } from '../shared/control-errors';
-import { FieldErrors } from '../shared/field-errors';
-import { inputChecked, inputNumber, inputValue, selectNumberOrNull } from '../shared/dom-events';
+import { ApiError } from '@core/http';
+import { LookupDto, ReferenceApiService } from '@features/reference-data';
+import { ControlErrorsComponent, missingSummary } from '@shared';
+import { FieldErrorsComponent } from '@shared';
+import { inputChecked, inputNumber, inputValue, selectNumberOrNull } from '@shared';
 import { CatalogApiService, StyleDto, StyleSummaryDto } from './catalog-api.service';
 
 /** One editable cell of the colour x size target-quantity grid (AC-3). */
@@ -19,7 +19,7 @@ type Mode = 'list' | 'create' | 'edit';
 /** SCRUM-174: style list (search/filter) plus a create/edit form with the colour x size target-quantity grid. */
 @Component({
   selector: 'app-styles-page',
-  imports: [ReactiveFormsModule, FieldErrors, ControlErrors],
+  imports: [ReactiveFormsModule, FieldErrorsComponent, ControlErrorsComponent],
   templateUrl: './styles-page.html',
   styleUrl: './styles-page.scss',
 })

@@ -20,6 +20,6 @@ import { Component, input } from '@angular/core';
     }
   `,
 })
-export class FieldErrors {
+export class FieldErrorsComponent {
   readonly messages = input<readonly string[]>([]);
 }

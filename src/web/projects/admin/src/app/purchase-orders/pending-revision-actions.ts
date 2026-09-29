@@ -1,5 +1,5 @@
 import { Component, computed, input, output, signal } from '@angular/core';
-import { inputValue } from '../shared/dom-events';
+import { inputValue } from '@shared';
 import { INITIATOR_LABELS, PoRevisionDto } from './po-api.service';
 
 /**

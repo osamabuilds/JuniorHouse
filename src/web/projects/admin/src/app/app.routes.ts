@@ -4,9 +4,7 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'reference-data' },
   {
     path: 'reference-data',
-    loadComponent: () =>
-      import('./reference-data/reference-data-page').then((m) => m.ReferenceDataPage),
-    title: 'Reference Data · Romp Admin',
+    loadChildren: () => import('@features/reference-data/reference-data.routes').then((m) => m.REFERENCE_DATA_ROUTES),
   },
   {
     path: 'styles',

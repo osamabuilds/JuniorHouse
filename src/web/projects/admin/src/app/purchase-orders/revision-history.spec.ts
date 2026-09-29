@@ -1,3 +1,4 @@
+import { provideTestStore } from '@app/testing/provide-test-store';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -39,7 +40,7 @@ function revision(overrides: Partial<PoRevisionDto>): PoRevisionDto {
 
 describe('RevisionHistory (SCRUM-93 task 47, AC-34)', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), ...provideTestStore()] });
   });
 
   function render(revisions: PoRevisionDto[]): HTMLElement {

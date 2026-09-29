@@ -1,5 +1,5 @@
 import { Component, computed, input, output, signal } from '@angular/core';
-import { inputChecked } from '../shared/dom-events';
+import { inputChecked } from '@shared';
 import { PoDto } from './po-api.service';
 
 interface ChecklistItem {

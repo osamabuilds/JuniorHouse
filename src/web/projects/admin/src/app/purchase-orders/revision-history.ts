@@ -1,7 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
-import { LookupDto } from '../reference-data/reference-api.service';
-import { AppDatePipe, formatDate } from '../shared/app-date.pipe';
-import { LookupNames } from '../shared/lookup-names';
+import { LookupDto } from '@features/reference-data';
+import { AppDatePipe, formatDate } from '@shared';
+import { LookupNames } from '@features/reference-data';
 import { COMM_TYPE_LABELS, INITIATOR_LABELS, PoRevisionDto, REVISION_STATUS_LABELS } from './po-api.service';
 
 interface DiffRow {

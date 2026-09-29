@@ -1,10 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ApiError } from '../core/api-error';
-import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
-import { ControlErrors, missingSummary } from '../shared/control-errors';
-import { FieldErrors } from '../shared/field-errors';
-import { inputChecked, inputValue, selectNumberOrNull } from '../shared/dom-events';
+import { ApiError } from '@core/http';
+import { LookupDto, ReferenceApiService } from '@features/reference-data';
+import { ControlErrorsComponent, missingSummary } from '@shared';
+import { FieldErrorsComponent } from '@shared';
+import { inputChecked, inputValue, selectNumberOrNull } from '@shared';
 import { VendorApiService, VendorDto, VendorSummaryDto } from './vendor-api.service';
 
 type Mode = 'list' | 'create' | 'edit';
@@ -12,7 +12,7 @@ type Mode = 'list' | 'create' | 'edit';
 /** SCRUM-174: vendor list (search by name/city/specialisation) plus a create/edit form (FR-SC-01, AC-5/AC-5a/AC-6). */
 @Component({
   selector: 'app-vendors-page',
-  imports: [ReactiveFormsModule, FieldErrors, ControlErrors],
+  imports: [ReactiveFormsModule, FieldErrorsComponent, ControlErrorsComponent],
   templateUrl: './vendors-page.html',
   styleUrl: './vendors-page.scss',
 })

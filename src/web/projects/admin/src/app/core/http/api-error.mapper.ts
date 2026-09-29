@@ -1,21 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { ApiError } from './api-error.model';
 
 /** Shape ASP.NET Core's ProblemDetails/ValidationProblemDetails send back (Romp.Api's exception handlers). */
 interface ProblemDetailsBody {
   readonly title?: string;
   readonly detail?: string;
   readonly errors?: Record<string, string[]>;
-}
-
-/**
- * Normalises any failed request into one shape every screen can render the same way: a
- * human-readable message for a banner, and field-level errors (AC-15) to show inline next to the
- * form control they belong to.
- */
-export interface ApiError {
-  readonly status: number;
-  readonly message: string;
-  readonly fieldErrors: Readonly<Record<string, readonly string[]>>;
 }
 
 export function toApiError(error: HttpErrorResponse): ApiError {

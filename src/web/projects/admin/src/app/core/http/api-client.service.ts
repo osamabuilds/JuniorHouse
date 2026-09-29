@@ -1,8 +1,8 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, throwError } from 'rxjs';
-import { API_BASE_URL } from './api-base-url.token';
-import { toApiError } from './api-error';
+import { API_BASE_URL } from '../config/api-base-url.token';
+import { toApiError } from './api-error.mapper';
 
 type QueryParams = Record<string, string | number | boolean | undefined | null>;
 

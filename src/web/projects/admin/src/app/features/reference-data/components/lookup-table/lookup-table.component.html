@@ -1,0 +1,48 @@
+@if (loading()) {
+  <p class="state-message">Loading…</p>
+} @else if (items().length === 0) {
+  <p class="state-message">No values found.</p>
+} @else {
+  <table class="responsive">
+    <caption class="sr-only">{{ caption() }}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Code</th>
+        <th scope="col">Name</th>
+        <th scope="col">Description</th>
+        <th scope="col">Sort</th>
+        <th scope="col">Status</th>
+        @if (mutable()) {
+          <th scope="col">Actions</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of items(); track item.id) {
+        <tr>
+          <td data-label="Code">{{ item.code }}</td>
+          <td data-label="Name">{{ item.name }}</td>
+          <td data-label="Description">{{ item.description || '—' }}</td>
+          <td data-label="Sort order">{{ item.sortSeq }}</td>
+          <td data-label="Status">
+            <span class="badge" [class.badge--muted]="!item.isActive">
+              {{ item.isActive ? 'Active' : 'Retired' }}
+            </span>
+          </td>
+          @if (mutable()) {
+            <td data-label="Actions">
+              <div class="actions-cell">
+                <button type="button" class="button button--small" (click)="edit.emit(item)">Edit</button>
+                @if (item.isActive) {
+                  <button type="button" class="button button--small button--danger" (click)="retire.emit(item)">
+                    Retire
+                  </button>
+                }
+              </div>
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+}

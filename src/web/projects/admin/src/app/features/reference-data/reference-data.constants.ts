@@ -1,11 +1,4 @@
-export interface LookupTypeConfig {
-  readonly key: string;
-  readonly label: string;
-  readonly mutable: boolean;
-  readonly hasParent?: boolean;
-  readonly hasAdvancePercent?: boolean;
-}
-
+import { LookupTypeConfig } from './models';
 /** The staff-facing REF lookups (spec AC-1) - po-statuses is system-owned, no create/edit/retire (AC-1). */
 export const LOOKUP_TYPES: readonly LookupTypeConfig[] = [
   { key: 'sizes', label: 'Sizes', mutable: true },

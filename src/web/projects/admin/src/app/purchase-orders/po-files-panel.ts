@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
-import { ApiError } from '../core/api-error';
-import { selectNumberOrNull } from '../shared/dom-events';
+import { ApiError } from '@core/http';
+import { selectNumberOrNull } from '@shared';
 import { FILE_CATEGORY_LABELS, PoApiService, PoFileDto, isVendorVisibleCategory } from './po-api.service';
 
 const DRAFT = 1;

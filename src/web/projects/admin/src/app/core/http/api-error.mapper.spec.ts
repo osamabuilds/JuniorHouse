@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { toApiError } from './api-error';
+import { toApiError } from './api-error.mapper';
 
 describe('toApiError', () => {
   it('shows the API detail when there is one', () => {

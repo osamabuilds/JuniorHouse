@@ -1,3 +1,4 @@
+import { provideTestStore } from '@app/testing/provide-test-store';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -40,7 +41,7 @@ function setText(root: HTMLElement, selector: string, value: string): void {
 }
 
 beforeEach(() => {
-  TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+  TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), ...provideTestStore()] });
 });
 
 describe('AmendForm (SCRUM-93 task 48, AC-15..AC-17)', () => {

@@ -1,4 +1,4 @@
-import { LOOKUP_TYPES } from './lookup-types';
+import { LOOKUP_TYPES } from './reference-data.constants';
 
 describe('LOOKUP_TYPES (SCRUM-93 task 54)', () => {
   const byKey = (key: string) => LOOKUP_TYPES.find((type) => type.key === key);

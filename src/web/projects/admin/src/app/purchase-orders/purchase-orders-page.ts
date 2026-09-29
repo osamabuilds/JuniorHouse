@@ -4,13 +4,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Observable, of, switchMap } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CatalogApiService, StyleDto, StyleSummaryDto } from '../styles/catalog-api.service';
-import { ApiError } from '../core/api-error';
-import { LookupDto, ReferenceApiService } from '../reference-data/reference-api.service';
-import { AppDatePipe } from '../shared/app-date.pipe';
-import { ControlErrors, missingSummary } from '../shared/control-errors';
-import { FieldErrors } from '../shared/field-errors';
-import { LookupNames } from '../shared/lookup-names';
-import { inputNumber, selectNumberOrNull } from '../shared/dom-events';
+import { ApiError } from '@core/http';
+import { LookupDto, ReferenceApiService } from '@features/reference-data';
+import { AppDatePipe } from '@shared';
+import { ControlErrorsComponent, missingSummary } from '@shared';
+import { FieldErrorsComponent } from '@shared';
+import { LookupNames } from '@features/reference-data';
+import { inputNumber, selectNumberOrNull } from '@shared';
 import { VendorApiService, VendorSummaryDto } from '../vendors/vendor-api.service';
 import { AmendForm, StyleCell } from './amend-form';
 import { PendingRevisionActions } from './pending-revision-actions';
@@ -53,9 +53,9 @@ interface LineRow {
   imports: [
     ReactiveFormsModule,
     RouterLink,
-    FieldErrors,
+    FieldErrorsComponent,
     AppDatePipe,
-    ControlErrors,
+    ControlErrorsComponent,
     KeyValuePipe,
     AmendForm,
     PendingRevisionActions,

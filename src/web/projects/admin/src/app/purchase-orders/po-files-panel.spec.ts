@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { API_BASE_URL } from '../core/api-base-url.token';
+import { API_BASE_URL } from '@core/config';
 import { PoFileDto } from './po-api.service';
 import { PoFilesPanel } from './po-files-panel';
 

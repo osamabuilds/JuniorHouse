@@ -1,8 +1,8 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ApiError } from '../core/api-error';
-import { LookupDto } from '../reference-data/reference-api.service';
-import { FieldErrors } from '../shared/field-errors';
+import { ApiError } from '@core/http';
+import { LookupDto } from '@features/reference-data';
+import { FieldErrorsComponent } from '@shared';
 
 import { AmendForm, StyleCell, fileToBase64 } from './amend-form';
 import { AmendmentValue, PoDto, PoFileDto, VendorResponseValue } from './po-api.service';
@@ -20,7 +20,7 @@ export const OUTCOME_DECLINED = 3;
  */
 @Component({
   selector: 'app-vendor-response-form',
-  imports: [ReactiveFormsModule, FieldErrors, AmendForm],
+  imports: [ReactiveFormsModule, FieldErrorsComponent, AmendForm],
   template: `
     <section class="vresp card" aria-labelledby="vresp-heading">
       <h3 id="vresp-heading">Record vendor response</h3>

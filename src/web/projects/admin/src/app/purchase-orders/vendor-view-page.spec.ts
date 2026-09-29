@@ -1,3 +1,4 @@
+import { provideTestStore } from '@app/testing/provide-test-store';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -5,7 +6,7 @@ import { VendorViewPage } from './vendor-view-page';
 
 describe('VendorViewPage (SCRUM-93 task 51, AC-35/AC-36)', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), ...provideTestStore()] });
   });
 
   function create() {

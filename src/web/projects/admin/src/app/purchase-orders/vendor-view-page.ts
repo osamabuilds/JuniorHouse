@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
-import { ApiError } from '../core/api-error';
-import { AppDatePipe } from '../shared/app-date.pipe';
-import { LookupNames } from '../shared/lookup-names';
+import { ApiError } from '@core/http';
+import { AppDatePipe } from '@shared';
+import { LookupNames } from '@features/reference-data';
 import { FILE_CATEGORY_LABELS, INITIATOR_LABELS, PO_STATUS_LABELS, PoApiService, VendorPoViewDto } from './po-api.service';
 
 /**

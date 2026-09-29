@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiClient } from '../core/api-client';
+import { ApiClient } from '@core/http';
 
 export interface PoLineDto {
   readonly sizeId: number;

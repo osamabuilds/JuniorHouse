@@ -1,3 +1,7 @@
+:host {
+  display: block;
+}
+
 /* Thirteen lookup types don't fit a phone as wrapped tabs, so the strip scrolls sideways inside itself. */
 .lookup-tabs {
   display: flex;
@@ -27,18 +31,3 @@
   border-bottom-color: var(--color-brass);
 }
 
-.lookup-form {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-4);
-  margin-bottom: var(--space-5);
-  max-width: 40rem;
-}
-
-@media (min-width: 40rem) {
-  .lookup-form {
-    padding: var(--space-5);
-  }
-}

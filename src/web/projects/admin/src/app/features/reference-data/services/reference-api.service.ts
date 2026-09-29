@@ -1,26 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiClient } from '../core/api-client';
-
-export interface LookupDto {
-  readonly id: number;
-  readonly code: string;
-  readonly name: string;
-  readonly description: string | null;
-  readonly sortSeq: number;
-  readonly isActive: boolean;
-  readonly parentCategoryId: number | null;
-  readonly defaultAdvancePercent: number | null;
-}
-
-export interface LookupFormValue {
-  readonly code: string;
-  readonly name: string;
-  readonly description: string | null;
-  readonly sortSeq: number;
-  readonly parentCategoryId?: number | null;
-  readonly defaultAdvancePercent?: number | null;
-}
+import { ApiClient } from '@core/http';
+import { LookupDto, LookupFormValue } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ReferenceApiService {

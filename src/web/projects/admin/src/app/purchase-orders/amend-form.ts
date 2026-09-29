@@ -1,10 +1,10 @@
 import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ApiError } from '../core/api-error';
-import { LookupDto } from '../reference-data/reference-api.service';
-import { FieldErrors } from '../shared/field-errors';
-import { LookupNames } from '../shared/lookup-names';
-import { inputChecked, inputNumber, selectNumberOrNull } from '../shared/dom-events';
+import { ApiError } from '@core/http';
+import { LookupDto } from '@features/reference-data';
+import { FieldErrorsComponent } from '@shared';
+import { LookupNames } from '@features/reference-data';
+import { inputChecked, inputNumber, selectNumberOrNull } from '@shared';
 import {
   AmendmentFileAdd,
   AmendmentValue,
@@ -39,7 +39,7 @@ export async function fileToBase64(file: File): Promise<string> {
  */
 @Component({
   selector: 'app-amend-form',
-  imports: [ReactiveFormsModule, FieldErrors],
+  imports: [ReactiveFormsModule, FieldErrorsComponent],
   template: `
     <form class="amend card" [formGroup]="form" (ngSubmit)="submit()" [attr.aria-labelledby]="'amend-heading'">
       <h3 id="amend-heading">{{ mode() === 'counter' ? 'Counter-proposal from the vendor' : 'Amend this PO' }}</h3>
