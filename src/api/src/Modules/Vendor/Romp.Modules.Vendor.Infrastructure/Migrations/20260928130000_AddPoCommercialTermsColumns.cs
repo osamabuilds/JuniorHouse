@@ -1,5 +1,6 @@
-using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Romp.Modules.Vendor.Domain.Vendors;
+using System;
 
 #nullable disable
 

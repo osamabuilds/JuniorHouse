@@ -8,9 +8,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence;
+using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.Modules.Reference.Application;
+using Romp.Modules.Reference.Application.Abstractions;
+using Romp.Modules.Reference.Application.Lookups;
 using Romp.Modules.Reference.Contracts;
 using Romp.Modules.Reference.Domain;
+using Romp.Modules.Reference.Domain.Lookups;
+using Romp.Modules.Reference.Domain.Lookups.Apparel;
+using Romp.Modules.Reference.Domain.Lookups.PurchaseOrders;
+using Romp.Modules.Reference.Domain.Lookups.Vendors;
+using Romp.Modules.Reference.Infrastructure.Lookups;
+using Romp.Modules.Reference.Infrastructure.Persistence;
 
 namespace Romp.Modules.Reference.Infrastructure;
 

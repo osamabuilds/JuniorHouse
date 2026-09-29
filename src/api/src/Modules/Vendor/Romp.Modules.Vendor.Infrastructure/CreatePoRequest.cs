@@ -1,4 +1,8 @@
 using Romp.Modules.Vendor.Application;
+using Romp.Modules.Vendor.Application.PurchaseOrders;
+using Romp.Modules.Vendor.Application.Revisions;
+using Romp.Modules.Vendor.Application.Vendors;
+using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Infrastructure;
 

@@ -8,8 +8,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence;
+using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.Modules.Catalog.Application;
+using Romp.Modules.Catalog.Application.Abstractions;
+using Romp.Modules.Catalog.Application.Styles;
 using Romp.Modules.Catalog.Contracts;
+using Romp.Modules.Catalog.Infrastructure.Persistence;
+using Romp.Modules.Catalog.Infrastructure.Styles;
 
 namespace Romp.Modules.Catalog.Infrastructure;
 

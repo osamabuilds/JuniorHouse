@@ -8,9 +8,23 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence;
+using Romp.BuildingBlocks.Persistence.Auditing;
+using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Vendor.Application;
+using Romp.Modules.Vendor.Application.Abstractions;
+using Romp.Modules.Vendor.Application.Files;
+using Romp.Modules.Vendor.Application.PurchaseOrders;
+using Romp.Modules.Vendor.Application.Revisions;
+using Romp.Modules.Vendor.Application.VendorResponses;
+using Romp.Modules.Vendor.Application.Vendors;
+using Romp.Modules.Vendor.Application.VendorView;
 using Romp.Modules.Vendor.Contracts;
 using Romp.Modules.Vendor.Domain;
+using Romp.Modules.Vendor.Domain.PurchaseOrders;
+using Romp.Modules.Vendor.Domain.Vendors;
+using Romp.Modules.Vendor.Infrastructure.Files;
+using Romp.Modules.Vendor.Infrastructure.Persistence;
+using Romp.Modules.Vendor.Infrastructure.PurchaseOrders;
 
 namespace Romp.Modules.Vendor.Infrastructure;
 

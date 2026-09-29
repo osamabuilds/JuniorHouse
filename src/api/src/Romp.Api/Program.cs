@@ -1,12 +1,19 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Romp.Api;
+using Romp.Api.ExceptionHandling;
+using Romp.Api.Seeding;
 using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence;
+using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Catalog.Infrastructure;
+using Romp.Modules.Catalog.Infrastructure.Persistence;
 using Romp.Modules.Reference.Infrastructure;
+using Romp.Modules.Reference.Infrastructure.Persistence;
+using Romp.Modules.Vendor.Domain.Vendors;
 using Romp.Modules.Vendor.Infrastructure;
+using Romp.Modules.Vendor.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,9 +1,12 @@
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Romp.Modules.Catalog.Infrastructure;
+using Romp.Modules.Catalog.Infrastructure.Persistence;
 using Romp.Modules.Reference.Infrastructure;
+using Romp.Modules.Reference.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Infrastructure;
+using Romp.Modules.Vendor.Infrastructure.Persistence;
+using System.Text.RegularExpressions;
 
 namespace Romp.ArchitectureTests;
 
