@@ -1,63 +1,67 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ApiError } from '@core/http';
-import { LookupDto, ReferenceApiService } from '@features/reference-data';
-import { ControlErrorsComponent, missingSummary } from '@shared';
-import { FieldErrorsComponent } from '@shared';
-import { inputChecked, inputNumber, inputValue, selectNumberOrNull } from '@shared';
-import { CatalogApiService, StyleDto, StyleSummaryDto } from './catalog-api.service';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { ReferenceLookupActions, selectLookup } from '@features/reference-data';
+import { inputValue, missingSummary, selectNumberOrNull } from '@shared';
+import { OptionToggle, StyleFormComponent } from '../../components/style-form/style-form.component';
+import { StyleTableComponent } from '../../components/style-table/style-table.component';
+import { buildStyleForm } from '../../forms/style.form';
+import { GridQtyChange, GridRow, gridKey, StyleDto, StyleSummaryDto } from '../../models';
+import {
+  selectActiveOnly,
+  selectCategoryFilter,
+  selectEditingStyle,
+  selectSearchText,
+  selectStyles,
+  selectStylesError,
+  selectStylesLoading,
+  selectStylesMode,
+  selectStylesSaving,
+  StylesPageActions,
+} from '../../store';
 
-/** One editable cell of the colour x size target-quantity grid (AC-3). */
-interface GridCell {
-  readonly sizeId: number;
-  readonly colourId: number;
-  qty: number;
-}
-
-type Mode = 'list' | 'create' | 'edit';
+const LOOKUP_TYPES = ['categories', 'genders', 'age-brackets', 'fabrics', 'colours', 'sizes'] as const;
 
 /** SCRUM-174: style list (search/filter) plus a create/edit form with the colour x size target-quantity grid. */
 @Component({
   selector: 'app-styles-page',
-  imports: [ReactiveFormsModule, FieldErrorsComponent, ControlErrorsComponent],
-  templateUrl: './styles-page.html',
-  styleUrl: './styles-page.scss',
+  imports: [StyleTableComponent, StyleFormComponent],
+  templateUrl: './styles-page.container.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StylesPage {
-  private readonly catalogApi = inject(CatalogApiService);
-  private readonly referenceApi = inject(ReferenceApiService);
+export class StylesPageContainer {
+  private readonly store = inject(Store);
   private readonly formBuilder = inject(FormBuilder);
 
-  readonly styles = signal<StyleSummaryDto[]>([]);
-  readonly loading = signal(false);
-  readonly error = signal<ApiError | null>(null);
-  readonly mode = signal<Mode>('list');
-  readonly editingId = signal<number | null>(null);
-  readonly saving = signal(false);
+  readonly styles = this.store.selectSignal(selectStyles);
+  readonly loading = this.store.selectSignal(selectStylesLoading);
+  readonly error = this.store.selectSignal(selectStylesError);
+  readonly mode = this.store.selectSignal(selectStylesMode);
+  readonly saving = this.store.selectSignal(selectStylesSaving);
+  readonly searchText = this.store.selectSignal(selectSearchText);
+  readonly categoryFilter = this.store.selectSignal(selectCategoryFilter);
+  readonly activeOnly = this.store.selectSignal(selectActiveOnly);
+  private readonly editingStyle = this.store.selectSignal(selectEditingStyle);
 
-  readonly searchText = signal('');
-  readonly categoryFilter = signal<number | null>(null);
-  readonly activeOnly = signal(true);
-
-  readonly categories = signal<LookupDto[]>([]);
-  readonly genders = signal<LookupDto[]>([]);
-  readonly ageBrackets = signal<LookupDto[]>([]);
-  readonly fabrics = signal<LookupDto[]>([]);
-  readonly colours = signal<LookupDto[]>([]);
-  readonly sizes = signal<LookupDto[]>([]);
+  readonly categories = this.store.selectSignal(selectLookup('categories'));
+  readonly genders = this.store.selectSignal(selectLookup('genders'));
+  readonly ageBrackets = this.store.selectSignal(selectLookup('age-brackets'));
+  readonly fabrics = this.store.selectSignal(selectLookup('fabrics'));
+  readonly colours = this.store.selectSignal(selectLookup('colours'));
+  readonly sizes = this.store.selectSignal(selectLookup('sizes'));
 
   readonly selectedColourIds = signal<readonly number[]>([]);
   readonly selectedSizeIds = signal<readonly number[]>([]);
   private readonly gridQtyById = signal<ReadonlyMap<string, number>>(new Map());
 
-  readonly gridRows = computed(() => {
+  readonly gridRows = computed<GridRow[]>(() => {
     const sizes = this.sizes().filter((size) => this.selectedSizeIds().includes(size.id));
     const colours = this.colours().filter((colour) => this.selectedColourIds().includes(colour.id));
     const qtyById = this.gridQtyById();
 
     return sizes.map((size) => ({
       size,
-      cells: colours.map<GridCell>((colour) => ({
+      cells: colours.map((colour) => ({
         sizeId: size.id,
         colourId: colour.id,
         qty: qtyById.get(gridKey(size.id, colour.id)) ?? 0,
@@ -65,76 +69,54 @@ export class StylesPage {
     }));
   });
 
-  readonly form = this.formBuilder.nonNullable.group({
-    code: ['', [Validators.required, Validators.maxLength(30)]],
-    name: ['', [Validators.required, Validators.maxLength(200)]],
-    collectionName: [''],
-    categoryId: this.formBuilder.control<number | null>(null, Validators.required),
-    genderId: this.formBuilder.control<number | null>(null, Validators.required),
-    ageBracketId: this.formBuilder.control<number | null>(null, Validators.required),
-    fabricId: this.formBuilder.control<number | null>(null, Validators.required),
-    targetUnitCost: [0, [Validators.required, Validators.min(0)]],
-    targetRetailPrice: [0, [Validators.required, Validators.min(0)]],
-  });
+  readonly form = buildStyleForm(this.formBuilder);
 
   constructor() {
-    this.loadStyles();
-    this.referenceApi.list('categories', false).subscribe((items) => this.categories.set(items));
-    this.referenceApi.list('genders', false).subscribe((items) => this.genders.set(items));
-    this.referenceApi.list('age-brackets', false).subscribe((items) => this.ageBrackets.set(items));
-    this.referenceApi.list('fabrics', false).subscribe((items) => this.fabrics.set(items));
-    this.referenceApi.list('colours', false).subscribe((items) => this.colours.set(items));
-    this.referenceApi.list('sizes', false).subscribe((items) => this.sizes.set(items));
-  }
+    this.store.dispatch(StylesPageActions.opened());
+    for (const typeKey of LOOKUP_TYPES) {
+      this.store.dispatch(ReferenceLookupActions.requested({ typeKey, includeInactive: false }));
+    }
 
-  applyFilters(): void {
-    this.loadStyles();
+    // The record to edit arrives asynchronously; fill the form once it has.
+    effect(() => {
+      const style = this.editingStyle();
+      if (style) {
+        untracked(() => this.populateForm(style));
+      }
+    });
   }
 
   onSearchInput(event: Event): void {
-    this.searchText.set(inputValue(event));
-    this.applyFilters();
+    this.store.dispatch(StylesPageActions.searchChanged({ searchText: inputValue(event) }));
   }
 
   onCategoryFilterChange(event: Event): void {
-    this.categoryFilter.set(selectNumberOrNull(event));
-    this.applyFilters();
+    this.store.dispatch(StylesPageActions.categoryFilterChanged({ categoryId: selectNumberOrNull(event) }));
   }
 
-  onColourToggle(colourId: number, event: Event): void {
-    this.toggleColour(colourId, inputChecked(event));
+  toggleActiveOnly(): void {
+    this.store.dispatch(StylesPageActions.activeOnlyToggled());
   }
 
-  onSizeToggle(sizeId: number, event: Event): void {
-    this.toggleSize(sizeId, inputChecked(event));
-  }
-
-  onQtyInput(sizeId: number, colourId: number, event: Event): void {
-    this.setQty(sizeId, colourId, inputNumber(event));
-  }
-
-  toggleColour(colourId: number, checked: boolean): void {
+  toggleColour({ id, checked }: OptionToggle): void {
     this.selectedColourIds.set(
-      checked ? [...this.selectedColourIds(), colourId] : this.selectedColourIds().filter((id) => id !== colourId),
+      checked ? [...this.selectedColourIds(), id] : this.selectedColourIds().filter((existing) => existing !== id),
     );
   }
 
-  toggleSize(sizeId: number, checked: boolean): void {
+  toggleSize({ id, checked }: OptionToggle): void {
     this.selectedSizeIds.set(
-      checked ? [...this.selectedSizeIds(), sizeId] : this.selectedSizeIds().filter((id) => id !== sizeId),
+      checked ? [...this.selectedSizeIds(), id] : this.selectedSizeIds().filter((existing) => existing !== id),
     );
   }
 
-  setQty(sizeId: number, colourId: number, qty: number): void {
+  setQty({ sizeId, colourId, qty }: GridQtyChange): void {
     const next = new Map(this.gridQtyById());
     next.set(gridKey(sizeId, colourId), qty);
     this.gridQtyById.set(next);
   }
 
   startCreate(): void {
-    this.mode.set('create');
-    this.editingId.set(null);
-    this.error.set(null);
     this.form.reset({
       code: '',
       name: '',
@@ -150,66 +132,47 @@ export class StylesPage {
     this.selectedColourIds.set([]);
     this.selectedSizeIds.set([]);
     this.gridQtyById.set(new Map());
+    this.store.dispatch(StylesPageActions.createStarted());
   }
 
   startEdit(summary: StyleSummaryDto): void {
-    this.catalogApi.getById(summary.id).subscribe((style: StyleDto) => {
-      this.mode.set('edit');
-      this.editingId.set(style.id);
-      this.error.set(null);
-      this.form.reset({
-        code: style.code,
-        name: style.name,
-        collectionName: style.collectionName ?? '',
-        categoryId: style.categoryId,
-        genderId: style.genderId,
-        ageBracketId: style.ageBracketId,
-        fabricId: style.fabricId,
-        targetUnitCost: style.targetUnitCost,
-        targetRetailPrice: style.targetRetailPrice,
-      });
-      this.form.controls.code.disable();
-      this.selectedColourIds.set(style.colourIds);
-      this.selectedSizeIds.set(style.sizeIds);
-      this.gridQtyById.set(
-        new Map(style.targetLines.map((line) => [gridKey(line.sizeId, line.colourId), line.targetQty])),
-      );
-    });
+    this.store.dispatch(StylesPageActions.editRequested({ id: summary.id }));
   }
 
   cancelEdit(): void {
-    this.mode.set('list');
+    this.store.dispatch(StylesPageActions.editCancelled());
   }
 
   save(): void {
     if (this.form.invalid || this.selectedColourIds().length === 0 || this.selectedSizeIds().length === 0) {
       this.form.markAllAsTouched();
-      this.error.set({
-        status: 0,
-        message: missingSummary(
-          this.form.controls,
-          {
-            code: 'Code',
-            name: 'Name',
-            categoryId: 'Category',
-            genderId: 'Gender',
-            ageBracketId: 'Age bracket',
-            fabricId: 'Fabric',
-            targetUnitCost: 'Target unit cost',
-            targetRetailPrice: 'Target retail price',
+      this.store.dispatch(
+        StylesPageActions.formInvalid({
+          error: {
+            status: 0,
+            message: missingSummary(
+              this.form.controls,
+              {
+                code: 'Code',
+                name: 'Name',
+                categoryId: 'Category',
+                genderId: 'Gender',
+                ageBracketId: 'Age bracket',
+                fabricId: 'Fabric',
+                targetUnitCost: 'Target unit cost',
+                targetRetailPrice: 'Target retail price',
+              },
+              [
+                ...(this.selectedColourIds().length === 0 ? ['at least one colourway'] : []),
+                ...(this.selectedSizeIds().length === 0 ? ['at least one size'] : []),
+              ],
+            ),
+            fieldErrors: {},
           },
-          [
-            ...(this.selectedColourIds().length === 0 ? ['at least one colourway'] : []),
-            ...(this.selectedSizeIds().length === 0 ? ['at least one size'] : []),
-          ],
-        ),
-        fieldErrors: {},
-      });
+        }),
+      );
       return;
     }
-
-    this.saving.set(true);
-    this.error.set(null);
 
     const raw = this.form.getRawValue();
     const targetLines = this.gridRows().flatMap((row) =>
@@ -231,46 +194,28 @@ export class StylesPage {
       targetLines,
     };
 
-    const request = this.mode() === 'create' ? this.catalogApi.create(value) : this.catalogApi.update(this.editingId()!, value);
+    this.store.dispatch(
+      this.mode() === 'create'
+        ? StylesPageActions.createSubmitted({ value })
+        : StylesPageActions.updateSubmitted({ id: this.editingStyle()!.id, value }),
+    );
+  }
 
-    request.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.mode.set('list');
-        this.loadStyles();
-      },
-      error: (error: ApiError) => {
-        this.saving.set(false);
-        this.error.set(error);
-      },
+  private populateForm(style: StyleDto): void {
+    this.form.reset({
+      code: style.code,
+      name: style.name,
+      collectionName: style.collectionName ?? '',
+      categoryId: style.categoryId,
+      genderId: style.genderId,
+      ageBracketId: style.ageBracketId,
+      fabricId: style.fabricId,
+      targetUnitCost: style.targetUnitCost,
+      targetRetailPrice: style.targetRetailPrice,
     });
+    this.form.controls.code.disable();
+    this.selectedColourIds.set(style.colourIds);
+    this.selectedSizeIds.set(style.sizeIds);
+    this.gridQtyById.set(new Map(style.targetLines.map((line) => [gridKey(line.sizeId, line.colourId), line.targetQty])));
   }
-
-  fieldErrors(field: string): readonly string[] {
-    return this.error()?.fieldErrors[field] ?? [];
-  }
-
-  categoryName(categoryId: number): string {
-    return this.categories().find((category) => category.id === categoryId)?.name ?? `#${categoryId}`;
-  }
-
-  private loadStyles(): void {
-    this.loading.set(true);
-    this.error.set(null);
-
-    this.catalogApi.search(this.searchText(), this.categoryFilter(), this.activeOnly()).subscribe({
-      next: (styles) => {
-        this.styles.set(styles);
-        this.loading.set(false);
-      },
-      error: (error: ApiError) => {
-        this.error.set(error);
-        this.loading.set(false);
-      },
-    });
-  }
-}
-
-function gridKey(sizeId: number, colourId: number): string {
-  return `${sizeId}-${colourId}`;
 }

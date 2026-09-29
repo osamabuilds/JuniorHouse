@@ -4,6 +4,7 @@ import { LookupDto } from '../../models';
 @Component({
   selector: 'app-lookup-table',
   templateUrl: './lookup-table.component.html',
+  styles: ':host { display: block; }',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LookupTableComponent {
