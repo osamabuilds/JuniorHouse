@@ -92,3 +92,25 @@ tests/  mirror the source: Romp.Modules.<M>.Tests/<Feature>/..., Support/ for he
 2. API: Domain → Application (use cases) → Infrastructure (configuration, endpoints) → register in `<M>Module.cs` → tests in `tests/.../<Feature>/`.
 3. Web: `features/<feature>/` with `models`, `services`, `store`, `components`, `containers`, `<feature>.routes.ts`, then one lazy route in `app.routes.ts`.
 4. Unit tests beside the code; an E2E spec in `src/web/e2e` for the user flow.
+
+## 4. Lists, paging and queries (required)
+
+- **Every list endpoint that can grow returns a page**, never the whole table: query params `page` and `pageSize`,
+  response `PagedResult<T>` (`Romp.BuildingBlocks.Application.Paging`: `Items, Page, PageSize, TotalCount, TotalPages`).
+  Page size defaults to 25 and is clamped to 1..100. Use `ToPagedResultAsync` on a query that is already ordered by a
+  unique key (`OrderBy(name).ThenBy(id)`). Small, bounded lookups (`REF` lists) may stay unpaged.
+- **Project list rows in SQL** (`Select(x => new RowDto(...))`); never load entities to map them in memory.
+- **No N+1**: no query inside a loop, no lazy loading. Load related rows with `Include` (use `AsSplitQuery` when
+  including two or more collections where the project allows it) or one bulk query filtered by `Contains`.
+- **Web lists** keep `total`, `page`, `pageSize` in the feature store; changing a filter resets to page 1; the UI uses
+  `<app-pagination>` from `@shared`. A pick-list that needs every row uses `fetchAllPages`.
+- **Tests**: a paged endpoint needs a test for ordering across pages and for clamping; E2E specs must not assume a
+  row is on page 1: find it through the list's search or filter.
+
+## 5. Working rules for every session
+
+- Read this file and `CLAUDE.md` before adding a feature; new code follows the structure above without asking.
+- Verify before saying done: `ng test admin`, `ng build admin`, `dotnet test` (in the Docker SDK container on the
+  dev machine), and the Playwright suite against `docker compose up -d --build api admin` for anything user-visible.
+- Adding a module: add it to `ModuleNames` in `Romp.ArchitectureTests`. Changing entities: confirm
+  `dotnet ef migrations has-pending-model-changes` is clean or add a migration.
