@@ -67,6 +67,8 @@ internal static class TestServices
         services.AddSingleton(new PoCommercialTermsOptions());
         services.AddSingleton(new PoFileStorageOptions { MaxFileSizeBytes = 1024, MaxFilesPerPo = 3 });
         services.AddSingleton<IFileStorage, InMemoryFileStorage>();
+        services.AddScoped<OutboxMessageContext>();
+        services.AddScoped<Romp.BuildingBlocks.Persistence.Inbox.InboxGuard>();
         services.AddSingleton<FakeProductionQueries>();
         services.AddSingleton<Romp.Modules.Production.Contracts.IProductionQueries>(sp => sp.GetRequiredService<FakeProductionQueries>());
 

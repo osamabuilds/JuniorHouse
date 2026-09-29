@@ -116,6 +116,12 @@ if (app.Environment.IsDevelopment())
 }
 
 // Liveness: process is up. Readiness: dependencies are reachable (SEC-22).
+// SCRUM-186: are events flowing? Counts per module outbox (pending, in flight, retrying, dead-lettered) and the oldest waiting age.
+// Admin-only once staff authentication exists (S8, SEC-08); tagged for that sweep.
+app.MapGet("/api/admin/outbox", async (OutboxHealthReader reader, CancellationToken cancellationToken) =>
+        Results.Ok(await reader.ReadAsync(cancellationToken)))
+    .WithTags("Admin");
+
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 

@@ -28,4 +28,23 @@ public sealed class ListLookupQueryHandlerTests
         Assert.Equal(2, includingInactive.Count);
         Assert.Contains(includingInactive, dto => dto.Code == "XS" && !dto.IsActive);
     }
+
+    [Fact]
+    [Trait("Spec", "AC-14")]
+    [Trait("Spec", "AC-28")]
+    public async Task Handle_PoStatuses_IncludesProductionStates()
+    {
+        var provider = TestServices.Build(Guid.NewGuid().ToString());
+        // The seed rows (HasData) are only inserted when the in-memory database is created.
+        provider.GetRequiredService<Romp.Modules.Reference.Infrastructure.Persistence.ReferenceDbContext>().Database.EnsureCreated();
+        var sender = provider.GetRequiredService<ISender>();
+
+        var statuses = await sender.Send(new ListLookupQuery<Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.PoStatusLookup>());
+        var reasons = await sender.Send(new ListLookupQuery<Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.PoCancelReasonLookup>());
+
+        Assert.Equal(
+            ["Draft", "SentToVendor", "Acknowledged", "Cancelled", "InProduction", "PartiallyDelivered", "Delivered", "Closed"],
+            statuses.OrderBy(s => s.Id).Select(s => s.Code).ToArray());
+        Assert.Contains(reasons, r => r.Code == "ProductionAlreadyStarted" && r.Name == "Cancelled after production started");
+    }
 }

@@ -74,6 +74,41 @@ public sealed class ModuleBoundaryTests
         }
     }
 
+    [Fact]
+    [Trait("Spec", "ADR-0002")]
+    [Trait("Spec", "ADR-0008")]
+    public void BuildingBlocksStorage_DoesNotDependOnModules()
+    {
+        // The shared storage building block (ADR 0008) must stay module-agnostic: modules use it, never the reverse.
+        var result = Types.InAssembly(Assembly.Load("Romp.BuildingBlocks.Storage"))
+            .ShouldNot()
+            .HaveDependencyOn("Romp.Modules")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    [Trait("Spec", "ADR-0008")]
+    public void ContractsProjects_DoNotDependOnEachOtherOrOnAnyModuleInternals()
+    {
+        // ADR 0008: Vendor.Contracts and Production.Contracts reference neither each other nor any Domain/Application/Infrastructure.
+        foreach (var module in new[] { "Vendor", "Production" })
+        {
+            var forbidden = ModuleNames.SelectMany(other => new[]
+            {
+                $"Romp.Modules.{other}.Domain", $"Romp.Modules.{other}.Application", $"Romp.Modules.{other}.Infrastructure",
+            }).Append(module == "Vendor" ? "Romp.Modules.Production" : "Romp.Modules.Vendor").ToArray();
+
+            var result = Types.InAssembly(Assembly.Load($"Romp.Modules.{module}.Contracts"))
+                .ShouldNot()
+                .HaveDependencyOnAny(forbidden)
+                .GetResult();
+
+            Assert.True(result.IsSuccessful, Describe(result));
+        }
+    }
+
     private static Assembly LoadLayer(string module, string layer) =>
         Assembly.Load($"Romp.Modules.{module}.{layer}");
 

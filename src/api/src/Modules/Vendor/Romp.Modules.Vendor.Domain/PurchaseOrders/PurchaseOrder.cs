@@ -43,8 +43,13 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
 
         _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
         _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.Draft, cancelReasonId: null));
-        Raise(new PoCreatedEvent(Id, poNo, vendorId, styleId, CurrentTerms()));
     }
+
+    /// <summary>
+    /// SCRUM-186: raised by the creating command once the row has been saved, so the event (and its outbox
+    /// AGGR_ID) carries the PO's real id - the id only exists after the first SaveChanges, so the constructor cannot raise it.
+    /// </summary>
+    public void RaiseCreated() => Raise(new PoCreatedEvent(Id, PoNo, VendorId, StyleId, CurrentTerms()));
 
     public string PoNo { get; private set; }
 

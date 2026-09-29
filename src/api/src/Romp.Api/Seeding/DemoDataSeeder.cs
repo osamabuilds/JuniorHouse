@@ -88,6 +88,7 @@ internal static class DemoDataSeeder
             paymentTermId: 2, advancePercent: 40m, lines);
         vendorContext.PurchaseOrders.Add(po);
         await vendorContext.SaveChangesAsync(cancellationToken);
+        po.RaiseCreated(); // the id exists now (SCRUM-186); the next save writes the event with it
 
         po.UpdateDraftDetails(
             450m, new DateOnly(2026, 12, 1), 2, 40m,
