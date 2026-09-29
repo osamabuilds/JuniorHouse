@@ -53,5 +53,6 @@
       (edit)="startEdit($event)"
       (retire)="retire($event)"
     />
+    <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" (pageSizeChanged)="changePageSize($event)" />
   }
 </section>

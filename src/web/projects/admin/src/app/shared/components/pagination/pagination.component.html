@@ -1,0 +1,24 @@
+@if (total() > sizes[0]) {
+  <nav class="pager" aria-label="Pagination">
+    <p class="pager__summary">Showing {{ first() }}–{{ last() }} of {{ total() }}</p>
+
+    <label class="pager__size">
+      Rows per page
+      <select [value]="pageSize()" (change)="onSizeChange($event)">
+        @for (size of sizes; track size) {
+          <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="pager__buttons">
+      <button type="button" class="button button--small" [disabled]="page() <= 1" (click)="pageChanged.emit(page() - 1)">
+        Previous
+      </button>
+      <span class="pager__page" aria-current="page">Page {{ page() }} of {{ totalPages() }}</span>
+      <button type="button" class="button button--small" [disabled]="page() >= totalPages()" (click)="pageChanged.emit(page() + 1)">
+        Next
+      </button>
+    </div>
+  </nav>
+}

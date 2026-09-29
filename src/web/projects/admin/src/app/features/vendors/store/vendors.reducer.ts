@@ -7,14 +7,17 @@ export const vendorsReducer = createReducer(
 
   // The store outlives the page, so opening it starts from a clean slate.
   on(VendorsPageActions.opened, () => ({ ...initialVendorsState, loading: true })),
-  on(VendorsPageActions.searchChanged, (state, { searchText }) => ({ ...state, searchText, loading: true, error: null })),
+  on(VendorsPageActions.searchChanged, (state, { searchText }) => ({ ...state, searchText, page: 1,
+    loading: true, error: null })),
   on(VendorsPageActions.specialisationFilterChanged, (state, { specialisationId }) => ({
     ...state,
     specialisationFilter: specialisationId,
     loading: true,
     error: null,
   })),
-  on(VendorsPageActions.activeOnlyToggled, (state) => ({ ...state, activeOnly: !state.activeOnly, loading: true, error: null })),
+  on(VendorsPageActions.activeOnlyToggled, (state) => ({ ...state, activeOnly: !state.activeOnly, page: 1, loading: true, error: null })),
+  on(VendorsPageActions.pageChanged, (state, { page }) => ({ ...state, page, loading: true, error: null })),
+  on(VendorsPageActions.pageSizeChanged, (state, { pageSize }) => ({ ...state, pageSize, page: 1, loading: true, error: null })),
   on(VendorsPageActions.createStarted, (state) => ({
     ...state,
     mode: 'create' as const,
@@ -30,7 +33,13 @@ export const vendorsReducer = createReducer(
     error: null,
   })),
 
-  on(VendorsApiActions.loadVendorsSucceeded, (state, { vendors }) => ({ ...state, vendors, loading: false })),
+  on(VendorsApiActions.loadVendorsSucceeded, (state, { result }) => ({
+    ...state,
+    vendors: result.items,
+    total: result.totalCount,
+    page: result.page,
+    loading: false,
+  })),
   on(VendorsApiActions.loadVendorsFailed, (state, { error }) => ({ ...state, error, loading: false })),
   on(VendorsApiActions.loadVendorSucceeded, (state, { vendor }) => ({
     ...state,

@@ -5,7 +5,7 @@ import { VendorSummaryDto } from '../../models';
 @Component({
   selector: 'app-vendor-table',
   templateUrl: './vendor-table.component.html',
-  styles: ':host { display: block; }',
+  styles: ':host { display: block; } td[data-label="City"] { white-space: nowrap; }',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VendorTableComponent {

@@ -1,17 +1,20 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient } from '@core/http';
-import { StyleDto, StyleFormValue, StyleSummaryDto } from '../models';
+import { Page } from '@shared';
+import { StyleDto, StyleFilters, StyleFormValue, StyleSummaryDto } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogApiService {
   private readonly api = inject(ApiClient);
 
-  search(searchText: string, categoryId: number | null, activeOnly: boolean): Observable<StyleSummaryDto[]> {
-    return this.api.get<StyleSummaryDto[]>('/api/catalog/styles', {
-      search: searchText || undefined,
-      categoryId: categoryId ?? undefined,
-      activeOnly,
+  search(filters: StyleFilters): Observable<Page<StyleSummaryDto>> {
+    return this.api.get<Page<StyleSummaryDto>>('/api/catalog/styles', {
+      search: filters.searchText || undefined,
+      categoryId: filters.categoryId ?? undefined,
+      activeOnly: filters.activeOnly,
+      page: filters.page,
+      pageSize: filters.pageSize,
     });
   }
 

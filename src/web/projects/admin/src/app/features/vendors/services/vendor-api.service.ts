@@ -1,17 +1,20 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient } from '@core/http';
-import { CreateVendorValue, UpdateVendorValue, VendorDto, VendorSummaryDto } from '../models';
+import { Page } from '@shared';
+import { CreateVendorValue, UpdateVendorValue, VendorDto, VendorFilters, VendorSummaryDto } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class VendorApiService {
   private readonly api = inject(ApiClient);
 
-  search(searchText: string, specialisationId: number | null, activeOnly: boolean): Observable<VendorSummaryDto[]> {
-    return this.api.get<VendorSummaryDto[]>('/api/vendors', {
-      search: searchText || undefined,
-      specialisationId: specialisationId ?? undefined,
-      activeOnly,
+  search(filters: VendorFilters): Observable<Page<VendorSummaryDto>> {
+    return this.api.get<Page<VendorSummaryDto>>('/api/vendors', {
+      search: filters.searchText || undefined,
+      specialisationId: filters.specialisationId ?? undefined,
+      activeOnly: filters.activeOnly,
+      page: filters.page,
+      pageSize: filters.pageSize,
     });
   }
 

@@ -35,6 +35,8 @@ export interface UpdateVendorValue extends Omit<CreateVendorValue, 'name'> {
 }
 
 export interface VendorFilters {
+  readonly page: number;
+  readonly pageSize: number;
   readonly searchText: string;
   readonly specialisationId: number | null;
   readonly activeOnly: boolean;

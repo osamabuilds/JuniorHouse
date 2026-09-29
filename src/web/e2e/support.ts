@@ -139,6 +139,8 @@ export async function createPo(request: APIRequestContext, stage: PoStage = 'dra
 /** Opens a PO's detail view from the Purchase Orders list. */
 export async function openPo(page: Page, po: TestPo): Promise<void> {
   await page.goto('/purchase-orders');
+  // The list is paged, so narrow it to the PO's vendor first.
+  await page.locator('.toolbar select').first().selectOption({ label: po.vendorName });
   await page.getByRole('row').filter({ hasText: po.poNo }).getByRole('button', { name: 'View' }).click();
   await expect(page.getByRole('heading', { name: po.poNo })).toBeVisible();
 }

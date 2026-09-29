@@ -1,11 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient } from '@core/http';
+import { Page } from '@shared';
 import {
   AmendmentValue,
   CreatePoValue,
   PoDto,
   PoFileDto,
+  PoFilters,
   PoRevisionDto,
   PoSummaryDto,
   UpdatePoValue,
@@ -18,12 +20,14 @@ import {
 export class PoApiService {
   private readonly api = inject(ApiClient);
 
-  search(vendorId: number | null, statusId: number | null, deliveryFrom: string | null, deliveryTo: string | null): Observable<PoSummaryDto[]> {
-    return this.api.get<PoSummaryDto[]>('/api/purchase-orders', {
-      vendorId: vendorId ?? undefined,
-      statusId: statusId ?? undefined,
+  search(filters: PoFilters, deliveryFrom: string | null = null, deliveryTo: string | null = null): Observable<Page<PoSummaryDto>> {
+    return this.api.get<Page<PoSummaryDto>>('/api/purchase-orders', {
+      vendorId: filters.vendorId ?? undefined,
+      statusId: filters.statusId ?? undefined,
       deliveryFrom: deliveryFrom || undefined,
       deliveryTo: deliveryTo || undefined,
+      page: filters.page,
+      pageSize: filters.pageSize,
     });
   }
 

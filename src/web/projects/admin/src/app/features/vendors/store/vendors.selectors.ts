@@ -5,6 +5,9 @@ import { VENDORS_FEATURE_KEY, VendorsState } from './vendors.state';
 const selectVendorsState = createFeatureSelector<VendorsState>(VENDORS_FEATURE_KEY);
 
 export const selectVendors = createSelector(selectVendorsState, (state) => state.vendors);
+export const selectVendorsTotal = createSelector(selectVendorsState, (state) => state.total);
+export const selectVendorsPage = createSelector(selectVendorsState, (state) => state.page);
+export const selectVendorsPageSize = createSelector(selectVendorsState, (state) => state.pageSize);
 export const selectVendorsLoading = createSelector(selectVendorsState, (state) => state.loading);
 export const selectVendorsError = createSelector(selectVendorsState, (state) => state.error);
 export const selectVendorsMode = createSelector(selectVendorsState, (state) => state.mode);
@@ -18,5 +21,7 @@ export const selectVendorFilters = createSelector(
   selectSearchText,
   selectSpecialisationFilter,
   selectActiveOnly,
-  (searchText, specialisationId, activeOnly): VendorFilters => ({ searchText, specialisationId, activeOnly }),
+  selectVendorsPage,
+  selectVendorsPageSize,
+  (searchText, specialisationId, activeOnly, page, pageSize): VendorFilters => ({ searchText, specialisationId, activeOnly, page, pageSize }),
 );

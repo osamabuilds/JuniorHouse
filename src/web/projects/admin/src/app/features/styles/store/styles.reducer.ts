@@ -7,14 +7,17 @@ export const stylesReducer = createReducer(
 
   // The store outlives the page, so opening it starts from a clean slate.
   on(StylesPageActions.opened, () => ({ ...initialStylesState, loading: true })),
-  on(StylesPageActions.searchChanged, (state, { searchText }) => ({ ...state, searchText, loading: true, error: null })),
+  on(StylesPageActions.searchChanged, (state, { searchText }) => ({ ...state, searchText, page: 1,
+    loading: true, error: null })),
   on(StylesPageActions.categoryFilterChanged, (state, { categoryId }) => ({
     ...state,
     categoryFilter: categoryId,
     loading: true,
     error: null,
   })),
-  on(StylesPageActions.activeOnlyToggled, (state) => ({ ...state, activeOnly: !state.activeOnly, loading: true, error: null })),
+  on(StylesPageActions.activeOnlyToggled, (state) => ({ ...state, activeOnly: !state.activeOnly, page: 1, loading: true, error: null })),
+  on(StylesPageActions.pageChanged, (state, { page }) => ({ ...state, page, loading: true, error: null })),
+  on(StylesPageActions.pageSizeChanged, (state, { pageSize }) => ({ ...state, pageSize, page: 1, loading: true, error: null })),
   on(StylesPageActions.createStarted, (state) => ({
     ...state,
     mode: 'create' as const,
@@ -30,7 +33,13 @@ export const stylesReducer = createReducer(
     error: null,
   })),
 
-  on(StylesApiActions.loadStylesSucceeded, (state, { styles }) => ({ ...state, styles, loading: false })),
+  on(StylesApiActions.loadStylesSucceeded, (state, { result }) => ({
+    ...state,
+    styles: result.items,
+    total: result.totalCount,
+    page: result.page,
+    loading: false,
+  })),
   on(StylesApiActions.loadStylesFailed, (state, { error }) => ({ ...state, error, loading: false })),
   on(StylesApiActions.loadStyleSucceeded, (state, { style }) => ({
     ...state,

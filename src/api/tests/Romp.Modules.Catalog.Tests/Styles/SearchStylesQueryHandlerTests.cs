@@ -21,7 +21,8 @@ public sealed class SearchStylesQueryHandlerTests
 
         var categoryTwoOnly = await sender.Send(new SearchStylesQuery(CategoryId: 2));
 
-        Assert.Single(categoryTwoOnly);
-        Assert.Equal("STY-A", categoryTwoOnly[0].Code);
+        Assert.Single(categoryTwoOnly.Items);
+        Assert.Equal(1, categoryTwoOnly.TotalCount);
+        Assert.Equal("STY-A", categoryTwoOnly.Items[0].Code);
     }
 }

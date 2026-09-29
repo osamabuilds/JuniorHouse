@@ -1,4 +1,5 @@
 using MediatR;
+using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -47,9 +48,11 @@ internal static class PurchaseOrderEndpoints
                 DateOnly? deliveryFrom,
                 DateOnly? deliveryTo,
                 ISender sender,
-                CancellationToken cancellationToken) =>
+                CancellationToken cancellationToken,
+                int page = 1,
+                int pageSize = PageRequest.DefaultPageSize) =>
             Results.Ok(await sender.Send(
-                new SearchPurchaseOrdersQuery(vendorId, statusId, deliveryFrom, deliveryTo),
+                new SearchPurchaseOrdersQuery(vendorId, statusId, deliveryFrom, deliveryTo, page, pageSize),
                 cancellationToken)));
     }
 }

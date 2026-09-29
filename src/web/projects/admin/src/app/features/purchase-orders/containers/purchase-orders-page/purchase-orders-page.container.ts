@@ -3,7 +3,7 @@ import { FormBuilder } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { LookupNames, ReferenceLookupActions, selectLookup } from '@features/reference-data';
 import { VendorDto } from '@features/vendors';
-import { missingSummary } from '@shared';
+import { missingSummary, PaginationComponent } from '@shared';
 import { PoDetailComponent, RevisionNoteDecision } from '../../components/po-detail/po-detail.component';
 import { PoFormComponent } from '../../components/po-form/po-form.component';
 import { PoListComponent } from '../../components/po-list/po-list.component';
@@ -31,6 +31,9 @@ import {
   selectFiles,
   selectHasTechPack,
   selectOrders,
+  selectOrdersPage,
+  selectOrdersPageSize,
+  selectOrdersTotal,
   selectOrdersError,
   selectOrdersLoading,
   selectOrdersMode,
@@ -59,7 +62,7 @@ const LOOKUP_TYPES = ['payment-terms', 'amendment-reasons', 'vendor-comm-channel
  */
 @Component({
   selector: 'app-purchase-orders-page',
-  imports: [PoListComponent, PoDetailComponent, PoFormComponent],
+  imports: [PoListComponent, PoDetailComponent, PoFormComponent, PaginationComponent],
   templateUrl: './purchase-orders-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -70,6 +73,9 @@ export class PurchaseOrdersPageContainer {
   readonly names = inject(LookupNames);
 
   readonly orders = this.store.selectSignal(selectOrders);
+  readonly total = this.store.selectSignal(selectOrdersTotal);
+  readonly currentPage = this.store.selectSignal(selectOrdersPage);
+  readonly pageSize = this.store.selectSignal(selectOrdersPageSize);
   readonly loading = this.store.selectSignal(selectOrdersLoading);
   readonly error = this.store.selectSignal(selectOrdersError);
   readonly mode = this.store.selectSignal(selectOrdersMode);
@@ -341,5 +347,13 @@ export class PurchaseOrdersPageContainer {
     this.form.controls.paymentTermId.setValue(vendor.paymentTermId);
     const term = this.paymentTerms().find((t) => t.id === vendor.paymentTermId);
     this.form.controls.advancePercent.setValue(term?.defaultAdvancePercent ?? null);
+  }
+
+  changePage(page: number): void {
+    this.store.dispatch(PurchaseOrdersPageActions.pageChanged({ page }));
+  }
+
+  changePageSize(size: number): void {
+    this.store.dispatch(PurchaseOrdersPageActions.pageSizeChanged({ pageSize: size }));
   }
 }

@@ -6,6 +6,9 @@ import { PURCHASE_ORDERS_FEATURE_KEY, PurchaseOrdersState } from './purchase-ord
 const selectPurchaseOrdersState = createFeatureSelector<PurchaseOrdersState>(PURCHASE_ORDERS_FEATURE_KEY);
 
 export const selectOrders = createSelector(selectPurchaseOrdersState, (state) => state.orders);
+export const selectOrdersTotal = createSelector(selectPurchaseOrdersState, (state) => state.total);
+export const selectOrdersPage = createSelector(selectPurchaseOrdersState, (state) => state.page);
+export const selectOrdersPageSize = createSelector(selectPurchaseOrdersState, (state) => state.pageSize);
 export const selectOrdersLoading = createSelector(selectPurchaseOrdersState, (state) => state.loading);
 export const selectOrdersError = createSelector(selectPurchaseOrdersState, (state) => state.error);
 export const selectOrdersMode = createSelector(selectPurchaseOrdersState, (state) => state.mode);
@@ -31,7 +34,9 @@ export const selectVendorViewError = createSelector(selectPurchaseOrdersState, (
 export const selectPoFilters = createSelector(
   selectVendorFilter,
   selectStatusFilter,
-  (vendorId, statusId): PoFilters => ({ vendorId, statusId }),
+  selectOrdersPage,
+  selectOrdersPageSize,
+  (vendorId, statusId, page, pageSize): PoFilters => ({ vendorId, statusId, page, pageSize }),
 );
 
 export const selectPendingRevision = createSelector(

@@ -1,5 +1,6 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { ApiError } from '@core/http';
+import { Page } from '@shared';
 import { StyleDto, StyleSummaryDto } from '@features/styles';
 import { VendorDto, VendorSummaryDto } from '@features/vendors';
 import {
@@ -22,6 +23,8 @@ export const PurchaseOrdersPageActions = createActionGroup({
     Opened: emptyProps(),
     'Vendor Filter Changed': props<{ vendorId: number | null }>(),
     'Status Filter Changed': props<{ statusId: number | null }>(),
+    'Page Changed': props<{ page: number }>(),
+    'Page Size Changed': props<{ pageSize: number }>(),
     'Create Started': emptyProps(),
     'Draft Edit Started': emptyProps(),
     'Form Cancelled': emptyProps(),
@@ -54,10 +57,10 @@ export const VendorPoViewActions = createActionGroup({
 export const PurchaseOrdersApiActions = createActionGroup({
   source: 'Purchase Orders API',
   events: {
-    'Load Orders Succeeded': props<{ orders: PoSummaryDto[] }>(),
+    'Load Orders Succeeded': props<{ result: Page<PoSummaryDto> }>(),
     'Load Orders Failed': props<{ error: ApiError }>(),
-    'Load Vendors Succeeded': props<{ vendors: VendorSummaryDto[] }>(),
-    'Load Styles Succeeded': props<{ styles: StyleSummaryDto[] }>(),
+    'Load Vendors Succeeded': props<{ vendors: readonly VendorSummaryDto[] }>(),
+    'Load Styles Succeeded': props<{ styles: readonly StyleSummaryDto[] }>(),
     'Load Vendor Succeeded': props<{ vendor: VendorDto }>(),
     'Load Style Succeeded': props<{ style: StyleDto }>(),
     'Load Detail Succeeded': props<{ po: PoDto }>(),

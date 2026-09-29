@@ -1,4 +1,5 @@
 using MediatR;
+using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Vendor.Application.Abstractions;
 
@@ -9,12 +10,14 @@ public sealed record SearchPurchaseOrdersQuery(
     long? VendorId = null,
     short? StatusId = null,
     DateOnly? ExpectedDeliveryFrom = null,
-    DateOnly? ExpectedDeliveryTo = null) : IRequest<IReadOnlyList<PoSummaryDto>>;
+    DateOnly? ExpectedDeliveryTo = null,
+    int Page = 1,
+    int PageSize = PageRequest.DefaultPageSize) : IRequest<PagedResult<PoSummaryDto>>;
 
 public sealed class SearchPurchaseOrdersQueryHandler(IVendorDbContext dbContext)
-    : IRequestHandler<SearchPurchaseOrdersQuery, IReadOnlyList<PoSummaryDto>>
+    : IRequestHandler<SearchPurchaseOrdersQuery, PagedResult<PoSummaryDto>>
 {
-    public async Task<IReadOnlyList<PoSummaryDto>> Handle(SearchPurchaseOrdersQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<PoSummaryDto>> Handle(SearchPurchaseOrdersQuery request, CancellationToken cancellationToken)
     {
         var query = dbContext.PurchaseOrders.AsNoTracking().AsQueryable();
 
@@ -38,8 +41,10 @@ public sealed class SearchPurchaseOrdersQueryHandler(IVendorDbContext dbContext)
             query = query.Where(p => p.ExpectedDeliveryDate <= to);
         }
 
-        var orders = await query.OrderByDescending(p => p.ExpectedDeliveryDate).ToListAsync(cancellationToken);
-
-        return orders.Select(p => p.ToSummaryDto()).ToList();
+        // Projected in SQL (no lines/history loaded) and ordered by a unique key so pages are stable.
+        return await query
+            .OrderByDescending(p => p.ExpectedDeliveryDate).ThenByDescending(p => p.Id)
+            .Select(p => new PoSummaryDto(p.Id, p.PoNo, p.VendorId, p.StatusId, p.ExpectedDeliveryDate))
+            .ToPagedResultAsync(new PageRequest(request.Page, request.PageSize), cancellationToken);
     }
 }

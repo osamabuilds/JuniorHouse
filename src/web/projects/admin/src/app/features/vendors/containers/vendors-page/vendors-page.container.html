@@ -39,6 +39,7 @@
   }
 
   <app-vendor-table [vendors]="vendors()" [loading]="loading()" [cities]="cities()" (edit)="startEdit($event)" />
+  <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" (pageSizeChanged)="changePageSize($event)" />
 } @else {
   <app-vendor-form
     [form]="form"

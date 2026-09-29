@@ -79,6 +79,8 @@ export interface PoFormDraft {
 }
 
 export interface PoFilters {
+  readonly page: number;
+  readonly pageSize: number;
   readonly vendorId: number | null;
   readonly statusId: number | null;
 }

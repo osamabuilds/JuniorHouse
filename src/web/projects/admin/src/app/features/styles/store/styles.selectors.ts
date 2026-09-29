@@ -5,6 +5,9 @@ import { STYLES_FEATURE_KEY, StylesState } from './styles.state';
 const selectStylesState = createFeatureSelector<StylesState>(STYLES_FEATURE_KEY);
 
 export const selectStyles = createSelector(selectStylesState, (state) => state.styles);
+export const selectStylesTotal = createSelector(selectStylesState, (state) => state.total);
+export const selectStylesPage = createSelector(selectStylesState, (state) => state.page);
+export const selectStylesPageSize = createSelector(selectStylesState, (state) => state.pageSize);
 export const selectStylesLoading = createSelector(selectStylesState, (state) => state.loading);
 export const selectStylesError = createSelector(selectStylesState, (state) => state.error);
 export const selectStylesMode = createSelector(selectStylesState, (state) => state.mode);
@@ -18,5 +21,7 @@ export const selectStyleFilters = createSelector(
   selectSearchText,
   selectCategoryFilter,
   selectActiveOnly,
-  (searchText, categoryId, activeOnly): StyleFilters => ({ searchText, categoryId, activeOnly }),
+  selectStylesPage,
+  selectStylesPageSize,
+  (searchText, categoryId, activeOnly, page, pageSize): StyleFilters => ({ searchText, categoryId, activeOnly, page, pageSize }),
 );

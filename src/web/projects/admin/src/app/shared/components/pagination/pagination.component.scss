@@ -1,0 +1,36 @@
+:host {
+  display: block;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.pager__summary {
+  margin: 0;
+  color: var(--color-ink-soft);
+}
+
+.pager__size {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.pager__size select {
+  width: auto;
+  min-width: 0;
+}
+
+.pager__buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}

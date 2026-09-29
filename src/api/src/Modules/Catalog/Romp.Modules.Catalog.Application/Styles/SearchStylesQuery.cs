@@ -1,17 +1,22 @@
 using MediatR;
+using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Catalog.Application.Abstractions;
 
 namespace Romp.Modules.Catalog.Application.Styles;
 
 /// <summary>Search/list for the Styles admin screen - filter by code/name, category and active flag.</summary>
-public sealed record SearchStylesQuery(string? SearchText = null, short? CategoryId = null, bool ActiveOnly = true)
-    : IRequest<IReadOnlyList<StyleSummaryDto>>;
+public sealed record SearchStylesQuery(
+    string? SearchText = null,
+    short? CategoryId = null,
+    bool ActiveOnly = true,
+    int Page = 1,
+    int PageSize = PageRequest.DefaultPageSize) : IRequest<PagedResult<StyleSummaryDto>>;
 
 public sealed class SearchStylesQueryHandler(ICatalogDbContext dbContext)
-    : IRequestHandler<SearchStylesQuery, IReadOnlyList<StyleSummaryDto>>
+    : IRequestHandler<SearchStylesQuery, PagedResult<StyleSummaryDto>>
 {
-    public async Task<IReadOnlyList<StyleSummaryDto>> Handle(SearchStylesQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<StyleSummaryDto>> Handle(SearchStylesQuery request, CancellationToken cancellationToken)
     {
         var query = dbContext.Styles.AsNoTracking().AsQueryable();
 
@@ -37,8 +42,10 @@ public sealed class SearchStylesQueryHandler(ICatalogDbContext dbContext)
 #pragma warning restore CA1304, CA1311, CA1862
         }
 
-        var styles = await query.OrderBy(s => s.Name).ToListAsync(cancellationToken);
-
-        return styles.Select(s => s.ToSummaryDto()).ToList();
+        // Projected in SQL (no entities materialised) and ordered by a unique key so pages are stable.
+        return await query
+            .OrderBy(s => s.Name).ThenBy(s => s.Id)
+            .Select(s => new StyleSummaryDto(s.Id, s.Code, s.Name, s.CategoryId, s.IsActive))
+            .ToPagedResultAsync(new PageRequest(request.Page, request.PageSize), cancellationToken);
     }
 }

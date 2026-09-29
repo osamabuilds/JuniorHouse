@@ -1,4 +1,5 @@
 import { ApiError } from '@core/http';
+import { DEFAULT_PAGE_SIZE } from '@shared';
 import { StyleDto, StyleSummaryDto } from '@features/styles';
 import { VendorSummaryDto } from '@features/vendors';
 import { VendorDto } from '@features/vendors';
@@ -8,6 +9,9 @@ export const PURCHASE_ORDERS_FEATURE_KEY = 'purchaseOrders';
 
 export interface PurchaseOrdersState {
   readonly orders: readonly PoSummaryDto[];
+  readonly total: number;
+  readonly page: number;
+  readonly pageSize: number;
   readonly loading: boolean;
   readonly error: ApiError | null;
   readonly mode: PoPageMode;
@@ -42,6 +46,9 @@ export interface PurchaseOrdersState {
 
 export const initialPurchaseOrdersState: PurchaseOrdersState = {
   orders: [],
+  total: 0,
+  page: 1,
+  pageSize: DEFAULT_PAGE_SIZE,
   loading: false,
   error: null,
   mode: 'list',

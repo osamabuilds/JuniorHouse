@@ -16,12 +16,14 @@ export const loadStyles$ = createEffect(
         StylesPageActions.searchChanged,
         StylesPageActions.categoryFilterChanged,
         StylesPageActions.activeOnlyToggled,
+        StylesPageActions.pageChanged,
+        StylesPageActions.pageSizeChanged,
         StylesApiActions.saveSucceeded,
       ),
       withLatestFrom(store.select(selectStyleFilters)),
       switchMap(([, filters]) =>
-        api.search(filters.searchText, filters.categoryId, filters.activeOnly).pipe(
-          map((styles) => StylesApiActions.loadStylesSucceeded({ styles })),
+        api.search(filters).pipe(
+          map((result) => StylesApiActions.loadStylesSucceeded({ result })),
           catchError((error: ApiError) => of(StylesApiActions.loadStylesFailed({ error }))),
         ),
       ),

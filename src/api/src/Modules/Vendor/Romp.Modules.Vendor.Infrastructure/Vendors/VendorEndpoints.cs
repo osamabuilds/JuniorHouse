@@ -1,4 +1,5 @@
 using MediatR;
+using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -34,9 +35,11 @@ internal static class VendorEndpoints
                 short? specialisationId,
                 ISender sender,
                 CancellationToken cancellationToken,
-                bool activeOnly = true) =>
+                bool activeOnly = true,
+                int page = 1,
+                int pageSize = PageRequest.DefaultPageSize) =>
             Results.Ok(await sender.Send(
-                new SearchVendorsQuery(search, cityId, specialisationId, activeOnly),
+                new SearchVendorsQuery(search, cityId, specialisationId, activeOnly, page, pageSize),
                 cancellationToken)));
     }
 }

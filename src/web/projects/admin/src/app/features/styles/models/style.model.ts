@@ -45,6 +45,8 @@ export interface StyleFormValue {
 }
 
 export interface StyleFilters {
+  readonly page: number;
+  readonly pageSize: number;
   readonly searchText: string;
   readonly categoryId: number | null;
   readonly activeOnly: boolean;

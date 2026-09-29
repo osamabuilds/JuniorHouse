@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, u
 import { FormBuilder } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { ReferenceLookupActions, selectLookup } from '@features/reference-data';
-import { inputValue, missingSummary, selectNumberOrNull } from '@shared';
+import { inputValue, missingSummary, selectNumberOrNull, PaginationComponent } from '@shared';
 import { OptionToggle, StyleFormComponent } from '../../components/style-form/style-form.component';
 import { StyleTableComponent } from '../../components/style-table/style-table.component';
 import { buildStyleForm } from '../../forms/style.form';
@@ -13,6 +13,9 @@ import {
   selectEditingStyle,
   selectSearchText,
   selectStyles,
+  selectStylesPage,
+  selectStylesPageSize,
+  selectStylesTotal,
   selectStylesError,
   selectStylesLoading,
   selectStylesMode,
@@ -25,7 +28,7 @@ const LOOKUP_TYPES = ['categories', 'genders', 'age-brackets', 'fabrics', 'colou
 /** SCRUM-174: style list (search/filter) plus a create/edit form with the colour x size target-quantity grid. */
 @Component({
   selector: 'app-styles-page',
-  imports: [StyleTableComponent, StyleFormComponent],
+  imports: [StyleTableComponent, StyleFormComponent, PaginationComponent],
   templateUrl: './styles-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,6 +37,9 @@ export class StylesPageContainer {
   private readonly formBuilder = inject(FormBuilder);
 
   readonly styles = this.store.selectSignal(selectStyles);
+  readonly total = this.store.selectSignal(selectStylesTotal);
+  readonly currentPage = this.store.selectSignal(selectStylesPage);
+  readonly pageSize = this.store.selectSignal(selectStylesPageSize);
   readonly loading = this.store.selectSignal(selectStylesLoading);
   readonly error = this.store.selectSignal(selectStylesError);
   readonly mode = this.store.selectSignal(selectStylesMode);
@@ -217,5 +223,13 @@ export class StylesPageContainer {
     this.selectedColourIds.set(style.colourIds);
     this.selectedSizeIds.set(style.sizeIds);
     this.gridQtyById.set(new Map(style.targetLines.map((line) => [gridKey(line.sizeId, line.colourId), line.targetQty])));
+  }
+
+  changePage(page: number): void {
+    this.store.dispatch(StylesPageActions.pageChanged({ page }));
+  }
+
+  changePageSize(size: number): void {
+    this.store.dispatch(StylesPageActions.pageSizeChanged({ pageSize: size }));
   }
 }

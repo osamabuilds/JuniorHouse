@@ -3,6 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { EMPTY, Observable, catchError, filter, map, merge, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 import { ApiError } from '@core/http';
+import { fetchAllPages } from '@shared';
 import { CatalogApiService } from '@features/styles';
 import { VendorApiService } from '@features/vendors';
 import { PoDto } from '../models';
@@ -20,12 +21,14 @@ export const loadOrders$ = createEffect(
         PurchaseOrdersPageActions.opened,
         PurchaseOrdersPageActions.vendorFilterChanged,
         PurchaseOrdersPageActions.statusFilterChanged,
+        PurchaseOrdersPageActions.pageChanged,
+        PurchaseOrdersPageActions.pageSizeChanged,
         PurchaseOrdersPageActions.backToListClicked,
       ),
       withLatestFrom(store.select(selectPoFilters)),
       switchMap(([, filters]) =>
-        api.search(filters.vendorId, filters.statusId, null, null).pipe(
-          map((orders) => PurchaseOrdersApiActions.loadOrdersSucceeded({ orders })),
+        api.search(filters).pipe(
+          map((result) => PurchaseOrdersApiActions.loadOrdersSucceeded({ result })),
           catchError((error: ApiError) => of(PurchaseOrdersApiActions.loadOrdersFailed({ error }))),
         ),
       ),
@@ -38,7 +41,7 @@ export const loadVendorOptions$ = createEffect(
     actions$.pipe(
       ofType(PurchaseOrdersPageActions.opened),
       switchMap(() =>
-        api.search('', null, true).pipe(
+        fetchAllPages((page, pageSize) => api.search({ searchText: '', specialisationId: null, activeOnly: true, page, pageSize })).pipe(
           map((vendors) => PurchaseOrdersApiActions.loadVendorsSucceeded({ vendors })),
           catchError(() => EMPTY),
         ),
@@ -52,7 +55,7 @@ export const loadStyleOptions$ = createEffect(
     actions$.pipe(
       ofType(PurchaseOrdersPageActions.opened),
       switchMap(() =>
-        api.search('', null, true).pipe(
+        fetchAllPages((page, pageSize) => api.search({ searchText: '', categoryId: null, activeOnly: true, page, pageSize })).pipe(
           map((styles) => PurchaseOrdersApiActions.loadStylesSucceeded({ styles })),
           catchError(() => EMPTY),
         ),

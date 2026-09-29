@@ -16,12 +16,14 @@ export const loadVendors$ = createEffect(
         VendorsPageActions.searchChanged,
         VendorsPageActions.specialisationFilterChanged,
         VendorsPageActions.activeOnlyToggled,
+        VendorsPageActions.pageChanged,
+        VendorsPageActions.pageSizeChanged,
         VendorsApiActions.saveSucceeded,
       ),
       withLatestFrom(store.select(selectVendorFilters)),
       switchMap(([, filters]) =>
-        api.search(filters.searchText, filters.specialisationId, filters.activeOnly).pipe(
-          map((vendors) => VendorsApiActions.loadVendorsSucceeded({ vendors })),
+        api.search(filters).pipe(
+          map((result) => VendorsApiActions.loadVendorsSucceeded({ result })),
           catchError((error: ApiError) => of(VendorsApiActions.loadVendorsFailed({ error }))),
         ),
       ),

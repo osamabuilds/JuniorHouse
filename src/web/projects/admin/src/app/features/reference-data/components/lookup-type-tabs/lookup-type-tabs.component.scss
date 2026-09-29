@@ -7,6 +7,7 @@
   display: flex;
   gap: var(--space-1);
   overflow-x: auto;
+  overflow-y: hidden;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: var(--space-5);
   scrollbar-width: thin;

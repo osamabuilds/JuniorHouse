@@ -1,4 +1,5 @@
 using MediatR;
+using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -33,7 +34,9 @@ internal static class StyleEndpoints
                 short? categoryId,
                 ISender sender,
                 CancellationToken cancellationToken,
-                bool activeOnly = true) =>
-            Results.Ok(await sender.Send(new SearchStylesQuery(search, categoryId, activeOnly), cancellationToken)));
+                bool activeOnly = true,
+                int page = 1,
+                int pageSize = PageRequest.DefaultPageSize) =>
+            Results.Ok(await sender.Send(new SearchStylesQuery(search, categoryId, activeOnly, page, pageSize), cancellationToken)));
     }
 }

@@ -14,7 +14,7 @@ public sealed class PurchaseOrderQueries(VendorDbContext dbContext) : IPurchaseO
 
     public async Task<PoInForceTerms?> GetInForceTermsAsync(long poId, CancellationToken cancellationToken)
     {
-        var po = await dbContext.PurchaseOrders.AsNoTracking()
+        var po = await dbContext.PurchaseOrders.AsNoTracking().AsSplitQuery()
             .Include(p => p.Lines)
             .Include(p => p.Revisions)
             .FirstOrDefaultAsync(p => p.Id == poId, cancellationToken);

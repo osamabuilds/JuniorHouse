@@ -39,6 +39,7 @@
   }
 
   <app-style-table [styles]="styles()" [loading]="loading()" [categories]="categories()" (edit)="startEdit($event)" />
+  <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" (pageSizeChanged)="changePageSize($event)" />
 } @else {
   <app-style-form
     [form]="form"

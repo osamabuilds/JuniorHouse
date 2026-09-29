@@ -27,12 +27,22 @@ export const purchaseOrdersReducer = createReducer(
   on(PurchaseOrdersPageActions.vendorFilterChanged, (state, { vendorId }) => ({
     ...state,
     vendorFilter: vendorId,
+    page: 1,
     loading: true,
     error: null,
   })),
   on(PurchaseOrdersPageActions.statusFilterChanged, (state, { statusId }) => ({
     ...state,
     statusFilter: statusId,
+    page: 1,
+    loading: true,
+    error: null,
+  })),
+  on(PurchaseOrdersPageActions.pageChanged, (state, { page }) => ({ ...state, page, loading: true, error: null })),
+  on(PurchaseOrdersPageActions.pageSizeChanged, (state, { pageSize }) => ({
+    ...state,
+    pageSize,
+    page: 1,
     loading: true,
     error: null,
   })),
@@ -74,7 +84,13 @@ export const purchaseOrdersReducer = createReducer(
   on(PurchaseOrdersPageActions.fileUploadSubmitted, (state) => ({ ...state, fileUploading: true, fileError: null })),
   on(PurchaseOrdersPageActions.fileRemovalSubmitted, (state) => ({ ...state, fileError: null })),
 
-  on(PurchaseOrdersApiActions.loadOrdersSucceeded, (state, { orders }) => ({ ...state, orders, loading: false })),
+  on(PurchaseOrdersApiActions.loadOrdersSucceeded, (state, { result }) => ({
+    ...state,
+    orders: result.items,
+    total: result.totalCount,
+    page: result.page,
+    loading: false,
+  })),
   on(PurchaseOrdersApiActions.loadOrdersFailed, (state, { error }) => ({ ...state, error, loading: false })),
   on(PurchaseOrdersApiActions.loadVendorsSucceeded, (state, { vendors }) => ({ ...state, vendors })),
   on(PurchaseOrdersApiActions.loadStylesSucceeded, (state, { styles }) => ({ ...state, styles })),

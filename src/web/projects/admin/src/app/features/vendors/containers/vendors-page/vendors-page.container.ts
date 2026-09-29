@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { ReferenceLookupActions, selectLookup } from '@features/reference-data';
-import { inputValue, missingSummary, selectNumberOrNull } from '@shared';
+import { inputValue, missingSummary, selectNumberOrNull, PaginationComponent } from '@shared';
 import { SpecialisationToggle, VendorFormComponent } from '../../components/vendor-form/vendor-form.component';
 import { VendorTableComponent } from '../../components/vendor-table/vendor-table.component';
 import { buildVendorForm } from '../../forms/vendor.form';
@@ -13,6 +13,9 @@ import {
   selectSearchText,
   selectSpecialisationFilter,
   selectVendors,
+  selectVendorsPage,
+  selectVendorsPageSize,
+  selectVendorsTotal,
   selectVendorsError,
   selectVendorsLoading,
   selectVendorsMode,
@@ -23,7 +26,7 @@ import {
 /** SCRUM-174: vendor list (search by name/city/specialisation) plus a create/edit form (FR-SC-01, AC-5/AC-5a/AC-6). */
 @Component({
   selector: 'app-vendors-page',
-  imports: [VendorTableComponent, VendorFormComponent],
+  imports: [VendorTableComponent, VendorFormComponent, PaginationComponent],
   templateUrl: './vendors-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -32,6 +35,9 @@ export class VendorsPageContainer {
   private readonly formBuilder = inject(FormBuilder);
 
   readonly vendors = this.store.selectSignal(selectVendors);
+  readonly total = this.store.selectSignal(selectVendorsTotal);
+  readonly currentPage = this.store.selectSignal(selectVendorsPage);
+  readonly pageSize = this.store.selectSignal(selectVendorsPageSize);
   readonly loading = this.store.selectSignal(selectVendorsLoading);
   readonly error = this.store.selectSignal(selectVendorsError);
   readonly mode = this.store.selectSignal(selectVendorsMode);
@@ -146,5 +152,13 @@ export class VendorsPageContainer {
     });
     this.form.controls.name.disable();
     this.selectedSpecialisationIds.set(vendor.specialisationIds);
+  }
+
+  changePage(page: number): void {
+    this.store.dispatch(VendorsPageActions.pageChanged({ page }));
+  }
+
+  changePageSize(size: number): void {
+    this.store.dispatch(VendorsPageActions.pageSizeChanged({ pageSize: size }));
   }
 }

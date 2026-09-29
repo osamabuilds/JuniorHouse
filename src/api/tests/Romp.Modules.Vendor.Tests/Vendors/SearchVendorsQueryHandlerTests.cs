@@ -16,7 +16,8 @@ public sealed class SearchVendorsQueryHandlerTests
 
         var knitVendors = await sender.Send(new SearchVendorsQuery(SpecialisationId: 1));
 
-        Assert.Single(knitVendors);
-        Assert.Equal("Knits Vendor", knitVendors[0].Name);
+        Assert.Single(knitVendors.Items);
+        Assert.Equal(1, knitVendors.TotalCount);
+        Assert.Equal("Knits Vendor", knitVendors.Items[0].Name);
     }
 }

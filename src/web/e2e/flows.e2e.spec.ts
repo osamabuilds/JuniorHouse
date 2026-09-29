@@ -274,6 +274,7 @@ test.describe('Style guard and reference data', () => {
   test('a size that a live PO uses cannot be removed from its style, and the message names the PO', async ({ page, request }) => {
     const po = await createPo(request, 'sent');
     await page.goto('/styles');
+    await page.getByPlaceholder('Search by code or name').fill(po.styleCode);
     await page.getByRole('row').filter({ hasText: po.styleCode }).getByRole('button', { name: 'Edit' }).click();
 
     await page.getByRole('group', { name: 'Size run' }).getByLabel('1-2 Years').uncheck();

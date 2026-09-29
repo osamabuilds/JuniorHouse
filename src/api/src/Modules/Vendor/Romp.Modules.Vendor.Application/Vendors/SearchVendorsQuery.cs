@@ -1,4 +1,5 @@
 using MediatR;
+using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Vendor.Application.Abstractions;
 
@@ -9,12 +10,14 @@ public sealed record SearchVendorsQuery(
     string? SearchText = null,
     short? CityId = null,
     short? SpecialisationId = null,
-    bool ActiveOnly = true) : IRequest<IReadOnlyList<VendorSummaryDto>>;
+    bool ActiveOnly = true,
+    int Page = 1,
+    int PageSize = PageRequest.DefaultPageSize) : IRequest<PagedResult<VendorSummaryDto>>;
 
 public sealed class SearchVendorsQueryHandler(IVendorDbContext dbContext)
-    : IRequestHandler<SearchVendorsQuery, IReadOnlyList<VendorSummaryDto>>
+    : IRequestHandler<SearchVendorsQuery, PagedResult<VendorSummaryDto>>
 {
-    public async Task<IReadOnlyList<VendorSummaryDto>> Handle(SearchVendorsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<VendorSummaryDto>> Handle(SearchVendorsQuery request, CancellationToken cancellationToken)
     {
         var query = dbContext.Vendors.AsNoTracking().AsQueryable();
 
@@ -41,8 +44,10 @@ public sealed class SearchVendorsQueryHandler(IVendorDbContext dbContext)
 #pragma warning restore CA1304, CA1311, CA1862
         }
 
-        var vendors = await query.OrderBy(v => v.Name).ToListAsync(cancellationToken);
-
-        return vendors.Select(v => v.ToSummaryDto()).ToList();
+        // Projected in SQL (no entities materialised) and ordered by a unique key so pages are stable.
+        return await query
+            .OrderBy(v => v.Name).ThenBy(v => v.Id)
+            .Select(v => new VendorSummaryDto(v.Id, v.Name, v.CityId, v.IsActive))
+            .ToPagedResultAsync(new PageRequest(request.Page, request.PageSize), cancellationToken);
     }
 }

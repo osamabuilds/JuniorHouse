@@ -18,6 +18,7 @@
     (raiseRequested)="startCreate()"
     (viewRequested)="openDetail($event)"
   />
+  <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" (pageSizeChanged)="changePageSize($event)" />
 }
 
 @if (mode() === 'detail' && current(); as po) {

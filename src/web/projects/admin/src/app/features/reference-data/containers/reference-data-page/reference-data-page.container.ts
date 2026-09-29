@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { missingSummary } from '@shared';
+import { missingSummary, PAGE_SIZE_OPTIONS, PaginationComponent, paginate } from '@shared';
 import { inputValue } from '@shared';
 import { LookupFormComponent, LookupTableComponent, LookupTypeTabsComponent } from '../../components';
 import { buildLookupForm } from '../../forms/lookup.form';
@@ -26,7 +26,7 @@ import {
  */
 @Component({
   selector: 'app-reference-data-page',
-  imports: [LookupTypeTabsComponent, LookupTableComponent, LookupFormComponent],
+  imports: [LookupTypeTabsComponent, LookupTableComponent, LookupFormComponent, PaginationComponent],
   templateUrl: './reference-data-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -36,7 +36,14 @@ export class ReferenceDataPageContainer {
 
   readonly lookupTypes = LOOKUP_TYPES;
   readonly selectedType = this.store.selectSignal(selectSelectedType);
-  readonly visibleItems = this.store.selectSignal(selectVisibleItems);
+  readonly allItems = this.store.selectSignal(selectVisibleItems);
+
+  readonly page = signal(1);
+  readonly pageSize = signal(PAGE_SIZE_OPTIONS[0]);
+  private readonly paged = computed(() => paginate(this.allItems(), this.page(), this.pageSize()));
+  readonly visibleItems = computed(() => this.paged().items);
+  readonly total = computed(() => this.allItems().length);
+  readonly currentPage = computed(() => this.paged().page);
   readonly loading = this.store.selectSignal(selectReferenceDataLoading);
   readonly error = this.store.selectSignal(selectReferenceDataError);
   readonly includeInactive = this.store.selectSignal(selectIncludeInactive);
@@ -52,6 +59,7 @@ export class ReferenceDataPageContainer {
   }
 
   selectType(type: LookupTypeConfig): void {
+    this.page.set(1);
     if (type.key === this.selectedType().key) {
       return;
     }
@@ -59,10 +67,12 @@ export class ReferenceDataPageContainer {
   }
 
   onSearchInput(event: Event): void {
+    this.page.set(1);
     this.store.dispatch(ReferenceDataPageActions.searchChanged({ searchText: inputValue(event) }));
   }
 
   toggleIncludeInactive(): void {
+    this.page.set(1);
     this.store.dispatch(ReferenceDataPageActions.includeInactiveToggled());
   }
 
@@ -120,5 +130,14 @@ export class ReferenceDataPageContainer {
       return;
     }
     this.store.dispatch(ReferenceDataPageActions.retireConfirmed({ typeKey: this.selectedType().key, id: item.id }));
+  }
+
+  changePage(page: number): void {
+    this.page.set(page);
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize.set(size);
+    this.page.set(1);
   }
 }
