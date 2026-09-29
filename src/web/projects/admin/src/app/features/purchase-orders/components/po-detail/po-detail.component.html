@@ -136,6 +136,10 @@
     }
   </ol>
 
+  @if (receiptProgress(); as progress) {
+    <app-po-receipts-panel [progress]="progress" [names]="names()" [poNo]="po().poNo" />
+  }
+
   <app-po-files-panel
     [statusId]="po().statusId"
     [files]="files()"

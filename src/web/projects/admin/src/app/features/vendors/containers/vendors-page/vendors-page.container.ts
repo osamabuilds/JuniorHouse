@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import { ReferenceLookupActions, selectLookup } from '@features/reference-data';
 import { inputValue, missingSummary, selectNumberOrNull, PaginationComponent } from '@shared';
 import { SpecialisationToggle, VendorFormComponent } from '../../components/vendor-form/vendor-form.component';
+import { ScorecardPanelComponent } from '../../components/scorecard-panel/scorecard-panel.component';
 import { VendorTableComponent } from '../../components/vendor-table/vendor-table.component';
 import { buildVendorForm } from '../../forms/vendor.form';
 import { VendorDto, VendorSummaryDto } from '../../models';
@@ -12,6 +13,10 @@ import {
   selectEditingVendor,
   selectSearchText,
   selectSpecialisationFilter,
+  selectScorecard,
+  selectScorecardError,
+  selectScorecardLoading,
+  selectScorecardVendorId,
   selectVendors,
   selectVendorsPage,
   selectVendorsPageSize,
@@ -26,7 +31,7 @@ import {
 /** SCRUM-174: vendor list (search by name/city/specialisation) plus a create/edit form (FR-SC-01, AC-5/AC-5a/AC-6). */
 @Component({
   selector: 'app-vendors-page',
-  imports: [VendorTableComponent, VendorFormComponent, PaginationComponent],
+  imports: [VendorTableComponent, VendorFormComponent, PaginationComponent, ScorecardPanelComponent],
   templateUrl: './vendors-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -46,6 +51,13 @@ export class VendorsPageContainer {
   readonly specialisationFilter = this.store.selectSignal(selectSpecialisationFilter);
   readonly activeOnly = this.store.selectSignal(selectActiveOnly);
   private readonly editingVendor = this.store.selectSignal(selectEditingVendor);
+
+  readonly scorecard = this.store.selectSignal(selectScorecard);
+  readonly scorecardLoading = this.store.selectSignal(selectScorecardLoading);
+  readonly scorecardError = this.store.selectSignal(selectScorecardError);
+  private readonly scorecardVendorId = this.store.selectSignal(selectScorecardVendorId);
+  readonly scorecardVendorName = computed(() => this.vendors().find((v) => v.id === this.scorecardVendorId())?.name ?? 'Vendor');
+  readonly scorecardOpen = computed(() => this.scorecardVendorId() !== null);
 
   readonly cities = this.store.selectSignal(selectLookup('cities'));
   readonly paymentTerms = this.store.selectSignal(selectLookup('payment-terms'));
@@ -93,6 +105,14 @@ export class VendorsPageContainer {
     this.form.controls.name.enable();
     this.selectedSpecialisationIds.set([]);
     this.store.dispatch(VendorsPageActions.createStarted());
+  }
+
+  openScorecard(summary: VendorSummaryDto): void {
+    this.store.dispatch(VendorsPageActions.scorecardRequested({ id: summary.id }));
+  }
+
+  closeScorecard(): void {
+    this.store.dispatch(VendorsPageActions.scorecardClosed());
   }
 
   startEdit(summary: VendorSummaryDto): void {

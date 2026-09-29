@@ -33,6 +33,25 @@ public sealed class RecordInboundDeliveryCommandHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "AC-1")]
+    public async Task Get_ReturnsClaimedLinesAndTheGrnOnceReceived()
+    {
+        using var host = new TestHost(nameof(Get_ReturnsClaimedLinesAndTheGrnOnceReceived));
+        var id = await host.SendAsync(Command());
+
+        var open = await host.SendAsync(new GetInboundDeliveryQuery(id));
+
+        Assert.Equal([(1, 100), (2, 50)], open.Lines.Select(l => ((int)l.SizeId, l.ClaimedQty)).ToArray());
+        Assert.Equal(150, open.ClaimedTotal);
+        Assert.Null(open.GrnId);
+
+        var grn = await host.SendAsync(new Romp.Modules.Quality.Application.Receiving.RecordGoodsReceiptCommand(
+            id, TestHost.Today, "Sara Khan", null, [new(1, 10, 100), new(2, 10, 50)]));
+        Assert.Equal(grn.GrnNo, (await host.SendAsync(new GetInboundDeliveryQuery(id))).GrnNo);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => host.SendAsync(new GetInboundDeliveryQuery(9999)));
+    }
+
+    [Fact]
     [Trait("Spec", "AC-2")]
     public async Task Handle_SameRunAndDnTwice_OneRecord()
     {

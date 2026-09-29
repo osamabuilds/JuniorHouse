@@ -72,3 +72,18 @@ export const updateVendor$ = createEffect(
     ),
   { functional: true },
 );
+
+/** Loads a vendor's scorecard when its panel is opened (FR-SC-01, Sprint 4). */
+export const loadScorecard$ = createEffect(
+  (actions$ = inject(Actions), api = inject(VendorApiService)) =>
+    actions$.pipe(
+      ofType(VendorsPageActions.scorecardRequested),
+      switchMap(({ id }) =>
+        api.getScorecard(id).pipe(
+          map((scorecard) => VendorsApiActions.loadScorecardSucceeded({ scorecard })),
+          catchError((error: ApiError) => of(VendorsApiActions.loadScorecardFailed({ error }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);

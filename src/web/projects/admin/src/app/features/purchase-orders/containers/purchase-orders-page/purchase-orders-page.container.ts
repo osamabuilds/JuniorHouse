@@ -19,6 +19,7 @@ import {
   PoDto,
   PoFileDto,
   PoFileUpload,
+  PoReceiptProgressDto,
   PoPanel,
   PoRevisionDto,
   PoSummaryDto,
@@ -130,6 +131,8 @@ export class PurchaseOrdersPageContainer {
 
   /** Sprint 3: the PO's production run (once it has one), for the link to Production and the costly-amendment notice. */
   private readonly productionRun = signal<RunDetailDto | null>(null);
+  /** Sprint 4: received against ordered, from the goods receipts QC recorded (null while the order has none). */
+  readonly receiptProgress = signal<PoReceiptProgressDto | null>(null);
   readonly productionRunId = computed(() => this.productionRun()?.id ?? null);
   readonly sampleApproved = computed(() => this.productionRun()?.hasApprovedSample ?? false);
 
@@ -148,6 +151,7 @@ export class PurchaseOrdersPageContainer {
     effect(() => {
       const po = this.current();
       untracked(() => this.loadProductionRun(po));
+      untracked(() => this.loadReceiptProgress(po));
     });
     for (const typeKey of LOOKUP_TYPES) {
       this.store.dispatch(ReferenceLookupActions.requested({ typeKey, includeInactive: false }));
@@ -366,6 +370,22 @@ export class PurchaseOrdersPageContainer {
     if (po) {
       this.store.dispatch(PurchaseOrdersPageActions.fileRemovalSubmitted({ poId: po.id, fileId: file.id }));
     }
+  }
+
+  private loadReceiptProgress(po: PoDto | null): void {
+    // Goods can only have been received once production has started (In Production or later).
+    if (!po || po.statusId < 5) {
+      this.receiptProgress.set(null);
+      return;
+    }
+
+    this.poApi
+      .getReceiptProgress(po.id)
+      .pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((progress) => this.receiptProgress.set(progress && progress.receipts.length > 0 ? progress : null));
   }
 
   private loadProductionRun(po: PoDto | null): void {

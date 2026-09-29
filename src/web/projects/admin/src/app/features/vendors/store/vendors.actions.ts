@@ -1,7 +1,7 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { ApiError } from '@core/http';
 import { Page } from '@shared';
-import { CreateVendorValue, UpdateVendorValue, VendorDto, VendorSummaryDto } from '../models';
+import { CreateVendorValue, UpdateVendorValue, VendorDto, VendorScorecardDto, VendorSummaryDto } from '../models';
 
 export const VendorsPageActions = createActionGroup({
   source: 'Vendors Page',
@@ -18,6 +18,8 @@ export const VendorsPageActions = createActionGroup({
     'Form Invalid': props<{ error: ApiError }>(),
     'Create Submitted': props<{ value: CreateVendorValue }>(),
     'Update Submitted': props<{ id: number; value: UpdateVendorValue }>(),
+    'Scorecard Requested': props<{ id: number }>(),
+    'Scorecard Closed': emptyProps(),
   },
 });
 
@@ -30,5 +32,7 @@ export const VendorsApiActions = createActionGroup({
     'Load Vendor Failed': props<{ error: ApiError }>(),
     'Save Succeeded': emptyProps(),
     'Save Failed': props<{ error: ApiError }>(),
+    'Load Scorecard Succeeded': props<{ scorecard: VendorScorecardDto }>(),
+    'Load Scorecard Failed': props<{ error: ApiError }>(),
   },
 });

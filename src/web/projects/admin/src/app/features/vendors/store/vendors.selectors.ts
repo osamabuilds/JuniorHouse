@@ -25,3 +25,8 @@ export const selectVendorFilters = createSelector(
   selectVendorsPageSize,
   (searchText, specialisationId, activeOnly, page, pageSize): VendorFilters => ({ searchText, specialisationId, activeOnly, page, pageSize }),
 );
+
+export const selectScorecardVendorId = createSelector(selectVendorsState, (state) => state.scorecardVendorId);
+export const selectScorecard = createSelector(selectVendorsState, (state) => state.scorecard);
+export const selectScorecardLoading = createSelector(selectVendorsState, (state) => state.scorecardLoading);
+export const selectScorecardError = createSelector(selectVendorsState, (state) => state.scorecardError);

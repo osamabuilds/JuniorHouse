@@ -19,6 +19,10 @@ export const routes: Routes = [
     loadChildren: () => import('@features/production/production.routes').then((m) => m.PRODUCTION_ROUTES),
   },
   {
+    path: 'quality',
+    loadChildren: () => import('@features/quality/quality.routes').then((m) => m.QUALITY_ROUTES),
+  },
+  {
     path: 'purchase-orders',
     loadChildren: () => import('@features/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
   },

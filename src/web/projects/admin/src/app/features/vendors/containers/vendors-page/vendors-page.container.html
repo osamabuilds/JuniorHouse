@@ -38,7 +38,17 @@
     <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
   }
 
-  <app-vendor-table [vendors]="vendors()" [loading]="loading()" [cities]="cities()" (edit)="startEdit($event)" />
+  @if (scorecardOpen()) {
+    <app-scorecard-panel
+      [vendorName]="scorecardVendorName()"
+      [scorecard]="scorecard()"
+      [loading]="scorecardLoading()"
+      [error]="scorecardError()"
+      (closed)="closeScorecard()"
+    />
+  }
+
+  <app-vendor-table [vendors]="vendors()" [loading]="loading()" [cities]="cities()" (edit)="startEdit($event)" (scorecard)="openScorecard($event)" />
   <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" (pageSizeChanged)="changePageSize($event)" />
 } @else {
   <app-vendor-form

@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient } from '@core/http';
 import { Page } from '@shared';
-import { CreateVendorValue, UpdateVendorValue, VendorDto, VendorFilters, VendorSummaryDto } from '../models';
+import { CreateVendorValue, UpdateVendorValue, VendorDto, VendorFilters, VendorScorecardDto, VendorSummaryDto } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class VendorApiService {
@@ -28,5 +28,10 @@ export class VendorApiService {
 
   update(id: number, value: UpdateVendorValue): Observable<VendorDto> {
     return this.api.put<VendorDto>(`/api/vendors/${id}`, value);
+  }
+
+  /** The vendor scorecard: on-time %, on-quantity % and defect rate with the counts behind them (FR-SC-01). */
+  getScorecard(id: number): Observable<VendorScorecardDto> {
+    return this.api.get<VendorScorecardDto>(`/api/vendors/${id}/scorecard`);
   }
 }

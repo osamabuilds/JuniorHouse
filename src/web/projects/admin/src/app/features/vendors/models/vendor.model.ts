@@ -41,3 +41,22 @@ export interface VendorFilters {
   readonly specialisationId: number | null;
   readonly activeOnly: boolean;
 }
+
+/** The vendor scorecard (FR-SC-01, Sprint 4). Every measure is null when there is no data behind it, never 0% or 100%. */
+export interface VendorScorecardDto {
+  readonly vendorId: number;
+  /** Length of the rolling window behind the `*Rolling` measures. */
+  readonly windowDays: number;
+  readonly deliveriesCounted: number;
+  readonly deliveriesOnTime: number;
+  readonly deliveriesOnQuantity: number;
+  readonly deliveriesExcludedRompDelay: number;
+  readonly inspectedUnits: number;
+  readonly defectiveUnits: number;
+  readonly onTimePct: number | null;
+  readonly onQuantityPct: number | null;
+  readonly defectRatePct: number | null;
+  readonly onTimePctRolling: number | null;
+  readonly onQuantityPctRolling: number | null;
+  readonly defectRatePctRolling: number | null;
+}

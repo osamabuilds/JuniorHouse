@@ -8,6 +8,7 @@ import {
   PoDto,
   PoFileDto,
   PoFilters,
+  PoReceiptProgressDto,
   PoRevisionDto,
   PoSummaryDto,
   UpdatePoValue,
@@ -29,6 +30,11 @@ export class PoApiService {
       page: filters.page,
       pageSize: filters.pageSize,
     });
+  }
+
+  /** Received against ordered for a PO, from the goods receipts QC recorded (Sprint 4). */
+  getReceiptProgress(id: number): Observable<PoReceiptProgressDto> {
+    return this.api.get<PoReceiptProgressDto>(`/api/purchase-orders/${id}/receipts`);
   }
 
   getById(id: number): Observable<PoDto> {

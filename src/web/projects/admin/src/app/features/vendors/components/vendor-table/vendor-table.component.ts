@@ -14,6 +14,7 @@ export class VendorTableComponent {
   readonly cities = input.required<readonly LookupDto[]>();
 
   readonly edit = output<VendorSummaryDto>();
+  readonly scorecard = output<VendorSummaryDto>();
 
   cityName(cityId: number): string {
     return this.cities().find((city) => city.id === cityId)?.name ?? `#${cityId}`;

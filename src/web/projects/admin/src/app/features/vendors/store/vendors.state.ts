@@ -1,6 +1,6 @@
 import { ApiError } from '@core/http';
 import { DEFAULT_PAGE_SIZE, PageMode } from '@shared';
-import { VendorDto, VendorSummaryDto } from '../models';
+import { VendorDto, VendorScorecardDto, VendorSummaryDto } from '../models';
 
 export const VENDORS_FEATURE_KEY = 'vendors';
 
@@ -19,6 +19,12 @@ export interface VendorsState {
   readonly searchText: string;
   readonly specialisationFilter: number | null;
   readonly activeOnly: boolean;
+
+  // ---- the scorecard of one vendor (Sprint 4) ----
+  readonly scorecardVendorId: number | null;
+  readonly scorecard: VendorScorecardDto | null;
+  readonly scorecardLoading: boolean;
+  readonly scorecardError: ApiError | null;
 }
 
 export const initialVendorsState: VendorsState = {
@@ -35,4 +41,9 @@ export const initialVendorsState: VendorsState = {
   searchText: '',
   specialisationFilter: null,
   activeOnly: true,
+
+  scorecardVendorId: null,
+  scorecard: null,
+  scorecardLoading: false,
+  scorecardError: null,
 };

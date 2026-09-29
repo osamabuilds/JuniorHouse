@@ -58,4 +58,10 @@ export const vendorsReducer = createReducer(
     error: null,
   })),
   on(VendorsApiActions.saveFailed, (state, { error }) => ({ ...state, saving: false, error })),
+
+  // ---- scorecard ----
+  on(VendorsPageActions.scorecardRequested, (state, { id }) => ({ ...state, scorecardVendorId: id, scorecard: null, scorecardLoading: true, scorecardError: null })),
+  on(VendorsPageActions.scorecardClosed, (state) => ({ ...state, scorecardVendorId: null, scorecard: null, scorecardLoading: false, scorecardError: null })),
+  on(VendorsApiActions.loadScorecardSucceeded, (state, { scorecard }) => ({ ...state, scorecard, scorecardLoading: false })),
+  on(VendorsApiActions.loadScorecardFailed, (state, { error }) => ({ ...state, scorecardError: error, scorecardLoading: false })),
 );

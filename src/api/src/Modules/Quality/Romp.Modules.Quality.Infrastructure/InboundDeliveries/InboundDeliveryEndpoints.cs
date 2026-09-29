@@ -23,5 +23,8 @@ internal static class InboundDeliveryEndpoints
                 int page = 1,
                 int pageSize = PageRequest.DefaultPageSize) =>
             Results.Ok(await sender.Send(new SearchInboundDeliveriesQuery(status, search, page, pageSize), cancellationToken)));
+
+        group.MapGet("/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new GetInboundDeliveryQuery(id), cancellationToken)));
     }
 }

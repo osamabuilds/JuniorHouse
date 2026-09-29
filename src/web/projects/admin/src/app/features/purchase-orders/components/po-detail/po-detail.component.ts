@@ -9,6 +9,7 @@ import {
   PoDto,
   PoFileDto,
   PoFileUpload,
+  PoReceiptProgressDto,
   PoPanel,
   PoRevisionDto,
   StyleCell,
@@ -19,6 +20,7 @@ import { canAmend, canCancel, canClose, canEdit, canRecordResponse, canSend, can
 import { AmendFormComponent } from '../amend-form/amend-form.component';
 import { PendingRevisionActionsComponent } from '../pending-revision-actions/pending-revision-actions.component';
 import { PoFilesPanelComponent } from '../po-files-panel/po-files-panel.component';
+import { PoReceiptsPanelComponent } from '../po-receipts-panel/po-receipts-panel.component';
 import { RevisionHistoryComponent } from '../revision-history/revision-history.component';
 import { SendConfirmComponent } from '../send-confirm/send-confirm.component';
 import { VendorResponseFormComponent } from '../vendor-response-form/vendor-response-form.component';
@@ -41,6 +43,7 @@ export interface RevisionNoteDecision {
     AmendFormComponent,
     PendingRevisionActionsComponent,
     PoFilesPanelComponent,
+    PoReceiptsPanelComponent,
     RevisionHistoryComponent,
     SendConfirmComponent,
     VendorResponseFormComponent,
@@ -69,6 +72,8 @@ export class PoDetailComponent {
   readonly productionRunId = input<number | null>(null);
   /** Sprint 3 (D17): a pre-production sample has been approved, so an amendment is costly. */
   readonly sampleApproved = input(false);
+  /** Sprint 4: received against ordered, once goods have been received against the order. */
+  readonly receiptProgress = input<PoReceiptProgressDto | null>(null);
 
   readonly channels = input.required<readonly LookupDto[]>();
   readonly amendmentReasons = input.required<readonly LookupDto[]>();
