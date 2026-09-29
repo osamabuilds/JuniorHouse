@@ -75,6 +75,19 @@ public sealed class Inspection : Entity<long>, IAuditable
 
     public IReadOnlyCollection<SafetyCheck> SafetyChecks => _safetyChecks.AsReadOnly();
 
+    internal void SetSafetyCheck(SafetyInput input, string actingPerson)
+    {
+        var existing = _safetyChecks.FirstOrDefault(s => s.SafetyTypeId == input.SafetyTypeId);
+        if (existing is null)
+        {
+            _safetyChecks.Add(new SafetyCheck(input, actingPerson));
+        }
+        else
+        {
+            existing.Apply(input, actingPerson);
+        }
+    }
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; } = string.Empty;

@@ -17,6 +17,7 @@ using Romp.Modules.Quality.Infrastructure.Inspections;
 using Romp.Modules.Quality.Infrastructure.Outcomes;
 using Romp.Modules.Quality.Infrastructure.Persistence;
 using Romp.Modules.Quality.Infrastructure.Receiving;
+using Romp.Modules.Quality.Infrastructure.SafetyChecks;
 using Romp.Modules.Vendor.Contracts;
 
 namespace Romp.Modules.Quality.Infrastructure;
@@ -79,5 +80,6 @@ public sealed class QualityModule : IModule
         endpoints.MapGoodsReceiptEndpoints();
         endpoints.MapQcBatchEndpoints();
         endpoints.MapInspectionEndpoints();
+        endpoints.MapSafetyCheckEndpoints();
     }
 }

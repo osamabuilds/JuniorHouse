@@ -8,6 +8,10 @@ public sealed record BatchLineDto(short SizeId, short ColourId, int Qty);
 
 public sealed record CheckResultDto(short CheckTypeId, short ResultId);
 
+public sealed record SafetyLineDto(short SizeId, short ColourId);
+
+public sealed record SafetyCheckDto(short SafetyTypeId, short ResultId, string? Reason, IReadOnlyList<SafetyLineDto> AffectedLines);
+
 public sealed record DefectDto(short DefectTypeId, short SeverityId, int Qty, short? SizeId, short? ColourId, string Note);
 
 public sealed record InspectionDto(
@@ -28,7 +32,8 @@ public sealed record InspectionDto(
     DateOnly InspectionDate,
     string ActingPerson,
     IReadOnlyList<CheckResultDto> Checks,
-    IReadOnlyList<DefectDto> Defects);
+    IReadOnlyList<DefectDto> Defects,
+    IReadOnlyList<SafetyCheckDto> SafetyChecks);
 
 /// <summary>A sub-batch as shown on the batch. Empty until a decision is recorded (group E fills the outcome fields).</summary>
 public sealed record SubBatchDto(
@@ -73,7 +78,10 @@ internal static class QcBatchMapper
         i.Id, i.BatchId, i.SubBatchId, i.RoundNo, i.ModeId, InspectionMode.Code(i.ModeId), i.InspectionLevelId, i.AqlLevelId,
         i.LotQty, i.SampleQty, i.AcceptNo, i.RejectNo, i.ResultId, InspectionResult.Code(i.ResultId), i.InspectionDate, i.ActingPerson,
         i.Checks.OrderBy(c => c.CheckTypeId).Select(c => new CheckResultDto(c.CheckTypeId, c.ResultId)).ToList(),
-        i.Defects.OrderBy(d => d.Id).Select(d => new DefectDto(d.DefectTypeId, d.SeverityId, d.Qty, d.SizeId, d.ColourId, d.Note)).ToList());
+        i.Defects.OrderBy(d => d.Id).Select(d => new DefectDto(d.DefectTypeId, d.SeverityId, d.Qty, d.SizeId, d.ColourId, d.Note)).ToList(),
+        i.SafetyChecks.OrderBy(s => s.SafetyTypeId).Select(s => new SafetyCheckDto(
+            s.SafetyTypeId, s.ResultId, s.Reason,
+            s.AffectedLines.OrderBy(l => l.SizeId).ThenBy(l => l.ColourId).Select(l => new SafetyLineDto(l.SizeId, l.ColourId)).ToList())).ToList());
 
     public static SubBatchDto ToDto(this QcSubBatch s) => new(
         s.Id, s.SplitNo, s.OutcomeId, s.Reason, s.StatusId, s.ReworkRoundCount,

@@ -2890,6 +2890,12 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("ActingPerson")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("ACTR_NAME");
+
                     b.Property<long>("InspectionId")
                         .HasColumnType("bigint")
                         .HasColumnName("INSP_ID");

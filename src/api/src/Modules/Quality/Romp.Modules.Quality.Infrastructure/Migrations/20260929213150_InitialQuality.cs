@@ -822,6 +822,7 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                     QC_SAFE_TYP_ID = table.Column<short>(type: "smallint", nullable: false),
                     QC_CHK_RSLT_ID = table.Column<short>(type: "smallint", nullable: false),
                     RSN = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ACTR_NAME = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     INSR_DTE = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     INSR_BY = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     UPDT_DTE = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),

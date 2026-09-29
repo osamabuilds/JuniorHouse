@@ -60,6 +60,7 @@ public sealed class GetQcBatchQueryHandler(IQualityDbContext dbContext) : IReque
             .Include(b => b.SubBatches).ThenInclude(s => s.Lines)
             .Include(b => b.Inspections).ThenInclude(i => i.Checks)
             .Include(b => b.Inspections).ThenInclude(i => i.Defects)
+            .Include(b => b.Inspections).ThenInclude(i => i.SafetyChecks).ThenInclude(s => s.AffectedLines)
             .FirstOrDefaultAsync(b => b.Id == request.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"QC batch {request.Id} was not found.");
         var receipt = await dbContext.GoodsReceipts.AsNoTracking()

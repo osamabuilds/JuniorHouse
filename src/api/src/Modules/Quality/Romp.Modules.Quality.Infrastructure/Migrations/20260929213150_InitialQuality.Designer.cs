@@ -12,7 +12,7 @@ using Romp.Modules.Quality.Infrastructure.Persistence;
 namespace Romp.Modules.Quality.Infrastructure.Migrations
 {
     [DbContext(typeof(QcDbContext))]
-    [Migration("20260929212047_InitialQuality")]
+    [Migration("20260929213150_InitialQuality")]
     partial class InitialQuality
     {
         /// <inheritdoc />
@@ -2892,6 +2892,12 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         .HasColumnName("ID");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ActingPerson")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("ACTR_NAME");
 
                     b.Property<long>("InspectionId")
                         .HasColumnType("bigint")

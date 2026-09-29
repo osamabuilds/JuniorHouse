@@ -18,6 +18,7 @@ internal sealed class SafetyCheckConfiguration : IEntityTypeConfiguration<Safety
         builder.Property(s => s.SafetyTypeId).HasColumnName("QC_SAFE_TYP_ID").IsRequired();
         builder.Property(s => s.ResultId).HasColumnName("QC_CHK_RSLT_ID").IsRequired();
         builder.Property(s => s.Reason).HasColumnName("RSN").HasMaxLength(500);
+        builder.Property(s => s.ActingPerson).HasColumnName("ACTR_NAME").HasMaxLength(100).IsRequired();
         builder.HasIndex(s => new { s.InspectionId, s.SafetyTypeId }).IsUnique(); // AC-31: one result per check per round
         builder.HasIndex(s => s.SafetyTypeId);
         builder.HasIndex(s => s.ResultId);

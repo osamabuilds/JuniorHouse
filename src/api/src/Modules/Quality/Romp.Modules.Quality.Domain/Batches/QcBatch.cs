@@ -2,6 +2,7 @@ using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Quality.Contracts;
 using Romp.Modules.Quality.Domain.Inspections;
 using Romp.Modules.Quality.Domain.Inspections.Aql;
+using Romp.Modules.Quality.Domain.SafetyChecks;
 
 namespace Romp.Modules.Quality.Domain.Batches;
 
@@ -151,6 +152,82 @@ public sealed class QcBatch : AggregateRoot<long>, IAuditable
         Raise(new QcInspectionRecordedEvent(
             Id, input.SubBatchId ?? 0, GrnId, PoId, PoNo, roundNo, InspectionMode.Code(plan.ModeId), lot, sample, score.DefectiveQty,
             score.CriticalCount, score.MajorCount, score.MinorCount, InspectionResult.Code(score.ResultId)));
+        return inspection;
+    }
+
+    /// <summary>
+    /// Records both child-safety checks of an inspection round (spec AC-30..AC-33). Both must be present, Not applicable needs a
+    /// reason, a failed check may list the affected lines (none listed means the whole batch, Q10). Recording again before any
+    /// decision replaces the earlier entry (a correction); once the covered quantity is decided the results are frozen.
+    /// </summary>
+    public Inspection RecordSafetyChecks(long inspectionId, IReadOnlyList<SafetyInput> inputs, string actingPerson)
+    {
+        var inspection = _inspections.FirstOrDefault(i => i.Id == inspectionId)
+            ?? throw new KeyNotFoundException($"Inspection {inspectionId} was not found on QC batch {Id}.");
+
+        var person = actingPerson?.Trim() ?? string.Empty;
+        if (person.Length is < 2 or > 100)
+        {
+            throw new DomainException("Enter the name of the person recording this (2 to 100 characters).");
+        }
+
+        var decided = inspection.SubBatchId is { } subId
+            ? FindSubBatch(subId).OutcomeId is not null
+            : _subBatches.Any(s => s.OutcomeId is not null);
+        if (decided)
+        {
+            throw new DomainException("A decision has already been recorded for this quantity, so its safety checks can no longer change.");
+        }
+
+        foreach (var type in SafetyType.All)
+        {
+            var matching = inputs.Count(i => i.SafetyTypeId == type);
+            if (matching != 1)
+            {
+                throw new DomainException(matching == 0
+                    ? $"Record a result for both child-safety checks; check {type} is missing."
+                    : $"Safety check {type} appears more than once.");
+            }
+        }
+
+        if (inputs.Any(i => !SafetyType.All.Contains(i.SafetyTypeId)))
+        {
+            throw new DomainException("The safety checks contain an unknown check.");
+        }
+
+        foreach (var input in inputs)
+        {
+            if (input.ResultId is not (CheckResult.Pass or CheckResult.Fail or CheckResult.NotApplicable))
+            {
+                throw new DomainException("Each safety check is Pass, Fail or Not applicable.");
+            }
+
+            if (input.ResultId == CheckResult.NotApplicable && string.IsNullOrWhiteSpace(input.Reason))
+            {
+                throw new DomainException("Say why a safety check is not applicable (for example: this garment has no small trims).");
+            }
+
+            if (input.Reason is { } reason && reason.Trim().Length > 500)
+            {
+                throw new DomainException("The reason can be at most 500 characters.");
+            }
+
+            var scope = inspection.SubBatchId is { } sub ? FindSubBatch(sub).Lines.Select(l => (l.SizeId, l.ColourId)) : _lines.Select(l => (l.SizeId, l.ColourId));
+            var scopeSet = scope.ToHashSet();
+            foreach (var line in input.AffectedLines)
+            {
+                if (!scopeSet.Contains((line.SizeId, line.ColourId)))
+                {
+                    throw new DomainException($"Size {line.SizeId} and colour {line.ColourId} is not part of the inspected quantity.");
+                }
+            }
+        }
+
+        foreach (var input in inputs)
+        {
+            inspection.SetSafetyCheck(input, person);
+        }
+
         return inspection;
     }
 
