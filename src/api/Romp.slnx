@@ -21,6 +21,12 @@
     <Project Path="src/Modules/Production/Romp.Modules.Production.Domain/Romp.Modules.Production.Domain.csproj" />
     <Project Path="src/Modules/Production/Romp.Modules.Production.Infrastructure/Romp.Modules.Production.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Quality/">
+    <Project Path="src/Modules/Quality/Romp.Modules.Quality.Application/Romp.Modules.Quality.Application.csproj" />
+    <Project Path="src/Modules/Quality/Romp.Modules.Quality.Contracts/Romp.Modules.Quality.Contracts.csproj" />
+    <Project Path="src/Modules/Quality/Romp.Modules.Quality.Domain/Romp.Modules.Quality.Domain.csproj" />
+    <Project Path="src/Modules/Quality/Romp.Modules.Quality.Infrastructure/Romp.Modules.Quality.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Reference/">
     <Project Path="src/Modules/Reference/Romp.Modules.Reference.Application/Romp.Modules.Reference.Application.csproj" />
     <Project Path="src/Modules/Reference/Romp.Modules.Reference.Contracts/Romp.Modules.Reference.Contracts.csproj" />
