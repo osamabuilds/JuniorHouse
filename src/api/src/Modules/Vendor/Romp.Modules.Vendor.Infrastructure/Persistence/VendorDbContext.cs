@@ -24,6 +24,12 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
 
     public DbSet<PurchaseOrderFile> PurchaseOrderFiles => Set<PurchaseOrderFile>();
 
+    public DbSet<PoReceipt> PoReceipts => Set<PoReceipt>();
+
+    public DbSet<ScorecardDelivery> ScorecardDeliveries => Set<ScorecardDelivery>();
+
+    public DbSet<ScorecardInspection> ScorecardInspections => Set<ScorecardInspection>();
+
     async Task IVendorDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 

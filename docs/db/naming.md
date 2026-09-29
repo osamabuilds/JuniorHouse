@@ -213,3 +213,4 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | minimum | MIN | | | |
 | mode | MODE | | | |
 | outcome | OTCM | | | |
+| scorecard (vendor scorecard facts) | SCRD | | | |

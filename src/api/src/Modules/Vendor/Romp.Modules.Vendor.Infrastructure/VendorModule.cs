@@ -9,6 +9,8 @@ using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Production.Contracts;
+using Romp.Modules.Quality.Contracts;
+using Romp.Modules.Vendor.Application.Vendors;
 using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Application.Files;
@@ -96,6 +98,13 @@ public sealed class VendorModule : IModule
         // Sprint 3 (ADR 0008, SCRUM-185/190): VNDR is a real consumer of PROD's events.
         services.AddScoped<IOutboxMessageHandler<ProductionStartedEvent>, ProductionStartedConsumer>();
         services.AddScoped<IOutboxMessageHandler<DeliveryNoteRecordedEvent>, DeliveryNoteRecordedConsumer>();
+
+        // Sprint 4: VNDR also consumes QC events (receipt progress, scorecard facts) and PROD delivery facts for the scorecard.
+        services.AddScoped<IOutboxMessageHandler<GoodsReceiptRecordedEvent>, GoodsReceiptRecordedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<DeliveryNoteRecordedEvent>, ScorecardDeliveryConsumer>();
+        services.AddScoped<IOutboxMessageHandler<QcInspectionRecordedEvent>, ScorecardInspectionConsumer>();
+        services.AddScoped<IVendorScorecardQueries, VendorScorecardQueries>();
+        services.AddSingleton(new ScorecardOptions { WindowDays = configuration.GetValue("Vndr:Scorecard:WindowDays", new ScorecardOptions().WindowDays) });
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
@@ -106,5 +115,6 @@ public sealed class VendorModule : IModule
         endpoints.MapVendorResponseEndpoints();
         endpoints.MapVendorViewEndpoints();
         endpoints.MapPurchaseOrderFileEndpoints();
+        endpoints.MapScorecardEndpoints();
     }
 }

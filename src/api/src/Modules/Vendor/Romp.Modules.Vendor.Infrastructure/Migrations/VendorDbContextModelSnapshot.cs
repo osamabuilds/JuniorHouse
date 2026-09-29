@@ -279,6 +279,138 @@ namespace Romp.Modules.Vendor.Infrastructure.Migrations
                     b.ToTable("PO_LINE", "VNDR");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrders.PoReceipt", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("ClaimedTotal")
+                        .HasColumnType("integer")
+                        .HasColumnName("CLM_TOT_QTY");
+
+                    b.Property<int>("CountedTotal")
+                        .HasColumnType("integer")
+                        .HasColumnName("CNTD_TOT_QTY");
+
+                    b.Property<long>("GrnId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("GRN_ID");
+
+                    b.Property<string>("GrnNo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("GRN_NO");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("PoId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PO_ID");
+
+                    b.Property<DateOnly>("ReceivedDate")
+                        .HasColumnType("date")
+                        .HasColumnName("RCVD_DT");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GrnId")
+                        .IsUnique();
+
+                    b.HasIndex("PoId");
+
+                    b.ToTable("PO_RCVD", "VNDR");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrders.PoReceiptLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("ClaimedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("CLM_QTY");
+
+                    b.Property<short>("ColourId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CLR_ID");
+
+                    b.Property<int>("CountedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("CNTD_QTY");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("ReceiptId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PO_RCVD_ID");
+
+                    b.Property<short>("SizeId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SIZE_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiptId", "SizeId", "ColourId")
+                        .IsUnique();
+
+                    b.ToTable("PO_RCVD_LINE", "VNDR");
+                });
+
             modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrders.PoStatusHistoryEntry", b =>
                 {
                     b.Property<long>("Id")
@@ -758,6 +890,150 @@ namespace Romp.Modules.Vendor.Infrastructure.Migrations
                     b.ToTable("PO_REV", "VNDR");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.Vendors.ScorecardDelivery", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateOnly>("DispatchDate")
+                        .HasColumnType("date")
+                        .HasColumnName("DSPT_DT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsOnQuantity")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ONQT_IND");
+
+                    b.Property<bool>("IsOnTime")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ONTM_IND");
+
+                    b.Property<bool>("IsRompFabricDelay")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ROMP_FBRC_DLAY_IND");
+
+                    b.Property<long>("PoId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PO_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<string>("VendorDnNo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("VNDR_DN_NO");
+
+                    b.Property<long>("VendorId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("VNDR_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VendorId");
+
+                    b.HasIndex("PoId", "VendorDnNo")
+                        .IsUnique();
+
+                    b.ToTable("SCRD_DLVR", "VNDR");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.Vendors.ScorecardInspection", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BatchId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("BTCH_ID");
+
+                    b.Property<int>("DefectiveQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("DFCT_QTY");
+
+                    b.Property<int>("InspectedQty")
+                        .HasColumnType("integer")
+                        .HasColumnName("INSP_QTY");
+
+                    b.Property<DateOnly>("InspectionDate")
+                        .HasColumnType("date")
+                        .HasColumnName("INSP_DT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("PoId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PO_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<long>("VendorId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("VNDR_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BatchId")
+                        .IsUnique();
+
+                    b.HasIndex("PoId");
+
+                    b.HasIndex("VendorId");
+
+                    b.ToTable("SCRD_INSP", "VNDR");
+                });
+
             modelBuilder.Entity("Romp.Modules.Vendor.Domain.Vendors.Vendor", b =>
                 {
                     b.Property<long>("Id")
@@ -921,6 +1197,26 @@ namespace Romp.Modules.Vendor.Infrastructure.Migrations
                         .HasConstraintName("FK_PO_LINE_PO_ID");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrders.PoReceipt", b =>
+                {
+                    b.HasOne("Romp.Modules.Vendor.Domain.PurchaseOrders.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("PoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PO_RCVD_PO_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrders.PoReceiptLine", b =>
+                {
+                    b.HasOne("Romp.Modules.Vendor.Domain.PurchaseOrders.PoReceipt", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("ReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PO_RCVD_LINE_PO_RCVD_ID");
+                });
+
             modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrders.PoStatusHistoryEntry", b =>
                 {
                     b.HasOne("Romp.Modules.Vendor.Domain.PurchaseOrders.PurchaseOrder", null)
@@ -977,6 +1273,40 @@ namespace Romp.Modules.Vendor.Infrastructure.Migrations
                         .HasConstraintName("FK_PO_REV_PO_ID");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.Vendors.ScorecardDelivery", b =>
+                {
+                    b.HasOne("Romp.Modules.Vendor.Domain.PurchaseOrders.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("PoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_SCRD_DLVR_PO_ID");
+
+                    b.HasOne("Romp.Modules.Vendor.Domain.Vendors.Vendor", null)
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_SCRD_DLVR_VNDR_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.Vendors.ScorecardInspection", b =>
+                {
+                    b.HasOne("Romp.Modules.Vendor.Domain.PurchaseOrders.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("PoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_SCRD_INSP_PO_ID");
+
+                    b.HasOne("Romp.Modules.Vendor.Domain.Vendors.Vendor", null)
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_SCRD_INSP_VNDR_ID");
+                });
+
             modelBuilder.Entity("Romp.Modules.Vendor.Domain.Vendors.VendorSpecialisation", b =>
                 {
                     b.HasOne("Romp.Modules.Vendor.Domain.Vendors.Vendor", null)
@@ -985,6 +1315,11 @@ namespace Romp.Modules.Vendor.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_VNDR_SPCL_MAP_VNDR_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrders.PoReceipt", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("Romp.Modules.Vendor.Domain.PurchaseOrders.PurchaseOrder", b =>
