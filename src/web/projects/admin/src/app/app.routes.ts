@@ -15,16 +15,7 @@ export const routes: Routes = [
     loadChildren: () => import('@features/vendors/vendors.routes').then((m) => m.VENDORS_ROUTES),
   },
   {
-    // SCRUM-93 task 51: what a vendor sees of a PO. The shell hides its navigation on this route.
-    path: 'purchase-orders/:id/vendor-view',
-    loadComponent: () =>
-      import('./purchase-orders/vendor-view-page').then((m) => m.VendorViewPage),
-    title: 'Purchase Order · Romp',
-  },
-  {
     path: 'purchase-orders',
-    loadComponent: () =>
-      import('./purchase-orders/purchase-orders-page').then((m) => m.PurchaseOrdersPage),
-    title: 'Purchase Orders · Romp Admin',
+    loadChildren: () => import('@features/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
   },
 ];

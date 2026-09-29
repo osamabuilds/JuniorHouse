@@ -1,5 +1,6 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { LookupNameResolver } from '../models';
 import { lookupCacheKey } from '../utils/lookup-cache-key.util';
 import { ReferenceLookupActions, selectLookupCache } from '../store';
 
@@ -14,7 +15,7 @@ type LookupKey = (typeof KEYS)[number];
  * reference-data store.
  */
 @Injectable({ providedIn: 'root' })
-export class LookupNames {
+export class LookupNames implements LookupNameResolver {
   private readonly store = inject(Store);
   private readonly cache = this.store.selectSignal(selectLookupCache);
 

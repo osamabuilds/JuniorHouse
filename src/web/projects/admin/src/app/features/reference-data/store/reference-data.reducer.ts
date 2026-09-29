@@ -7,7 +7,8 @@ const startLoading = (state: ReferenceDataState): ReferenceDataState => ({ ...st
 export const referenceDataReducer = createReducer(
   initialReferenceDataState,
 
-  on(ReferenceDataPageActions.opened, startLoading),
+  // The store outlives the page, so opening it resets the page (not the lookup cache other features share).
+  on(ReferenceDataPageActions.opened, (state) => ({ ...initialReferenceDataState, lookups: state.lookups, loading: true })),
   on(ReferenceDataPageActions.typeSelected, (state, { typeKey }) => ({
     ...state,
     selectedTypeKey: typeKey,

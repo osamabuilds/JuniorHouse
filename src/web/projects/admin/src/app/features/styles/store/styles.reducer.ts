@@ -2,12 +2,11 @@ import { createReducer, on } from '@ngrx/store';
 import { StylesApiActions, StylesPageActions } from './styles.actions';
 import { initialStylesState, StylesState } from './styles.state';
 
-const startLoading = (state: StylesState): StylesState => ({ ...state, loading: true, error: null });
-
 export const stylesReducer = createReducer(
   initialStylesState,
 
-  on(StylesPageActions.opened, startLoading),
+  // The store outlives the page, so opening it starts from a clean slate.
+  on(StylesPageActions.opened, () => ({ ...initialStylesState, loading: true })),
   on(StylesPageActions.searchChanged, (state, { searchText }) => ({ ...state, searchText, loading: true, error: null })),
   on(StylesPageActions.categoryFilterChanged, (state, { categoryId }) => ({
     ...state,

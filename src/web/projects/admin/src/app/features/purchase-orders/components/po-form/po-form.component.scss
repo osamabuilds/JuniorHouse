@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.po-form {
+  max-width: 48rem;
+}
+
+.line-grid th,
+.line-grid td {
+  text-align: center;
+}
+
+.line-grid input[type='number'] {
+  width: 5.5rem;
+  min-width: 0;
+  text-align: center;
+  margin-inline: auto;
+}

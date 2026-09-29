@@ -2,12 +2,11 @@ import { createReducer, on } from '@ngrx/store';
 import { VendorsApiActions, VendorsPageActions } from './vendors.actions';
 import { initialVendorsState, VendorsState } from './vendors.state';
 
-const startLoading = (state: VendorsState): VendorsState => ({ ...state, loading: true, error: null });
-
 export const vendorsReducer = createReducer(
   initialVendorsState,
 
-  on(VendorsPageActions.opened, startLoading),
+  // The store outlives the page, so opening it starts from a clean slate.
+  on(VendorsPageActions.opened, () => ({ ...initialVendorsState, loading: true })),
   on(VendorsPageActions.searchChanged, (state, { searchText }) => ({ ...state, searchText, loading: true, error: null })),
   on(VendorsPageActions.specialisationFilterChanged, (state, { specialisationId }) => ({
     ...state,

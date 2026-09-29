@@ -1,0 +1,153 @@
+<form class="po-form card" (ngSubmit)="submitted.emit()" [formGroup]="form()">
+  <h2>{{ mode() === 'create' ? 'Raise' : 'Edit' }} purchase order</h2>
+
+  @if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="po-vendor">Vendor</label>
+      <select
+        id="po-vendor"
+        [value]="form().controls.vendorId.value ?? ''"
+        [disabled]="mode() === 'edit'"
+        (change)="onVendorSelectChange($event)"
+      >
+        <option value="">Select…</option>
+        @for (vendor of vendors(); track vendor.id) {
+          <option [value]="vendor.id">{{ vendor.name }}</option>
+        }
+      </select>
+      <app-control-errors [control]="form().controls.vendorId" label="Vendor" kind="choose" />
+      <app-field-errors [messages]="fieldErrors('VendorId')" />
+    </div>
+
+    <div class="form-field">
+      <label for="po-style">Style</label>
+      <select
+        id="po-style"
+        [value]="form().controls.styleId.value ?? ''"
+        [disabled]="mode() === 'edit'"
+        (change)="onStyleSelectChange($event)"
+      >
+        <option value="">Select…</option>
+        @for (style of styles(); track style.id) {
+          <option [value]="style.id">{{ style.code }} &mdash; {{ style.name }}</option>
+        }
+      </select>
+      <app-control-errors [control]="form().controls.styleId" label="Style" kind="choose" />
+      <app-field-errors [messages]="fieldErrors('StyleId')" />
+    </div>
+
+    <div class="form-field">
+      <label for="po-unit-cost">Unit cost (PKR)</label>
+      <input id="po-unit-cost" type="number" step="0.01" formControlName="unitCost" />
+      <app-control-errors [control]="form().controls.unitCost" label="Unit cost (PKR)" kind="enter" />
+      <app-field-errors [messages]="fieldErrors('UnitCost')" />
+    </div>
+
+    <div class="form-field">
+      <label for="po-delivery-date">Expected delivery date</label>
+      <input id="po-delivery-date" type="date" formControlName="expectedDeliveryDate" />
+      <app-control-errors [control]="form().controls.expectedDeliveryDate" label="Expected delivery date" kind="enter" />
+      <app-field-errors [messages]="fieldErrors('ExpectedDeliveryDate')" />
+    </div>
+
+    <div class="form-field">
+      <label for="po-payment-term">Payment terms</label>
+      <select id="po-payment-term" formControlName="paymentTermId">
+        <option [ngValue]="null">Use the vendor's default</option>
+        @for (term of paymentTerms(); track term.id) {
+          <option [ngValue]="term.id">{{ term.name }}</option>
+        }
+      </select>
+      <app-control-errors [control]="form().controls.paymentTermId" label="Payment terms" kind="choose" />
+      <p class="field-hint">Filled in from the vendor when you pick one. Change it if you agreed something different.</p>
+    </div>
+
+    <div class="form-field">
+      <label for="po-advance-pct">Advance payment (%)</label>
+      <input id="po-advance-pct" type="number" step="0.01" formControlName="advancePercent" />
+      <app-control-errors [control]="form().controls.advancePercent" label="Advance payment (%)" kind="enter" />
+    </div>
+
+    <div class="form-field">
+      <label for="po-latest-date">Latest acceptable delivery date</label>
+      <input id="po-latest-date" type="date" formControlName="latestAcceptableDate" />
+      <app-control-errors [control]="form().controls.latestAcceptableDate" label="Latest acceptable delivery date" kind="enter" />
+      <p class="field-hint">Required before you can send the PO. It cannot be earlier than the expected delivery date.</p>
+      <app-field-errors [messages]="fieldErrors('LatestAcceptableDate')" />
+    </div>
+
+    <div class="form-field">
+      <label for="po-fabric">Who supplies the fabric</label>
+      <select id="po-fabric" formControlName="fabricResponsibilityId">
+        <option [ngValue]="null">Not set</option>
+        @for (option of fabricOptions(); track option.id) {
+          <option [ngValue]="option.id">{{ option.name }}</option>
+        }
+      </select>
+      <app-control-errors [control]="form().controls.fabricResponsibilityId" label="Who supplies the fabric" kind="choose" />
+      <p class="field-hint">Required before you can send the PO: does the vendor buy the fabric, or does Romp supply it?</p>
+      <app-field-errors [messages]="fieldErrors('FabricResponsibilityId')" />
+    </div>
+
+    <div class="form-field">
+      <label for="po-over-tol">Extra pieces allowed (%)</label>
+      <input id="po-over-tol" type="number" step="0.01" formControlName="overTolerancePercent" />
+      <app-control-errors [control]="form().controls.overTolerancePercent" label="Extra pieces allowed (%)" kind="enter" />
+      <p class="field-hint">How many pieces more than ordered you will still accept.</p>
+      <app-field-errors [messages]="fieldErrors('OverTolerancePercent')" />
+    </div>
+
+    <div class="form-field">
+      <label for="po-under-tol">Fewer pieces allowed (%)</label>
+      <input id="po-under-tol" type="number" step="0.01" formControlName="underTolerancePercent" />
+      <app-control-errors [control]="form().controls.underTolerancePercent" label="Fewer pieces allowed (%)" kind="enter" />
+      <p class="field-hint">How many pieces fewer than ordered you will still accept.</p>
+      <app-field-errors [messages]="fieldErrors('UnderTolerancePercent')" />
+    </div>
+  </div>
+
+  @if (lineRows().length > 0) {
+    <h3>How many of each size and colour?</h3>
+    <p class="field-hint">Enter a quantity only for the combinations you want; leave the others at 0.</p>
+    <table class="line-grid">
+      <thead>
+        <tr>
+          <th scope="col">Size</th>
+          <th scope="col">Colour</th>
+          <th scope="col">Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of lineRows(); track row.sizeId + '-' + row.colourId) {
+          <tr>
+            <th scope="row">{{ names().sizeName(row.sizeId) }}</th>
+            <td>{{ names().colourName(row.colourId) }}</td>
+            <td>
+              <input
+                type="number"
+                min="0"
+                [attr.aria-label]="'Quantity for ' + names().sizeName(row.sizeId) + ', ' + names().colourName(row.colourId)"
+                [value]="row.qty"
+                (input)="onLineQtyInput(row.sizeId, row.colourId, $event)"
+              />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-field-errors [messages]="fieldErrors('Lines')" />
+  } @else if (form().controls.styleId.value) {
+    <p class="state-message">Loading the sizes and colours for this style…</p>
+  }
+
+  <div class="form-actions">
+    <button type="submit" class="button button--primary" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : 'Save' }}
+    </button>
+    <button type="button" class="button" (click)="cancelled.emit()">Cancel</button>
+  </div>
+</form>

@@ -1,0 +1,140 @@
+:host {
+  display: block;
+}
+
+.po-detail {
+  max-width: 48rem;
+}
+
+/* Number and status on one side, actions below on a phone and to the right on a tablet+. */
+.po-detail__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.po-detail__title h2 {
+  white-space: nowrap;
+  margin: 0 0 var(--space-2);
+}
+
+.po-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  flex: 1 1 100%;
+}
+
+.po-detail__actions .button {
+  flex: 1 1 8rem;
+}
+
+@media (min-width: 48rem) {
+  .po-detail__actions {
+    flex: 0 1 auto;
+    justify-content: flex-end;
+  }
+
+  .po-detail__actions .button {
+    flex: 0 0 auto;
+  }
+}
+
+.po-detail__facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 var(--space-5);
+  margin: 0 0 var(--space-5);
+}
+
+.po-detail__facts div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-2) 0;
+}
+
+.po-detail__facts dt {
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+}
+
+.po-detail__facts dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+  min-width: 0;
+}
+
+@media (min-width: 40rem) {
+  .po-detail__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.timeline {
+  list-style: none;
+  margin: 0 0 var(--space-5) var(--space-2);
+  padding: 0;
+  border-left: 2px solid var(--color-border-strong);
+}
+
+.timeline li {
+  position: relative;
+  padding: 0 0 var(--space-4) var(--space-5);
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-brass);
+}
+
+.timeline__status {
+  display: block;
+  font-weight: 600;
+}
+
+.timeline__meta {
+  display: block;
+  color: var(--color-ink-soft);
+  font-size: var(--text-xs);
+}
+
+.timeline__reason {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+}
+
+.cancel-panel {
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-6) 0 var(--space-4);
+  max-width: 24rem;
+}
+
+.cancel-panel h3 {
+  font-size: var(--text-base);
+  margin: 0 0 var(--space-2);
+}
+
+.cancel-panel .button {
+  margin-top: var(--space-3);
+}
+
+.back-link {
+  margin-top: var(--space-5);
+}
