@@ -37,6 +37,8 @@ test('Staff creates a PO, sends and confirms it, then amends it and the new term
   await page.getByLabel('1-2 Years × White target quantity').fill('20');
   await page.getByRole('button', { name: 'Save' }).click();
 
+  // The list is paged, so find the new style through the search box.
+  await page.getByPlaceholder('Search by code or name').fill(styleCode);
   await expect(page.getByRole('cell', { name: styleCode })).toBeVisible();
 
   // --- Vendor ---
@@ -51,6 +53,7 @@ test('Staff creates a PO, sends and confirms it, then amends it and the new term
   await page.getByRole('group', { name: 'Specialisations' }).getByLabel('Knits').check();
   await page.getByRole('button', { name: 'Save' }).click();
 
+  await page.getByPlaceholder('Search by name').fill(vendorName);
   await expect(page.getByRole('cell', { name: vendorName })).toBeVisible();
 
   // --- Purchase order ---

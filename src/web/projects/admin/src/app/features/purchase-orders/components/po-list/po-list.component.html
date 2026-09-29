@@ -1,0 +1,63 @@
+<div class="toolbar">
+  <label class="toolbar__select">
+    <span class="sr-only">Vendor</span>
+    <select [value]="vendorFilter() ?? ''" (change)="onVendorFilterChange($event)">
+      <option value="">All vendors</option>
+      @for (vendor of vendors(); track vendor.id) {
+        <option [value]="vendor.id">{{ vendor.name }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="toolbar__select">
+    <span class="sr-only">Status</span>
+    <select [value]="statusFilter() ?? ''" (change)="onStatusFilterChange($event)">
+      <option value="">All statuses</option>
+      @for (entry of statusLabels | keyvalue; track entry.key) {
+        <option [value]="entry.key">{{ entry.value }}</option>
+      }
+    </select>
+  </label>
+
+  <button type="button" class="button button--primary" (click)="raiseRequested.emit()">Raise PO</button>
+</div>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (loading()) {
+  <p class="state-message">Loading…</p>
+} @else if (orders().length === 0) {
+  <p class="state-message">No purchase orders found.</p>
+} @else {
+  <table class="responsive">
+    <caption class="sr-only">Purchase orders</caption>
+    <thead>
+      <tr>
+        <th scope="col">PO No.</th>
+        <th scope="col">Vendor</th>
+        <th scope="col">Expected delivery</th>
+        <th scope="col">Status</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of orders(); track order.id) {
+        <tr>
+          <td data-label="PO number">{{ order.poNo }}</td>
+          <td data-label="Vendor">{{ vendorName(order.vendorId) }}</td>
+          <td data-label="Expected delivery">{{ order.expectedDeliveryDate | appDate }}</td>
+          <td data-label="Status">
+            <span class="badge" [class.badge--muted]="order.statusId !== draftStatusId">
+              {{ statusLabels[order.statusId] }}
+            </span>
+          </td>
+          <td data-label="Actions">
+            <button type="button" class="button button--small" (click)="viewRequested.emit(order)">View</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

@@ -127,6 +127,7 @@ The API runs on http://localhost:5051 (`/health/live`, `/health/ready`).
 
 ## Conventions
 
+- **Code structure:** feature-first folders and naming rules for the API and the Angular admin app (NgRx store per feature, containers vs components) are in [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md). Follow them for any new feature.
 - Branches: `<JIRA-KEY>-<short-slug>`, e.g. `SCRUM-162-ef-core-wiring`. One Jira issue per branch.
 - Commits: start with `SCRUM-xxx: `. Author is Osama Shafique <osama.shafique11@gmail.com> (set per repo).
 - Jira workflow: Idea → To Do → In Progress → Testing → Done. Move an issue to In Progress when work starts, to Testing when its PR is open, and to Done when the PR is merged.

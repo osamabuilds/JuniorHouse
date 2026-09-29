@@ -1,0 +1,60 @@
+<form class="lookup-form" (ngSubmit)="submitted.emit()" [formGroup]="form()">
+  <h2>{{ mode() === 'create' ? 'Add' : 'Edit' }} {{ type().label }} value</h2>
+
+  @if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="lookup-code">Code</label>
+      <input id="lookup-code" type="text" formControlName="code" />
+      <app-control-errors [control]="form().controls.code" label="Code" kind="enter" />
+      <app-field-errors [messages]="fieldErrors('Code')" />
+    </div>
+
+    <div class="form-field">
+      <label for="lookup-name">Name</label>
+      <input id="lookup-name" type="text" formControlName="name" />
+      <app-control-errors [control]="form().controls.name" label="Name" kind="enter" />
+      <app-field-errors [messages]="fieldErrors('Name')" />
+    </div>
+
+    <div class="form-field form-field--wide">
+      <label for="lookup-description">Description</label>
+      <input id="lookup-description" type="text" formControlName="description" />
+      <app-control-errors [control]="form().controls.description" label="Description" kind="enter" />
+      <app-field-errors [messages]="fieldErrors('Description')" />
+    </div>
+
+    <div class="form-field">
+      <label for="lookup-sort">Sort order</label>
+      <input id="lookup-sort" type="number" formControlName="sortSeq" />
+      <app-control-errors [control]="form().controls.sortSeq" label="Sort order" kind="enter" />
+      <app-field-errors [messages]="fieldErrors('SortSeq')" />
+    </div>
+
+    @if (type().hasParent) {
+      <div class="form-field">
+        <label for="lookup-parent">Parent category id</label>
+        <input id="lookup-parent" type="number" formControlName="parentCategoryId" />
+        <app-control-errors [control]="form().controls.parentCategoryId" label="Parent category id" kind="enter" />
+      </div>
+    }
+
+    @if (type().hasAdvancePercent) {
+      <div class="form-field">
+        <label for="lookup-advance">Default advance %</label>
+        <input id="lookup-advance" type="number" step="0.01" formControlName="defaultAdvancePercent" />
+        <app-control-errors [control]="form().controls.defaultAdvancePercent" label="Default advance %" kind="enter" />
+      </div>
+    }
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button button--primary" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : 'Save' }}
+    </button>
+    <button type="button" class="button" (click)="cancelled.emit()">Cancel</button>
+  </div>
+</form>

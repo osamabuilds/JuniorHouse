@@ -1,0 +1,168 @@
+<div class="po-detail card">
+  <div class="po-detail__header">
+    <div class="po-detail__title">
+      <h2>{{ po().poNo }}</h2>
+      <span class="badge">{{ statusLabels[po().statusId] }}</span>
+    </div>
+    <div class="po-detail__actions">
+      @if (canEdit(po())) {
+        <button type="button" class="button" (click)="editRequested.emit()">Edit</button>
+      }
+      @if (canSend(po())) {
+        <button type="button" class="button button--primary" (click)="panelOpened.emit('send')">Send to Vendor</button>
+      }
+      @if (canRecordResponse(po())) {
+        <button type="button" class="button" (click)="panelOpened.emit('response')">Record vendor response</button>
+      }
+      @if (canAmend(po())) {
+        <button type="button" class="button" (click)="panelOpened.emit('amend')">Amend</button>
+      }
+      @if (po().statusId !== draftStatusId) {
+        <a class="button" [routerLink]="['/purchase-orders', po().id, 'vendor-view']" target="_blank">Vendor view</a>
+      }
+    </div>
+  </div>
+
+  <p class="banner banner--info" role="note">{{ statusHelp(po()) }}</p>
+
+  @if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  @if (panel() === 'send') {
+    <app-send-confirm
+      [po]="po()"
+      [hasTechPack]="hasTechPack()"
+      (confirmed)="sendConfirmed.emit($event)"
+      (dismissed)="panelClosed.emit()"
+    />
+  }
+
+  @if (panel() === 'response') {
+    <app-vendor-response-form
+      [names]="names()"
+      [po]="po()"
+      [currentRevisionNumber]="currentRevisionNumber()"
+      [channels]="channels()"
+      [reasons]="amendmentReasons()"
+      [fabricOptions]="fabricOptions()"
+      [cells]="styleCells()"
+      [files]="files()"
+      [error]="panelError()"
+      [saving]="panelSaving()"
+      (recorded)="vendorResponseRecorded.emit($event)"
+      (cancelled)="panelClosed.emit()"
+    />
+  }
+
+  @if (panel() === 'amend') {
+    <app-amend-form
+      [names]="names()"
+      [po]="po()"
+      [initiatorId]="1"
+      [cells]="styleCells()"
+      [reasons]="amendmentReasons()"
+      [fabricOptions]="fabricOptions()"
+      [files]="files()"
+      [error]="panelError()"
+      [saving]="panelSaving()"
+      (amended)="amended.emit($event)"
+      (cancelled)="panelClosed.emit()"
+    />
+  }
+
+  @if (pendingRevision(); as pending) {
+    <app-pending-revision-actions
+      [revision]="pending"
+      (accepted)="revisionAccepted.emit(pending)"
+      (rejected)="revisionRejected.emit({ revision: pending, note: $event })"
+      (withdrawn)="revisionWithdrawn.emit({ revision: pending, note: $event })"
+    />
+  }
+
+  <dl class="po-detail__facts">
+    <div><dt>Vendor</dt><dd>{{ vendorName(po().vendorId) }}</dd></div>
+    <div><dt>Unit cost</dt><dd>PKR {{ po().unitCost }}</dd></div>
+    <div><dt>Expected delivery</dt><dd>{{ po().expectedDeliveryDate | appDate }}</dd></div>
+    <div><dt>Latest acceptable delivery</dt><dd>{{ po().latestAcceptableDate | appDate }}</dd></div>
+    <div><dt>Extra pieces allowed</dt><dd>{{ po().overTolerancePercent ?? '—' }}{{ po().overTolerancePercent === null ? '' : '%' }}</dd></div>
+    <div><dt>Fewer pieces allowed</dt><dd>{{ po().underTolerancePercent ?? '—' }}{{ po().underTolerancePercent === null ? '' : '%' }}</dd></div>
+    <div><dt>Who supplies the fabric</dt><dd>{{ fabricName(po().fabricResponsibilityId) }}</dd></div>
+    <div><dt>Payment terms</dt><dd>{{ names().paymentTermName(po().paymentTermId) }}</dd></div>
+    <div><dt>Advance payment</dt><dd>{{ po().advancePercent }}%</dd></div>
+  </dl>
+
+  <h3>Lines</h3>
+  <table>
+    <caption class="sr-only">PO lines</caption>
+    <thead>
+      <tr>
+        <th scope="col">Size</th>
+        <th scope="col">Colour</th>
+        <th scope="col">Quantity</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (line of po().lines; track line.sizeId + '-' + line.colourId) {
+        <tr>
+          <td>{{ names().sizeName(line.sizeId) }}</td>
+          <td>{{ names().colourName(line.colourId) }}</td>
+          <td>{{ line.qty }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <h3>Status timeline</h3>
+  <ol class="timeline">
+    @for (entry of po().statusHistory; track entry.insrDte) {
+      <li>
+        <span class="timeline__status">{{ statusLabels[entry.poStatusId] }}</span>
+        <span class="timeline__meta">{{ entry.insrDte | appDate: "datetime" }} &middot; {{ entry.insrBy }}</span>
+        @if (entry.note) {
+          <span class="timeline__reason">{{ entry.note }}</span>
+        }
+        @if (entry.cancelReasonId) {
+          <span class="timeline__reason">Reason: {{ cancelReasonName(entry.cancelReasonId) }}</span>
+        }
+      </li>
+    }
+  </ol>
+
+  <app-po-files-panel
+    [statusId]="po().statusId"
+    [files]="files()"
+    [downloadUrlFor]="fileUrlFor()"
+    [error]="fileError()"
+    [uploading]="fileUploading()"
+    (uploadRequested)="fileUploadRequested.emit($event)"
+    (removeRequested)="fileRemoveRequested.emit($event)"
+  />
+
+  <app-revision-history
+    [names]="names()"
+    [revisions]="revisions()"
+    [downloadUrl]="evidenceUrl"
+    [reasons]="amendmentReasons()"
+    [channels]="channels()"
+    [fabricOptions]="fabricOptions()"
+  />
+
+  @if (canCancel(po())) {
+    <div class="cancel-panel">
+      <h3>Cancel this PO</h3>
+      <label for="cancel-reason">Reason</label>
+      <select id="cancel-reason" [value]="cancelReasonId() ?? ''" (change)="onCancelReasonChange($event)">
+        <option value="">Select a reason…</option>
+        @for (reason of cancelReasons(); track reason.id) {
+          <option [value]="reason.id">{{ reason.name }}</option>
+        }
+      </select>
+      <button type="button" class="button button--danger" [disabled]="cancelReasonId() === null" (click)="cancelRequested.emit()">
+        Cancel PO
+      </button>
+    </div>
+  }
+
+  <button type="button" class="button back-link" (click)="backRequested.emit()">Back to all purchase orders</button>
+</div>

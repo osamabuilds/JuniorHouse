@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Domain;
+using Romp.BuildingBlocks.Persistence.Auditing;
+using Romp.BuildingBlocks.Persistence.Outbox;
 
 namespace Romp.BuildingBlocks.Persistence.Tests;
 

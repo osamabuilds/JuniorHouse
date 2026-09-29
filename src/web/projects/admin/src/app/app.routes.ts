@@ -4,31 +4,18 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'reference-data' },
   {
     path: 'reference-data',
-    loadComponent: () =>
-      import('./reference-data/reference-data-page').then((m) => m.ReferenceDataPage),
-    title: 'Reference Data · Romp Admin',
+    loadChildren: () => import('@features/reference-data/reference-data.routes').then((m) => m.REFERENCE_DATA_ROUTES),
   },
   {
     path: 'styles',
-    loadComponent: () => import('./styles/styles-page').then((m) => m.StylesPage),
-    title: 'Styles · Romp Admin',
+    loadChildren: () => import('@features/styles/styles.routes').then((m) => m.STYLES_ROUTES),
   },
   {
     path: 'vendors',
-    loadComponent: () => import('./vendors/vendors-page').then((m) => m.VendorsPage),
-    title: 'Vendors · Romp Admin',
-  },
-  {
-    // SCRUM-93 task 51: what a vendor sees of a PO. The shell hides its navigation on this route.
-    path: 'purchase-orders/:id/vendor-view',
-    loadComponent: () =>
-      import('./purchase-orders/vendor-view-page').then((m) => m.VendorViewPage),
-    title: 'Purchase Order · Romp',
+    loadChildren: () => import('@features/vendors/vendors.routes').then((m) => m.VENDORS_ROUTES),
   },
   {
     path: 'purchase-orders',
-    loadComponent: () =>
-      import('./purchase-orders/purchase-orders-page').then((m) => m.PurchaseOrdersPage),
-    title: 'Purchase Orders · Romp Admin',
+    loadChildren: () => import('@features/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
   },
 ];

@@ -1,0 +1,82 @@
+<h1>Purchase Orders</h1>
+<p class="page-intro">
+  A purchase order (PO) is your order to a vendor to make one style. Choose the vendor and the style,
+  say how many of each size and colour you need, agree the price and delivery date, then send it.
+  After that, record what the vendor says and change the terms only through an amendment.
+</p>
+
+@if (mode() === 'list') {
+  <app-po-list
+    [orders]="orders()"
+    [vendors]="vendors()"
+    [loading]="loading()"
+    [error]="error()"
+    [vendorFilter]="vendorFilter()"
+    [statusFilter]="statusFilter()"
+    (vendorFilterChanged)="onVendorFilterChange($event)"
+    (statusFilterChanged)="onStatusFilterChange($event)"
+    (raiseRequested)="startCreate()"
+    (viewRequested)="openDetail($event)"
+  />
+  <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" (pageSizeChanged)="changePageSize($event)" />
+}
+
+@if (mode() === 'detail' && current(); as po) {
+  <app-po-detail
+    [po]="po"
+    [names]="names"
+    [vendors]="vendors()"
+    [error]="error()"
+    [panel]="panel()"
+    [panelSaving]="panelSaving()"
+    [panelError]="panelError()"
+    [hasTechPack]="hasTechPack()"
+    [currentRevisionNumber]="currentRevisionNumber()"
+    [pendingRevision]="pendingRevision()"
+    [revisions]="revisions()"
+    [files]="files()"
+    [styleCells]="styleCells()"
+    [channels]="channels()"
+    [amendmentReasons]="amendmentReasons()"
+    [fabricOptions]="fabricOptions()"
+    [cancelReasons]="cancelReasons()"
+    [cancelReasonId]="cancelReasonId()"
+    [fileUploading]="fileUploading()"
+    [fileError]="fileError()"
+    [fileUrlFor]="fileUrlFor"
+    (editRequested)="startEditDraft()"
+    (panelOpened)="openPanel($event)"
+    (panelClosed)="closePanel()"
+    (sendConfirmed)="send($event)"
+    (amended)="amend($event)"
+    (vendorResponseRecorded)="recordVendorResponse($event)"
+    (revisionAccepted)="acceptPending($event)"
+    (revisionRejected)="rejectPending($event)"
+    (revisionWithdrawn)="withdrawPending($event)"
+    (fileUploadRequested)="uploadFile($event)"
+    (fileRemoveRequested)="removeFile($event)"
+    (cancelReasonChanged)="chooseCancelReason($event)"
+    (cancelRequested)="cancel()"
+    (backRequested)="backToList()"
+  />
+}
+
+@if (mode() === 'create' || mode() === 'edit') {
+  <app-po-form
+    [form]="form"
+    [mode]="mode()"
+    [saving]="saving()"
+    [error]="error()"
+    [names]="names"
+    [vendors]="vendors()"
+    [styles]="styles()"
+    [paymentTerms]="paymentTerms()"
+    [fabricOptions]="fabricOptions()"
+    [lineRows]="lineRows()"
+    (submitted)="save()"
+    (cancelled)="cancelForm()"
+    (vendorChanged)="onVendorChange($event)"
+    (styleChanged)="onStyleChange($event)"
+    (lineQtyChanged)="setLineQty($event)"
+  />
+}

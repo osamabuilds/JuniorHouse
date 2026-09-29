@@ -1,0 +1,33 @@
+@if (loading()) {
+  <p class="state-message">Loading…</p>
+} @else if (vendors().length === 0) {
+  <p class="state-message">No vendors found.</p>
+} @else {
+  <table class="responsive">
+    <caption class="sr-only">Vendors</caption>
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">City</th>
+        <th scope="col">Status</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (vendor of vendors(); track vendor.id) {
+        <tr>
+          <td data-label="Name">{{ vendor.name }}</td>
+          <td data-label="City">{{ cityName(vendor.cityId) }}</td>
+          <td data-label="Status">
+            <span class="badge" [class.badge--muted]="!vendor.isActive">
+              {{ vendor.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td data-label="Actions">
+            <button type="button" class="button button--small" (click)="edit.emit(vendor)">Edit</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

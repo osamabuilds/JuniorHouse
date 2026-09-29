@@ -1,0 +1,64 @@
+<h1>Styles</h1>
+<p class="page-intro">
+  A style is one product design you make, such as a dress. Set its colours and sizes and how many
+  you plan to make of each. Purchase orders are raised against a style.
+</p>
+
+@if (mode() === 'list') {
+  <div class="toolbar">
+    <label class="toolbar__search">
+      <span class="sr-only">Search</span>
+      <input
+        type="search"
+        placeholder="Search by code or name"
+        [value]="searchText()"
+        (input)="onSearchInput($event)"
+      />
+    </label>
+
+    <label class="toolbar__select">
+      <span class="sr-only">Category</span>
+      <select [value]="categoryFilter() ?? ''" (change)="onCategoryFilterChange($event)">
+        <option value="">All categories</option>
+        @for (category of categories(); track category.id) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="toolbar__checkbox">
+      <input type="checkbox" [checked]="activeOnly()" (change)="toggleActiveOnly()" />
+      Active only
+    </label>
+
+    <button type="button" class="button button--primary" (click)="startCreate()">Add style</button>
+  </div>
+
+  @if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  <app-style-table [styles]="styles()" [loading]="loading()" [categories]="categories()" (edit)="startEdit($event)" />
+  <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" (pageSizeChanged)="changePageSize($event)" />
+} @else {
+  <app-style-form
+    [form]="form"
+    [mode]="mode()"
+    [saving]="saving()"
+    [error]="error()"
+    [categories]="categories()"
+    [genders]="genders()"
+    [ageBrackets]="ageBrackets()"
+    [fabrics]="fabrics()"
+    [colours]="colours()"
+    [sizes]="sizes()"
+    [selectedColourIds]="selectedColourIds()"
+    [selectedSizeIds]="selectedSizeIds()"
+    [gridRows]="gridRows()"
+    (submitted)="save()"
+    (cancelled)="cancelEdit()"
+    (colourToggled)="toggleColour($event)"
+    (sizeToggled)="toggleSize($event)"
+    (qtyChanged)="setQty($event)"
+  />
+}

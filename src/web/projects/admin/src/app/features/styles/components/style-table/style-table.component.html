@@ -1,0 +1,35 @@
+@if (loading()) {
+  <p class="state-message">Loading…</p>
+} @else if (styles().length === 0) {
+  <p class="state-message">No styles found.</p>
+} @else {
+  <table class="responsive">
+    <caption class="sr-only">Styles</caption>
+    <thead>
+      <tr>
+        <th scope="col">Code</th>
+        <th scope="col">Name</th>
+        <th scope="col">Category</th>
+        <th scope="col">Status</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (style of styles(); track style.id) {
+        <tr>
+          <td data-label="Code">{{ style.code }}</td>
+          <td data-label="Name">{{ style.name }}</td>
+          <td data-label="Category">{{ categoryName(style.categoryId) }}</td>
+          <td data-label="Status">
+            <span class="badge" [class.badge--muted]="!style.isActive">
+              {{ style.isActive ? 'Active' : 'Retired' }}
+            </span>
+          </td>
+          <td data-label="Actions">
+            <button type="button" class="button button--small" (click)="edit.emit(style)">Edit</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

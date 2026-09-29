@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Romp.Modules.Reference.Infrastructure;
+using Romp.BuildingBlocks.Domain;
+using Romp.Modules.Reference.Infrastructure.Persistence;
 
 #nullable disable
 
@@ -25,7 +26,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.AgeBracketLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.AgeBracketLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -109,7 +110,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.CategoryLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.CategoryLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -207,7 +208,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.CityLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.CityLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -307,7 +308,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.ColourLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.ColourLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -415,7 +416,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.FabricLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.FabricLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -507,7 +508,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.GenderLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.GenderLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -575,7 +576,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.PaymentTermLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.PaymentTermLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -659,7 +660,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.PoCancelReasonLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.PoCancelReasonLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -751,7 +752,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.PoStatusLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.PoStatusLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -827,7 +828,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.SizeLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.SizeLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -951,7 +952,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.VendorSpecialisationLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.VendorSpecialisationLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -1019,9 +1020,9 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.CategoryLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.CategoryLookup", b =>
                 {
-                    b.HasOne("Romp.Modules.Reference.Domain.CategoryLookup", null)
+                    b.HasOne("Romp.Modules.Reference.Domain.Lookups.Apparel.CategoryLookup", null)
                         .WithMany()
                         .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.Restrict)

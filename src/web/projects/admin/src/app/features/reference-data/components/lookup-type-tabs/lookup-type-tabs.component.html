@@ -1,0 +1,14 @@
+<div class="lookup-tabs" role="tablist" aria-label="Lookup type">
+  @for (type of types(); track type.key) {
+    <button
+      type="button"
+      role="tab"
+      [id]="'tab-' + type.key"
+      [attr.aria-selected]="selectedKey() === type.key"
+      [class.is-active]="selectedKey() === type.key"
+      (click)="typeSelected.emit(type)"
+    >
+      {{ type.label }}
+    </button>
+  }
+</div>
