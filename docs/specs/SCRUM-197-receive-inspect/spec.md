@@ -1,6 +1,6 @@
 # SCRUM-197: Receive & Inspect (goods receipt, QC, vendor scorecard)
 
-- **Status:** Draft (awaiting approval; open questions Q1–Q10 are unresolved, recommended defaults are proposals only)
+- **Status:** Approved to build (2026-09-30). The owner said "complete the sprint" without answering Q1-Q10 individually, so every recommended default below is adopted as the working decision and is recorded as such in Implementation notes; any of them can still be overturned by the owner
 - **Jira:** SCRUM-197 (provisional key for the spec/plan gate; real keys are assigned when the Sprint 4 tickets are created; next free is SCRUM-197). Build tickets sit under epic SCRUM-15 "[Module] Quality Control (QC)". SCRUM-94 (FR-SC-04) is completed here (GRN half; delivery-note half was Sprint 3). SCRUM-95 (FR-SC-05) and SCRUM-91's scorecard remainder are linked.
 - **BRD sections:** §5.11 (Quality Control & Goods Receipt), §7.10 (FR-SC), §9.10 (QC module, event catalogue), §12.11 (Production & QC tables)
 - **Requirement IDs:** FR-SC-04 (GRN half), FR-SC-05, FR-SC-01 (scorecard clause), NFR-SC-05, NFR-FT-08, NFR-17, NFR-19. No `TC-*` cases exist in the BRD for this area, so every acceptance criterion below is derived from the BRD text and is marked `(new)` where the BRD is silent.
