@@ -21,7 +21,7 @@
     <!-- Pinned to the same EF Core version as Design/Npgsql above, for the same reason. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.4" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.15.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
     <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
