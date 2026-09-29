@@ -61,7 +61,10 @@ import { todayInPakistan } from '../../utils';
 
       <fieldset>
         <legend>Pieces in this shipment</legend>
-        <table class="line-grid">
+        <table class="responsive line-grid">
+          <caption class="sr-only">
+            Pieces in this shipment
+          </caption>
           <thead>
             <tr>
               <th scope="col">Size</th>
@@ -74,11 +77,11 @@ import { todayInPakistan } from '../../utils';
           <tbody>
             @for (row of quantities(); track row.sizeId + '-' + row.colourId) {
               <tr>
-                <td>{{ names().sizeName(row.sizeId) }}</td>
-                <td>{{ names().colourName(row.colourId) }}</td>
-                <td>{{ row.ordered }}</td>
-                <td>{{ row.shipped }}</td>
-                <td>
+                <td data-label="Size">{{ names().sizeName(row.sizeId) }}</td>
+                <td data-label="Colour">{{ names().colourName(row.colourId) }}</td>
+                <td data-label="Ordered">{{ row.ordered }}</td>
+                <td data-label="Sent before">{{ row.shipped }}</td>
+                <td data-label="In this shipment">
                   <label class="sr-only" [for]="'dn-qty-' + row.sizeId + '-' + row.colourId">
                     Pieces of {{ names().sizeName(row.sizeId) }} {{ names().colourName(row.colourId) }} in this shipment
                   </label>

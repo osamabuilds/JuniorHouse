@@ -65,7 +65,7 @@ public sealed class VendorModule : IModule
         // Vndr:PoFileStorage:RootPath (e.g. a mounted volume in Docker Compose).
         services.AddSingleton(new PoFileStorageOptions
         {
-            RootPath = configuration.GetValue("Vndr:PoFileStorage:RootPath", new PoFileStorageOptions().RootPath)!,
+            RootPath = configuration.GetValue("Storage:RootPath", configuration.GetValue("Vndr:PoFileStorage:RootPath", new PoFileStorageOptions().RootPath))!,
             MaxFileSizeBytes = configuration.GetValue("Vndr:PoFileStorage:MaxFileSizeBytes", new PoFileStorageOptions().MaxFileSizeBytes),
             MaxFilesPerPo = configuration.GetValue("Vndr:PoFileStorage:MaxFilesPerPo", new PoFileStorageOptions().MaxFilesPerPo),
         });

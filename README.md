@@ -117,6 +117,43 @@ with the vendor's counter-proposal already waiting as a Pending revision.
 Uploaded PO files live in the `po-files` Docker volume. Validation problems name the actual rule
 that was broken (for example "A channel is required.") instead of a generic message.
 
+## Try Sprint 3 (production tracking)
+
+Sprint 3 follows a purchase order after the vendor acknowledges it: milestones, the pre-production
+sample gate, expected completion and vendor delivery notes (`docs/specs/SCRUM-183-production-tracking/`).
+Same stack (`docker compose up -d --build`). The demo seed adds six more purchase orders, **PO-2026-90002**
+to **PO-2026-90007**, one in each production state.
+
+**Demo script** (admin app, **Production** in the top navigation):
+
+1. **See every run.** The list shows each acknowledged PO with its sample, expected completion and what has
+   shipped. Warnings are written out ("At risk of being late", "Delivered short"), never colour alone.
+   Filter by PO number, status or *At risk of being late*.
+2. **Open PO-2026-90003** (a sample rejected once, then approved). The *Pre-production sample* section shows
+   round 1 with the reason it was rejected and round 2 approved. Only now can bulk cutting be recorded.
+3. **Try the gate.** Open **PO-2026-90002** (no sample yet), choose *Record a milestone*: *Bulk cutting started* is
+   listed but greyed out with the reason. *Record a sample*, then decide it (rejecting needs a reason), attach a
+   photo, approve, and record bulk cutting.
+4. **Watch the PO follow.** Bulk cutting moves the purchase order to *In Production*, and delivery notes move it to
+   *Partially Delivered* and *Delivered*. PROD and VNDR never touch each other's data: events cross between them
+   through the outbox, so the PO catches up a few seconds later. The footer's *Background updates* line says
+   whether anything is waiting or stuck (`GET /api/admin/outbox`).
+5. **Record deliveries.** On **PO-2026-90005** (partially delivered) record another delivery note. The form shows
+   what was ordered and what has already shipped. Tick *final shipment* to say nothing more is coming; a short
+   final shipment still counts as Delivered but is flagged "Short by N pieces". More than the allowance is recorded
+   and flagged "Over by N pieces", never refused.
+6. **Close it.** **PO-2026-90006** is Delivered (short, final shipment). Open the PO and choose *Close order*.
+   Closing is always manual.
+7. **Cancel after production started.** **PO-2026-90007** was cancelled in production. On another In Production PO,
+   *Cancel PO* shows a prominent warning and needs a tick to confirm you understand the vendor may have spent
+   money; the reason *Cancelled after production started* is offered.
+8. **Amend after a sample was approved.** Amending an order whose sample was approved shows a "costly for the
+   vendor" notice. A change to fabric supplier, colour or files also says a new sample is strongly recommended
+   (and the run then shows that as a warning); a change to price, dates or terms says a new sample is optional.
+
+Every action asks for your name (kept in this browser for next time), because there is no sign-in until Sprint 8.
+Settings: `Prod__RecordedLateDays` (default 3) and `Prod__AtRiskBufferDays` (default 7) in `docker-compose.yml`.
+
 ## Tests
 
 ```bash

@@ -94,7 +94,11 @@ export interface TestPo {
 export type PoStage = 'draft' | 'sent' | 'acknowledged';
 
 /** Raises a PO through the API and walks it to `stage`. A Draft has valid commercial terms so it can be sent. */
-export async function createPo(request: APIRequestContext, stage: PoStage = 'draft'): Promise<TestPo> {
+export async function createPo(
+  request: APIRequestContext,
+  stage: PoStage = 'draft',
+  options: { fabricResponsibilityId?: number } = {},
+): Promise<TestPo> {
   const style = await createStyle(request);
   const vendor = await createVendor(request);
   const created = await ok<{ id: number; poNo: string; paymentTermId: number; advancePercent: number }>(
@@ -120,7 +124,7 @@ export async function createPo(request: APIRequestContext, stage: PoStage = 'dra
         latestAcceptableDate: '2026-12-15',
         overTolerancePercent: 5,
         underTolerancePercent: 5,
-        fabricResponsibilityId: 1,
+        fabricResponsibilityId: options.fabricResponsibilityId ?? 1,
       },
     }),
     'set PO terms',
@@ -156,4 +160,115 @@ export async function fillAmendment(page: Page, options: { unitCost?: string; no
   if (options.unitCost) {
     await page.locator('#amend-unit-cost').fill(options.unitCost);
   }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Sprint 3 (production tracking)
+// ---------------------------------------------------------------------------------------------
+
+/** Today in Pakistan time (UTC+5): the day the API treats as "today" for milestone and delivery dates. */
+export const today = (offsetDays = 0): string => new Date(Date.now() + 5 * 3600 * 1000 + offsetDays * 86400 * 1000).toISOString().slice(0, 10);
+
+/** Repeats `check` until it returns a value or the time runs out. The outbox dispatcher delivers events every few seconds. */
+async function poll<T>(check: () => Promise<T | null>, what: string, timeoutMs = 45_000): Promise<T> {
+  const started = Date.now();
+  for (;;) {
+    const value = await check();
+    if (value !== null) {
+      return value;
+    }
+    if (Date.now() - started > timeoutMs) {
+      throw new Error(`Timed out waiting for ${what}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
+
+/** The production run opens by itself once the acknowledge event reaches PROD; wait for it. */
+export async function waitForRun(request: APIRequestContext, poId: number): Promise<number> {
+  return poll(async () => {
+    const response = await request.get(`${API}/api/production/runs/by-po/${poId}`);
+    return response.ok() ? ((await response.json()) as { id: number }).id : null;
+  }, `the production run of PO ${poId}`);
+}
+
+/** Waits until the PO reaches a status (PROD's events change it a moment after the action). */
+export async function waitForPoStatus(request: APIRequestContext, poId: number, statusId: number): Promise<void> {
+  await poll(async () => {
+    const po = (await (await request.get(`${API}/api/purchase-orders/${poId}`)).json()) as { statusId: number };
+    return po.statusId === statusId ? true : null;
+  }, `PO ${poId} to reach status ${statusId}`);
+}
+
+export interface TestRun {
+  po: TestPo;
+  runId: number;
+}
+
+/** An acknowledged PO with its production run open. */
+export async function createRun(request: APIRequestContext, options: { fabricResponsibilityId?: number } = {}): Promise<TestRun> {
+  const po = await createPo(request, 'acknowledged', options);
+  return { po, runId: await waitForRun(request, po.id) };
+}
+
+export const PERSON = 'E2E Buyer';
+
+export async function apiSubmitAndApproveSample(request: APIRequestContext, runId: number): Promise<void> {
+  await ok(await request.post(`${API}/api/production/runs/${runId}/pp-rounds`, { data: { reportedBy: 'E2E Vendor', actingPerson: PERSON } }), 'submit sample');
+  const rounds = await ok<{ roundNo: number }[]>(await request.get(`${API}/api/production/runs/${runId}/pp-rounds`), 'list rounds');
+  await ok(
+    await request.post(`${API}/api/production/runs/${runId}/pp-rounds/${rounds.at(-1)!.roundNo}/decision`, { data: { approve: true, actingPerson: PERSON } }),
+    'approve sample',
+  );
+}
+
+export async function apiStartCutting(request: APIRequestContext, runId: number): Promise<void> {
+  await ok(
+    await request.post(`${API}/api/production/runs/${runId}/milestones`, {
+      data: { typeId: 6, claimedDate: today(), reportedBy: 'E2E Vendor', actingPerson: PERSON },
+    }),
+    'start bulk cutting',
+  );
+}
+
+/** A run whose sample is approved and whose bulk cutting has started (the PO is In Production once the event is delivered). */
+export async function createRunInProduction(request: APIRequestContext, options: { fabricResponsibilityId?: number } = {}): Promise<TestRun> {
+  const run = await createRun(request, options);
+  await apiSubmitAndApproveSample(request, run.runId);
+  await apiStartCutting(request, run.runId);
+  await waitForPoStatus(request, run.po.id, 5);
+  return run;
+}
+
+export async function apiDeliver(
+  request: APIRequestContext,
+  run: TestRun,
+  dnNo: string,
+  qty: number,
+  isFinalShipment = false,
+): Promise<void> {
+  await ok(
+    await request.post(`${API}/api/production/runs/${run.runId}/delivery-notes`, {
+      data: {
+        vendorDnNo: dnNo,
+        dispatchDate: today(),
+        isFinalShipment,
+        lines: [{ sizeId: run.po.sizeId, colourId: run.po.colourId, qty }],
+        actingPerson: PERSON,
+      },
+    }),
+    `deliver ${dnNo}`,
+  );
+}
+
+/** Opens a run's screen. */
+export async function openRun(page: Page, run: TestRun): Promise<void> {
+  await page.goto(`/production/${run.runId}`);
+  await expect(page.getByRole('heading', { level: 1, name: `Production: ${run.po.poNo}` })).toBeVisible();
+}
+
+/** Opens a PO's screen straight from a link, the way the Production screen does. */
+export async function openPoById(page: Page, po: TestPo): Promise<void> {
+  await page.goto(`/purchase-orders?po=${po.id}`);
+  await expect(page.getByRole('heading', { name: po.poNo })).toBeVisible();
 }

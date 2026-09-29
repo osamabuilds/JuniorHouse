@@ -75,7 +75,10 @@ import { milestoneChoices, todayInPakistan } from '../../utils';
       @if (isFinished()) {
         <fieldset>
           <legend>How many are finished? (optional)</legend>
-          <table class="line-grid">
+          <table class="responsive line-grid">
+            <caption class="sr-only">
+              Finished pieces
+            </caption>
             <thead>
               <tr>
                 <th scope="col">Size</th>
@@ -87,10 +90,10 @@ import { milestoneChoices, todayInPakistan } from '../../utils';
             <tbody>
               @for (row of run().quantities; track row.sizeId + '-' + row.colourId) {
                 <tr>
-                  <td>{{ names().sizeName(row.sizeId) }}</td>
-                  <td>{{ names().colourName(row.colourId) }}</td>
-                  <td>{{ row.ordered }}</td>
-                  <td>
+                  <td data-label="Size">{{ names().sizeName(row.sizeId) }}</td>
+                  <td data-label="Colour">{{ names().colourName(row.colourId) }}</td>
+                  <td data-label="Ordered">{{ row.ordered }}</td>
+                  <td data-label="Finished">
                     <label class="sr-only" [for]="'ms-fin-' + row.sizeId + '-' + row.colourId">
                       Finished {{ names().sizeName(row.sizeId) }} {{ names().colourName(row.colourId) }}
                     </label>

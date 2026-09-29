@@ -111,7 +111,7 @@ if (app.Environment.IsDevelopment())
     // (README) wants them there without an extra manual step.
     if (builder.Configuration.GetValue("Demo:SeedSampleData", false))
     {
-        await DemoDataSeeder.SeedAsync(catalogContext, vendorContext, CancellationToken.None);
+        await DemoDataSeeder.SeedAsync(catalogContext, vendorContext, productionContext, CancellationToken.None);
     }
 }
 

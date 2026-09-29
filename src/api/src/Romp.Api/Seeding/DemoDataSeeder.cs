@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Catalog.Domain.Styles;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
+using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Domain.PurchaseOrders;
 using Romp.Modules.Vendor.Domain.Vendors;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
@@ -16,7 +17,8 @@ namespace Romp.Api.Seeding;
 /// </summary>
 internal static class DemoDataSeeder
 {
-    public static async Task SeedAsync(CatalogDbContext catalogContext, VendorDbContext vendorContext, CancellationToken cancellationToken)
+    public static async Task SeedAsync(
+        CatalogDbContext catalogContext, VendorDbContext vendorContext, ProductionDbContext productionContext, CancellationToken cancellationToken)
     {
         if (!await catalogContext.Styles.AnyAsync(cancellationToken))
         {
@@ -59,6 +61,7 @@ internal static class DemoDataSeeder
         }
 
         await SeedSampleAmendmentAsync(catalogContext, vendorContext, cancellationToken);
+        await DemoProductionSeeder.SeedAsync(catalogContext, vendorContext, productionContext, cancellationToken);
     }
 
     /// <summary>

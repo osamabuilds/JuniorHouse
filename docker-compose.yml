@@ -45,6 +45,11 @@ services:
       # SCRUM-175 "Try Sprint 1": a few sample styles/vendors, so the demo isn't an empty admin app.
       # Idempotent (DemoDataSeeder) - safe to leave on every `docker compose up`.
       Demo__SeedSampleData: "true"
+      # Sprint 3 (SCRUM-183): production tracking settings. These are the defaults, listed so they are easy to find and change.
+      # A milestone recorded more than this many days after its claimed date is shown as "recorded late".
+      Prod__RecordedLateDays: "3"
+      # A run is "at risk" when its expected completion is later than the latest acceptable delivery date minus this many days.
+      Prod__AtRiskBufferDays: "7"
     volumes:
       - po-files:/data/po-files
     ports:

@@ -174,3 +174,24 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | | | | visible (e.g. vendor-visible) | VSBL |
 | latest | LATE | | warehouse | WHSE |
 | lead time | LEAD | | year | YR |
+
+### Added in Sprint 3 (SCRUM-183, Production Tracking)
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| acting (the person acting) | ACTR | | new | NEW |
+| change | CHNG | | old | OLD |
+| completion | CMPL | | pre-production | PP |
+| construction | CNST | | recommended | RECM |
+| cutting | CUT | | recorded | RCRD |
+| decision | DCSN | | reporter | RPTR |
+| delay | DLAY | | resample | RSMP |
+| delivery note | DN | | Romp (the company) | ROMP |
+| dispatch | DSPT | | round | RND |
+| final | FNL | | shipment | SHIP |
+| finished | FNSH | | short (short of the ordered quantity) | SHRT |
+| flag | FLAG | | start / started | STRT |
+| | | | submitted | SUBM |
+| | | | superseded | SUPR |
+| | | | timing | TMNG |
+| | | | without | WOUT |

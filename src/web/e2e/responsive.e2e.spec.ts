@@ -1,5 +1,40 @@
 import { Page, expect, test } from '@playwright/test';
-import { PoStage, TestPo, createPo, openPo } from './support';
+import {
+  PERSON,
+  PoStage,
+  TestPo,
+  TestRun,
+  apiDeliver,
+  createPo,
+  createRun,
+  createRunInProduction,
+  openPo,
+  openPoById,
+  openRun,
+  waitForPoStatus,
+} from './support';
+
+const API_URL = process.env['API_BASE_URL'] ?? 'http://localhost:8080';
+
+interface DemoRuns {
+  fresh: TestRun;
+  sampleWaiting: TestRun;
+  busy: TestRun;
+}
+
+/** Three runs in different states, created once and shared by every viewport (each needs the outbox dispatcher, which takes seconds). */
+let sharedRuns: Promise<DemoRuns> | undefined;
+const demoRuns = (request: import('@playwright/test').APIRequestContext): Promise<DemoRuns> =>
+  (sharedRuns ??= (async () => {
+    const fresh = await createRun(request);
+    const sampleWaiting = await createRun(request);
+    await request.post(`${API_URL}/api/production/runs/${sampleWaiting.runId}/pp-rounds`, { data: { reportedBy: 'E2E Vendor', actingPerson: PERSON } });
+    const busy = await createRunInProduction(request);
+    await apiDeliver(request, busy, 'DN-LAYOUT-1', 120); // over the allowance
+    await apiDeliver(request, busy, 'DN-LAYOUT-2', 5, true); // final shipment
+    await waitForPoStatus(request, busy.po.id, 7);
+    return { fresh, sampleWaiting, busy };
+  })());
 
 /**
  * Layout checks for every admin screen at phone, tablet and desktop widths: nothing may make the
@@ -19,7 +54,7 @@ const VIEWPORTS = [
 
 interface Screen {
   name: string;
-  open: (page: Page, pos: Record<PoStage, TestPo>) => Promise<void>;
+  open: (page: Page, pos: Record<PoStage, TestPo>, runs: DemoRuns) => Promise<void>;
 }
 
 const screens: Screen[] = [
@@ -38,6 +73,16 @@ const screens: Screen[] = [
   { name: 'acknowledged PO', open: async (p, pos) => { await openPo(p, pos.acknowledged); } },
   { name: 'amendment form', open: async (p, pos) => { await openPo(p, pos.acknowledged); await p.getByRole('button', { name: 'Amend', exact: true }).click(); await expect(p.locator('app-amend-form')).toBeVisible(); } },
   { name: 'PO with a pending amendment', open: async (p, pos) => { await openPo(p, pos.pending); await expect(p.getByRole('heading', { name: /awaits a decision/ })).toBeVisible(); } },
+  { name: 'production list', open: async (p) => { await p.goto('/production'); await expect(p.locator('app-run-table table')).toBeVisible(); } },
+  { name: 'run with nothing recorded', open: async (p, _pos, r) => { await openRun(p, r.fresh); } },
+  { name: 'milestone form', open: async (p, _pos, r) => { await openRun(p, r.fresh); await p.getByRole('button', { name: 'Record a milestone' }).click(); await expect(p.locator('app-milestone-form')).toBeVisible(); } },
+  { name: 'finished quantity milestone form', open: async (p, _pos, r) => { await openRun(p, r.busy); await p.getByRole('button', { name: 'Record a milestone' }).click(); await p.locator('#ms-type').selectOption({ label: 'Finished and ready to ship' }); await expect(p.locator('#ms-fin-' + r.busy.po.sizeId + '-' + r.busy.po.colourId)).toBeVisible(); } },
+  { name: 'sample form', open: async (p, _pos, r) => { await openRun(p, r.fresh); await p.getByRole('button', { name: 'Record a sample' }).click(); await expect(p.locator('#sample-date')).toBeVisible(); } },
+  { name: 'run with a sample waiting for a decision', open: async (p, _pos, r) => { await openRun(p, r.sampleWaiting); await expect(p.locator('.decide')).toBeVisible(); } },
+  { name: 'run in production with deliveries and warnings', open: async (p, _pos, r) => { await openRun(p, r.busy); await expect(p.locator('app-delivery-note-list article').first()).toBeVisible(); } },
+  { name: 'delivery note form', open: async (p, _pos, r) => { await openRun(p, r.busy); await p.getByRole('button', { name: 'Record a delivery note' }).click(); await expect(p.locator('#dn-no')).toBeVisible(); } },
+  { name: 'expected completion form', open: async (p, _pos, r) => { await openRun(p, r.busy); await p.getByRole('button', { name: 'Set the date' }).click(); await expect(p.locator('#expected-date')).toBeVisible(); } },
+  { name: 'delivered PO with its Close button', open: async (p, _pos, r) => { await openPoById(p, r.busy.po); await expect(p.locator('.po-detail__title .badge')).toContainText('Delivered'); } },
   { name: 'vendor view', open: async (p, pos) => { await p.goto(`/purchase-orders/${pos.acknowledged.id}/vendor-view`); await expect(p.locator('article.vv h1')).toBeVisible(); } },
 ];
 
@@ -47,7 +92,10 @@ for (const viewport of VIEWPORTS) {
     const isPhone = viewport.width < 640;
 
     let pos: Record<PoStage | 'pending', TestPo>;
+    let runs: DemoRuns;
     test.beforeAll(async ({ request }) => {
+      test.setTimeout(240_000);
+      runs = await demoRuns(request);
       pos = {
         draft: await createPo(request, 'draft'),
         sent: await createPo(request, 'sent'),
@@ -78,7 +126,7 @@ for (const viewport of VIEWPORTS) {
 
     for (const screen of screens) {
       test(`${screen.name}: fits the screen, is usable and well structured`, async ({ page }) => {
-        await screen.open(page, pos);
+        await screen.open(page, pos, runs);
         await page.waitForTimeout(250); // let lookups fill in names
 
         const report = await page.evaluate((phone) => {
@@ -167,10 +215,10 @@ test.describe('phone specifics', () => {
     expect(box!.x + box!.width).toBeLessThanOrEqual(375);
   });
 
-  test('the navigation stays reachable: all four links are visible without scrolling sideways', async ({ page }) => {
+  test('the navigation stays reachable: all five links are visible without scrolling sideways', async ({ page }) => {
     await page.goto('/vendors');
 
-    for (const name of ['Reference Data', 'Styles', 'Vendors', 'Purchase Orders']) {
+    for (const name of ['Reference Data', 'Styles', 'Vendors', 'Purchase Orders', 'Production']) {
       const link = page.getByRole('navigation').getByRole('link', { name });
       await expect(link).toBeVisible();
       const box = await link.boundingBox();
