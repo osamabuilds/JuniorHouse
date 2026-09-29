@@ -8,6 +8,16 @@ public sealed class AqlSampleRow
         CodeLetter = string.Empty;
     }
 
+    public AqlSampleRow(short id, short inspectionLevelId, int lotMinQty, int lotMaxQty, string codeLetter, int sampleQty)
+    {
+        Id = id;
+        InspectionLevelId = inspectionLevelId;
+        LotMinQty = lotMinQty;
+        LotMaxQty = lotMaxQty;
+        CodeLetter = codeLetter;
+        SampleQty = sampleQty;
+    }
+
     public short Id { get; private set; }
 
     public short InspectionLevelId { get; private set; }
@@ -27,6 +37,15 @@ public sealed class AqlLimitRow
     private AqlLimitRow()
     {
         CodeLetter = string.Empty;
+    }
+
+    public AqlLimitRow(short id, string codeLetter, short aqlLevelId, int acceptNo, int rejectNo)
+    {
+        Id = id;
+        CodeLetter = codeLetter;
+        AqlLevelId = aqlLevelId;
+        AcceptNo = acceptNo;
+        RejectNo = rejectNo;
     }
 
     public short Id { get; private set; }

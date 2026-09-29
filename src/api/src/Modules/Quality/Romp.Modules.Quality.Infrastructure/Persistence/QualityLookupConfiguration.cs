@@ -6,6 +6,9 @@ namespace Romp.Modules.Quality.Infrastructure.Persistence;
 /// <summary>The thirteen system-owned QC lookups (docs/db/naming.md standard lookup shape), seeded by migration. The codes are the stable keys code refers to.</summary>
 internal static class QualityLookupConfiguration
 {
+    // The special inspection levels have no seeded sampling plan yet, so they are retired (ACT_IND false) rather than offered and failing.
+    private static readonly HashSet<string> SpecialLevelsWithoutPlan = ["S1", "S2", "S3", "S4"];
+
     public static void Apply(ModelBuilder modelBuilder)
     {
         Configure<GrnStatusLookup>(modelBuilder, "GRN_STS_LKP",
@@ -106,7 +109,7 @@ internal static class QualityLookupConfiguration
         var builder = ConfigureShape<TLookup>(modelBuilder, tableName);
         builder.HasData(rows.Select(r => (object)new
         {
-            Id = r.Id, Code = r.Code, Name = r.Name, Description = (string?)null, SortSeq = r.Id, IsActive = true,
+            Id = r.Id, Code = r.Code, Name = r.Name, Description = (string?)null, SortSeq = r.Id, IsActive = !SpecialLevelsWithoutPlan.Contains(r.Code),
         }).ToArray());
     }
 

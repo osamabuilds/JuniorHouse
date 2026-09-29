@@ -11,7 +11,9 @@ using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Production.Contracts;
 using Romp.Modules.Quality.Application.Abstractions;
 using Romp.Modules.Quality.Contracts;
+using Romp.Modules.Quality.Infrastructure.Batches;
 using Romp.Modules.Quality.Infrastructure.InboundDeliveries;
+using Romp.Modules.Quality.Infrastructure.Inspections;
 using Romp.Modules.Quality.Infrastructure.Outcomes;
 using Romp.Modules.Quality.Infrastructure.Persistence;
 using Romp.Modules.Quality.Infrastructure.Receiving;
@@ -75,5 +77,7 @@ public sealed class QualityModule : IModule
     {
         endpoints.MapInboundDeliveryEndpoints();
         endpoints.MapGoodsReceiptEndpoints();
+        endpoints.MapQcBatchEndpoints();
+        endpoints.MapInspectionEndpoints();
     }
 }

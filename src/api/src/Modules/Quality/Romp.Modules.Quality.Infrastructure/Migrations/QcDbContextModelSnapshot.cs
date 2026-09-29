@@ -1239,7 +1239,7 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         {
                             Id = (short)1,
                             Code = "S1",
-                            IsActive = true,
+                            IsActive = false,
                             Name = "Special level S-1",
                             SortSeq = (short)1
                         },
@@ -1247,7 +1247,7 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         {
                             Id = (short)2,
                             Code = "S2",
-                            IsActive = true,
+                            IsActive = false,
                             Name = "Special level S-2",
                             SortSeq = (short)2
                         },
@@ -1255,7 +1255,7 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         {
                             Id = (short)3,
                             Code = "S3",
-                            IsActive = true,
+                            IsActive = false,
                             Name = "Special level S-3",
                             SortSeq = (short)3
                         },
@@ -1263,7 +1263,7 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         {
                             Id = (short)4,
                             Code = "S4",
-                            IsActive = true,
+                            IsActive = false,
                             Name = "Special level S-4",
                             SortSeq = (short)4
                         },
@@ -1437,6 +1437,440 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("QC_AQL_LIMT", "QC");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)101,
+                            AcceptNo = 0,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "H",
+                            RejectNo = 1
+                        },
+                        new
+                        {
+                            Id = (short)102,
+                            AcceptNo = 1,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "J",
+                            RejectNo = 2
+                        },
+                        new
+                        {
+                            Id = (short)103,
+                            AcceptNo = 2,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "K",
+                            RejectNo = 3
+                        },
+                        new
+                        {
+                            Id = (short)104,
+                            AcceptNo = 3,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "L",
+                            RejectNo = 4
+                        },
+                        new
+                        {
+                            Id = (short)105,
+                            AcceptNo = 5,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "M",
+                            RejectNo = 6
+                        },
+                        new
+                        {
+                            Id = (short)106,
+                            AcceptNo = 7,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "N",
+                            RejectNo = 8
+                        },
+                        new
+                        {
+                            Id = (short)107,
+                            AcceptNo = 10,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "P",
+                            RejectNo = 11
+                        },
+                        new
+                        {
+                            Id = (short)108,
+                            AcceptNo = 14,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "Q",
+                            RejectNo = 15
+                        },
+                        new
+                        {
+                            Id = (short)109,
+                            AcceptNo = 21,
+                            AqlLevelId = (short)1,
+                            CodeLetter = "R",
+                            RejectNo = 22
+                        },
+                        new
+                        {
+                            Id = (short)201,
+                            AcceptNo = 0,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "G",
+                            RejectNo = 1
+                        },
+                        new
+                        {
+                            Id = (short)202,
+                            AcceptNo = 1,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "H",
+                            RejectNo = 2
+                        },
+                        new
+                        {
+                            Id = (short)203,
+                            AcceptNo = 2,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "J",
+                            RejectNo = 3
+                        },
+                        new
+                        {
+                            Id = (short)204,
+                            AcceptNo = 3,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "K",
+                            RejectNo = 4
+                        },
+                        new
+                        {
+                            Id = (short)205,
+                            AcceptNo = 5,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "L",
+                            RejectNo = 6
+                        },
+                        new
+                        {
+                            Id = (short)206,
+                            AcceptNo = 7,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "M",
+                            RejectNo = 8
+                        },
+                        new
+                        {
+                            Id = (short)207,
+                            AcceptNo = 10,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "N",
+                            RejectNo = 11
+                        },
+                        new
+                        {
+                            Id = (short)208,
+                            AcceptNo = 14,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "P",
+                            RejectNo = 15
+                        },
+                        new
+                        {
+                            Id = (short)209,
+                            AcceptNo = 21,
+                            AqlLevelId = (short)2,
+                            CodeLetter = "Q",
+                            RejectNo = 22
+                        },
+                        new
+                        {
+                            Id = (short)301,
+                            AcceptNo = 0,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "F",
+                            RejectNo = 1
+                        },
+                        new
+                        {
+                            Id = (short)302,
+                            AcceptNo = 1,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "G",
+                            RejectNo = 2
+                        },
+                        new
+                        {
+                            Id = (short)303,
+                            AcceptNo = 2,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "H",
+                            RejectNo = 3
+                        },
+                        new
+                        {
+                            Id = (short)304,
+                            AcceptNo = 3,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "J",
+                            RejectNo = 4
+                        },
+                        new
+                        {
+                            Id = (short)305,
+                            AcceptNo = 5,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "K",
+                            RejectNo = 6
+                        },
+                        new
+                        {
+                            Id = (short)306,
+                            AcceptNo = 7,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "L",
+                            RejectNo = 8
+                        },
+                        new
+                        {
+                            Id = (short)307,
+                            AcceptNo = 10,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "M",
+                            RejectNo = 11
+                        },
+                        new
+                        {
+                            Id = (short)308,
+                            AcceptNo = 14,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "N",
+                            RejectNo = 15
+                        },
+                        new
+                        {
+                            Id = (short)309,
+                            AcceptNo = 21,
+                            AqlLevelId = (short)3,
+                            CodeLetter = "P",
+                            RejectNo = 22
+                        },
+                        new
+                        {
+                            Id = (short)401,
+                            AcceptNo = 0,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "E",
+                            RejectNo = 1
+                        },
+                        new
+                        {
+                            Id = (short)402,
+                            AcceptNo = 1,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "F",
+                            RejectNo = 2
+                        },
+                        new
+                        {
+                            Id = (short)403,
+                            AcceptNo = 2,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "G",
+                            RejectNo = 3
+                        },
+                        new
+                        {
+                            Id = (short)404,
+                            AcceptNo = 3,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "H",
+                            RejectNo = 4
+                        },
+                        new
+                        {
+                            Id = (short)405,
+                            AcceptNo = 5,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "J",
+                            RejectNo = 6
+                        },
+                        new
+                        {
+                            Id = (short)406,
+                            AcceptNo = 7,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "K",
+                            RejectNo = 8
+                        },
+                        new
+                        {
+                            Id = (short)407,
+                            AcceptNo = 10,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "L",
+                            RejectNo = 11
+                        },
+                        new
+                        {
+                            Id = (short)408,
+                            AcceptNo = 14,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "M",
+                            RejectNo = 15
+                        },
+                        new
+                        {
+                            Id = (short)409,
+                            AcceptNo = 21,
+                            AqlLevelId = (short)4,
+                            CodeLetter = "N",
+                            RejectNo = 22
+                        },
+                        new
+                        {
+                            Id = (short)501,
+                            AcceptNo = 0,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "D",
+                            RejectNo = 1
+                        },
+                        new
+                        {
+                            Id = (short)502,
+                            AcceptNo = 1,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "E",
+                            RejectNo = 2
+                        },
+                        new
+                        {
+                            Id = (short)503,
+                            AcceptNo = 2,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "F",
+                            RejectNo = 3
+                        },
+                        new
+                        {
+                            Id = (short)504,
+                            AcceptNo = 3,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "G",
+                            RejectNo = 4
+                        },
+                        new
+                        {
+                            Id = (short)505,
+                            AcceptNo = 5,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "H",
+                            RejectNo = 6
+                        },
+                        new
+                        {
+                            Id = (short)506,
+                            AcceptNo = 7,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "J",
+                            RejectNo = 8
+                        },
+                        new
+                        {
+                            Id = (short)507,
+                            AcceptNo = 10,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "K",
+                            RejectNo = 11
+                        },
+                        new
+                        {
+                            Id = (short)508,
+                            AcceptNo = 14,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "L",
+                            RejectNo = 15
+                        },
+                        new
+                        {
+                            Id = (short)509,
+                            AcceptNo = 21,
+                            AqlLevelId = (short)5,
+                            CodeLetter = "M",
+                            RejectNo = 22
+                        },
+                        new
+                        {
+                            Id = (short)601,
+                            AcceptNo = 0,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "C",
+                            RejectNo = 1
+                        },
+                        new
+                        {
+                            Id = (short)602,
+                            AcceptNo = 1,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "D",
+                            RejectNo = 2
+                        },
+                        new
+                        {
+                            Id = (short)603,
+                            AcceptNo = 2,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "E",
+                            RejectNo = 3
+                        },
+                        new
+                        {
+                            Id = (short)604,
+                            AcceptNo = 3,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "F",
+                            RejectNo = 4
+                        },
+                        new
+                        {
+                            Id = (short)605,
+                            AcceptNo = 5,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "G",
+                            RejectNo = 6
+                        },
+                        new
+                        {
+                            Id = (short)606,
+                            AcceptNo = 7,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "H",
+                            RejectNo = 8
+                        },
+                        new
+                        {
+                            Id = (short)607,
+                            AcceptNo = 10,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "J",
+                            RejectNo = 11
+                        },
+                        new
+                        {
+                            Id = (short)608,
+                            AcceptNo = 14,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "K",
+                            RejectNo = 15
+                        },
+                        new
+                        {
+                            Id = (short)609,
+                            AcceptNo = 21,
+                            AqlLevelId = (short)6,
+                            CodeLetter = "L",
+                            RejectNo = 22
+                        });
                 });
 
             modelBuilder.Entity("Romp.Modules.Quality.Domain.Inspections.Aql.AqlSampleRow", b =>
@@ -1473,6 +1907,413 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("QC_AQL_SMPL", "QC");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)101,
+                            CodeLetter = "A",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 8,
+                            LotMinQty = 1,
+                            SampleQty = 2
+                        },
+                        new
+                        {
+                            Id = (short)102,
+                            CodeLetter = "A",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 15,
+                            LotMinQty = 9,
+                            SampleQty = 2
+                        },
+                        new
+                        {
+                            Id = (short)103,
+                            CodeLetter = "B",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 25,
+                            LotMinQty = 16,
+                            SampleQty = 3
+                        },
+                        new
+                        {
+                            Id = (short)104,
+                            CodeLetter = "C",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 50,
+                            LotMinQty = 26,
+                            SampleQty = 5
+                        },
+                        new
+                        {
+                            Id = (short)105,
+                            CodeLetter = "C",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 90,
+                            LotMinQty = 51,
+                            SampleQty = 5
+                        },
+                        new
+                        {
+                            Id = (short)106,
+                            CodeLetter = "D",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 150,
+                            LotMinQty = 91,
+                            SampleQty = 8
+                        },
+                        new
+                        {
+                            Id = (short)107,
+                            CodeLetter = "E",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 280,
+                            LotMinQty = 151,
+                            SampleQty = 13
+                        },
+                        new
+                        {
+                            Id = (short)108,
+                            CodeLetter = "F",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 500,
+                            LotMinQty = 281,
+                            SampleQty = 20
+                        },
+                        new
+                        {
+                            Id = (short)109,
+                            CodeLetter = "G",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 1200,
+                            LotMinQty = 501,
+                            SampleQty = 32
+                        },
+                        new
+                        {
+                            Id = (short)110,
+                            CodeLetter = "H",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 3200,
+                            LotMinQty = 1201,
+                            SampleQty = 50
+                        },
+                        new
+                        {
+                            Id = (short)111,
+                            CodeLetter = "J",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 10000,
+                            LotMinQty = 3201,
+                            SampleQty = 80
+                        },
+                        new
+                        {
+                            Id = (short)112,
+                            CodeLetter = "K",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 35000,
+                            LotMinQty = 10001,
+                            SampleQty = 125
+                        },
+                        new
+                        {
+                            Id = (short)113,
+                            CodeLetter = "L",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 150000,
+                            LotMinQty = 35001,
+                            SampleQty = 200
+                        },
+                        new
+                        {
+                            Id = (short)114,
+                            CodeLetter = "M",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 500000,
+                            LotMinQty = 150001,
+                            SampleQty = 315
+                        },
+                        new
+                        {
+                            Id = (short)115,
+                            CodeLetter = "N",
+                            InspectionLevelId = (short)5,
+                            LotMaxQty = 2147483647,
+                            LotMinQty = 500001,
+                            SampleQty = 500
+                        },
+                        new
+                        {
+                            Id = (short)201,
+                            CodeLetter = "A",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 8,
+                            LotMinQty = 1,
+                            SampleQty = 2
+                        },
+                        new
+                        {
+                            Id = (short)202,
+                            CodeLetter = "B",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 15,
+                            LotMinQty = 9,
+                            SampleQty = 3
+                        },
+                        new
+                        {
+                            Id = (short)203,
+                            CodeLetter = "C",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 25,
+                            LotMinQty = 16,
+                            SampleQty = 5
+                        },
+                        new
+                        {
+                            Id = (short)204,
+                            CodeLetter = "D",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 50,
+                            LotMinQty = 26,
+                            SampleQty = 8
+                        },
+                        new
+                        {
+                            Id = (short)205,
+                            CodeLetter = "E",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 90,
+                            LotMinQty = 51,
+                            SampleQty = 13
+                        },
+                        new
+                        {
+                            Id = (short)206,
+                            CodeLetter = "F",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 150,
+                            LotMinQty = 91,
+                            SampleQty = 20
+                        },
+                        new
+                        {
+                            Id = (short)207,
+                            CodeLetter = "G",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 280,
+                            LotMinQty = 151,
+                            SampleQty = 32
+                        },
+                        new
+                        {
+                            Id = (short)208,
+                            CodeLetter = "H",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 500,
+                            LotMinQty = 281,
+                            SampleQty = 50
+                        },
+                        new
+                        {
+                            Id = (short)209,
+                            CodeLetter = "J",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 1200,
+                            LotMinQty = 501,
+                            SampleQty = 80
+                        },
+                        new
+                        {
+                            Id = (short)210,
+                            CodeLetter = "K",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 3200,
+                            LotMinQty = 1201,
+                            SampleQty = 125
+                        },
+                        new
+                        {
+                            Id = (short)211,
+                            CodeLetter = "L",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 10000,
+                            LotMinQty = 3201,
+                            SampleQty = 200
+                        },
+                        new
+                        {
+                            Id = (short)212,
+                            CodeLetter = "M",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 35000,
+                            LotMinQty = 10001,
+                            SampleQty = 315
+                        },
+                        new
+                        {
+                            Id = (short)213,
+                            CodeLetter = "N",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 150000,
+                            LotMinQty = 35001,
+                            SampleQty = 500
+                        },
+                        new
+                        {
+                            Id = (short)214,
+                            CodeLetter = "P",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 500000,
+                            LotMinQty = 150001,
+                            SampleQty = 800
+                        },
+                        new
+                        {
+                            Id = (short)215,
+                            CodeLetter = "Q",
+                            InspectionLevelId = (short)6,
+                            LotMaxQty = 2147483647,
+                            LotMinQty = 500001,
+                            SampleQty = 1250
+                        },
+                        new
+                        {
+                            Id = (short)301,
+                            CodeLetter = "B",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 8,
+                            LotMinQty = 1,
+                            SampleQty = 3
+                        },
+                        new
+                        {
+                            Id = (short)302,
+                            CodeLetter = "C",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 15,
+                            LotMinQty = 9,
+                            SampleQty = 5
+                        },
+                        new
+                        {
+                            Id = (short)303,
+                            CodeLetter = "D",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 25,
+                            LotMinQty = 16,
+                            SampleQty = 8
+                        },
+                        new
+                        {
+                            Id = (short)304,
+                            CodeLetter = "E",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 50,
+                            LotMinQty = 26,
+                            SampleQty = 13
+                        },
+                        new
+                        {
+                            Id = (short)305,
+                            CodeLetter = "F",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 90,
+                            LotMinQty = 51,
+                            SampleQty = 20
+                        },
+                        new
+                        {
+                            Id = (short)306,
+                            CodeLetter = "G",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 150,
+                            LotMinQty = 91,
+                            SampleQty = 32
+                        },
+                        new
+                        {
+                            Id = (short)307,
+                            CodeLetter = "H",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 280,
+                            LotMinQty = 151,
+                            SampleQty = 50
+                        },
+                        new
+                        {
+                            Id = (short)308,
+                            CodeLetter = "J",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 500,
+                            LotMinQty = 281,
+                            SampleQty = 80
+                        },
+                        new
+                        {
+                            Id = (short)309,
+                            CodeLetter = "K",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 1200,
+                            LotMinQty = 501,
+                            SampleQty = 125
+                        },
+                        new
+                        {
+                            Id = (short)310,
+                            CodeLetter = "L",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 3200,
+                            LotMinQty = 1201,
+                            SampleQty = 200
+                        },
+                        new
+                        {
+                            Id = (short)311,
+                            CodeLetter = "M",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 10000,
+                            LotMinQty = 3201,
+                            SampleQty = 315
+                        },
+                        new
+                        {
+                            Id = (short)312,
+                            CodeLetter = "N",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 35000,
+                            LotMinQty = 10001,
+                            SampleQty = 500
+                        },
+                        new
+                        {
+                            Id = (short)313,
+                            CodeLetter = "P",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 150000,
+                            LotMinQty = 35001,
+                            SampleQty = 800
+                        },
+                        new
+                        {
+                            Id = (short)314,
+                            CodeLetter = "Q",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 500000,
+                            LotMinQty = 150001,
+                            SampleQty = 1250
+                        },
+                        new
+                        {
+                            Id = (short)315,
+                            CodeLetter = "R",
+                            InspectionLevelId = (short)7,
+                            LotMaxQty = 2147483647,
+                            LotMinQty = 500001,
+                            SampleQty = 2000
+                        });
                 });
 
             modelBuilder.Entity("Romp.Modules.Quality.Domain.Inspections.Defect", b =>

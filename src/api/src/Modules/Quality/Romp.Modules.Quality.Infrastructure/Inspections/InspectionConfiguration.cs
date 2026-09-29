@@ -125,6 +125,11 @@ internal sealed class AqlSampleRowConfiguration : IEntityTypeConfiguration<AqlSa
 
         builder.HasOne<InspectionLevelLookup>().WithMany().HasForeignKey(r => r.InspectionLevelId)
             .HasConstraintName("FK_QC_AQL_SMPL_QC_INSP_LVL_ID").OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(AqlSeedData.SampleRows().Select(r => (object)new
+        {
+            r.Id, r.InspectionLevelId, r.LotMinQty, r.LotMaxQty, r.CodeLetter, r.SampleQty,
+        }).ToArray());
     }
 }
 
@@ -143,5 +148,10 @@ internal sealed class AqlLimitRowConfiguration : IEntityTypeConfiguration<AqlLim
 
         builder.HasOne<AqlLevelLookup>().WithMany().HasForeignKey(r => r.AqlLevelId)
             .HasConstraintName("FK_QC_AQL_LIMT_QC_AQL_LVL_ID").OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(AqlSeedData.LimitRows().Select(r => (object)new
+        {
+            r.Id, r.CodeLetter, r.AqlLevelId, r.AcceptNo, r.RejectNo,
+        }).ToArray());
     }
 }
