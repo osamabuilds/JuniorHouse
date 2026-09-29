@@ -11,13 +11,13 @@ Feature folders `ProductionRuns/`, `Milestones/`, `Samples/`, `Deliveries/`. One
 
 | Aggregate / entity | Purpose | Rules (invariants) |
 |---|---|---|
-| **`ProductionRun`** (root) | One per PO. Holds `PoId`, `PoNo`, fabric responsibility, PO send date, a copy of the In-force latest acceptable date (refreshed by events), status, expected completion date, bulk-cutting-started timestamp. | Created only from `PoAcknowledged`; unique per PO. Status `Open → Cancelled | Closed`. Nothing can be recorded on a Cancelled/Closed run (AC-29). `BulkCuttingStarted` requires an Approved PP round (AC-9) and is recorded once. |
-| **`Milestone`** (child) | Timeline row: type, claimed date, recorded timestamp, reporter (vendor contact, free text), acting person (D13), note, `recorded late` flag, optional PP round id. | Type must be valid for the run (`FabricBooked` only when `VendorSupplied`, AC-4). Claimed date between PO send date and today (D11, AC-6). `recorded late` = recorded date − claimed date > configured days (AC-7). Optional milestones may be skipped (AC-8). |
-| **`PpSampleRound`** (child) | Round number, submitted date/note, decision (Pending/Approved/Rejected), decider name, reason, decided timestamp. | Round numbers are 1..n with no cap (D6). One Pending round at a time. Reject needs a reason (AC-11). Once Approved, no new round unless the approval was superseded by an amendment (AC-13/27). |
+| **`ProductionRun`** (root) | One per PO. Holds `PoId`, `PoNo`, fabric responsibility, PO send date, a copy of the In-force latest acceptable date (refreshed by events), status, expected completion date, bulk-cutting-started timestamp, Romp fabric-dispatch date, and the flags "cutting before fabric dispatch" (AC-36) and "re-sample recommended" (AC-27/38). | Created only from `PoAcknowledged`; unique per PO. Status `Open → Cancelled | Closed`. Nothing can be recorded on a Cancelled/Closed run (AC-29). `BulkCuttingStarted` requires an Approved PP round (AC-9) and is recorded once. |
+| **`Milestone`** (child) | Timeline row: type, claimed date, recorded timestamp, reporter (vendor contact, free text), acting person (D13), note, `recorded late` flag, optional PP round id. | Type must be valid for the run (`FabricBooked` only when `VendorSupplied`; `FabricDispatchedByRomp` only when `RompSupplied`, AC-4/D14). `BulkCuttingStarted` on a `RompSupplied` run without an earlier fabric dispatch, or with an unresolved re-sample recommendation, is recorded and flagged loudly, never blocked (AC-36, AC-38). Claimed date between PO send date and today (D11, AC-6). `recorded late` = recorded date − claimed date > configured days (AC-7). Optional milestones may be skipped (AC-8). |
+| **`PpSampleRound`** (child) | Round number, submitted date/note, decision (Pending/Approved/Rejected), decider name, reason, decided timestamp. | Round numbers are 1..n with no cap (D6). One Pending round at a time. Reject needs a reason (AC-11). Once Approved, no new round unless the approval was superseded by an amendment of either tier (AC-13/27); a new round clears the "re-sample recommended" flag. |
 | **`PpSampleFile`** (child of round) | Attachment metadata: storage key (generated), original name, detected content type, size, uploader. | Same allowlist, size and count limits as Sprint 2, from configuration (AC-12). Bytes live behind `IFileStorage`. |
 | **`FinishedQuantityLine`** (child of the `FinishedReadyToShip` milestone) | Size, colour, quantity. | Positive; the size × colour must exist on the PO (validated against the contract) (AC-17). Gates nothing (D8). |
 | **`ExpectedCompletionChange`** (child) | Old date, new date, reason, acting person, timestamp. | Append-only history (AC-15). |
-| **`DeliveryNote`** (child) | Vendor DN number, dispatch date, `final shipment` flag (D3), revision number judged against, timing outcome (OnTime / Late / BeyondAcceptable) and `days late`, quantity outcome (OnQuantity / Short / Over) with totals, acting person, timestamp. | Unique `(run, vendor DN no)` (AC-20). Dispatch date between PO send date and today. Judged against the revision in force **on the dispatch date** (D12, AC-23). Over is flagged, never refused (D4, AC-21). |
+| **`DeliveryNote`** (child) | Vendor DN number, dispatch date, `final shipment` flag (D3), revision number judged against, timing outcome (OnTime / Late / BeyondAcceptable) and `days late`, quantity outcome (OnQuantity / Short / Over) with totals, the Romp fabric-dispatch date and "Romp fabric delay" indicator for `RompSupplied` runs (AC-37), acting person, timestamp. | Unique `(run, vendor DN no)` (AC-20). Dispatch date between PO send date and today. Judged against the revision in force **on the dispatch date** (D12, AC-23). Over is flagged, never refused (D4, AC-21). |
 | **`DeliveryNoteLine`** | Size, colour, quantity, plus per-line over/short quantity at that time. | Size × colour on the PO; quantity positive whole number (AC-18); unique per note. |
 
 **Delivery judgement (domain service `DeliveryJudge`, pure, unit-tested):** given the terms at the dispatch date (ordered lines, expected date, latest acceptable date, over/under tolerance %), cumulative shipped before this note, and this note:
@@ -26,7 +26,7 @@ Feature folders `ProductionRuns/`, `Milestones/`, `Samples/`, `Deliveries/`. One
 - Delivered: every line cumulative ≥ `minRequired`, **or** the note is marked final shipment (D3). A final shipment below `minRequired` is Delivered and recorded Short by the missing total (AC-24). Otherwise the PO is Partially Delivered.
 - Timing: `dispatch > latestAcceptable` → BeyondAcceptable; `dispatch > expected` → Late by N days; else OnTime (AC-22).
 
-**Vendor domain changes (`Romp.Modules.Vendor.Domain/PurchaseOrders`):** `PoStatus` gains `InProduction = 5`, `PartiallyDelivered = 6`, `Delivered = 7`, `Closed = 8`. `PurchaseOrder` gains forward-only, idempotent `StartProduction()`, `MarkPartiallyDelivered()`, `MarkDelivered()`, `Close()`, each writing the status history and raising its event; `Cancel()` is allowed from Acknowledged, InProduction, PartiallyDelivered (AC-28) and not from Delivered/Closed. `CreateRevision` refuses on Delivered/Closed (AC-26).
+**Vendor domain changes (`Romp.Modules.Vendor.Domain/PurchaseOrders`):** `PoStatus` gains `InProduction = 5`, `PartiallyDelivered = 6`, `Delivered = 7`, `Closed = 8`. `PurchaseOrder` gains forward-only, idempotent `StartProduction()`, `MarkPartiallyDelivered()`, `MarkDelivered()`, `Close()`, each writing the status history and raising its event; `Cancel()` is allowed from Acknowledged, InProduction, PartiallyDelivered (AC-28) and not from Delivered/Closed. `CreateRevision` refuses on Delivered/Closed (AC-26) and classifies every revision as **Construction** or **Commercial** at creation (D17): Construction when it adds/retires any file, changes fabric responsibility, or introduces a colour not on the previous revision; otherwise Commercial. The classification is persisted on the revision, exposed on `PoRevisionDto` and carried in the revision events.
 
 ## Application layer
 
@@ -44,7 +44,7 @@ Feature folders `ProductionRuns/`, `Milestones/`, `Samples/`, `Deliveries/`. One
 | `SearchProductionRunsQuery` | status, PO no text, at-risk, page, page size | `PagedResult<RunSummaryDto>` | AC-32, AC-16 |
 | `GetProductionRunQuery` | RunId | Detail: milestones, rounds (+files), history, DNs, ordered vs shipped per size × colour | AC-19, AC-34 |
 | `MarkRunCancelledCommand` / `MarkRunClosedCommand` (from `PoCancelled` / `PoClosed`) | PoId | Run | AC-29 |
-| `RefreshRunTermsCommand` (from `PoRevisionPutInForce`) | PoId, latest acceptable date | Run | AC-16 |
+| `RefreshRunTermsCommand` (from `PoRevisionPutInForce`) | PoId, latest acceptable date, revision classification | Run (updates the date copy; sets "re-sample recommended" when the revision is Construction and a PP round was approved) | AC-16, AC-27 |
 
 Validators (FluentValidation) enforce lengths, ranges and the acting-person rule (2–100 characters, AC-35). Handlers run in the module's transaction behaviour, so state, inbox row and outbox row commit together.
 
@@ -93,24 +93,24 @@ All payloads carry the standard envelope (message id, schema version, occurred-a
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `PROD_RUN_MAIN` | `ID`, `PO_ID`, `PO_NO`, `FBRC_RESP_ID`, `PO_SENT_DTE`, `LATE_ACPT_DT` (copy), `EXPC_CMPL_DT`, `CUT_STRT_DTE`, `PROD_RUN_STS_ID` | unique `PO_ID`; index on status and `EXPC_CMPL_DT`; `ROW_VER` concurrency token |
+| `PROD_RUN_MAIN` | `ID`, `PO_ID`, `PO_NO`, `FBRC_RESP_ID`, `PO_SENT_DTE`, `LATE_ACPT_DT` (copy), `EXPC_CMPL_DT`, `CUT_STRT_DTE`, `FBRC_DSPT_DT`, `CUT_BEF_FBRC_IND`, `RESMPL_RECM_IND`, `PROD_RUN_STS_ID` | unique `PO_ID`; index on status and `EXPC_CMPL_DT`; `ROW_VER` concurrency token |
 | `PROD_MLST` | `RUN_ID`, `MLST_TYP_ID`, `CLM_DT`, `RPTR_NAME`, `ACTR_NAME`, `NOTE`, `LATE_RCRD_IND`, `PP_RND_ID?` | FK + index per FK |
 | `PROD_MLST_FNSH_LINE` | `MLST_ID`, `SIZE_ID`, `CLR_ID`, `FNSH_QTY` | unique per milestone/size/colour |
 | `PROD_EXPC_HIST` | `RUN_ID`, `OLD_DT`, `NEW_DT`, `RSN`, `ACTR_NAME` | append-only |
 | `PP_SMPL_RND` | `RUN_ID`, `RND_NO`, `SUBM_DT`, `NOTE`, `PP_SMPL_DCSN_ID`, `DCSN_DTE`, `DCSN_RSN`, `DCSN_NAME` | unique `(RUN_ID, RND_NO)` |
 | `PP_SMPL_FILE` | `RND_ID`, `STOR_KEY`, `FILE_NAME`, `CNTT_TYP`, `FILE_SIZE_BYT`, `DELD_IND` | keys generated; never derived from the name |
-| `DLVR_NOTE` | `RUN_ID`, `VNDR_DN_NO`, `DSPT_DT`, `FNL_SHIP_IND`, `REV_NO`, `DLVR_TMNG_ID`, `DAYS_LATE`, `DLVR_QTY_STS_ID`, `OVER_QTY`, `SHRT_QTY` | unique `(RUN_ID, VNDR_DN_NO)` |
+| `DLVR_NOTE` | `RUN_ID`, `VNDR_DN_NO`, `DSPT_DT`, `FNL_SHIP_IND`, `REV_NO`, `DLVR_TMNG_ID`, `DAYS_LATE`, `DLVR_QTY_STS_ID`, `OVER_QTY`, `SHRT_QTY`, `FBRC_DSPT_DT`, `ROMP_FBRC_DLAY_IND` | unique `(RUN_ID, VNDR_DN_NO)` |
 | `DLVR_NOTE_LINE` | `NOTE_ID`, `SIZE_ID`, `CLR_ID`, `QTY`, `OVER_QTY`, `SHRT_QTY` | unique per note/size/colour |
-| Lookups (system-owned, seeded by migration): `PROD_RUN_STS_LKP` (Open, Cancelled, Closed), `MLST_TYP_LKP` (the six milestone types), `PP_SMPL_DCSN_LKP` (Pending, Approved, Rejected), `DLVR_TMNG_LKP` (OnTime, Late, BeyondAcceptable), `DLVR_QTY_STS_LKP` (OnQuantity, Short, Over) | standard lookup shape |
+| Lookups (system-owned, seeded by migration): `PROD_RUN_STS_LKP` (Open, Cancelled, Closed), `MLST_TYP_LKP` (the seven milestone types: `FabricBooked`, `FabricDispatchedByRomp`, `PPSampleSubmitted`, `PPSampleApproved`, `PPSampleRejected`, `BulkCuttingStarted`, `FinishedReadyToShip`), `PP_SMPL_DCSN_LKP` (Pending, Approved, Rejected), `DLVR_TMNG_LKP` (OnTime, Late, BeyondAcceptable), `DLVR_QTY_STS_LKP` (OnQuantity, Short, Over) | standard lookup shape |
 | `INBX` (inbox), `OUTB_MSG` (outbox) | per the platform convention | inbox row written in the same transaction as the handler effect |
 
 All transactional tables have the audit columns and a concurrency token. Size and colour ids are plain columns (no cross-schema FKs). Lists are read with SQL projections; no partitioning needed at MVP volume (noted for the plan of BRD §12.6 only).
 
 **Other schema changes:**
-- **REF migration:** four `PO_STS_LKP` rows (5–8); one `PO_CNCL_RSN_LKP` row `CancelledInProduction` (id 7, "Cancelled after production started"); the `PoStatusLookup` seed and `PoStatus` constants change together.
-- **VNDR migration:** `VNDR.INBX` (first VNDR handler with a database effect). No `PO_MAIN` column changes. Sprint 3 carry-over (SCRUM-186): `PoCreatedEvent` gets the PO id (assigned before the event is raised) and an outbox health read endpoint.
+- **REF migration:** four `PO_STS_LKP` rows (5–8); one `PO_CNCL_RSN_LKP` row `ProductionAlreadyStarted` (id 7, "Cancelled after production started", D16); the `PoStatusLookup` seed and `PoStatus` constants change together.
+- **VNDR migration:** `VNDR.INBX` (first VNDR handler with a database effect) and an additive `PO_REV.CNSTR_CHNG_IND` (construction classification; existing revisions default to commercial). No `PO_MAIN` column changes. Sprint 3 carry-over (SCRUM-186): `PoCreatedEvent` gets the PO id (assigned before the event is raised) and an outbox health read endpoint.
 - **Storage move:** `IFileStorage`/`LocalFileStorage`/options/content signature to `Romp.BuildingBlocks.Storage`, no data change.
-- **Configuration:** `Prod:RecordedLateDays` (default 3, open question B), `Prod:PpFiles:MaxFileSizeBytes` / `MaxFilesPerRound`, `Prod:AtRiskBufferDays` (default 0, open question E); the existing storage root is shared.
+- **Configuration:** `Prod:RecordedLateDays` (default **3**, D15), `Prod:PpFiles:MaxFileSizeBytes` / `MaxFilesPerRound`, `Prod:AtRiskBufferDays` (default **7**, D18); the existing storage root is shared.
 - Every migration is additive; existing Sprint 1/2 rows load unchanged. `dotnet ef migrations has-pending-model-changes` must be clean for all four contexts.
 
 ## NFR / security design
@@ -132,7 +132,7 @@ New web feature `features/production` (per CONVENTIONS.md): route `/production` 
 - **components (presentational, OnPush):** `run-table`, `milestone-timeline`, `milestone-form`, `pp-round-panel` (rounds, decision, files, "round N" history), `delivery-note-form`, `delivery-note-list` (loud Over / Short / Late / Recorded-late flags as text badges, not colour only), `expected-completion-panel`.
 - **store:** `production.{state,actions,reducer,selectors,effects}.ts`; list state with `total/page/pageSize` and filters; detail state with the loaded run and per-panel saving/error; the store resets on `Opened`.
 - **forms:** typed forms with the required acting-person name field on every action.
-- **purchase-orders changes:** status labels for 5–8; Close button for Delivered POs; the Cancel panel gets the prominent sunk-cost / vendor-impact warning for In Production / Partially Delivered POs and the production-stage reason (AC-28); a link from PO detail to its production run; Amend panel shows the costly-amendment notice (AC-27) and the delivered-quantity limit message.
+- **purchase-orders changes:** status labels for 5–8; Close button for Delivered POs; the Cancel panel gets the prominent sunk-cost / vendor-impact warning for In Production / Partially Delivered POs and the production-stage reason (AC-28); a link from PO detail to its production run; the Amend panel shows the costly notice for any post-approval amendment, and for a Construction amendment a prominent "a new PP sample is strongly recommended" notice (AC-27), plus the delivered-quantity limit message. The run detail shows the loud flags for AC-36 and AC-38.
 - **a11y/responsive:** one `<h1>`, landmarks, `table.responsive`, 44 px targets, labels on every control, tested at 320 px.
 - **E2E (Playwright):** acknowledge → milestone → PP reject then approve with a photo → bulk cutting (PO shows In Production) → DN 1 partial → DN 2 final short (Delivered, Short flag) → Close; plus cancel in production with the warning, over-delivery flag, back-date bounds.
 

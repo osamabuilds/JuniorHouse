@@ -1,6 +1,6 @@
 # SCRUM-183: Production Tracking (milestones, PP-sample gate, delivery notes)
 
-- **Status:** Approved (2026-09-29, decisions D1–D13 below given by the product owner)
+- **Status:** Approved (2026-09-29, decisions D1–D18 below given by the product owner)
 - **Jira:** SCRUM-183 (spec/plan gate); build tickets SCRUM-184..196 under epic SCRUM-74 "[Module] Production Tracking (PROD)". SCRUM-94 (FR-SC-04) is split: delivery notes here, GRN in Sprint 4.
 - **BRD sections:** §5.9 (PO status lifecycle), §5.10 (Production Tracking), §5.11 (what follows: GRN/QC), §7.10 (FR-SC), §9.10 (PROD module, event catalogue), §12.11 (Production tables)
 - **Requirement IDs:** FR-SC-04 (delivery-note half), FR-SC-01 (scorecard data only), NFR-SC-05 (attributable, timestamped actions). No `TC-*` cases exist in the BRD for this area, so every acceptance criterion below is derived from the BRD text and the decisions, and is marked `(new)` where the BRD is silent.
@@ -40,6 +40,16 @@ This is milestone-level visibility, not a factory-floor system. The sprint also 
 | D12 | **Late / short / over is judged against the revision in force on the delivery note's actual dispatch date**, never the date it was entered. | 12 |
 | D13 | Until Sprint 8, approvals are recorded as the system actor **and** the UI asks for the acting person's name as free text (same pattern as Sprint 2's vendor-communication "responder name"), so the audit trail stays meaningful once real auth exists. | 13 |
 
+**Follow-up decisions on the plan's open questions (2026-09-29):**
+
+| # | Decision |
+|---|---|
+| D14 (A) | **`RompSupplied` runs get a `FabricDispatchedByRomp` milestone**, recorded by Romp staff with a date. It does **not** hard-block `BulkCuttingStarted`, but if cutting is recorded as starting before fabric dispatch the system **flags it loudly**. Purpose: a Romp-caused fabric delay must never count against the vendor's Sprint 4 on-time score, so the fact is stored on each delivery note. |
+| D15 (B) | The "recorded late" threshold is **3 days**, as a configuration value. |
+| D16 (C) | The production-stage cancel reason is code `ProductionAlreadyStarted`, displayed as **"Cancelled after production started"**. |
+| D17 (D) | **Amendments after PP approval are tiered.** If the amendment includes spec files or a **construction-affecting change** (fabric, trim, colour or print), a new PP round is **strongly suggested (near-mandatory)**. If it is **commercial-terms only** (cost, date, payment term), only the "flagged as costly" note is shown and a new PP round stays optional. Neither tier hard-blocks anything. |
+| D18 (E) | The "at risk" flag uses a **7-day buffer** ahead of the latest acceptable date by default, configurable. |
+
 ## Requirements (quoted from the BRD)
 
 > **FR-SC-04:** System shall support partial deliveries against a single PO, each recorded as its own Goods Receipt Note.
@@ -74,7 +84,7 @@ This is milestone-level visibility, not a factory-floor system. The sprint also 
 
 ## User flow
 
-1. Staff acknowledge a PO (Sprint 1/2). The `PoAcknowledged` event reaches PROD, which **opens a production run** for the PO (no staff action). The run's milestone list follows D10; `FabricBooked` exists only when the PO's fabric responsibility is `VendorSupplied`.
+1. Staff acknowledge a PO (Sprint 1/2). The `PoAcknowledged` event reaches PROD, which **opens a production run** for the PO (no staff action). The run's milestone list follows D10; `FabricBooked` exists only when the PO's fabric responsibility is `VendorSupplied`, and `FabricDispatchedByRomp` only when it is `RompSupplied` (D14).
 2. As the vendor reports progress by WhatsApp/phone, staff **record each milestone**: date it happened (within D11's bounds), who reported it (vendor contact), the acting person's name (D13), optional note. Optional milestones may be skipped.
 3. **PP sample:** the vendor submits a sample (staff record the submission with an optional note and photos/files, D7). Staff inspect it, then **approve** or **reject** with a reason. A rejection opens the way for another round (D6). **`BulkCuttingStarted` cannot be recorded until a round is approved.**
 4. When bulk cutting is recorded, the PO becomes **In Production** (D1). Staff set the **expected completion date** and update it when the vendor says it moves; the history is kept and compared with the PO's In-force expected and latest acceptable dates.
@@ -91,10 +101,10 @@ This is milestone-level visibility, not a factory-floor system. The sprint also 
 | AC-1 | Given a PO is acknowledged, when the event is delivered, then one production run exists for that PO with the milestone list for its fabric responsibility (D10). | §9.10.3 `PurchaseOrder.Confirmed`, §5.10 (new) |
 | AC-2 | Given the same `PoAcknowledged` message is delivered twice, when both are handled, then still exactly one run exists (the inbox makes the second a no-op). | ADR 0004, SCRUM-181 (new) |
 | AC-3 | Given a PO that is not acknowledged (Draft, Sent, Cancelled), then no run exists and no milestone can be recorded against it. | §5.9 (new) |
-| AC-4 | Given fabric responsibility `VendorSupplied`, then the run offers `FabricBooked`; given `RompSupplied`, then it does not. | D10, S2 forward rule (new) |
+| AC-4 | Given fabric responsibility `VendorSupplied`, then the run offers `FabricBooked` and not `FabricDispatchedByRomp`; given `RompSupplied`, then the reverse. Both are optional and gate nothing. | D10, D14, S2 forward rule (new) |
 | AC-5 | Given a run, when staff record a milestone, then it stores the claimed date, the vendor contact who reported it, the acting person's name, the system actor, and the recording timestamp. | §5.10, NFR-SC-05, D13 (new) |
 | AC-6 | Given a milestone date before the PO's Send date or after today, then it is refused with the allowed range stated. | D11 |
-| AC-7 | Given a milestone recorded more than the configured number of days after its claimed date, then it is saved and shown with a non-blocking "recorded late" indicator. | D11 |
+| AC-7 | Given a milestone recorded more than the configured number of days (default 3) after its claimed date, then it is saved and shown with a non-blocking "recorded late" indicator. | D11, D15 |
 | AC-8 | Given the optional milestones (`FabricBooked`, `FinishedReadyToShip`) are never recorded, then later milestones can still be recorded. | §5.10, D8, D10 |
 | AC-9 | Given no approved PP-sample round, when anyone tries to record `BulkCuttingStarted`, then it is refused, naming the missing approval. | §5.10 hard gate, D10 |
 | AC-10 | Given a submitted PP sample, when staff approve it, then the approver name, actor and time are recorded and `BulkCuttingStarted` becomes recordable. | §5.10, NFR-SC-05 |
@@ -103,7 +113,7 @@ This is milestone-level visibility, not a factory-floor system. The sprint also 
 | AC-13 | Given an approved round, when a new round is submitted anyway, then it is allowed only if the approval was superseded by a reopening (an amendment after PP approval, AC-24); otherwise refused. | (new) |
 | AC-14 | Given `BulkCuttingStarted` is recorded, then the PO becomes In Production through a PROD event handled by VNDR, and the change is written to the PO's status history. It does not change at Acknowledged. | D1, §5.9 |
 | AC-15 | Given bulk cutting started, when staff set an expected completion date, then it is stored with a history (old value, new value, acting person, time, optional reason). | §5.10, §9.10.1 |
-| AC-16 | Given an expected completion date later than the PO's In-force latest acceptable date, then the run shows an "at risk of late" flag, also visible in the list. | S2 terms (new) |
+| AC-16 | Given an expected completion date later than the PO's In-force latest acceptable date minus the configured buffer (default 7 days), then the run shows an "at risk of late" flag, also visible in the list. | S2 terms, D18 (new) |
 | AC-17 | Given a finished / ready-to-ship record, then it stores quantities per size × colour (positive whole numbers, size/colour must exist on the PO), and nothing else in the flow depends on it. | D8 |
 | AC-18 | Given an In Production PO, when a DN is recorded, then every line's size × colour must exist on the PO and quantities must be positive whole numbers; the dispatch date must be between the PO's Send date and today. | FR-SC-04, D11 (new) |
 | AC-19 | Given several DNs on one PO, then each is stored separately and the run shows shipped-to-date per size × colour against ordered. | FR-SC-04, §5.10 |
@@ -114,8 +124,8 @@ This is milestone-level visibility, not a factory-floor system. The sprint also 
 | AC-24 | Given a DN not marked final shipment that leaves any line short of ordered, then the PO becomes Partially Delivered. Given the shipped total meets ordered minus under-tolerance on every line, then the PO becomes Delivered. Given a DN marked final shipment that leaves a line short beyond the under-tolerance, then the PO becomes Delivered and the DN and run are marked short by N pieces. Without the marker a short PO never becomes Delivered. | D3, §5.9 |
 | AC-25 | Given a Delivered PO, when staff close it, then it becomes Closed (recorded with actor and time); it is never closed automatically. Given a PO that is not Delivered, then close is refused. | D2 |
 | AC-26 | Given quantities already delivered, when an amendment is proposed, then no line may go below its delivered quantity; given Delivered or Closed, then amendments are refused. | S2 forward rule |
-| AC-27 | Given a PP sample was approved, when an amendment is created, then it is flagged as costly (fabric and sampling are committed), and a later PP round becomes allowed again (reopens AC-13). | S2 forward rule |
-| AC-28 | Given a PO in Acknowledged, In Production or Partially Delivered, when staff cancel it, then a reason is mandatory, including the new production-stage reason, and the confirmation shows a prominent warning about sunk cost and vendor impact. It is never blocked because production has started. Given Delivered or Closed, cancellation is refused. | D5, §5.9 |
+| AC-27 | Given a PP sample was approved, when any amendment is created, then it is flagged as costly (fabric and sampling are committed) and a new PP round becomes allowed again (AC-13). Given the amendment includes spec files or a construction-affecting change (fabric responsibility, colour, or any file change), then the amendment is classified **construction**, a new PP round is strongly suggested with a prominent notice on the amendment and the run, and the run carries a "re-sample recommended" flag until a new round is submitted. Given commercial terms only (cost, date, tolerance, payment term, advance), then it is classified **commercial** and only the costly note shows; a new round stays optional. Neither tier blocks anything. | S2 forward rule, D17 |
+| AC-28 | Given a PO in Acknowledged, In Production or Partially Delivered, when staff cancel it, then a reason is mandatory, including the new production-stage reason `ProductionAlreadyStarted` ("Cancelled after production started"), and the confirmation shows a prominent warning about sunk cost and vendor impact. It is never blocked because production has started. Given Delivered or Closed, cancellation is refused. | D5, §5.9 |
 | AC-29 | Given a cancelled PO, then its run is closed as cancelled and no further milestones or DNs can be recorded. | D5 (new) |
 | AC-30 | Given a milestone is recorded, then a `Production.MilestoneReached` event is written to the PROD outbox in the same transaction, with run id, `PO_NO`, milestone code, claimed date, and schema version. Payloads never contain internal notes, files or reporter contact details. | §9.10.3, ADR 0004 |
 | AC-31 | Given a DN is recorded, then a delivery event is written to the outbox in the same transaction with the DN number, lines, final-shipment flag and the late/short/over facts. A notification failure never rolls back the recording. | NFR-FT-08, FR-65 |
@@ -123,6 +133,9 @@ This is milestone-level visibility, not a factory-floor system. The sprint also 
 | AC-33 | Given the admin app, then the production screens show the milestone timeline, PP rounds and DN history with names instead of ids, are usable from 320 px, and use one `<h1>` and semantic landmarks; the over, short, late and recorded-late flags are text as well as colour. | NFR-17, NFR-19 (new) |
 | AC-34 | Given the run detail for any PO, then it never shows the PO's internal notes, cost sheets or target costs. | S2 information rule (new) |
 | AC-35 | Given every approval, milestone and DN, then the acting person's name is required (free text, trimmed, 2–100 characters) alongside the system actor. | D13 |
+| AC-36 | Given a `RompSupplied` run, when `BulkCuttingStarted` is recorded and no `FabricDispatchedByRomp` milestone exists dated on or before the cutting date, then it is recorded (never blocked) and marked with a loud "cutting started before fabric was dispatched" flag on the milestone and the run. | D14 |
+| AC-37 | Given a `RompSupplied` run, when a delivery note is recorded, then it stores the fabric-dispatch date (if any) and a "Romp fabric delay" indicator (fabric dispatched after cutting started, or never dispatched) so Sprint 4 can exclude Romp-caused delay from the vendor's on-time score. This sprint records the fact only. | D14, FR-SC-01 |
+| AC-38 | Given a construction-classified amendment after PP approval and the run's "re-sample recommended" flag still set, when `BulkCuttingStarted` is recorded, then it is recorded (never blocked) with a loud "cutting started without re-sampling after a construction change" flag. | D17 |
 
 ## Non-functional constraints
 
@@ -146,14 +159,7 @@ This is milestone-level visibility, not a factory-floor system. The sprint also 
 - **Per-drop delivery schedules** agreed in advance.
 - **Sprint 2 backlog items** not needed by PROD: vendor-decision capture on accept/reject (AC-31 of Sprint 2) and the vendor-amendment request admin UI.
 - **Payments**, including balance-on-delivery, and any refund or credit for a cancelled PO's sunk cost.
-- **A "Romp fabric dispatched" milestone** for `RompSupplied` POs (see Open questions).
 
 ## Open questions
 
-Questions 1–13 of the draft were answered by D1–D13 above. Remaining, none blocking the plan:
-
-- [ ] **A. `RompSupplied` fabric milestone.** D10 lists `FabricBooked` only for `VendorSupplied` and no equivalent for `RompSupplied`; Sprint 2 had suggested "Romp fabric dispatched". Assumption in this spec and plan: `RompSupplied` runs simply have no fabric milestone this sprint. Confirm, or name a milestone to add (a lookup row and one flag, no schema change).
-- [ ] **B. "Recorded late" threshold default.** D11 makes it configurable; suggested default **3 days**. Confirm or set.
-- [ ] **C. Production-stage cancel reason wording.** Suggested lookup row: code `CancelledInProduction`, name "Cancelled after production started". Confirm wording.
-- [ ] **D. Amendment reopens PP sampling (AC-13/AC-27).** Assumed: an amendment made after PP approval is flagged costly and allows a new PP round. Confirm that reopening is wanted rather than only the flag.
-- [ ] **E. At-risk rule (AC-16).** Assumed: expected completion later than the In-force latest acceptable date. Confirm whether a buffer (for transit days) should be configurable from the start.
+None open. Draft questions 1–13 were answered by D1–D13; questions A–E by D14–D18.
