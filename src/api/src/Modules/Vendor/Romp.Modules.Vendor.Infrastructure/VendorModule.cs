@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Storage;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Routing;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.Modules.Production.Contracts;
 using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Application.Files;
@@ -67,7 +69,8 @@ public sealed class VendorModule : IModule
             MaxFileSizeBytes = configuration.GetValue("Vndr:PoFileStorage:MaxFileSizeBytes", new PoFileStorageOptions().MaxFileSizeBytes),
             MaxFilesPerPo = configuration.GetValue("Vndr:PoFileStorage:MaxFilesPerPo", new PoFileStorageOptions().MaxFilesPerPo),
         });
-        services.AddSingleton<IFileStorage, LocalFileStorage>();
+        services.AddSingleton<FileStorageOptions>(sp => sp.GetRequiredService<PoFileStorageOptions>());
+        services.AddFileStorage(configuration);
 
         // SCRUM-93 task 13: opt VNDR's OUTB_MSG into the shared dispatcher (SCRUM-181) and give
         // every VNDR event a placeholder handler so messages reach Processed - no module has a
@@ -83,8 +86,16 @@ public sealed class VendorModule : IModule
             typeof(PoRevisionPutInForceEvent),
             typeof(PoRevisionSupersededEvent),
             typeof(PoRevisionRejectedEvent),
-            typeof(PoRevisionWithdrawnEvent));
+            typeof(PoRevisionWithdrawnEvent),
+            typeof(PoProductionStartedEvent),
+            typeof(PoPartiallyDeliveredEvent),
+            typeof(PoDeliveredEvent),
+            typeof(PoClosedEvent));
         services.AddScoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>));
+
+        // Sprint 3 (ADR 0008, SCRUM-185/190): VNDR is a real consumer of PROD's events.
+        services.AddScoped<IOutboxMessageHandler<ProductionStartedEvent>, ProductionStartedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<DeliveryNoteRecordedEvent>, DeliveryNoteRecordedConsumer>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)

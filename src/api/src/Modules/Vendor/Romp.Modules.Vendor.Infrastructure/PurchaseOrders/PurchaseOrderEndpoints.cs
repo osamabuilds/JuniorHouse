@@ -29,6 +29,9 @@ internal static class PurchaseOrderEndpoints
         group.MapPost("/{id:long}/acknowledge", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new AcknowledgePurchaseOrderCommand(id), cancellationToken)));
 
+        group.MapPost("/{id:long}/close", async (long id, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new ClosePurchaseOrderCommand(id), cancellationToken)));
+
         group.MapPost("/{id:long}/cancel", async (
                 long id,
                 CancelPoRequest body,

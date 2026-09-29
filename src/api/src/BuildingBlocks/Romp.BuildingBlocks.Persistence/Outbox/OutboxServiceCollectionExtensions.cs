@@ -15,6 +15,8 @@ public static class OutboxServiceCollectionExtensions
     public static IServiceCollection AddOutboxDispatcher(this IServiceCollection services, OutboxDispatcherOptions options)
     {
         services.AddSingleton(options);
+        services.AddScoped<OutboxMessageContext>();
+        services.AddScoped<Inbox.InboxGuard>();
         services.AddSingleton<IOutboxDispatcher, OutboxDispatcher>();
         services.AddHostedService<OutboxDispatcherHostedService>();
         return services;

@@ -1,4 +1,5 @@
 using Romp.BuildingBlocks.Domain;
+using Romp.Modules.Vendor.Contracts;
 using Romp.Modules.Vendor.Domain.Revisions;
 
 namespace Romp.Modules.Vendor.Domain.PurchaseOrders;
@@ -162,7 +163,56 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         Raise(new PoAcknowledgedEvent(Id, PoNo, InForceRevisionNumber(), CurrentTerms()));
     }
 
-    /// <summary>AC-12: Draft/SentToVendor/Acknowledged -&gt; Cancelled, with a mandatory reason (AC-12a is enforced by the command validator, not here).</summary>
+    /// <summary>
+    /// Sprint 3 (ADR 0008, D1): Acknowledged -&gt; InProduction when PROD records bulk cutting. Forward-only and
+    /// idempotent (a redelivered event is a no-op); returns whether the status changed.
+    /// </summary>
+    public bool StartProduction() => AdvanceProduction(PoStatus.InProduction, new PoProductionStartedEvent(Id, PoNo));
+
+    /// <summary>Sprint 3 (AC-24): first delivery note leaving quantity outstanding. Forward-only, idempotent.</summary>
+    public bool MarkPartiallyDelivered() => AdvanceProduction(PoStatus.PartiallyDelivered, new PoPartiallyDeliveredEvent(Id, PoNo));
+
+    /// <summary>Sprint 3 (AC-24): shipped total met the ordered quantity (within tolerance) or a final shipment was recorded. Forward-only, idempotent.</summary>
+    public bool MarkDelivered() => AdvanceProduction(PoStatus.Delivered, new PoDeliveredEvent(Id, PoNo));
+
+    /// <summary>Sprint 3 (D2, AC-25): manual close, only from Delivered.</summary>
+    public void Close()
+    {
+        if (StatusId != PoStatus.Delivered)
+        {
+            throw new DomainException($"PO {PoNo} can only be closed once it is Delivered.");
+        }
+
+        StatusId = PoStatus.Closed;
+        _statusHistory.Add(new PoStatusHistoryEntry(Id, PoStatus.Closed, cancelReasonId: null));
+        Raise(new PoClosedEvent(Id, PoNo));
+    }
+
+    private bool AdvanceProduction(short target, PoEvent domainEvent)
+    {
+        // A cancelled PO ignores late production messages; a PO not yet Acknowledged cannot have production.
+        if (StatusId == PoStatus.Cancelled)
+        {
+            return false;
+        }
+
+        if (PoStatus.ProductionRank(StatusId) == 0)
+        {
+            throw new DomainException($"PO {PoNo} has not been acknowledged, so production cannot be recorded against it.");
+        }
+
+        if (PoStatus.ProductionRank(StatusId) >= PoStatus.ProductionRank(target))
+        {
+            return false;
+        }
+
+        StatusId = target;
+        _statusHistory.Add(new PoStatusHistoryEntry(Id, target, cancelReasonId: null));
+        Raise(domainEvent);
+        return true;
+    }
+
+    /// <summary>AC-12, Sprint 3 AC-28: any state before Delivered (including InProduction and PartiallyDelivered, never blocked by production having started, D5) -&gt; Cancelled, with a mandatory reason (AC-12a is enforced by the command validator, not here).</summary>
     /// <remarks>SCRUM-93 task 26 (AC-21): the caller must have loaded <see cref="Revisions"/> - an open Pending revision is auto-withdrawn in this same call.</remarks>
     public void Cancel(short cancelReasonId)
     {
@@ -171,11 +221,16 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
             throw new DomainException($"PO {PoNo} is already cancelled.");
         }
 
+        if (StatusId is PoStatus.Delivered or PoStatus.Closed)
+        {
+            throw new DomainException($"PO {PoNo} is already Delivered or Closed and can no longer be cancelled.");
+        }
+
         var openPending = _revisions.FirstOrDefault(r => r.StatusId == RevisionStatus.Pending);
         if (openPending is not null)
         {
             openPending.MarkWithdrawn("Auto-withdrawn: PO cancelled.");
-            Raise(new PoRevisionWithdrawnEvent(Id, PoNo, openPending.RevisionNumber, openPending.InitiatorId, PoTermsSnapshot.From(openPending)));
+            Raise(new PoRevisionWithdrawnEvent(Id, PoNo, openPending.RevisionNumber, openPending.InitiatorId, PoTermsSnapshots.From(openPending)));
         }
 
         StatusId = PoStatus.Cancelled;
@@ -213,7 +268,8 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         decimal advancePercent,
         short? fabricResponsibilityId,
         IReadOnlyCollection<(short SizeId, short ColourId, int Qty)> lines,
-        bool goesImmediatelyInForce)
+        bool goesImmediatelyInForce,
+        bool changesFiles = false)
     {
         var revisionNumber = (short)((_revisions.Count == 0 ? 0 : _revisions.Max(r => r.RevisionNumber)) + 1);
         var initialStatusId = goesImmediatelyInForce ? RevisionStatus.InForce : RevisionStatus.Pending;
@@ -227,6 +283,10 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
             ? latestAcceptableDate.Value.DayNumber - LatestAcceptableDate.Value.DayNumber
             : null;
         var quantityDiff = lines.Sum(l => l.Qty) - _lines.Sum(l => l.Qty);
+        var currentColours = _lines.Select(l => l.ColourId).ToHashSet();
+        var isConstructionChange = changesFiles
+            || fabricResponsibilityId != FabricResponsibilityId
+            || lines.Any(l => !currentColours.Contains(l.ColourId));
         var isBeyondLatestAcceptableDate = latestAcceptableDate.HasValue && expectedDeliveryDate > latestAcceptableDate.Value;
 
         var revision = new PurchaseOrderRevision(
@@ -236,7 +296,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
             poValueBefore, poValueAfter, poValueAfter - poValueBefore,
             advanceAmountBefore, advanceAmountAfter,
             expectedDateShiftDays, latestAcceptableDateShiftDays, quantityDiff, isBeyondLatestAcceptableDate,
-            lines);
+            lines, isConstructionChange);
 
         // AC-9: the previous In-force revision becomes Superseded in the same call that creates the
         // new one - only relevant when the new revision itself goes immediately In-force.
@@ -246,7 +306,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         }
         else
         {
-            Raise(new PoRevisionProposedEvent(Id, PoNo, revisionNumber, initiatorId, PoTermsSnapshot.From(revision)));
+            Raise(new PoRevisionProposedEvent(Id, PoNo, revisionNumber, initiatorId, PoTermsSnapshots.From(revision)));
         }
 
         _revisions.Add(revision);
@@ -261,6 +321,11 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
     /// <remarks>The caller must have loaded both <see cref="Revisions"/> and <see cref="Lines"/> - see <see cref="CreateRevision"/>'s own remarks.</remarks>
     public void AcceptPendingRevision(short revisionNumber)
     {
+        if (StatusId is PoStatus.Delivered or PoStatus.Closed)
+        {
+            throw new DomainException($"PO {PoNo} is already Delivered or Closed and can no longer be amended.");
+        }
+
         var revision = FindRevisionOrThrow(revisionNumber);
         RequireRevisionStatus(revision, RevisionStatus.Pending, "accepted");
 
@@ -275,7 +340,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         RequireRevisionStatus(revision, RevisionStatus.Pending, "rejected");
 
         revision.MarkRejected(note);
-        Raise(new PoRevisionRejectedEvent(Id, PoNo, revisionNumber, revision.InitiatorId, PoTermsSnapshot.From(revision)));
+        Raise(new PoRevisionRejectedEvent(Id, PoNo, revisionNumber, revision.InitiatorId, PoTermsSnapshots.From(revision)));
     }
 
     /// <summary>SCRUM-93 task 25 (AC-13). Withdrawn by its own proposer - never takes effect. Also used by <see cref="Cancel"/>'s auto-withdraw (task 26, AC-21).</summary>
@@ -285,7 +350,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         RequireRevisionStatus(revision, RevisionStatus.Pending, "withdrawn");
 
         revision.MarkWithdrawn(note);
-        Raise(new PoRevisionWithdrawnEvent(Id, PoNo, revisionNumber, revision.InitiatorId, PoTermsSnapshot.From(revision)));
+        Raise(new PoRevisionWithdrawnEvent(Id, PoNo, revisionNumber, revision.InitiatorId, PoTermsSnapshots.From(revision)));
     }
 
     /// <summary>Mirrors <paramref name="revision"/>'s terms/lines onto this aggregate's own row and supersedes whichever other revision was previously In-force - shared by both a new revision created immediately In-force (AC-9) and an existing Pending revision being accepted (AC-11).</summary>
@@ -314,7 +379,7 @@ public sealed class PurchaseOrder : AggregateRoot<long>, IAuditable
         _lines.Clear();
         _lines.AddRange(lines.Select(line => new PoLine(Id, line.SizeId, line.ColourId, line.Qty)));
 
-        Raise(new PoRevisionPutInForceEvent(Id, PoNo, revision.RevisionNumber, revision.InitiatorId, PoTermsSnapshot.From(revision)));
+        Raise(new PoRevisionPutInForceEvent(Id, PoNo, revision.RevisionNumber, revision.InitiatorId, PoTermsSnapshots.From(revision), revision.IsConstructionChange));
     }
 
     /// <summary>

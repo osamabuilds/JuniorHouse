@@ -1,13 +1,13 @@
-using Romp.Modules.Vendor.Application.Files;
 
-namespace Romp.Modules.Vendor.Infrastructure.Files;
+
+namespace Romp.BuildingBlocks.Storage;
 
 /// <summary>
 /// SCRUM-93 task 34 (AC-45). Dev/Docker Compose implementation of <see cref="IFileStorage"/> - one
-/// file per generated (GUID) key under <see cref="PoFileStorageOptions.RootPath"/>, created on first
+/// file per generated (GUID) key under <see cref="FileStorageOptions.RootPath"/>, created on first
 /// use. The key never encodes or derives from the caller's filename.
 /// </summary>
-public sealed class LocalFileStorage(PoFileStorageOptions options) : IFileStorage
+public sealed class LocalFileStorage(FileStorageOptions options) : IFileStorage
 {
     public async Task<string> SaveAsync(byte[] content, CancellationToken cancellationToken)
     {

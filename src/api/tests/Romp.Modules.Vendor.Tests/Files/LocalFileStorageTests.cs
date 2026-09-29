@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Storage;
 using Romp.Modules.Vendor.Application.Files;
 using Romp.Modules.Vendor.Infrastructure.Files;
 

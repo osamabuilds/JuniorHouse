@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Storage;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +22,8 @@ public sealed class UploadPoFileCommandValidator : AbstractValidator<UploadPoFil
             .Must(content => content.Length > 0).WithMessage("The file is empty.")
             .Must(content => content.LongLength <= options.MaxFileSizeBytes)
             .WithMessage($"The file is larger than the {options.MaxFileSizeBytes / (1024 * 1024)} MB limit.")
-            .Must(content => content.Length == 0 || PoFileContent.DetectContentType(content) is not null)
-            .WithMessage($"This file type isn't allowed. Upload a {PoFileContent.AllowedTypesDescription} file.");
+            .Must(content => content.Length == 0 || FileContent.DetectContentType(content) is not null)
+            .WithMessage($"This file type isn't allowed. Upload a {FileContent.AllowedTypesDescription} file.");
     }
 }
 
@@ -46,11 +47,11 @@ public sealed class UploadPoFileCommandHandler(IVendorDbContext dbContext, IFile
         }
 
         // Validation has already passed, so the type is known. Bytes are stored only after every check.
-        var contentType = PoFileContent.DetectContentType(request.Content)!;
+        var contentType = FileContent.DetectContentType(request.Content)!;
         var storageKey = await fileStorage.SaveAsync(request.Content, cancellationToken);
 
         var file = new PurchaseOrderFile(
-            po.Id, request.CategoryId, PoFileContent.SanitiseFileName(request.FileName), storageKey, contentType, request.Content.LongLength, addedInRevisionId: null);
+            po.Id, request.CategoryId, FileContent.SanitiseFileName(request.FileName), storageKey, contentType, request.Content.LongLength, addedInRevisionId: null);
         dbContext.PurchaseOrderFiles.Add(file);
         await dbContext.SaveChangesAsync(cancellationToken);
 

@@ -1,5 +1,5 @@
 
-namespace Romp.Modules.Vendor.Application.Files;
+namespace Romp.BuildingBlocks.Storage;
 
 /// <summary>
 /// SCRUM-93 task 35 (AC-45). Detects an allowed file type from its leading bytes (its content
@@ -7,7 +7,7 @@ namespace Romp.Modules.Vendor.Application.Files;
 /// controls. Allowed: PDF, PNG, JPEG, and ZIP-based Office files (xlsx/docx). Also makes a filename
 /// safe to display and to send in a Content-Disposition header (AC-46).
 /// </summary>
-public static class PoFileContent
+public static class FileContent
 {
     public const string AllowedTypesDescription = "PDF, PNG, JPEG, Excel (.xlsx) or Word (.docx)";
 

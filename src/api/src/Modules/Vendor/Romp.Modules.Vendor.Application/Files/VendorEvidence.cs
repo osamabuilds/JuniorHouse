@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Storage;
 using FluentValidation;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Domain.Files;
@@ -18,8 +19,8 @@ public sealed class EvidenceFileAddValidator : AbstractValidator<EvidenceFileAdd
             .Must(content => content.Length > 0).WithMessage("An evidence file is empty.")
             .Must(content => content.LongLength <= options.MaxFileSizeBytes)
             .WithMessage($"An evidence file is larger than the {options.MaxFileSizeBytes / (1024 * 1024)} MB limit.")
-            .Must(content => content.Length == 0 || PoFileContent.DetectContentType(content) is not null)
-            .WithMessage($"An evidence file has a type that isn't allowed. Use {PoFileContent.AllowedTypesDescription}.");
+            .Must(content => content.Length == 0 || FileContent.DetectContentType(content) is not null)
+            .WithMessage($"An evidence file has a type that isn't allowed. Use {FileContent.AllowedTypesDescription}.");
     }
 }
 
@@ -42,8 +43,8 @@ internal static class VendorEvidence
         {
             var storageKey = await fileStorage.SaveAsync(item.Content, cancellationToken);
             dbContext.PurchaseOrderFiles.Add(new PurchaseOrderFile(
-                poId, PoFileCategory.VendorEvidence, PoFileContent.SanitiseFileName(item.FileName), storageKey,
-                PoFileContent.DetectContentType(item.Content)!, item.Content.LongLength, addedInRevisionId: null,
+                poId, PoFileCategory.VendorEvidence, FileContent.SanitiseFileName(item.FileName), storageKey,
+                FileContent.DetectContentType(item.Content)!, item.Content.LongLength, addedInRevisionId: null,
                 vendorCommunicationId: communication.Id));
         }
     }

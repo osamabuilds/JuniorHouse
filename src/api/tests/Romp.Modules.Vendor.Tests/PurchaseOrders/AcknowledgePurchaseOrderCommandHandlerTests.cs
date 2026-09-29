@@ -1,3 +1,4 @@
+using Romp.Modules.Vendor.Contracts;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Persistence.Outbox;

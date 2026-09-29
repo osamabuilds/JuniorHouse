@@ -9,6 +9,8 @@ using Romp.BuildingBlocks.Persistence;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Catalog.Infrastructure;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
+using Romp.Modules.Production.Infrastructure;
+using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Reference.Infrastructure;
 using Romp.Modules.Reference.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Domain.Vendors;
@@ -19,7 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule()];
 
 builder.Services.AddSharedPersistence();
 
@@ -31,7 +33,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
         typeof(Romp.Modules.Reference.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Catalog.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Vendor.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Vendor.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Production.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -95,11 +98,13 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var catalogContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
     var vendorContext = scope.ServiceProvider.GetRequiredService<VendorDbContext>();
+    var productionContext = scope.ServiceProvider.GetRequiredService<ProductionDbContext>();
 
     await Task.WhenAll(
         scope.ServiceProvider.GetRequiredService<ReferenceDbContext>().Database.MigrateAsync(),
         catalogContext.Database.MigrateAsync(),
-        vendorContext.Database.MigrateAsync());
+        vendorContext.Database.MigrateAsync(),
+        productionContext.Database.MigrateAsync());
 
     // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
     // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough

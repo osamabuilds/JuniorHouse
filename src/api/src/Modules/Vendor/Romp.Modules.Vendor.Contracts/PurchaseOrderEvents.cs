@@ -1,7 +1,6 @@
 using Romp.BuildingBlocks.Domain;
-using Romp.Modules.Vendor.Domain.Revisions;
 
-namespace Romp.Modules.Vendor.Domain.PurchaseOrders;
+namespace Romp.Modules.Vendor.Contracts;
 
 /// <summary>One size/colour line in an event's terms snapshot.</summary>
 public sealed record PoTermsLine(short SizeId, short ColourId, int Qty);
@@ -21,14 +20,7 @@ public sealed record PoTermsSnapshot(
     short PaymentTermId,
     decimal AdvancePercent,
     short? FabricResponsibilityId,
-    IReadOnlyList<PoTermsLine> Lines)
-{
-    public static PoTermsSnapshot From(PurchaseOrderRevision revision) => new(
-        revision.UnitCost, revision.ExpectedDeliveryDate, revision.LatestAcceptableDate,
-        revision.OverTolerancePercent, revision.UnderTolerancePercent, revision.PaymentTermId,
-        revision.AdvancePercent, revision.FabricResponsibilityId,
-        revision.Lines.Select(l => new PoTermsLine(l.SizeId, l.ColourId, l.Qty)).ToList());
-}
+    IReadOnlyList<PoTermsLine> Lines);
 
 /// <summary>
 /// The shared envelope of every VNDR event (AC-48): message id (<see cref="EventId"/>), event type,
@@ -78,7 +70,7 @@ public sealed record PoRevisionProposedEvent(long PoId, string PoNo, short Revis
     public override short SchemaVersion => 1;
 }
 
-public sealed record PoRevisionPutInForceEvent(long PoId, string PoNo, short RevisionNumber, short InitiatorId = 0, PoTermsSnapshot? Terms = null) : PoEvent(PoId, PoNo)
+public sealed record PoRevisionPutInForceEvent(long PoId, string PoNo, short RevisionNumber, short InitiatorId = 0, PoTermsSnapshot? Terms = null, bool IsConstructionChange = false) : PoEvent(PoId, PoNo)
 {
     public override short SchemaVersion => 1;
 }
@@ -96,6 +88,28 @@ public sealed record PoRevisionRejectedEvent(long PoId, string PoNo, short Revis
 
 /// <summary>SCRUM-93 task 25 (also raised by CancelPurchaseOrderCommand's auto-withdraw, task 26, AC-21).</summary>
 public sealed record PoRevisionWithdrawnEvent(long PoId, string PoNo, short RevisionNumber, short InitiatorId = 0, PoTermsSnapshot? Terms = null) : PoEvent(PoId, PoNo)
+{
+    public override short SchemaVersion => 1;
+}
+
+/// <summary>Sprint 3 (D1, ADR 0008): raised when PROD's bulk-cutting event moves the PO to In Production.</summary>
+public sealed record PoProductionStartedEvent(long PoId, string PoNo) : PoEvent(PoId, PoNo)
+{
+    public override short SchemaVersion => 1;
+}
+
+public sealed record PoPartiallyDeliveredEvent(long PoId, string PoNo) : PoEvent(PoId, PoNo)
+{
+    public override short SchemaVersion => 1;
+}
+
+public sealed record PoDeliveredEvent(long PoId, string PoNo) : PoEvent(PoId, PoNo)
+{
+    public override short SchemaVersion => 1;
+}
+
+/// <summary>Sprint 3 (D2): staff closed a Delivered PO. PROD closes its run in response.</summary>
+public sealed record PoClosedEvent(long PoId, string PoNo) : PoEvent(PoId, PoNo)
 {
     public override short SchemaVersion => 1;
 }

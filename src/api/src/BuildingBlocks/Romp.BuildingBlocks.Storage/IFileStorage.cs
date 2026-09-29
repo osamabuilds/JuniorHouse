@@ -1,5 +1,5 @@
 
-namespace Romp.Modules.Vendor.Application.Files;
+namespace Romp.BuildingBlocks.Storage;
 
 /// <summary>
 /// SCRUM-93 task 34 (AC-45, plan.md). Storage keys are generated (never derived from the

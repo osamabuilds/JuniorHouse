@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Storage;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,8 @@ internal static class TestServices
         services.AddSingleton(new PoCommercialTermsOptions());
         services.AddSingleton(new PoFileStorageOptions { MaxFileSizeBytes = 1024, MaxFilesPerPo = 3 });
         services.AddSingleton<IFileStorage, InMemoryFileStorage>();
+        services.AddSingleton<FakeProductionQueries>();
+        services.AddSingleton<Romp.Modules.Production.Contracts.IProductionQueries>(sp => sp.GetRequiredService<FakeProductionQueries>());
 
         var applicationAssembly = typeof(AssemblyReference).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);

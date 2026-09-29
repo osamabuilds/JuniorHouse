@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\Catalog\Romp.Modules.Catalog.Infrastructure\Romp.Modules.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Production\Romp.Modules.Production.Infrastructure\Romp.Modules.Production.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Reference\Romp.Modules.Reference.Infrastructure\Romp.Modules.Reference.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Vendor\Romp.Modules.Vendor.Infrastructure\Romp.Modules.Vendor.Infrastructure.csproj" />
     <ProjectReference Include="..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
