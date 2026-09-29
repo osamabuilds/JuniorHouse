@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Reference.Contracts;
-using Romp.Modules.Reference.Domain;
 using Romp.Modules.Reference.Domain.Lookups.Vendors;
 using Romp.Modules.Reference.Infrastructure.Persistence;
 

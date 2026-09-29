@@ -2,9 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Romp.Modules.Reference.Application;
 using Romp.Modules.Reference.Application.Lookups;
-using Romp.Modules.Reference.Domain;
 using Romp.Modules.Reference.Domain.Lookups;
 
 namespace Romp.Modules.Reference.Infrastructure.Lookups;

@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Vendor.Domain.PurchaseOrders;
-using Romp.Modules.Vendor.Domain.Vendors;
-using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
 

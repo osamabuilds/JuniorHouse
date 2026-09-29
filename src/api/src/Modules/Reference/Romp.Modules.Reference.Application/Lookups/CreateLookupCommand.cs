@@ -3,7 +3,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Application;
 using Romp.Modules.Reference.Application.Abstractions;
-using Romp.Modules.Reference.Domain;
 using Romp.Modules.Reference.Domain.Lookups;
 
 namespace Romp.Modules.Reference.Application.Lookups;

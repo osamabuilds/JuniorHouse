@@ -1,5 +1,4 @@
 using MediatR;
-using Romp.Modules.Reference.Application;
 using Romp.Modules.Reference.Application.Abstractions;
 
 namespace Romp.Modules.Reference.Infrastructure.Persistence;

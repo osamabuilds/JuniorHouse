@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Romp.Modules.Reference.Domain;
 using Romp.Modules.Reference.Domain.Lookups.Apparel;
 using Romp.Modules.Reference.Domain.Lookups.PurchaseOrders;
 using Romp.Modules.Reference.Domain.Lookups.Vendors;
-using Romp.Modules.Reference.Infrastructure;
 using Romp.Modules.Reference.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
 

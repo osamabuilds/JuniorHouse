@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Domain;
-using Romp.Modules.Reference.Domain;
 using Romp.Modules.Reference.Domain.Lookups;
 using Romp.Modules.Reference.Domain.Lookups.Apparel;
 using Romp.Modules.Reference.Domain.Lookups.PurchaseOrders;

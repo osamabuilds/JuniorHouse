@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Romp.Modules.Catalog.Domain;
 using Romp.Modules.Catalog.Domain.Styles;
-using Romp.Modules.Catalog.Infrastructure;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
 

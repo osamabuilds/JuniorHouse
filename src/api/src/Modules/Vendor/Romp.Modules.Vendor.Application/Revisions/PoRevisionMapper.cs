@@ -1,6 +1,4 @@
-using Romp.Modules.Vendor.Domain;
 using Romp.Modules.Vendor.Domain.Revisions;
-using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Application.Revisions;
 

@@ -2,7 +2,6 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Vendor.Application.Abstractions;
-using Romp.Modules.Vendor.Domain;
 using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Application.Vendors;

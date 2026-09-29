@@ -1,9 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using Romp.Modules.Catalog.Infrastructure;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
-using Romp.Modules.Reference.Infrastructure;
 using Romp.Modules.Reference.Infrastructure.Persistence;
-using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 
 namespace Romp.Api.IntegrationTests;

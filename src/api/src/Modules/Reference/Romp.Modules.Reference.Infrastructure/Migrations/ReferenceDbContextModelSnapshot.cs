@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Romp.BuildingBlocks.Domain;
-using Romp.Modules.Reference.Infrastructure;
 using Romp.Modules.Reference.Infrastructure.Persistence;
 
 #nullable disable

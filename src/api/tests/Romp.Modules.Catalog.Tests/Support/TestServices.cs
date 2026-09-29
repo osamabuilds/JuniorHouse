@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Application;
 using Romp.Modules.Catalog.Application;
 using Romp.Modules.Catalog.Application.Abstractions;
-using Romp.Modules.Catalog.Infrastructure;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Contracts;
 

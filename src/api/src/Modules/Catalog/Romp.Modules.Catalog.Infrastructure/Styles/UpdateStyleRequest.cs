@@ -1,4 +1,3 @@
-using Romp.Modules.Catalog.Application;
 using Romp.Modules.Catalog.Application.Styles;
 
 namespace Romp.Modules.Catalog.Infrastructure.Styles;

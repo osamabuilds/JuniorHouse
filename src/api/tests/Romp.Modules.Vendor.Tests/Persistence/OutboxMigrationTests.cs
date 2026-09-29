@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Romp.BuildingBlocks.Persistence;
 using Romp.BuildingBlocks.Persistence.Outbox;
-using Romp.Modules.Vendor.Domain.Vendors;
-using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
 

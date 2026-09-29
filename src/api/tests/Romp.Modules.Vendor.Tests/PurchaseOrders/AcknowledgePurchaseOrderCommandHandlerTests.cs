@@ -1,12 +1,8 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Persistence.Outbox;
-using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.PurchaseOrders;
-using Romp.Modules.Vendor.Domain;
 using Romp.Modules.Vendor.Domain.PurchaseOrders;
-using Romp.Modules.Vendor.Domain.Vendors;
-using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Tests.Support;
 

@@ -1,8 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using Romp.Modules.Reference.Application;
 using Romp.Modules.Reference.Application.Lookups;
-using Romp.Modules.Reference.Domain;
 using Romp.Modules.Reference.Domain.Lookups.Apparel;
 using Romp.Modules.Reference.Tests.Support;
 

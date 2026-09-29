@@ -1,7 +1,4 @@
-using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.Files;
-using Romp.Modules.Vendor.Domain.Vendors;
-using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Files;
 
 namespace Romp.Modules.Vendor.Tests.Files;

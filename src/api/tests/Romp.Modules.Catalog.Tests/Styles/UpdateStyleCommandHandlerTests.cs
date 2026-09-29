@@ -1,7 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Application;
-using Romp.Modules.Catalog.Application;
 using Romp.Modules.Catalog.Application.Styles;
 using Romp.Modules.Catalog.Tests.Support;
 using Romp.Modules.Vendor.Contracts;

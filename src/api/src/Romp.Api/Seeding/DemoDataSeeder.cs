@@ -1,11 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Romp.Modules.Catalog.Domain;
 using Romp.Modules.Catalog.Domain.Styles;
-using Romp.Modules.Catalog.Infrastructure;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Domain.PurchaseOrders;
 using Romp.Modules.Vendor.Domain.Vendors;
-using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 
 namespace Romp.Api.Seeding;

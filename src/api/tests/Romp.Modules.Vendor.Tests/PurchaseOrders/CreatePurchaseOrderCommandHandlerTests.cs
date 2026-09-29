@@ -1,9 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Application;
-using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.PurchaseOrders;
-using Romp.Modules.Vendor.Domain.Vendors;
 using Romp.Modules.Vendor.Tests.Support;
 
 namespace Romp.Modules.Vendor.Tests.PurchaseOrders;

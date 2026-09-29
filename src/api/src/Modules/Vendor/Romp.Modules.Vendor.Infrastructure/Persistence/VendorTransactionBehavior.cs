@@ -1,7 +1,5 @@
 using MediatR;
-using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.Abstractions;
-using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Infrastructure.Persistence;
 

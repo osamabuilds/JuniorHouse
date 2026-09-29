@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Infrastructure.Persistence;
 

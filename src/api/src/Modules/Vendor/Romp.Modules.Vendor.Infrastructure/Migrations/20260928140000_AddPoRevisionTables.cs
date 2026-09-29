@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Romp.Modules.Vendor.Domain.Vendors;
 using System;
 
 #nullable disable

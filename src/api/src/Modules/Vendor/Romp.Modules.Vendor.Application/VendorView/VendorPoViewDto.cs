@@ -1,5 +1,4 @@
 using Romp.Modules.Vendor.Application.PurchaseOrders;
-using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Application.VendorView;
 

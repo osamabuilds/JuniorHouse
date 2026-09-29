@@ -3,7 +3,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Application;
 using Romp.Modules.Catalog.Application.Abstractions;
-using Romp.Modules.Catalog.Domain;
 using Romp.Modules.Vendor.Contracts;
 
 namespace Romp.Modules.Catalog.Application.Styles;

@@ -1,4 +1,3 @@
-using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Application.Files;
 

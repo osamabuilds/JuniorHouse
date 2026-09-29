@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Modules;
-using Romp.BuildingBlocks.Persistence;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.Modules.Reference.Application;
 using Romp.Modules.Reference.Application.Abstractions;

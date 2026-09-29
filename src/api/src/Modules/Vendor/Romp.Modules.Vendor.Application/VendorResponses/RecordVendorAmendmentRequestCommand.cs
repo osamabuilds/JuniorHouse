@@ -8,9 +8,7 @@ using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Application.Files;
 using Romp.Modules.Vendor.Application.PurchaseOrders;
 using Romp.Modules.Vendor.Application.Revisions;
-using Romp.Modules.Vendor.Domain;
 using Romp.Modules.Vendor.Domain.PurchaseOrders;
-using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Application.VendorResponses;
 

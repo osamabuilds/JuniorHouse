@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.Abstractions;
-using Romp.Modules.Vendor.Domain.Vendors;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 
 namespace Romp.Modules.Vendor.Infrastructure.PurchaseOrders;

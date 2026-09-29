@@ -1,12 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.PurchaseOrders;
 using Romp.Modules.Vendor.Application.Revisions;
 using Romp.Modules.Vendor.Domain.Revisions;
-using Romp.Modules.Vendor.Domain.Vendors;
-using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Tests.Support;
 

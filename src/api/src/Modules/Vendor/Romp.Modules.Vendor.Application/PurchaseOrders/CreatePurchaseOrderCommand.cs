@@ -6,7 +6,6 @@ using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Reference.Contracts;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Domain.PurchaseOrders;
-using Romp.Modules.Vendor.Domain.Vendors;
 
 namespace Romp.Modules.Vendor.Application.PurchaseOrders;
 

@@ -14,7 +14,6 @@ using Romp.Modules.Vendor.Application.Files;
 using Romp.Modules.Vendor.Application.PurchaseOrders;
 using Romp.Modules.Vendor.Contracts;
 using Romp.Modules.Vendor.Domain.Vendors;
-using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Infrastructure.PurchaseOrders;
 

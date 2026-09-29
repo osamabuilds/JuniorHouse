@@ -1,29 +1,26 @@
 using FluentValidation;
 using MediatR;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Modules;
-using Romp.BuildingBlocks.Persistence;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Application.Files;
 using Romp.Modules.Vendor.Application.PurchaseOrders;
-using Romp.Modules.Vendor.Application.Revisions;
-using Romp.Modules.Vendor.Application.VendorResponses;
-using Romp.Modules.Vendor.Application.Vendors;
-using Romp.Modules.Vendor.Application.VendorView;
 using Romp.Modules.Vendor.Contracts;
 using Romp.Modules.Vendor.Domain;
 using Romp.Modules.Vendor.Domain.PurchaseOrders;
 using Romp.Modules.Vendor.Domain.Vendors;
 using Romp.Modules.Vendor.Infrastructure.Files;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
+using Romp.Modules.Vendor.Infrastructure.Revisions;
+using Romp.Modules.Vendor.Infrastructure.VendorResponses;
+using Romp.Modules.Vendor.Infrastructure.VendorView;
+using Romp.Modules.Vendor.Infrastructure.Vendors;
 using Romp.Modules.Vendor.Infrastructure.PurchaseOrders;
 
 namespace Romp.Modules.Vendor.Infrastructure;
@@ -92,176 +89,11 @@ public sealed class VendorModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        MapVendorEndpoints(endpoints);
-        MapPurchaseOrderEndpoints(endpoints);
-    }
-
-    private static void MapVendorEndpoints(IEndpointRouteBuilder endpoints)
-    {
-        var group = endpoints.MapGroup("/api/vendors").WithTags("Vendor");
-
-        group.MapPost("/", async (CreateVendorCommand command, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(command, cancellationToken)));
-
-        group.MapPut("/{id:long}", async (
-                long id,
-                UpdateVendorRequest body,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
-
-        group.MapGet("/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
-        {
-            var vendor = await sender.Send(new GetVendorByIdQuery(id), cancellationToken);
-            return vendor is null ? Results.NotFound() : Results.Ok(vendor);
-        });
-
-        group.MapGet("/", async (
-                string? search,
-                short? cityId,
-                short? specialisationId,
-                ISender sender,
-                CancellationToken cancellationToken,
-                bool activeOnly = true) =>
-            Results.Ok(await sender.Send(
-                new SearchVendorsQuery(search, cityId, specialisationId, activeOnly),
-                cancellationToken)));
-    }
-
-    private static void MapPurchaseOrderEndpoints(IEndpointRouteBuilder endpoints)
-    {
-        var group = endpoints.MapGroup("/api/purchase-orders").WithTags("Vendor");
-
-        group.MapPost("/", async (CreatePurchaseOrderCommand command, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(command, cancellationToken)));
-
-        group.MapPut("/{id:long}", async (
-                long id,
-                UpdatePoRequest body,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
-
-        group.MapPost("/{id:long}/send", async (long id, bool? sendWithoutTechPack, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SendPurchaseOrderCommand(id, sendWithoutTechPack ?? false), cancellationToken)));
-
-        group.MapPost("/{id:long}/acknowledge", async (long id, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new AcknowledgePurchaseOrderCommand(id), cancellationToken)));
-
-        group.MapPost("/{id:long}/cancel", async (
-                long id,
-                CancelPoRequest body,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new CancelPurchaseOrderCommand(id, body.CancelReasonId), cancellationToken)));
-
-        // SCRUM-93 task 29.
-        group.MapPost("/{id:long}/amendments", async (
-                long id,
-                CreateAmendmentRequest body,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
-
-        group.MapPost("/{id:long}/amendments/{revNo}/accept", async (
-                long id,
-                short revNo,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: true, Note: null), cancellationToken)));
-
-        group.MapPost("/{id:long}/amendments/{revNo}/reject", async (
-                long id,
-                short revNo,
-                RevisionNoteRequest body,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: false, body.Note), cancellationToken)));
-
-        group.MapPost("/{id:long}/amendments/{revNo}/withdraw", async (
-                long id,
-                short revNo,
-                RevisionNoteRequest body,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new WithdrawRevisionCommand(id, revNo, body.Note), cancellationToken)));
-
-        group.MapGet("/{id:long}/revisions", async (long id, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new GetPurchaseOrderRevisionsQuery(id), cancellationToken)));
-
-        // SCRUM-93 task 43. 404 for a missing or never-sent PO - a vendor can't tell those apart.
-        group.MapGet("/{id:long}/vendor-view", async (long id, ISender sender, CancellationToken cancellationToken) =>
-        {
-            var view = await sender.Send(new GetVendorFacingPoViewQuery(id), cancellationToken);
-            return view is null ? Results.NotFound() : Results.Ok(view);
-        });
-
-        // SCRUM-93 task 40. Multipart upload; the content type is detected from the bytes, never trusted from the client.
-        group.MapGet("/{id:long}/files", async (long id, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new GetPoFileListQuery(id), cancellationToken)));
-
-        group.MapPost("/{id:long}/files", async (
-                long id,
-                [Microsoft.AspNetCore.Mvc.FromForm] short categoryId,
-                IFormFile file,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            {
-                await using var stream = file.OpenReadStream();
-                using var buffer = new MemoryStream();
-                await stream.CopyToAsync(buffer, cancellationToken);
-                return Results.Ok(await sender.Send(new UploadPoFileCommand(id, categoryId, file.FileName, buffer.ToArray()), cancellationToken));
-            })
-            .DisableAntiforgery();
-
-        group.MapDelete("/{id:long}/files/{fileId:long}", async (long id, long fileId, ISender sender, CancellationToken cancellationToken) =>
-        {
-            await sender.Send(new RemovePoFileCommand(id, fileId), cancellationToken);
-            return Results.NoContent();
-        });
-
-        group.MapGet("/{id:long}/files/{fileId:long}", async (
-            long id, long fileId, HttpContext http, ISender sender, CancellationToken cancellationToken) =>
-        {
-            var download = await sender.Send(new DownloadPoFileQuery(id, fileId), cancellationToken);
-            foreach (var (name, value) in download.Headers)
-            {
-                http.Response.Headers[name] = value;
-            }
-
-            return Results.File(download.Content, download.ContentType);
-        });
-
-        // SCRUM-93 task 33. The route's id always wins over any PoId in the body.
-        group.MapPost("/{id:long}/vendor-response", async (
-                long id,
-                RecordVendorResponseCommand body,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body with { PoId = id }, cancellationToken)));
-
-        group.MapPost("/{id:long}/vendor-amendment-request", async (
-                long id,
-                RecordVendorAmendmentRequestCommand body,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body with { PoId = id }, cancellationToken)));
-
-        group.MapGet("/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
-        {
-            var po = await sender.Send(new GetPurchaseOrderByIdQuery(id), cancellationToken);
-            return po is null ? Results.NotFound() : Results.Ok(po);
-        });
-
-        group.MapGet("/", async (
-                long? vendorId,
-                short? statusId,
-                DateOnly? deliveryFrom,
-                DateOnly? deliveryTo,
-                ISender sender,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(
-                new SearchPurchaseOrdersQuery(vendorId, statusId, deliveryFrom, deliveryTo),
-                cancellationToken)));
+        endpoints.MapVendorEndpoints();
+        endpoints.MapPurchaseOrderEndpoints();
+        endpoints.MapRevisionEndpoints();
+        endpoints.MapVendorResponseEndpoints();
+        endpoints.MapVendorViewEndpoints();
+        endpoints.MapPurchaseOrderFileEndpoints();
     }
 }
