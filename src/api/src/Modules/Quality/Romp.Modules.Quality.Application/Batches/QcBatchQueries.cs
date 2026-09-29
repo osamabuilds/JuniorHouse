@@ -58,6 +58,7 @@ public sealed class GetQcBatchQueryHandler(IQualityDbContext dbContext) : IReque
         var batch = await dbContext.Batches.AsNoTracking().AsSplitQuery()
             .Include(b => b.Lines)
             .Include(b => b.SubBatches).ThenInclude(s => s.Lines)
+            .Include(b => b.SubBatches).ThenInclude(s => s.Returns)
             .Include(b => b.Inspections).ThenInclude(i => i.Checks)
             .Include(b => b.Inspections).ThenInclude(i => i.Defects)
             .Include(b => b.Inspections).ThenInclude(i => i.SafetyChecks).ThenInclude(s => s.AffectedLines)

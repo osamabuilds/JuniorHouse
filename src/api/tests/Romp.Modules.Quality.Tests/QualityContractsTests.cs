@@ -1,6 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
 using Romp.Modules.Quality.Application.Abstractions;
 using Romp.Modules.Quality.Contracts;
-using Romp.Modules.Quality.Infrastructure.Outcomes;
 
 namespace Romp.Modules.Quality.Tests;
 
@@ -10,11 +10,16 @@ public sealed class QualityContractsTests
     [Trait("Spec", "AC-24")]
     public async Task Queries_NoData_ReturnEmpty()
     {
-        var queries = new EmptyQualityQueries();
+        using var host = new Support.TestHost(nameof(Queries_NoData_ReturnEmpty));
+        await host.WithScopeAsync(async sp =>
+        {
+            var queries = new Romp.Modules.Quality.Infrastructure.Outcomes.QualityQueries(sp.GetRequiredService<Romp.Modules.Quality.Infrastructure.Persistence.QcDbContext>());
 
-        Assert.Empty(await queries.GetReleasedQuantitiesAsync(1, CancellationToken.None));
-        Assert.Empty(await queries.GetReleasedQuantitiesByBatchAsync(1, CancellationToken.None));
-        Assert.Empty(await queries.GetReceivedQuantitiesAsync(1, CancellationToken.None));
+            Assert.Empty(await queries.GetReleasedQuantitiesAsync(1, CancellationToken.None));
+            Assert.Empty(await queries.GetReleasedQuantitiesByBatchAsync(1, CancellationToken.None));
+            Assert.Empty(await queries.GetReceivedQuantitiesAsync(1, CancellationToken.None));
+            return true;
+        });
     }
 
     [Fact]

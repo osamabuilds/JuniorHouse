@@ -12,7 +12,7 @@ using Romp.Modules.Quality.Infrastructure.Persistence;
 namespace Romp.Modules.Quality.Infrastructure.Migrations
 {
     [DbContext(typeof(QcDbContext))]
-    [Migration("20260929213150_InitialQuality")]
+    [Migration("20260929213800_InitialQuality")]
     partial class InitialQuality
     {
         /// <inheritdoc />
@@ -469,6 +469,10 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         .HasColumnType("smallint")
                         .HasColumnName("QC_OTCM_ID");
 
+                    b.Property<long?>("ParentSubBatchId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRNT_SPLT_ID");
+
                     b.Property<string>("Reason")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
@@ -504,6 +508,8 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OutcomeId");
+
+                    b.HasIndex("ParentSubBatchId");
 
                     b.HasIndex("StatusId");
 
@@ -3051,6 +3057,12 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         .HasForeignKey("OutcomeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_QC_BTCH_SPLT_QC_OTCM_ID");
+
+                    b.HasOne("Romp.Modules.Quality.Domain.Batches.QcSubBatch", null)
+                        .WithMany()
+                        .HasForeignKey("ParentSubBatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QC_BTCH_SPLT_PRNT_SPLT_ID");
 
                     b.HasOne("Romp.Modules.Quality.Domain.BatchStatusLookup", null)
                         .WithMany()

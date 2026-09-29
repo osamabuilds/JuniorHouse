@@ -35,15 +35,27 @@ public sealed record InspectionDto(
     IReadOnlyList<DefectDto> Defects,
     IReadOnlyList<SafetyCheckDto> SafetyChecks);
 
-/// <summary>A sub-batch as shown on the batch. Empty until a decision is recorded (group E fills the outcome fields).</summary>
+public sealed record SubBatchLineDto(short SizeId, short ColourId, int Qty, int ReturnedQty, int OutstandingQty);
+
+public sealed record ReworkReturnDto(DateOnly ReturnDate, string ActingPerson, string? Note);
+
+/// <summary>
+/// A part of a batch: decided at the first decision, or the returned quantity of a rework part awaiting re-inspection
+/// (<c>ParentSubBatchId</c>). <c>OutstandingQty</c> per line is what a rework part has not yet got back (AC-27).
+/// </summary>
 public sealed record SubBatchDto(
     long Id,
     short SplitNo,
+    long? ParentSubBatchId,
     short? OutcomeId,
+    string? OutcomeCode,
     string? Reason,
     short StatusId,
     short ReworkRoundCount,
-    IReadOnlyList<BatchLineDto> Lines);
+    DateTimeOffset? DecidedAt,
+    string? ActingPerson,
+    IReadOnlyList<SubBatchLineDto> Lines,
+    IReadOnlyList<ReworkReturnDto> Returns);
 
 /// <summary>The full batch. Built from QC's own data only: no PO notes, costs or target costs (AC-45).</summary>
 public sealed record QcBatchDto(
@@ -84,8 +96,10 @@ internal static class QcBatchMapper
             s.AffectedLines.OrderBy(l => l.SizeId).ThenBy(l => l.ColourId).Select(l => new SafetyLineDto(l.SizeId, l.ColourId)).ToList())).ToList());
 
     public static SubBatchDto ToDto(this QcSubBatch s) => new(
-        s.Id, s.SplitNo, s.OutcomeId, s.Reason, s.StatusId, s.ReworkRoundCount,
-        s.Lines.OrderBy(l => l.SizeId).ThenBy(l => l.ColourId).Select(l => new BatchLineDto(l.SizeId, l.ColourId, l.Qty)).ToList());
+        s.Id, s.SplitNo, s.ParentSubBatchId, s.OutcomeId, s.OutcomeId is { } outcome ? QcOutcome.Code(outcome) : null, s.Reason, s.StatusId,
+        s.ReworkRoundCount, s.DecidedAt, s.ActingPerson,
+        s.Lines.OrderBy(l => l.SizeId).ThenBy(l => l.ColourId).Select(l => new SubBatchLineDto(l.SizeId, l.ColourId, l.Qty, l.ReturnedQty, l.OutstandingQty)).ToList(),
+        s.Returns.OrderBy(r => r.ReturnDate).ThenBy(r => r.Id).Select(r => new ReworkReturnDto(r.ReturnDate, r.ActingPerson, r.Note)).ToList());
 
     public static AqlPlanDto ToDto(this Domain.Inspections.Aql.AqlPlan plan, int lotQty) =>
         new(plan.ModeId, InspectionMode.Code(plan.ModeId), plan.CodeLetter, lotQty, plan.SampleQty, plan.AcceptNo, plan.RejectNo);

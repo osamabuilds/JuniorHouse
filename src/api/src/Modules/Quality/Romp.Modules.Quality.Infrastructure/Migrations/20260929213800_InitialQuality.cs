@@ -553,6 +553,7 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     BTCH_ID = table.Column<long>(type: "bigint", nullable: false),
                     SPLT_NO = table.Column<short>(type: "smallint", nullable: false),
+                    PRNT_SPLT_ID = table.Column<long>(type: "bigint", nullable: true),
                     QC_OTCM_ID = table.Column<short>(type: "smallint", nullable: true),
                     RSN = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     DCSN_DTE = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -575,6 +576,13 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                         principalTable: "QC_BTCH_MAIN",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_QC_BTCH_SPLT_PRNT_SPLT_ID",
+                        column: x => x.PRNT_SPLT_ID,
+                        principalSchema: "QC",
+                        principalTable: "QC_BTCH_SPLT",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_QC_BTCH_SPLT_QC_BTCH_STS_ID",
                         column: x => x.QC_BTCH_STS_ID,
@@ -1276,6 +1284,12 @@ namespace Romp.Modules.Quality.Infrastructure.Migrations
                 table: "QC_BTCH_SPLT",
                 columns: new[] { "BTCH_ID", "SPLT_NO" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QC_BTCH_SPLT_PRNT_SPLT_ID",
+                schema: "QC",
+                table: "QC_BTCH_SPLT",
+                column: "PRNT_SPLT_ID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_QC_BTCH_SPLT_QC_BTCH_STS_ID",

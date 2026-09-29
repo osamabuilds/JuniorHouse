@@ -42,7 +42,7 @@ public sealed class QualityModule : IModule
                 sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
 
         services.AddScoped<IQualityDbContext>(sp => sp.GetRequiredService<QcDbContext>());
-        services.AddScoped<IQualityQueries, EmptyQualityQueries>();
+        services.AddScoped<IQualityQueries, QualityQueries>();
         services.AddScoped<IGrnNumberAllocator, GrnNumberAllocator>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
@@ -81,5 +81,6 @@ public sealed class QualityModule : IModule
         endpoints.MapQcBatchEndpoints();
         endpoints.MapInspectionEndpoints();
         endpoints.MapSafetyCheckEndpoints();
+        endpoints.MapOutcomeEndpoints();
     }
 }

@@ -72,6 +72,8 @@ internal sealed class TestHost : IDisposable
 
     public TestHost(string databaseName, Action<IServiceCollection>? configure = null, string? postgres = null)
     {
+        // Every host gets its own InMemory database: two tests with the same name must never share rows.
+        var inMemorySuffix = Guid.NewGuid().ToString("N");
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSharedPersistence();
@@ -85,7 +87,7 @@ internal sealed class TestHost : IDisposable
         {
             if (postgres is null)
             {
-                options.UseInMemoryDatabase(databaseName).ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+                options.UseInMemoryDatabase(databaseName + inMemorySuffix).ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
             }
             else
             {

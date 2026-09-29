@@ -64,6 +64,8 @@ internal sealed class QcSubBatchConfiguration : IEntityTypeConfiguration<QcSubBa
         builder.Property(s => s.BatchId).HasColumnName("BTCH_ID").IsRequired();
         builder.Property(s => s.SplitNo).HasColumnName("SPLT_NO").IsRequired();
         builder.HasIndex(s => new { s.BatchId, s.SplitNo }).IsUnique();
+        builder.Property(s => s.ParentSubBatchId).HasColumnName("PRNT_SPLT_ID");
+        builder.HasIndex(s => s.ParentSubBatchId);
         builder.Property(s => s.OutcomeId).HasColumnName("QC_OTCM_ID");
         builder.HasIndex(s => s.OutcomeId);
         builder.Property(s => s.Reason).HasColumnName("RSN").HasMaxLength(500);
@@ -76,6 +78,8 @@ internal sealed class QcSubBatchConfiguration : IEntityTypeConfiguration<QcSubBa
 
         builder.HasOne<QcBatch>().WithMany(b => b.SubBatches).HasForeignKey(s => s.BatchId)
             .HasConstraintName("FK_QC_BTCH_SPLT_BTCH_ID").OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<QcSubBatch>().WithMany().HasForeignKey(s => s.ParentSubBatchId)
+            .HasConstraintName("FK_QC_BTCH_SPLT_PRNT_SPLT_ID").OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<OutcomeLookup>().WithMany().HasForeignKey(s => s.OutcomeId)
             .HasConstraintName("FK_QC_BTCH_SPLT_QC_OTCM_ID").OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<BatchStatusLookup>().WithMany().HasForeignKey(s => s.StatusId)

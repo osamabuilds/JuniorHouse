@@ -2,6 +2,7 @@ using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Quality.Contracts;
 using Romp.Modules.Quality.Domain.Inspections;
 using Romp.Modules.Quality.Domain.Inspections.Aql;
+using Romp.Modules.Quality.Domain.Outcomes;
 using Romp.Modules.Quality.Domain.SafetyChecks;
 
 namespace Romp.Modules.Quality.Domain.Batches;
@@ -110,12 +111,13 @@ public sealed class QcBatch : AggregateRoot<long>, IAuditable
         else
         {
             var sub = FindSubBatch(input.SubBatchId.Value);
-            if (sub.StatusId != BatchStatus.Pending)
+            if (sub.StatusId != BatchStatus.Pending || _inspections.Any(i => i.SubBatchId == sub.Id))
             {
                 throw new DomainException("That sub-batch is not waiting for a re-inspection.");
             }
 
-            roundNo = (short)(_inspections.Count(i => i.SubBatchId == sub.Id) + 1);
+            // The returned quantity's first inspection is the next round after the rework it came back from.
+            roundNo = (short)(sub.ReworkRoundCount + 1);
         }
 
         var lot = ScopeQty(input.SubBatchId);
@@ -231,6 +233,181 @@ public sealed class QcBatch : AggregateRoot<long>, IAuditable
         return inspection;
     }
 
+    /// <summary>
+    /// Records the first decision on the batch, whole or split (spec AC-19..AC-25, AC-31, AC-32). The batch must have been
+    /// inspected; the parts must add up exactly to the counted quantity (<see cref="BatchSplitPlanner"/>); every outcome other
+    /// than Accepted needs a reason; and Accepted / Concession pass the child-safety gate (<see cref="SafetyGate"/>). A part
+    /// that is accepted is released at once, whatever happens to the other parts (AC-23). Returns the new sub-batches; the
+    /// caller saves, then calls <see cref="RaiseOutcomeEvent"/> for each so the events carry the sub-batch ids.
+    /// </summary>
+    public IReadOnlyList<QcSubBatch> Decide(IReadOnlyList<DecisionPart> parts, string actingPerson, DateTimeOffset now)
+    {
+        if (StatusId == BatchStatus.Closed)
+        {
+            throw new DomainException("This batch is closed.");
+        }
+
+        if (_subBatches.Count > 0)
+        {
+            throw new DomainException("This batch has already been decided; a decided part cannot be decided again.");
+        }
+
+        var inspection = _inspections.FirstOrDefault(i => i.SubBatchId is null)
+            ?? throw new DomainException("Record an inspection before recording an outcome for this batch.");
+        var person = ValidatePerson(actingPerson);
+
+        BatchSplitPlanner.Validate(_lines.Select(l => (l.SizeId, l.ColourId, l.Qty)).ToList(), parts);
+
+        foreach (var part in parts)
+        {
+            ValidateOutcome(part.OutcomeId, part.Reason);
+            SafetyGate.EnsureCanRelease(part.OutcomeId, inspection, part.Lines.Select(l => new LineRef(l.SizeId, l.ColourId)).ToList());
+        }
+
+        var created = new List<QcSubBatch>();
+        for (var i = 0; i < parts.Count; i++)
+        {
+            var sub = QcSubBatch.Decided((short)(i + 1), parts[i], person, now, parentId: null, reworkRounds: 0);
+            _subBatches.Add(sub);
+            created.Add(sub);
+        }
+
+        RefreshStatus();
+        return created;
+    }
+
+    /// <summary>
+    /// Decides a returned rework quantity after its re-inspection (spec AC-26, AC-34): one outcome for the whole returned
+    /// part, through the same reason and safety rules. Rework again sends it back for another round; rounds are unlimited.
+    /// </summary>
+    public QcSubBatch DecideSubBatch(long subBatchId, short outcomeId, string? reason, string actingPerson, DateTimeOffset now)
+    {
+        var sub = FindSubBatch(subBatchId);
+        var person = ValidatePerson(actingPerson);
+
+        switch (sub.StatusId)
+        {
+            case BatchStatus.Pending:
+                throw new DomainException("Record the re-inspection of this returned part before recording an outcome.");
+            case BatchStatus.AwaitingRework:
+                throw new DomainException("This part is still with the vendor for rework; record its return first.");
+            case BatchStatus.Decided:
+                throw new DomainException("This part has already been decided; a decided part cannot be decided again.");
+        }
+
+        ValidateOutcome(outcomeId, reason);
+        var inspection = _inspections.Where(i => i.SubBatchId == sub.Id).OrderByDescending(i => i.RoundNo).FirstOrDefault();
+        SafetyGate.EnsureCanRelease(outcomeId, inspection, sub.Lines.Select(l => new LineRef(l.SizeId, l.ColourId)).ToList());
+
+        sub.Decide(outcomeId, reason, person, now);
+        RefreshStatus();
+        return sub;
+    }
+
+    /// <summary>
+    /// Records the vendor returning reworked goods (spec AC-26, AC-27): per size and colour, never more than was sent. The
+    /// returned units become a new part awaiting re-inspection; whatever has not come back stays visible as outstanding on the
+    /// rework part, neither rejected nor accepted. Returns the new part.
+    /// </summary>
+    public QcSubBatch RecordReworkReturn(long subBatchId, DateOnly returnDate, string actingPerson, string? note, IReadOnlyList<PartLine> lines, DateOnly today)
+    {
+        var sub = FindSubBatch(subBatchId);
+        var person = ValidatePerson(actingPerson);
+
+        if (sub.OutcomeId != QcOutcome.Rework || sub.StatusId != BatchStatus.AwaitingRework)
+        {
+            throw new DomainException("Only a part that was sent back for rework and has not fully returned can receive a return.");
+        }
+
+        if (returnDate > today)
+        {
+            throw new DomainException($"The return date cannot be after today ({today:yyyy-MM-dd}).");
+        }
+
+        if (lines.Count == 0 || lines.Any(l => l.Qty < 1))
+        {
+            throw new DomainException("Enter the returned quantity for at least one size and colour (whole numbers above 0).");
+        }
+
+        if (lines.GroupBy(l => (l.SizeId, l.ColourId)).Any(g => g.Count() > 1))
+        {
+            throw new DomainException("Each size and colour can appear only once in a return.");
+        }
+
+        foreach (var line in lines)
+        {
+            var sent = sub.Lines.FirstOrDefault(l => l.SizeId == line.SizeId && l.ColourId == line.ColourId)
+                ?? throw new DomainException($"Size {line.SizeId} and colour {line.ColourId} was not sent for rework.");
+            if (line.Qty > sent.OutstandingQty)
+            {
+                throw new DomainException(
+                    $"Size {line.SizeId} and colour {line.ColourId}: {line.Qty} returned but only {sent.OutstandingQty} of the {sent.Qty} sent is still outstanding.");
+            }
+        }
+
+        var returned = QcSubBatch.Returned((short)(_subBatches.Max(s => s.SplitNo) + 1), sub, lines);
+        sub.AddReturn(returnDate, person, note, lines);
+        _subBatches.Add(returned);
+        RefreshStatus();
+        return returned;
+    }
+
+    /// <summary>Raises the event for a decided part (spec AC-29): accepted/concession, rejected, or rework requested. Call after the part has been saved, so it carries its id.</summary>
+    public void RaiseOutcomeEvent(QcSubBatch sub)
+    {
+        var lines = sub.Lines.Select(l => new QcLine(l.SizeId, l.ColourId, l.Qty)).ToList();
+        switch (sub.OutcomeId)
+        {
+            case QcOutcome.Accepted or QcOutcome.Concession:
+                Raise(new QcBatchAcceptedEvent(Id, sub.Id, GrnId, PoId, PoNo, QcOutcome.Code(sub.OutcomeId.Value), lines));
+                break;
+            case QcOutcome.Rejected:
+                Raise(new QcBatchRejectedEvent(Id, sub.Id, GrnId, PoId, PoNo, lines));
+                break;
+            case QcOutcome.Rework:
+                Raise(new QcBatchReworkRequestedEvent(Id, sub.Id, GrnId, PoId, PoNo, lines));
+                break;
+        }
+    }
+
+    private void RefreshStatus()
+    {
+        if (_subBatches.Count == 0)
+        {
+            return;
+        }
+
+        StatusId = _subBatches.Any(s => s.StatusId is BatchStatus.Pending or BatchStatus.InInspection or BatchStatus.AwaitingRework)
+            ? BatchStatus.AwaitingRework
+            : BatchStatus.Decided;
+    }
+
+    private static string ValidatePerson(string actingPerson)
+    {
+        var person = actingPerson?.Trim() ?? string.Empty;
+        return person.Length is < 2 or > 100
+            ? throw new DomainException("Enter the name of the person recording this (2 to 100 characters).")
+            : person;
+    }
+
+    private static void ValidateOutcome(short outcomeId, string? reason)
+    {
+        if (outcomeId is not (QcOutcome.Accepted or QcOutcome.Concession or QcOutcome.Rejected or QcOutcome.Rework))
+        {
+            throw new DomainException("The outcome must be Accept, Accept with concession, Reject or Rework.");
+        }
+
+        if (outcomeId != QcOutcome.Accepted && string.IsNullOrWhiteSpace(reason))
+        {
+            throw new DomainException("Give a reason for a concession, a rejection or a rework.");
+        }
+
+        if (reason is { } text && text.Trim().Length > 500)
+        {
+            throw new DomainException("The reason can be at most 500 characters.");
+        }
+    }
+
     private static void ValidateChecklist(IReadOnlyList<CheckInput> checks)
     {
         foreach (var type in CheckType.All)
@@ -334,98 +511,3 @@ public sealed class QcBatchLine : Entity<long>, IAuditable
     public string? UpdtBy { get; set; }
 }
 
-/// <summary>
-/// Maps to QC.QC_BTCH_SPLT: a decided part of a batch. A whole-batch decision is one sub-batch (number 1). The
-/// outcome is empty until it is decided.
-/// </summary>
-public sealed class QcSubBatch : Entity<long>, IAuditable
-{
-    private readonly List<QcSubBatchLine> _lines = [];
-    private readonly List<ReworkReturn> _returns = [];
-
-    private QcSubBatch()
-    {
-    }
-
-    public long BatchId { get; private set; }
-
-    public short SplitNo { get; private set; }
-
-    public short? OutcomeId { get; private set; }
-
-    public string? Reason { get; private set; }
-
-    public DateTimeOffset? DecidedAt { get; private set; }
-
-    public string? ActingPerson { get; private set; }
-
-    /// <summary>How many times this part has been sent back for rework (rounds are unlimited).</summary>
-    public short ReworkRoundCount { get; private set; }
-
-    public short StatusId { get; private set; }
-
-    public IReadOnlyCollection<QcSubBatchLine> Lines => _lines.AsReadOnly();
-
-    public IReadOnlyCollection<ReworkReturn> Returns => _returns.AsReadOnly();
-
-    public DateTimeOffset InsrDte { get; set; }
-
-    public string InsrBy { get; set; } = string.Empty;
-
-    public DateTimeOffset? UpdtDte { get; set; }
-
-    public string? UpdtBy { get; set; }
-
-    internal void MarkInInspection() => StatusId = BatchStatus.InInspection;
-}
-
-/// <summary>Maps to QC.QC_BTCH_SPLT_LINE. <see cref="ReturnedQty"/> is the running total returned from the vendor after rework.</summary>
-public sealed class QcSubBatchLine : Entity<long>, IAuditable
-{
-    private QcSubBatchLine()
-    {
-    }
-
-    public long SubBatchId { get; private set; }
-
-    public short SizeId { get; private set; }
-
-    public short ColourId { get; private set; }
-
-    public int Qty { get; private set; }
-
-    public int ReturnedQty { get; private set; }
-
-    public DateTimeOffset InsrDte { get; set; }
-
-    public string InsrBy { get; set; } = string.Empty;
-
-    public DateTimeOffset? UpdtDte { get; set; }
-
-    public string? UpdtBy { get; set; }
-}
-
-/// <summary>Maps to QC.QC_RWRK_RTRN: one return of reworked goods from the vendor.</summary>
-public sealed class ReworkReturn : Entity<long>, IAuditable
-{
-    private ReworkReturn()
-    {
-        ActingPerson = string.Empty;
-    }
-
-    public long SubBatchId { get; private set; }
-
-    public DateOnly ReturnDate { get; private set; }
-
-    public string ActingPerson { get; private set; }
-
-    public string? Note { get; private set; }
-
-    public DateTimeOffset InsrDte { get; set; }
-
-    public string InsrBy { get; set; } = string.Empty;
-
-    public DateTimeOffset? UpdtDte { get; set; }
-
-    public string? UpdtBy { get; set; }
-}
