@@ -195,3 +195,21 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | | | | superseded | SUPR |
 | | | | timing | TMNG |
 | | | | without | WOUT |
+
+### Added in Sprint 4 (SCRUM-197, Receiving and Quality Control)
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| acceptable quality level | AQL | | quality control | QC |
+| check | CHK | | reconciliation (claimed vs counted) | RCNL |
+| counted | CNTD | | reject | RJCT |
+| excess | EXCS | | result | RSLT |
+| inbound | INBD | | returned | RTRN |
+| inspection | INSP | | rework | RWRK |
+| letter | LTR | | safety | SAFE |
+| limit | LIMT | | severity | SVRT |
+| lot | LOT | | split (sub-batch) | SPLT |
+| maximum | MAX | | | |
+| minimum | MIN | | | |
+| mode | MODE | | | |
+| outcome | OTCM | | | |

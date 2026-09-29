@@ -46,6 +46,7 @@
     <Project Path="tests/Romp.BuildingBlocks.Persistence.Tests/Romp.BuildingBlocks.Persistence.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Reference.Tests/Romp.Modules.Reference.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Production.Tests/Romp.Modules.Production.Tests.csproj" />
+    <Project Path="tests/Romp.Modules.Quality.Tests/Romp.Modules.Quality.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Catalog.Tests/Romp.Modules.Catalog.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Vendor.Tests/Romp.Modules.Vendor.Tests.csproj" />
   </Folder>

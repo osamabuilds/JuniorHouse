@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure.Persistence;
+using Romp.Modules.Quality.Infrastructure;
+using Romp.Modules.Quality.Infrastructure.Persistence;
 using Romp.Modules.Reference.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 using System.Text.RegularExpressions;
@@ -32,6 +34,7 @@ public sealed partial class NamingConventionTests
             { "CTLG", BuildModel<CatalogDbContext>(options => new CatalogDbContext(options)) },
             { "VNDR", BuildModel<VendorDbContext>(options => new VendorDbContext(options)) },
             { "PROD", BuildModel<ProductionDbContext>(options => new ProductionDbContext(options)) },
+            { "QC", BuildModel<QcDbContext>(options => new QcDbContext(options)) },
         };
 
         return data;
