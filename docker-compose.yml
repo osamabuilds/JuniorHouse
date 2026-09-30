@@ -50,6 +50,16 @@ services:
       Prod__RecordedLateDays: "3"
       # A run is "at risk" when its expected completion is later than the latest acceptable delivery date minus this many days.
       Prod__AtRiskBufferDays: "7"
+      # Sprint 4 (SCRUM-197): receiving and QC settings. These are the defaults, listed so they are easy to find and change.
+      # A batch of this many pieces or fewer is inspected 100%; larger ones by AQL sampling.
+      Qc__FullInspectionMaxLot: "50"
+      # The inspection level (I, II, III) and the acceptable quality level the sampling plan applies unless a form says otherwise.
+      Qc__DefaultInspectionLevelCode: "II"
+      Qc__DefaultAqlLevelCode: "Aql2_5"
+      # Critical defects allowed in a sample before it fails (0: any critical defect fails).
+      Qc__CriticalDefectTolerance: "0"
+      # The vendor scorecard also shows this rolling window next to the all-time figures.
+      Vndr__Scorecard__WindowDays: "90"
     volumes:
       - po-files:/data/po-files
     ports:

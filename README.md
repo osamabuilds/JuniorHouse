@@ -154,6 +154,49 @@ to **PO-2026-90007**, one in each production state.
 Every action asks for your name (kept in this browser for next time), because there is no sign-in until Sprint 8.
 Settings: `Prod__RecordedLateDays` (default 3) and `Prod__AtRiskBufferDays` (default 7) in `docker-compose.yml`.
 
+## Try Sprint 4 (receiving, quality control and the vendor scorecard)
+
+Sprint 4 takes a vendor's delivery from the dock to the shelf: count it against the delivery note (goods receipt), inspect it,
+record the two child-safety checks, decide what happens to it, and follow anything sent back for rework
+(`docs/specs/SCRUM-197-receive-inspect/`). Same stack (`docker compose up -d --build`). The demo seed adds nine delivered
+purchase orders, **PO-2026-91001** to **PO-2026-91009**, one for each state below.
+
+**Demo script** (admin app, **Receiving & QC** in the top navigation):
+
+1. **The receiving queue.** Every vendor delivery note recorded on a production run shows up here. *Waiting to be received* is the
+   default view; the demo deliveries are already received, so switch the filter to *Received* (or *All deliveries*). To count a
+   new one, record a delivery note on a production run (Sprint 3), wait a few seconds for the event, and choose *Receive goods*.
+2. **Count the goods.** *Receive goods* starts every count at what the vendor claims. Change a number and the page says
+   "Short by 5" or "Over by 4" in words. A difference is recorded, never refused. Each delivery note gets exactly one goods
+   receipt (`GRN-YYYY-NNNNN`); trying again says so.
+3. **See each state in QC batches.** Open **QC batches** and look at each demo batch:
+   **91001** counted, not inspected; **91002** short count, accepted; **91003** accepted with a concession;
+   **91004** rejected after a critical defect; **91005** part accepted, the rest waiting for rework at the vendor;
+   **91006** rework came back, was re-inspected and accepted; **91007** split into a passing and a rejected part;
+   **91008** a failed choking-hazard check on the size 5 lines; **91009** more arrived than the delivery note says.
+4. **Inspect a batch.** On **91001** choose *Inspect the batch*. The form shows the AQL plan that will apply (sample size, how many
+   defects pass or fail), one Pass/Fail per tech-pack item and a list of defects. A failed item needs a defect of its type, and
+   every defect needs a written note. The result is worked out for you, never typed in. Small lots (50 pieces or fewer) are
+   inspected 100%.
+5. **The child-safety checks.** Both (choking hazard on small trims, drawstring safety on necklines) must be recorded before
+   anything can be accepted; try recording an outcome first and it says so. *Not applicable* needs a reason. If a check fails for
+   some sizes and colours, that quantity can only be rejected or sent for rework, and there is no override.
+6. **Decide, or split.** Choose *Record the outcome*. Give the whole batch one outcome, or *Split it* so the passing part is
+   released now and does not wait for the rest. A split must place every piece: the balance table says what is still to place.
+   Concession, Reject and Rework need a reason.
+7. **Follow the rework.** On **91005**, choose *Record return*, enter how many came back (a short return leaves the rest outstanding),
+   *Re-inspect* the returned part, record its safety checks again, and *Record outcome*. Rounds are unlimited.
+8. **Vendor scorecard.** Open **Vendors**, choose *Scorecard* for a vendor: on-time %, on-quantity % and defect rate, all time and
+   for the last 90 days, each with the counts behind it. A measure with no data says "No data yet", never 0% or 100%. Deliveries that
+   were late only because Romp sent the fabric late are left out of the on-time figure and shown as a count.
+9. **Goods received against the order.** On a purchase order's screen, *Goods received* shows counted against ordered per size and
+   colour. It never changes the order's status; closing an order stays a manual step.
+
+Every action asks for your name (kept in this browser for next time), because there is no sign-in until Sprint 8.
+Settings in `docker-compose.yml`: `Qc__FullInspectionMaxLot` (50), `Qc__DefaultInspectionLevelCode` (II), `Qc__DefaultAqlLevelCode`
+(Aql2_5), `Qc__CriticalDefectTolerance` (0) and `Vndr__Scorecard__WindowDays` (90). The AQL tables are data seeded by the QC migration;
+check them against the published ISO 2859-1 tables before production use (see the spec's implementation notes).
+
 ## Tests
 
 ```bash

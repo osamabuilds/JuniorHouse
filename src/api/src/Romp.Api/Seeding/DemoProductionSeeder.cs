@@ -18,12 +18,12 @@ namespace Romp.Api.Seeding;
 internal static class DemoProductionSeeder
 {
     private const string FirstDemoPoNo = "PO-2026-90002";
-    private const string Person = "Demo Buyer";
+    internal const string Person = "Demo Buyer";
     private const string Reporter = "Ali Raza";
     private const short RecordedLateDays = 3;
 
     // Pakistan has no daylight saving: a fixed +05:00 offset gives the same "today" the API uses for its date bounds.
-    private static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5));
+    internal static DateOnly Today => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5));
 
     public static async Task SeedAsync(
         CatalogDbContext catalogContext, VendorDbContext vendorContext, ProductionDbContext productionContext, CancellationToken cancellationToken)
@@ -82,7 +82,7 @@ internal static class DemoProductionSeeder
     }
 
     /// <summary>The PO is created, sent and acknowledged; its production run is opened the way the acknowledge event would.</summary>
-    private static async Task<(PurchaseOrder Po, ProductionRun Run)> AcknowledgedWithRunAsync(
+    internal static async Task<(PurchaseOrder Po, ProductionRun Run)> AcknowledgedWithRunAsync(
         VendorDbContext vendorContext, ProductionDbContext productionContext, long styleId, long vendorId, string poNo, CancellationToken cancellationToken)
     {
         (short SizeId, short ColourId, int Qty)[] lines = [(4, 1, 50), (4, 2, 40), (5, 1, 30), (5, 2, 25)];
@@ -106,7 +106,7 @@ internal static class DemoProductionSeeder
         return (po, run);
     }
 
-    private static async Task StartProductionAsync(
+    internal static async Task StartProductionAsync(
         VendorDbContext vendorContext, ProductionDbContext productionContext, PurchaseOrder po, ProductionRun run, CancellationToken cancellationToken)
     {
         run.SubmitPpSample(Today, Reporter, Person, "Pre-production sample.", Today, RecordedLateDays);
@@ -119,13 +119,13 @@ internal static class DemoProductionSeeder
         await SaveBothAsync(vendorContext, productionContext, cancellationToken);
     }
 
-    private static async Task SaveBothAsync(VendorDbContext vendorContext, ProductionDbContext productionContext, CancellationToken cancellationToken)
+    internal static async Task SaveBothAsync(VendorDbContext vendorContext, ProductionDbContext productionContext, CancellationToken cancellationToken)
     {
         await vendorContext.SaveChangesAsync(cancellationToken);
         await productionContext.SaveChangesAsync(cancellationToken);
     }
 
-    private static DeliveryTerms TermsOf(PurchaseOrder po) => new(
+    internal static DeliveryTerms TermsOf(PurchaseOrder po) => new(
         RevisionNumber: 0, po.ExpectedDeliveryDate, po.LatestAcceptableDate, po.OverTolerancePercent, po.UnderTolerancePercent,
         po.Lines.Select(l => new OrderedLine(l.SizeId, l.ColourId, l.Qty)).ToList());
 }
