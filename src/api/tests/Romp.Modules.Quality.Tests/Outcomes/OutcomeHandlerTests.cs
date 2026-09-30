@@ -110,6 +110,26 @@ public sealed class OutcomeHandlerTests
     }
 
     [Fact]
+    [Trait("Spec", "AC-28")]
+    public async Task Handle_Reject_RecordsQuantityAndReason_AndWritesTheRejectedEvent()
+    {
+        using var host = new TestHost(nameof(Handle_Reject_RecordsQuantityAndReason_AndWritesTheRejectedEvent));
+        var (batchId, _) = await ReadyAsync(host);
+
+        var result = await host.SendAsync(new DecideBatchCommand(batchId, "Ali Raza", [Whole(QcOutcome.Rejected, "wrong colourway")]));
+
+        var part = Assert.Single(result.SubBatches);
+        Assert.Equal("Rejected", part.OutcomeCode);
+        Assert.Equal("wrong colourway", part.Reason);
+        Assert.Equal(1000, part.Lines.Sum(l => l.Qty));
+        Assert.Empty(await ReleasedAsync(host)); // a rejected quantity never reaches sellable stock
+        var message = await host.WithDbAsync(db => db.Set<OutboxMessage>().AsNoTracking().SingleAsync(m => m.EventType == "QcBatchRejectedEvent"));
+        using var payload = JsonDocument.Parse(message.Payload);
+        Assert.Equal(1000, payload.RootElement.GetProperty("Lines").EnumerateArray().Sum(l => l.GetProperty("Qty").GetInt32()));
+        Assert.DoesNotContain("colourway", message.Payload, StringComparison.Ordinal); // the reason stays in QC
+    }
+
+    [Fact]
     [Trait("Spec", "AC-29")]
     [Trait("Spec", "NFR-FT-08")]
     public async Task Handle_WritesEventsInOneTransaction_WithTheIdsOfTheParts()

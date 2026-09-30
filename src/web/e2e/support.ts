@@ -170,7 +170,7 @@ export async function fillAmendment(page: Page, options: { unitCost?: string; no
 export const today = (offsetDays = 0): string => new Date(Date.now() + 5 * 3600 * 1000 + offsetDays * 86400 * 1000).toISOString().slice(0, 10);
 
 /** Repeats `check` until it returns a value or the time runs out. The outbox dispatcher delivers events every few seconds. */
-async function poll<T>(check: () => Promise<T | null>, what: string, timeoutMs = 45_000): Promise<T> {
+export async function poll<T>(check: () => Promise<T | null>, what: string, timeoutMs = 45_000): Promise<T> {
   const started = Date.now();
   for (;;) {
     const value = await check();
@@ -272,3 +272,110 @@ export async function openPoById(page: Page, po: TestPo): Promise<void> {
   await page.goto(`/purchase-orders?po=${po.id}`);
   await expect(page.getByRole('heading', { name: po.poNo })).toBeVisible();
 }
+
+// ---- Sprint 4: receiving and QC ----
+
+export interface Receivable {
+  run: TestRun;
+  dnNo: string;
+  /** QC's inbound delivery, created from the delivery note event. */
+  deliveryId: number;
+}
+
+/** A run in production with one final delivery note for 100 pieces, once QC has its copy of the delivery note. */
+export async function createReceivable(request: APIRequestContext, dnNo = `DN-QC-${uniqueSuffix()}`): Promise<Receivable> {
+  const run = await createRunInProduction(request);
+  await apiDeliver(request, run, dnNo, 100, true);
+  const deliveryId = await poll(async () => {
+    const page = (await (await request.get(`${API}/api/quality/inbound-deliveries?search=${run.po.poNo}&pageSize=100`)).json()) as {
+      items: { id: number; vendorDnNo: string }[];
+    };
+    return page.items.find((d) => d.vendorDnNo === dnNo)?.id ?? null;
+  }, `the inbound delivery of ${dnNo}`);
+  return { run, dnNo, deliveryId };
+}
+
+export interface ReceivedBatch extends Receivable {
+  grnNo: string;
+  batchId: number;
+}
+
+/** Records the goods receipt through the API (counted as claimed unless `counted` says otherwise) and returns the QC batch it opened. */
+export async function apiReceive(request: APIRequestContext, receivable: Receivable, counted = 100): Promise<ReceivedBatch> {
+  const grn = await ok<{ grnNo: string }>(
+    await request.post(`${API}/api/quality/grns`, {
+      data: {
+        inboundDeliveryId: receivable.deliveryId,
+        receivedDate: today(),
+        actingPerson: PERSON,
+        note: null,
+        lines: [{ sizeId: receivable.run.po.sizeId, colourId: receivable.run.po.colourId, qty: counted }],
+      },
+    }),
+    'record goods receipt',
+  );
+  const batches = await ok<{ items: { id: number }[] }>(await request.get(`${API}/api/quality/batches?search=${grn.grnNo}`), 'find the batch');
+  return { ...receivable, grnNo: grn.grnNo, batchId: batches.items[0].id };
+}
+
+const ALL_PASS = [1, 2, 3, 4, 5, 6].map((checkTypeId) => ({ checkTypeId, resultId: 1 }));
+
+/** Records an inspection through the API and returns its id. */
+export async function apiInspect(
+  request: APIRequestContext,
+  batch: ReceivedBatch,
+  options: { subBatchId?: number | null; defects?: object[]; failStitching?: boolean } = {},
+): Promise<number> {
+  const inspection = await ok<{ id: number }>(
+    await request.post(`${API}/api/quality/batches/${batch.batchId}/inspections`, {
+      data: {
+        inspectionDate: today(),
+        actingPerson: PERSON,
+        subBatchId: options.subBatchId ?? null,
+        checks: ALL_PASS.map((c) => (options.failStitching && c.checkTypeId === 1 ? { ...c, resultId: 2 } : c)),
+        defects: options.defects ?? [],
+      },
+    }),
+    'record inspection',
+  );
+  return inspection.id;
+}
+
+/** Records both child-safety checks through the API: both Pass, or the choking-hazard check Fail for the whole batch. */
+export async function apiSafety(request: APIRequestContext, inspectionId: number, chokingHazardFails = false): Promise<void> {
+  await ok(
+    await request.put(`${API}/api/quality/inspections/${inspectionId}/safety-checks`, {
+      data: {
+        actingPerson: PERSON,
+        checks: [
+          { safetyTypeId: 1, resultId: chokingHazardFails ? 2 : 1, reason: null, affectedLines: [] },
+          { safetyTypeId: 2, resultId: 1, reason: null, affectedLines: [] },
+        ],
+      },
+    }),
+    'record safety checks',
+  );
+}
+
+/** Splits a batch through the API: the first part is accepted, the second is rejected or sent for rework. */
+export async function apiSplit(request: APIRequestContext, batch: ReceivedBatch, acceptedQty: number, restOutcomeId: 3 | 4): Promise<{ id: number; outcomeId: number }[]> {
+  const { sizeId, colourId } = batch.run.po;
+  const decision = await ok<{ subBatches: { id: number; outcomeId: number }[] }>(
+    await request.post(`${API}/api/quality/batches/${batch.batchId}/decision`, {
+      data: {
+        actingPerson: PERSON,
+        parts: [
+          { outcomeId: 1, reason: null, lines: [{ sizeId, colourId, qty: acceptedQty }] },
+          { outcomeId: restOutcomeId, reason: 'E2E: not good enough', lines: [{ sizeId, colourId, qty: 100 - acceptedQty }] },
+        ],
+      },
+    }),
+    'decide the batch',
+  );
+  return decision.subBatches;
+}
+
+export const openBatch = async (page: Page, batch: ReceivedBatch): Promise<void> => {
+  await page.goto(`/quality/batches/${batch.batchId}`);
+  await expect(page.getByRole('heading', { level: 1, name: `QC batch: ${batch.grnNo}` })).toBeVisible();
+};

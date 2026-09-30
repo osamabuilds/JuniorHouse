@@ -2,9 +2,17 @@ import { Page, expect, test } from '@playwright/test';
 import {
   PERSON,
   PoStage,
+  ReceivedBatch,
+  Receivable,
   TestPo,
   TestRun,
   apiDeliver,
+  apiInspect,
+  apiReceive,
+  apiSafety,
+  apiSplit,
+  createReceivable,
+  openBatch,
   createPo,
   createRun,
   createRunInProduction,
@@ -20,6 +28,11 @@ interface DemoRuns {
   fresh: TestRun;
   sampleWaiting: TestRun;
   busy: TestRun;
+  /** Sprint 4: a delivery waiting to be counted, a batch counted but not inspected, one inspected with safety checks recorded, and one with a part sent for rework. */
+  qcOpen: Receivable;
+  qcFresh: ReceivedBatch;
+  qcInspected: ReceivedBatch;
+  qcRework: ReceivedBatch;
 }
 
 /** Three runs in different states, created once and shared by every viewport (each needs the outbox dispatcher, which takes seconds). */
@@ -33,7 +46,14 @@ const demoRuns = (request: import('@playwright/test').APIRequestContext): Promis
     await apiDeliver(request, busy, 'DN-LAYOUT-1', 120); // over the allowance
     await apiDeliver(request, busy, 'DN-LAYOUT-2', 5, true); // final shipment
     await waitForPoStatus(request, busy.po.id, 7);
-    return { fresh, sampleWaiting, busy };
+    const qcOpen = await createReceivable(request);
+    const qcFresh = await apiReceive(request, await createReceivable(request));
+    const qcInspected = await apiReceive(request, await createReceivable(request));
+    await apiSafety(request, await apiInspect(request, qcInspected));
+    const qcRework = await apiReceive(request, await createReceivable(request));
+    await apiSafety(request, await apiInspect(request, qcRework));
+    await apiSplit(request, qcRework, 80, 4);
+    return { fresh, sampleWaiting, busy, qcOpen, qcFresh, qcInspected, qcRework };
   })());
 
 /**
@@ -83,6 +103,19 @@ const screens: Screen[] = [
   { name: 'delivery note form', open: async (p, _pos, r) => { await openRun(p, r.busy); await p.getByRole('button', { name: 'Record a delivery note' }).click(); await expect(p.locator('#dn-no')).toBeVisible(); } },
   { name: 'expected completion form', open: async (p, _pos, r) => { await openRun(p, r.busy); await p.getByRole('button', { name: 'Set the date' }).click(); await expect(p.locator('#expected-date')).toBeVisible(); } },
   { name: 'delivered PO with its Close button', open: async (p, _pos, r) => { await openPoById(p, r.busy.po); await expect(p.locator('.po-detail__title .badge')).toContainText('Delivered'); } },
+  { name: 'receiving queue', open: async (p) => { await p.goto('/quality'); await p.locator('select').selectOption({ label: 'All deliveries' }); await expect(p.locator('app-inbound-table table')).toBeVisible(); } },
+  { name: 'receive goods form', open: async (p, _pos, r) => { await p.goto(`/quality/receive/${r.qcOpen.deliveryId}`); await expect(p.locator('#grn-person')).toBeVisible(); } },
+  { name: 'QC batches list', open: async (p) => { await p.goto('/quality/batches'); await expect(p.locator('table.responsive').first()).toBeVisible(); } },
+  { name: 'batch not inspected yet', open: async (p, _pos, r) => { await openBatch(p, r.qcFresh); await expect(p.getByRole('button', { name: 'Inspect the batch' })).toBeVisible(); } },
+  { name: 'inspection form', open: async (p, _pos, r) => { await openBatch(p, r.qcFresh); await p.getByRole('button', { name: 'Inspect the batch' }).click(); await expect(p.locator('app-inspection-form')).toBeVisible(); } },
+  { name: 'inspection form with a defect', open: async (p, _pos, r) => { await openBatch(p, r.qcFresh); await p.getByRole('button', { name: 'Inspect the batch' }).click(); await p.getByRole('button', { name: 'Add a defect' }).click(); await expect(p.locator('#df-note-1')).toBeVisible(); } },
+  { name: 'inspected batch with the child-safety results', open: async (p, _pos, r) => { await openBatch(p, r.qcInspected); await expect(p.locator('app-safety-checks-panel')).toContainText('Child-safety checks'); } },
+  { name: 'outcome form', open: async (p, _pos, r) => { await openBatch(p, r.qcInspected); await p.getByRole('button', { name: 'Record the outcome' }).click(); await expect(p.locator('app-outcome-panel')).toBeVisible(); } },
+  { name: 'outcome form with the split editor', open: async (p, _pos, r) => { await openBatch(p, r.qcInspected); await p.getByRole('button', { name: 'Record the outcome' }).click(); await p.locator('input[type="radio"][value="split"]').check(); await expect(p.locator('app-outcome-panel')).toContainText('Does every piece have a part?'); } },
+  { name: 'batch with a part waiting for rework', open: async (p, _pos, r) => { await openBatch(p, r.qcRework); await expect(p.locator('app-sub-batch-table table')).toBeVisible(); } },
+  { name: 'rework return form', open: async (p, _pos, r) => { await openBatch(p, r.qcRework); await p.getByRole('button', { name: 'Record return' }).click(); await expect(p.locator('app-rework-return-form')).toBeVisible(); } },
+  { name: 'vendor scorecard', open: async (p, _pos, r) => { await p.goto('/vendors'); await p.getByPlaceholder('Search by name').fill(r.qcRework.run.po.vendorName); await p.locator('tr', { hasText: r.qcRework.run.po.vendorName }).getByRole('button', { name: 'Scorecard' }).click(); await expect(p.locator('app-scorecard-panel')).toBeVisible(); } },
+  { name: 'PO with goods received', open: async (p, _pos, r) => { await openPoById(p, r.qcInspected.run.po); await expect(p.locator('app-po-receipts-panel')).toBeVisible({ timeout: 30_000 }); } },
   { name: 'vendor view', open: async (p, pos) => { await p.goto(`/purchase-orders/${pos.acknowledged.id}/vendor-view`); await expect(p.locator('article.vv h1')).toBeVisible(); } },
 ];
 
@@ -215,10 +248,10 @@ test.describe('phone specifics', () => {
     expect(box!.x + box!.width).toBeLessThanOrEqual(375);
   });
 
-  test('the navigation stays reachable: all five links are visible without scrolling sideways', async ({ page }) => {
+  test('the navigation stays reachable: all six links are visible without scrolling sideways', async ({ page }) => {
     await page.goto('/vendors');
 
-    for (const name of ['Reference Data', 'Styles', 'Vendors', 'Purchase Orders', 'Production']) {
+    for (const name of ['Reference Data', 'Styles', 'Vendors', 'Purchase Orders', 'Production', 'Receiving & QC']) {
       const link = page.getByRole('navigation').getByRole('link', { name });
       await expect(link).toBeVisible();
       const box = await link.boundingBox();

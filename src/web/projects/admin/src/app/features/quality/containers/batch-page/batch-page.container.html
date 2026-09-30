@@ -129,7 +129,7 @@
           [names]="names"
           [canChange]="canChangeSafety(inspection)"
           [saving]="saving()"
-          [error]="panel() === 'safety' && panelTargetId() === inspection.id ? panelError() : panelError()"
+          [error]="panel() === 'none' || panel() === 'safety' ? panelError() : null"
           [defaultPerson]="defaultPerson()"
           (submitted)="recordSafety($event)"
         />
