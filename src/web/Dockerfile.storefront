@@ -1,12 +1,12 @@
 # Build context: src/web
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 RUN npx ng build storefront
 
-FROM node:24-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 # Angular SSR's SSRF guard rejects any Host header not in this allowlist (comma-separated).
 # Override per environment (e.g. the production domain behind Cloudflare) via docker-compose.
