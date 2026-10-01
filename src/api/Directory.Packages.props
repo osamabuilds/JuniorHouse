@@ -5,7 +5,7 @@
   <ItemGroup>
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
     <!-- Pinned to match the Microsoft.EntityFrameworkCore version Npgsql.EntityFrameworkCore.PostgreSQL 10.0.3 depends on; a higher Design version here causes an assembly-version conflict for Romp.Api (CS1705), since Design's own dependency isn't allowed to flow past Infrastructure's PrivateAssets="all". -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- Same pin as Design/InMemory above, for the same reason: matches what Npgsql 10.0.3 depends on. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.4" />
