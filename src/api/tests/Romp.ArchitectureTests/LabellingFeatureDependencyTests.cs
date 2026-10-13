@@ -54,6 +54,19 @@ public sealed class LabellingFeatureDependencyTests
     }
 
     [Fact]
+    [Trait("Spec", "TAG-9")]
+    public void TagBuilding_HasNoDependencyOnPrintersFilesOrTheNetwork()
+    {
+        var result = Types.InAssembly(Application)
+            .That().ResideInNamespace($"{App}.Tags")
+            .ShouldNot().HaveDependencyOnAny(
+                "System.Net", "System.IO", "Microsoft.EntityFrameworkCore", "Romp.BuildingBlocks.Storage", $"{App}.PrintJobs")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful, "Tag building must stay pure and testable in isolation: " + string.Join(", ", result.FailingTypeNames ?? []));
+    }
+
+    [Fact]
     public void LabellingDomain_DependsOnNoFrameworkOrOtherModule()
     {
         var result = Types.InAssembly(Domain)

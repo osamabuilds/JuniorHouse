@@ -1,6 +1,6 @@
 # Label work: accepted batches awaiting tags
 
-- **Status:** Approved (2026-10-14; split from the approved Sprint 5 spec, acceptance criteria renumbered `LW-n`)
+- **Status:** Implemented (2026-10-14; split from the approved Sprint 5 spec, acceptance criteria renumbered `LW-n`; see "Implementation notes" in the [module README](../README.md))
 - **Jira:** SCRUM-198 (epic SCRUM-16)
 - **BRD sections:** §5.12, §9.10.3
 - **Requirement IDs:** FR-SC-06 (input side), NFR-SC-05, NFR-FT-08, NFR-17, NFR-19

@@ -22,15 +22,17 @@ Domain folders hold: `Variants/Gtins` (GTIN value object, check digit, prefix ru
 ## How the features depend on each other (loose coupling inside the module)
 
 ```
- QC event ──► label-work ──(AssignGtinsForLines port)──► variants
-                  │                                          ▲
-                  └──(QueuePrintJob)──► print-jobs ──(ITagDocumentBuilder port)──► tags
-                                            │
-                                            └──(ILabelPrinter port)──► ZPL / PDF-preview implementations
+ QC event ──► label-work ──► variants        (IVariantAssigner, IVariantReader)
+                  │
+                  ├──► print-jobs ──► variants  (IVariantReader)
+                  │        │
+                  │        ├──► tags ──► variants  (ITagDocumentBuilder, IVariantReader)
+                  │        └──► ILabelPrinter ──► ZPL printer / development PDF printer
+                  └──► tags              (tag preview)
 ```
 
-- Features talk to each other through small interfaces declared by the **caller** in its own `Application/<Feature>/` folder and implemented by the callee (`IVariantAssigner` implemented in `Variants`, `ITagDocumentBuilder` implemented in `Tags`). No feature references another feature's entities or handlers.
-- Direction is one way: `label-work` → `variants`, `print-jobs` → `variants` and `tags`. `variants` and `tags` know nothing about the others (an architecture test checks it).
+- Features talk to each other through small interfaces published by the **callee** in its own `Application/<Feature>/` folder (`IVariantAssigner` and `IVariantReader` by variants, `IPrintProgress` by print-jobs, `ITagDocumentBuilder` by tags). No feature references another feature's entities or handlers.
+- Direction is one way: `label-work` → `print-jobs`, `variants`, `tags`; `print-jobs` → `variants`, `tags`; `tags` → `variants`; `variants` knows none of them. `LabellingFeatureDependencyTests` enforces it, and also that the Domain stays pure.
 
 ## Cross-module reads (all additive, all in `*.Contracts`)
 
@@ -97,7 +99,7 @@ Done first in the sprint, reviewed on its own, with tests. It is not Labelling c
 | Data | no personal data in this module; money `decimal` |
 | Secrets/config | test GTIN prefix rejected in Production; printer addresses are configuration, not secrets |
 | Errors | problem details only |
-| Dependencies | one new package: PDFsharp (MIT), pinned in `Directory.Packages.props` |
+| Dependencies | none added (the PDF preview is written by hand, see ADR 0010) |
 | Coupling | contracts and events only; anti-corruption mapper; ports with fakes; one-way dependencies between features |
 
 ## Risks

@@ -1,6 +1,6 @@
 # Variants: SKU codes and GTIN-13 assignment
 
-- **Status:** Approved (2026-10-14; split from the approved Sprint 5 spec, acceptance criteria renumbered `VAR-n`)
+- **Status:** Implemented (2026-10-14; split from the approved Sprint 5 spec, acceptance criteria renumbered `VAR-n`; see "Implementation notes" in the [module README](../README.md))
 - **Jira:** SCRUM-198 (epic SCRUM-16); tasks SCRUM-96 (FR-SC-06)
 - **BRD sections:** §5.12 (Barcode Standard & Structure), §9.10.1
 - **Requirement IDs:** FR-SC-06, NFR-SC-03, NFR-SC-05, NFR-FT-08

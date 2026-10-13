@@ -51,7 +51,7 @@ Web feature `labelling/print-jobs`: `PrintQueuePageContainer` (route `/labelling
 | Data protection | no personal data; error text from printers is trimmed to 500 chars and never includes the payload |
 | Secrets/config | printer addresses are config, not secrets; the dev PDF printer is the only one seeded for non-production |
 | Error responses | problem details; printer errors surface as a job status, not as an HTTP 500 |
-| New dependencies | PDFsharp (MIT) for the preview, pinned in `Directory.Packages.props` (ADR 0010) |
+| New dependencies | none: the PDF preview is written by hand (ADR 0010) |
 | Coupling | `variants` and `tags` only through ports; printers behind `ILabelPrinter` with a fake; no knowledge of QC or label-work internals |
 | Abuse cases | (1) a user mass-queues jobs to flood the printer or database: caps and rate limits; (2) a hostile product name contains ZPL commands: handled by the escaper; (3) an attacker tries to point the app at an internal host: addresses cannot come from requests |
 

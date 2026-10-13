@@ -1,19 +1,17 @@
 # Labelling
 
-Label (BRD §5.12): SKU and GTIN-13 generation, the tag print queue, and reprints. Accepted stock gets an identity and a physical tag before it can be shelved (S6) or sold (S7+). Planned for Sprint 5; no code exists yet.
+Label (BRD §5.12): SKU and GTIN-13 generation, the tag print queue, and reprints. Accepted stock gets an identity and a physical tag before it can be shelved (S6) or sold (S7+). Implemented in Sprint 5 (SCRUM-198).
 
-**Schema:** `SKU` · **Code:** `src/api/src/Modules/Labelling/` · **Web:** `features/labelling/` · **Jira:** SCRUM-198 under epic SCRUM-16 · **Rules:** [constitution](../../CONSTITUTION.md) · **Module design:** [plan.md](plan.md)
+**Schema:** `SKU` · **Verification:** [traceability](traceability.md) · **Code:** `src/api/src/Modules/Labelling/` · **Web:** `features/labelling/` · **Jira:** SCRUM-198 under epic SCRUM-16 · **Rules:** [constitution](../../CONSTITUTION.md) · **Module design:** [plan.md](plan.md)
 
 ## Features
 
 | Feature | What it does | Status |
 |---|---|---|
-| [label-work](label-work/README.md) · [spec](label-work/spec.md) · [plan](label-work/plan.md) | Accepted batches awaiting tags; the worklist | Planned |
-| [variants](variants/README.md) · [spec](variants/spec.md) · [plan](variants/plan.md) | SKU variants, GTIN assignment, void, SKU register | Planned |
-| [print-jobs](print-jobs/README.md) · [spec](print-jobs/spec.md) · [plan](print-jobs/plan.md) | Print queue, retry, reprint | Planned |
-| [tags](tags/README.md) · [spec](tags/spec.md) · [plan](tags/plan.md) | Tag content and rendering (ZPL, PDF preview) | Planned |
-
-A feature marked Planned has no code yet, so the structure test excludes it until it is built.
+| [label-work](label-work/README.md) · [spec](label-work/spec.md) · [plan](label-work/plan.md) | Accepted batches awaiting tags; the worklist | Implemented |
+| [variants](variants/README.md) · [spec](variants/spec.md) · [plan](variants/plan.md) | SKU variants, GTIN assignment, void, SKU register | Implemented |
+| [print-jobs](print-jobs/README.md) · [spec](print-jobs/spec.md) · [plan](print-jobs/plan.md) | Print queue, retry, reprint | Implemented |
+| [tags](tags/README.md) · [spec](tags/spec.md) · [plan](tags/plan.md) | Tag content and rendering (ZPL, PDF preview) | Implemented |
 
 ## Requirement IDs for the module
 
@@ -97,8 +95,27 @@ D1-D12 above apply to every feature of this module. Technical decisions: [ADR 00
 
 ## Open questions (carried from the approved spec; each has a default the plans adopt)
 
-- [ ] **Q13: Catalog contract.** `IStyleQueries` has no price, name or price-change time, and only returns active styles. Default: add `TGT_PRIC_CHG_DTE` to `CTLG.STYL_MAIN` (set only when the price changes) and a `GetLabelInfoAsync(styleIds)` query returning code, name, price, that timestamp and the active flag. Touches Catalog (additive migration).
+- [x] **Q13: Catalog contract.** `IStyleQueries` has no price, name or price-change time, and only returns active styles. Default: add `TGT_PRIC_CHG_DTE` to `CTLG.STYL_MAIN` (set only when the price changes) and a `GetLabelInfoAsync(styleIds)` query returning code, name, price, that timestamp and the active flag. Touches Catalog (additive migration).
 - [ ] **Q14: Voided GTIN on tagged stock.** Scan handling of a Retired barcode (putaway S6, pick S14) is decided in those specs.
-- [ ] **Q15: Retired style.** Default: labelling proceeds once staff confirm; the UI shows the style is retired.
+- [x] **Q15: Retired style.** Default: labelling proceeds once staff confirm; the UI shows the style is retired.
 
 Back to the [spec index](../README.md).
+
+## Implementation notes (what was built, and where it differs from the plan)
+
+The spec describes what was built; these are the places the build chose differently from the plan or went beyond it.
+
+1. **No PDF library.** The tag preview is a one-page PDF written by hand (`TagPdf`), so ADR 0010's PDFsharp package was not added. The tests verify the cross-reference table and the escaping.
+2. **Printers are lookup rows.** `SKU.PRTR_LKP` (smallint id, format, address), seeded with `FAKE-PDF` and `FAKE-JAM`, rather than a `PRTR_MAIN` table. The fake printers are refused unless `Labelling:AllowFakePrinters` is on, and the host will not start in Production with it on.
+3. **The callee declares the interface.** The plan said the caller declares the port; in the build each feature publishes its own public interface (`IVariantAssigner` and `IVariantReader` in variants, `IPrintProgress` in print-jobs, `ITagDocumentBuilder` in tags). The dependency direction is as planned and is enforced by `LabellingFeatureDependencyTests`. Tags reads variant identity through `IVariantReader`, so tags depends on variants (one way).
+4. **Queueing from a work item lives in label-work.** `QueueTagsCommand` (and `POST /api/labelling/work-items/{id}/print-jobs`) works out how many tags are still allowed under a row lock and then sends print-jobs' `QueueOriginalPrintJobCommand`. This keeps print-jobs ignorant of work items. print-jobs owns the queue, retry, reprint and history.
+5. **Reprint and history screens.** The SKU register links to the Print queue screen (`?variantId=…&reprint=1&sku=…`), which owns the reprint form and the per-SKU history; variants never imports print-jobs.
+6. **Price flag (LW-5).** It compares the style's last price change with the latest non-cancelled job (original or reprint) for the variant. The "price changed" filter evaluates it over the variants that have jobs, because the price lives in Catalog.
+7. **SKU length.** The SKU column and pattern allow 120 characters (three 30-character parts plus the brand). Parts are upper-cased and reduced to letters, digits and single hyphens; the unique index is the final guard against two styles producing the same SKU.
+8. **Brand on the tag** is the text "ROMP"; the monochrome logo bitmap and the real label size are still to be supplied (the defaults are 50 mm × 30 mm).
+9. **Poison QC messages.** A message the mapper refuses throws in the consumer, so the dispatcher retries and then dead-letters it with the reason, as the spec asks.
+10. **Quick "Try again" on a parked item** uses the remembered acting person, or "Warehouse staff" when none is remembered.
+11. **Security baseline (ADR 0011) implemented with this sprint:** `MapSecuredGroup` for every endpoint of every module, the development-only authentication handler, the deployment gate (the host refuses to start outside Development/Testing without real authentication), per-client rate limits with a strict policy, baseline response headers, an explicit request-size ceiling, and `/api/admin/outbox` moved under the `Admin` policy.
+12. **Migrations:** `InitialLabelling` and `RenameManualActionColumn` (the column is `MNL_BY`, because `ACT` is the glossary abbreviation for "active"). Catalog gained `AddStylePriceChangedAt` (`TGT_PRIC_CHG_DTE`).
+
+Known gaps carried forward: the real Zebra/TSC printer has only been exercised against a loopback TCP listener (hardware is not chosen, D7); what putaway and picking do when they scan a retired barcode is decided in Sprints 6 and 14 (Q14); the GS1 company prefix is still the test range until the real one is issued (D2); and no authentication exists until Sprint 8, so "who" is the acting-person name plus the system actor.

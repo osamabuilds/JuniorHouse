@@ -1,6 +1,6 @@
 # 0010 — Label printing: persistent queue and printer port
 
-- Status: Proposed (approved with SCRUM-198's plan)
+- Status: Accepted (implemented in SCRUM-198)
 - Date: 2026-10-14
 
 ## Context
@@ -14,7 +14,7 @@ NFR-SC-02: label printers must use a queued, retry-on-jam model, and one printer
 - **Retry with backoff, no head-of-line blocking.** A failed attempt records an `SKU.PRT_JOB_ATMP` row, then re-queues the job with a later `next attempt` time (30 s, 2 min, 10 min); the worker moves on to the next due job. After the configured attempt limit (default 4) the job becomes Failed and shows the last error. Staff can Retry (attempt counter reset, same job row) or Cancel.
 - **Stuck jobs recover.** A job stuck in Printing longer than a timeout (worker crash) is returned to Queued.
 - **Printer port:** `ILabelPrinter` in `Application/Abstractions` takes a rendered `LabelDocument` (format + bytes) for a named printer and returns success or a typed failure (offline, jam, rejected). Implementations: `PdfPreviewLabelPrinter` (writes a PDF to `IFileStorage`, used in dev, tests and as the preview in the UI) now; `ZplLabelPrinter` (ZPL over TCP/9100 or a spooler) as the first real format. TSC TSPL can be added later as another renderer without touching the queue.
-- **Rendering is separate from sending.** `ILabelRenderer` turns tag data into ZPL text (EAN-13 is a native ZPL command, `^BE`, so the printer draws the barcode) or into a PDF for preview. The PDF preview draws the EAN-13 from an in-house encoder (a small, fully testable function) so no barcode library is needed. PDF output needs one new package, **PDFsharp** (MIT), added in `Directory.Packages.props` only.
+- **Rendering is separate from sending.** `TagZpl` and `TagPdf` (pure Domain code) turn tag data into ZPL text (EAN-13 is a native ZPL command, `^BE`, so the printer draws the barcode) or into a PDF for preview. The PDF preview draws the EAN-13 from an in-house encoder (a small, fully testable function) so no barcode library is needed. PDF output needs one new package, **PDFsharp** (MIT), added in `Directory.Packages.props` only.
 - **Prices are snapshotted** onto the job when it is created, so a reprint of an old job shows what was printed and a new job shows the current price.
 - **Idempotent worker steps:** a job's status transition (Queued to Printing to Printed) is a single conditional `UPDATE … WHERE STS_ID = …`, so two workers can never print the same job twice.
 
@@ -22,4 +22,4 @@ NFR-SC-02: label printers must use a queued, retry-on-jam model, and one printer
 
 - Printing a tag is "at-least-once" if the worker dies exactly between a successful print and recording it (one duplicate tag at worst); this is acceptable for labels and is why reprints are free of side effects.
 - The queue, worker and port are generic. S14/S15 can reuse them for shipping labels by adding job kinds, with no changes to the retry logic.
-- Adds one NuGet package (PDFsharp). If you would rather avoid it, the preview can be SVG with no dependency, at the cost of not being a "PDF".
+- **Built without a PDF library (2026-10-14).** The preview is a one-page PDF written by hand in the Domain layer (`TagPdf`): a tag needs only rectangles and two built-in fonts, so no package was added, which removes a dependency from the supply chain. The tests check the cross-reference offsets and that text is escaped.

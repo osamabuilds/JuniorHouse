@@ -1,6 +1,6 @@
 # Tags
 
-- **Module:** [`labelling`](../README.md) · **Feature:** `tags` · **Status:** Planned
+- **Module:** [`labelling`](../README.md) · **Feature:** `tags` · **Status:** Implemented
 
 Tag content and rendering: price/barcode tag data, the "2ND" concession mark, EAN-13 encoder, ZPL and PDF-preview output.
 

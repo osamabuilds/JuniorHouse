@@ -1,6 +1,6 @@
 # 0009 — GTIN-13 allocation, numbering and retirement
 
-- Status: Proposed (approved with SCRUM-198's plan)
+- Status: Accepted (implemented in SCRUM-198)
 - Date: 2026-10-14
 
 ## Context

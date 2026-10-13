@@ -1,6 +1,6 @@
 # Tags: what is printed on the price/barcode tag
 
-- **Status:** Approved (2026-10-14; split from the approved Sprint 5 spec, acceptance criteria renumbered `TAG-n`)
+- **Status:** Implemented (2026-10-14; split from the approved Sprint 5 spec, acceptance criteria renumbered `TAG-n`; see "Implementation notes" in the [module README](../README.md))
 - **Jira:** SCRUM-198 (epic SCRUM-16)
 - **BRD sections:** §5.12 (What Gets Printed, and Where)
 - **Requirement IDs:** FR-SC-06 (scannable identity), NFR-SC-02 (rendering must not depend on the printer)

@@ -246,6 +246,7 @@ public sealed class LabelWorkTests(LabellingPostgres postgres)
 
     [Fact]
     [Trait("Spec", "LW-5")]
+    [Trait("Spec", "TAG-5")]
     public async Task PriceChangedAfterTheTagsWereQueued_IsFlagged_UntilAReprintPrintsTheCurrentPrice()
     {
         using var host = new LabellingHost(postgres);

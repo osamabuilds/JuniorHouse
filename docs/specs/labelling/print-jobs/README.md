@@ -1,6 +1,6 @@
 # Print jobs
 
-- **Module:** [`labelling`](../README.md) · **Feature:** `print-jobs` · **Status:** Planned
+- **Module:** [`labelling`](../README.md) · **Feature:** `print-jobs` · **Status:** Implemented
 
 The persistent print queue with retry and a per-printer worker, plus reprints (FR-SC-07).
 

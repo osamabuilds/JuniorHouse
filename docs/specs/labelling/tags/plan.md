@@ -15,7 +15,7 @@ Pure, dependency-free types in `Tags/`:
 | `TagDataBuilder` (assembles `TagData` from a variant, style info and outcome through ports) | TAG-1, TAG-3, TAG-4, TAG-5 |
 | `ITagDocumentBuilder` (implements print-jobs' port): `BuildZpl(TagData, qty)`, `BuildPdfPreview(TagData)` | TAG-2, TAG-6, TAG-7, TAG-8 |
 
-Both outputs come from one `TagLayout` (positions in millimetres, default 50 × 30 mm), so changing the label size is a one-file change. The PDF writer is in Infrastructure (PDFsharp) behind `ITagPdfWriter`; the Domain and Application layers contain no PDF or network code (TAG-9).
+Both outputs come from one `TagLayout` (positions in millimetres, default 50 × 30 mm), so changing the label size is a one-file change. The PDF writer is pure Domain code (`TagPdf`, no library); Application and Domain contain no printer, file or network code (TAG-9).
 
 ## API endpoints
 None of its own; the preview is served by print-jobs (`GET /api/labelling/work-items/{id}/tag-preview`) through this builder.
@@ -43,7 +43,7 @@ No separate feature: the preview and tag layout appear inside `labelling/print-j
 | Data protection | no personal data |
 | Secrets/config | label size and logo are plain configuration |
 | Error responses | build failures raise a domain error that print-jobs turns into a job failure, never an HTTP 500 with details |
-| New dependencies | PDFsharp lives only in Infrastructure behind `ITagPdfWriter` |
+| New dependencies | none: the PDF is written by hand in the Domain layer |
 | Coupling | Domain and Application have no knowledge of printers, files or other features; style, colour and size names arrive through ports |
 | Abuse cases | (1) a product named `^XA^HV…` tries to take over the printer: escaped; (2) a name 10,000 characters long: truncated; (3) a crafted name containing a barcode-looking string: it is drawn as text and cannot alter the barcode field |
 

@@ -11,6 +11,6 @@ Each feature folder has a `README.md` card (what it is, status, where the code i
 | [vendor](vendor/README.md) | Vendors and purchase orders | vendors, purchase-orders, revisions, files, vendor-responses, vendor-view |
 | [production](production/README.md) | Production tracking | production-runs, milestones, samples, deliveries |
 | [quality](quality/README.md) | Goods receipt and QC | inbound-deliveries, receiving, batches, inspections, outcomes, safety-checks |
-| [labelling](labelling/README.md) | SKU, GTIN and tag printing (planned) | label-work, variants, print-jobs, tags |
+| [labelling](labelling/README.md) | SKU, GTIN and tag printing | label-work, variants, print-jobs, tags |
 
 Later sprints add `warehouse`, `publishing`, `storefront`, `orders`, `fulfilment`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).

@@ -1,6 +1,6 @@
 # Print jobs: the tag print queue and reprints
 
-- **Status:** Approved (2026-10-14; split from the approved Sprint 5 spec, acceptance criteria renumbered `PJ-n`)
+- **Status:** Implemented (2026-10-14; split from the approved Sprint 5 spec, acceptance criteria renumbered `PJ-n`; see "Implementation notes" in the [module README](../README.md))
 - **Jira:** SCRUM-198 (epic SCRUM-16, queue also touches SCRUM-18); tasks SCRUM-97 (FR-SC-07)
 - **BRD sections:** §5.12 (What Gets Printed, and Where; re-print edge case)
 - **Requirement IDs:** FR-SC-07, NFR-SC-02, NFR-SC-03, NFR-SC-05, NFR-FT-08
