@@ -32,6 +32,7 @@ internal static class TestServices
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddSingleton(TimeProvider.System);
 
         services.AddDbContext<CatalogDbContext>(options => options.UseInMemoryDatabase(databaseName));
         services.AddScoped<ICatalogDbContext>(sp => sp.GetRequiredService<CatalogDbContext>());

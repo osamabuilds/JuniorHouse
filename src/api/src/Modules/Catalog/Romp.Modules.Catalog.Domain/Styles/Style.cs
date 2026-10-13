@@ -62,6 +62,9 @@ public sealed class Style : AggregateRoot<long>, IAuditable
 
     public bool IsActive { get; private set; } = true;
 
+    /// <summary>When the target retail price last changed; null until the first change (labelling then uses the creation time).</summary>
+    public DateTimeOffset? TargetPriceChangedAt { get; private set; }
+
     public IReadOnlyCollection<StyleColourway> Colourways => _colourways.AsReadOnly();
 
     public IReadOnlyCollection<StyleSize> Sizes => _sizes.AsReadOnly();
@@ -84,7 +87,8 @@ public sealed class Style : AggregateRoot<long>, IAuditable
         short ageBracketId,
         short fabricId,
         decimal targetUnitCost,
-        decimal targetRetailPrice)
+        decimal targetRetailPrice,
+        DateTimeOffset changedAt)
     {
         Name = name;
         CollectionName = collectionName;
@@ -93,6 +97,11 @@ public sealed class Style : AggregateRoot<long>, IAuditable
         AgeBracketId = ageBracketId;
         FabricId = fabricId;
         TargetUnitCost = targetUnitCost;
+        if (TargetRetailPrice != targetRetailPrice)
+        {
+            TargetPriceChangedAt = changedAt;
+        }
+
         TargetRetailPrice = targetRetailPrice;
     }
 

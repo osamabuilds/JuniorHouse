@@ -28,6 +28,10 @@ internal sealed class FakeStyleQueries : IStyleQueries
 
     public Task<StyleSummary?> FindActiveStyleAsync(long styleId, CancellationToken cancellationToken) =>
         Task.FromResult(styleId == ActiveStyle.Id ? ActiveStyle : null);
+
+    public Task<IReadOnlyDictionary<long, StyleLabelInfo>> GetLabelInfoAsync(
+        IReadOnlyCollection<long> styleIds, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyDictionary<long, StyleLabelInfo>>(new Dictionary<long, StyleLabelInfo>());
 }
 
 /// <summary>Payment term 900 defaults to a 40% advance - matches what "no override" tests expect.</summary>
