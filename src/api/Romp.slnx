@@ -51,6 +51,7 @@
     <Project Path="tests/Romp.ArchitectureTests/Romp.ArchitectureTests.csproj" />
     <Project Path="tests/Romp.BuildingBlocks.Application.Tests/Romp.BuildingBlocks.Application.Tests.csproj" />
     <Project Path="tests/Romp.BuildingBlocks.Persistence.Tests/Romp.BuildingBlocks.Persistence.Tests.csproj" />
+    <Project Path="tests/Romp.BuildingBlocks.Web.Tests/Romp.BuildingBlocks.Web.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Reference.Tests/Romp.Modules.Reference.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Production.Tests/Romp.Modules.Production.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Quality.Tests/Romp.Modules.Quality.Tests.csproj" />

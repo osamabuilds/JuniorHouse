@@ -722,7 +722,7 @@ namespace Romp.Modules.Labelling.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_PRT_JOB_CLAIM",
+                name: "IX_PRT_JOB_CLM",
                 schema: "SKU",
                 table: "PRT_JOB",
                 columns: new[] { "PRTR_ID", "PRT_JOB_STS_ID", "NXT_ATMP_DTE" });

@@ -919,7 +919,7 @@ namespace Romp.Modules.Labelling.Infrastructure.Migrations
                     b.HasIndex("WorkItemId");
 
                     b.HasIndex("PrinterId", "StatusId", "NextAttemptAt")
-                        .HasDatabaseName("IX_PRT_JOB_CLAIM");
+                        .HasDatabaseName("IX_PRT_JOB_CLM");
 
                     b.ToTable("PRT_JOB", "SKU");
                 });
