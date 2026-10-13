@@ -5,7 +5,7 @@ import {
   PpSampleRoundDto,
   RunDetailDto,
   RunSummaryDto,
-} from '@features/production';
+} from '@features/production/production-runs';
 
 /** Builders for the Production DTOs, so each test states only what it cares about. */
 export const runDetail = (overrides: Partial<RunDetailDto> = {}): RunDetailDto => ({

@@ -6,7 +6,7 @@ import {
   QcBatchDto,
   QcBatchSummaryDto,
   SubBatchDto,
-} from '@features/quality';
+} from '@features/quality/batches';
 
 /** Builders for the Quality DTOs, so each test states only what it cares about. */
 export const inboundSummary = (overrides: Partial<InboundDeliverySummaryDto> = {}): InboundDeliverySummaryDto => ({

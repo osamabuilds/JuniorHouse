@@ -45,7 +45,7 @@ To run the whole stack in containers, use `docker compose up --build`.
 ## Try Sprint 1 (procurement)
 
 Sprint 1 covers reference data, the style master, vendors, and purchase orders through
-Acknowledged (`docs/specs/SCRUM-92-procurement-part-1/`). To see it end to end:
+Acknowledged (`docs/specs/vendor/_sprint-specs/po-creation-and-master-data/`). To see it end to end:
 
 ```bash
 cp .env.example .env              # then set POSTGRES_PASSWORD
@@ -75,7 +75,7 @@ The API's OpenAPI document is at `http://localhost:8080/openapi/v1.json` in Deve
 ## Try Sprint 2 (amendments, files, event dispatch)
 
 Sprint 2 adds versioned PO amendments, spec-file attachments, a vendor-facing view and the outbox
-dispatcher (`docs/specs/SCRUM-93-procurement-part-2/`). Same stack as Sprint 1
+dispatcher (`docs/specs/vendor/_sprint-specs/po-amendments-and-spec-files/`). Same stack as Sprint 1
 (`docker compose up --build`); the demo seed also creates **PO-2026-90001**: an Acknowledged PO
 with the vendor's counter-proposal already waiting as a Pending revision.
 
@@ -120,7 +120,7 @@ that was broken (for example "A channel is required.") instead of a generic mess
 ## Try Sprint 3 (production tracking)
 
 Sprint 3 follows a purchase order after the vendor acknowledges it: milestones, the pre-production
-sample gate, expected completion and vendor delivery notes (`docs/specs/SCRUM-183-production-tracking/`).
+sample gate, expected completion and vendor delivery notes (`docs/specs/production/_sprint-specs/milestones-and-deliveries/`).
 Same stack (`docker compose up -d --build`). The demo seed adds six more purchase orders, **PO-2026-90002**
 to **PO-2026-90007**, one in each production state.
 
@@ -158,7 +158,7 @@ Settings: `Prod__RecordedLateDays` (default 3) and `Prod__AtRiskBufferDays` (def
 
 Sprint 4 takes a vendor's delivery from the dock to the shelf: count it against the delivery note (goods receipt), inspect it,
 record the two child-safety checks, decide what happens to it, and follow anything sent back for rework
-(`docs/specs/SCRUM-197-receive-inspect/`). Same stack (`docker compose up -d --build`). The demo seed adds nine delivered
+(`docs/specs/quality/_sprint-specs/receiving-and-inspection/`). Same stack (`docker compose up -d --build`). The demo seed adds nine delivered
 purchase orders, **PO-2026-91001** to **PO-2026-91009**, one for each state below.
 
 **Demo script** (admin app, **Receiving & QC** in the top navigation):

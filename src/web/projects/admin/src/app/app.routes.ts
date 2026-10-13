@@ -4,26 +4,26 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'reference-data' },
   {
     path: 'reference-data',
-    loadChildren: () => import('@features/reference-data/reference-data.routes').then((m) => m.REFERENCE_DATA_ROUTES),
+    loadChildren: () => import('@features/reference/lookups/lookups.routes').then((m) => m.LOOKUPS_ROUTES),
   },
   {
     path: 'styles',
-    loadChildren: () => import('@features/styles/styles.routes').then((m) => m.STYLES_ROUTES),
+    loadChildren: () => import('@features/catalog/styles/styles.routes').then((m) => m.STYLES_ROUTES),
   },
   {
     path: 'vendors',
-    loadChildren: () => import('@features/vendors/vendors.routes').then((m) => m.VENDORS_ROUTES),
+    loadChildren: () => import('@features/vendor/vendors/vendors.routes').then((m) => m.VENDORS_ROUTES),
   },
   {
     path: 'production',
-    loadChildren: () => import('@features/production/production.routes').then((m) => m.PRODUCTION_ROUTES),
+    loadChildren: () => import('@features/production/production-runs/production-runs.routes').then((m) => m.PRODUCTION_RUNS_ROUTES),
   },
   {
     path: 'quality',
-    loadChildren: () => import('@features/quality/quality.routes').then((m) => m.QUALITY_ROUTES),
+    loadChildren: () => import('@features/quality/batches/batches.routes').then((m) => m.BATCHES_ROUTES),
   },
   {
     path: 'purchase-orders',
-    loadChildren: () => import('@features/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
+    loadChildren: () => import('@features/vendor/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
   },
 ];

@@ -7,7 +7,8 @@ A direct-to-consumer kidswear platform for Pakistan: the storefront (with Fit Fi
 | What | Where |
 |---|---|
 | Business requirements (BRD v9.0) | `Romp_Master_v9_Merged.docx`, which is being moved into `docs/specs/` one feature at a time |
-| Feature specs, plans, tasks | `docs/specs/<JIRA-KEY>-<slug>/` |
+| Hierarchy rules (module/feature, same names in specs, API, web, tests) | [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md), enforced by `StructureSyncTests` |
+| Feature specs, plans, tasks | `docs/specs/<module>/<feature>/` (index: [`docs/specs/README.md`](docs/specs/README.md)); the Jira key goes in the spec header, not the folder name |
 | Architecture decisions | `docs/adr/` (these override the BRD where they conflict) |
 | Backlog | Jira project `SCRUM`, osamabuss048.atlassian.net |
 
@@ -17,7 +18,7 @@ Requirement IDs come from the BRD and must be used unchanged everywhere: `FR-xx`
 
 Do not write production code until the spec is approved. Work through the steps in order and stop for the user's approval at each ⏸:
 
-1. **Spec**: copy `docs/specs/_template/spec.md` into `docs/specs/<JIRA-KEY>-<slug>/spec.md`.
+1. **Spec**: copy `docs/specs/_template/spec.md` into `docs/specs/<module>/<feature>/spec.md`. `<module>` is the business module (`vendor-procurement`, `production-tracking`, `quality-control`, `labelling`, …) and `<feature>` names the functionality, in kebab-case, with no ticket numbers. Add the feature to the module's `README.md` and to `docs/specs/README.md`.
    - Say *what* is needed and *why*, not *how*.
    - Quote the BRD requirement text exactly, with its IDs.
    - Take acceptance criteria from the BRD's `TC-*` cases. Add edge cases the BRD misses, marked `(new)`.
@@ -43,6 +44,8 @@ Small changes (typo fixes, dependency bumps, CI tweaks, refactors that change no
   - The Domain layer has no dependency on EF Core, ASP.NET Core, or any other layer.
 - **Outbox** (ADR 0004). Domain events and notifications are written in the same transaction as the business change. A notification failure must never roll back the business transaction (NFR-FT-08).
 - **Stack** (ADR 0003): .NET 10, Angular 22 (storefront is server-side rendered), PostgreSQL 17, Redis, Docker, self-hosted VPS behind Cloudflare. The BRD's Azure wording (Service Bus, App Insights, AKS, Azure DevOps) is stale; ignore it.
+
+**Architecture and security baseline:** [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md) section 6 and [ADR 0011](docs/adr/0011-security-and-coupling-baseline.md). Every plan has a "Security & coupling review" table; the host refuses to start in production without real authentication.
 
 **Rules that apply everywhere (the BRD marks these launch-blocking)**
 - Recalculate every price and total on the server. Never trust amounts sent by the client (SEC-09).

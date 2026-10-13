@@ -1,5 +1,7 @@
 # Code structure & naming conventions
 
+> **Where things live (module/feature hierarchy, specs to code to tests) is defined in [`CONSTITUTION.md`](CONSTITUTION.md).** This file covers how code inside a feature is written.
+
 How the admin app (`src/web/projects/admin`) and the API (`src/api`) are organised. Both are
 **feature-first**: code that changes together lives together, and a new feature is a new folder,
 not an edit to a shared one. Database naming is separate: see [`db/naming.md`](db/naming.md).
@@ -11,7 +13,7 @@ src/app/
   core/                 singletons: HTTP client, API base URL, error mapping (@core/*)
   shared/               reusable dumb UI: components/, pipes/, utils/, models/   (@shared)
   features/
-    <feature>/
+    <module>/<feature>/   (see docs/CONSTITUTION.md)
       containers/       smart components: read the store, dispatch actions, pass data down
         <name>-page/<name>-page.container.{ts,html}
       components/       presentational: input()/output() only, OnPush, no Store, no services
@@ -25,8 +27,8 @@ src/app/
   testing/              test-only helpers
 ```
 
-Path aliases: `@core/*`, `@shared`, `@features/<feature>`, `@app/*`. **A feature is imported through
-its `index.ts` only** (`@features/reference-data`), never by reaching into its folders. Features
+Path aliases: `@core/*`, `@shared`, `@features/<module>/<feature>`, `@app/*`. **A feature is imported through
+its `index.ts` only** (`@features/reference/lookups`), never by reaching into its folders. Features
 may depend on `core`, `shared` and another feature's public barrel; never the reverse direction
 (`core`/`shared` never import a feature).
 
@@ -91,7 +93,7 @@ tests/  mirror the source: Romp.Modules.<M>.Tests/<Feature>/..., Support/ for he
 1. Spec, plan, tasks (see `CLAUDE.md`).
 2. API: Domain → Application (use cases) → Infrastructure (configuration, endpoints) → register in `<M>Module.cs` → tests in `tests/.../<Feature>/`.
 3. Web: `features/<feature>/` with `models`, `services`, `store`, `components`, `containers`, `<feature>.routes.ts`, then one lazy route in `app.routes.ts`.
-4. Unit tests beside the code; an E2E spec in `src/web/e2e` for the user flow.
+4. Unit tests beside the code; an E2E spec in `src/web/e2e/<module>/<feature>.e2e.spec.ts` (cross-module journeys in `e2e/journeys/`) for the user flow.
 
 ## 4. Lists, paging and queries (required)
 
