@@ -58,6 +58,7 @@ public sealed class ProductionApiFixture : IAsyncLifetime
         await vendor.Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<ProductionDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Quality.Infrastructure.Persistence.QcDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Labelling.Infrastructure.Persistence.SkuDbContext>().Database.MigrateAsync();
 
         var style = new Style("STY-IT-001", "Integration Dress", "Test", categoryId: 3, genderId: 2, ageBracketId: 3, fabricId: 1, targetUnitCost: 450m, targetRetailPrice: 1200m);
         style.SetColourSizeAndTargets([1, 2], [4, 5], [(4, 1, 50), (4, 2, 40), (5, 1, 30), (5, 2, 25)]);

@@ -13,6 +13,7 @@
         <li><a routerLink="/purchase-orders" routerLinkActive="is-active">Purchase Orders</a></li>
         <li><a routerLink="/production" routerLinkActive="is-active">Production</a></li>
         <li><a routerLink="/quality" routerLinkActive="is-active">Receiving &amp; QC</a></li>
+        <li><a routerLink="/labelling" routerLinkActive="is-active">Labelling</a></li>
       </ul>
     </nav>
   </header>
@@ -24,7 +25,7 @@
 
 @if (!chromeless()) {
   <footer class="shell-footer">
-    <p>Romp Admin &middot; Sprint 4 (Receiving and QC)</p>
+    <p>Romp Admin &middot; Sprint 5 (Labelling)</p>
     <app-outbox-health [health]="outboxHealth()" />
   </footer>
 }

@@ -23,6 +23,24 @@ export const routes: Routes = [
     loadChildren: () => import('@features/quality/batches/batches.routes').then((m) => m.BATCHES_ROUTES),
   },
   {
+    path: 'labelling',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'worklist' },
+      {
+        path: 'worklist',
+        loadChildren: () => import('@features/labelling/label-work/label-work.routes').then((m) => m.LABEL_WORK_ROUTES),
+      },
+      {
+        path: 'queue',
+        loadChildren: () => import('@features/labelling/print-jobs/print-jobs.routes').then((m) => m.PRINT_JOBS_ROUTES),
+      },
+      {
+        path: 'register',
+        loadChildren: () => import('@features/labelling/variants/variants.routes').then((m) => m.VARIANTS_ROUTES),
+      },
+    ],
+  },
+  {
     path: 'purchase-orders',
     loadChildren: () => import('@features/vendor/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
   },
