@@ -834,7 +834,7 @@ namespace Romp.Modules.Labelling.Infrastructure.Migrations
                     b.Property<string>("ManualActionBy")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("MNL_ACT_BY");
+                        .HasColumnName("MNL_BY");
 
                     b.Property<DateTimeOffset>("NextAttemptAt")
                         .HasColumnType("timestamp with time zone")

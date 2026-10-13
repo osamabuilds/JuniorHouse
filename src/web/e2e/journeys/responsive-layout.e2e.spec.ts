@@ -17,6 +17,10 @@ import {
   createRun,
   createRunInProduction,
   openPo,
+  apiQueueTags,
+  createAcceptedStock,
+  waitForWorkItem,
+  type WorkItem,
   openPoById,
   openRun,
   waitForPoStatus,
@@ -33,6 +37,8 @@ interface DemoRuns {
   qcFresh: ReceivedBatch;
   qcInspected: ReceivedBatch;
   qcRework: ReceivedBatch;
+  /** Sprint 5: accepted stock with its SKU and barcode, and one queued tag job, so the Labelling screens have rows. */
+  labelItem: WorkItem;
 }
 
 /** Three runs in different states, created once and shared by every viewport (each needs the outbox dispatcher, which takes seconds). */
@@ -53,7 +59,10 @@ const demoRuns = (request: import('@playwright/test').APIRequestContext): Promis
     const qcRework = await apiReceive(request, await createReceivable(request));
     await apiSafety(request, await apiInspect(request, qcRework));
     await apiSplit(request, qcRework, 80, 4);
-    return { fresh, sampleWaiting, busy, qcOpen, qcFresh, qcInspected, qcRework };
+    const labelStock = await createAcceptedStock(request, 40);
+    const labelItem = await waitForWorkItem(request, labelStock.run.po.id);
+    await apiQueueTags(request, labelItem.id, 5);
+    return { fresh, sampleWaiting, busy, qcOpen, qcFresh, qcInspected, qcRework, labelItem };
   })());
 
 /**
@@ -103,7 +112,7 @@ const screens: Screen[] = [
   { name: 'delivery note form', open: async (p, _pos, r) => { await openRun(p, r.busy); await p.getByRole('button', { name: 'Record a delivery note' }).click(); await expect(p.locator('#dn-no')).toBeVisible(); } },
   { name: 'expected completion form', open: async (p, _pos, r) => { await openRun(p, r.busy); await p.getByRole('button', { name: 'Set the date' }).click(); await expect(p.locator('#expected-date')).toBeVisible(); } },
   { name: 'delivered PO with its Close button', open: async (p, _pos, r) => { await openPoById(p, r.busy.po); await expect(p.locator('.po-detail__title .badge')).toContainText('Delivered'); } },
-  { name: 'receiving queue', open: async (p) => { await p.goto('/quality'); await p.locator('select').selectOption({ label: 'All deliveries' }); await expect(p.locator('app-inbound-table table')).toBeVisible(); } },
+  { name: 'receiving queue', open: async (p) => { await p.goto('/quality'); await p.locator('select').first().selectOption({ label: 'All deliveries' }); await expect(p.locator('app-inbound-table table')).toBeVisible(); } },
   { name: 'receive goods form', open: async (p, _pos, r) => { await p.goto(`/quality/receive/${r.qcOpen.deliveryId}`); await expect(p.locator('#grn-person')).toBeVisible(); } },
   { name: 'QC batches list', open: async (p) => { await p.goto('/quality/batches'); await expect(p.locator('table.responsive').first()).toBeVisible(); } },
   { name: 'batch not inspected yet', open: async (p, _pos, r) => { await openBatch(p, r.qcFresh); await expect(p.getByRole('button', { name: 'Inspect the batch' })).toBeVisible(); } },
@@ -117,6 +126,13 @@ const screens: Screen[] = [
   { name: 'vendor scorecard', open: async (p, _pos, r) => { await p.goto('/vendors'); await p.getByPlaceholder('Search by name').fill(r.qcRework.run.po.vendorName); await p.locator('tr', { hasText: r.qcRework.run.po.vendorName }).getByRole('button', { name: 'Scorecard' }).click(); await expect(p.locator('app-scorecard-panel')).toBeVisible(); } },
   { name: 'PO with goods received', open: async (p, _pos, r) => { await openPoById(p, r.qcInspected.run.po); await expect(p.locator('app-po-receipts-panel')).toBeVisible({ timeout: 30_000 }); } },
   { name: 'vendor view', open: async (p, pos) => { await p.goto(`/purchase-orders/${pos.acknowledged.id}/vendor-view`); await expect(p.locator('article.vv h1')).toBeVisible(); } },
+  { name: "label worklist", open: async (p) => { await p.goto("/labelling/worklist"); await expect(p.locator("app-worklist-table table")).toBeVisible(); } },
+  { name: "queue tags form", open: async (p, _pos, r) => { await p.goto("/labelling/worklist"); await p.getByRole("row").filter({ hasText: r.labelItem.skuCode! }).getByRole("button", { name: "Queue tags" }).click(); await expect(p.locator("app-queue-tags-form")).toBeVisible(); } },
+  { name: "print queue", open: async (p) => { await p.goto("/labelling/queue"); await expect(p.locator("app-job-table table")).toBeVisible(); } },
+  { name: "reprint form", open: async (p, _pos, r) => { await p.goto(`/labelling/queue?variantId=${r.labelItem.variantId}&reprint=1&sku=${encodeURIComponent(r.labelItem.skuCode!)}`); await expect(p.locator("app-reprint-form")).toBeVisible(); } },
+  { name: "SKU register", open: async (p) => { await p.goto("/labelling/register"); await expect(p.locator("app-variant-table table")).toBeVisible(); } },
+  { name: "void barcode form", open: async (p, _pos, r) => { await p.goto("/labelling/register"); await p.getByRole("searchbox", { name: "Search by SKU or barcode" }).fill(r.labelItem.skuCode!); await p.getByRole("row").filter({ hasText: r.labelItem.skuCode! }).getByRole("button", { name: "Void barcode" }).click(); await expect(p.locator("app-void-form")).toBeVisible(); } },
+  { name: "barcode history", open: async (p, _pos, r) => { await p.goto("/labelling/register"); await p.getByRole("searchbox", { name: "Search by SKU or barcode" }).fill(r.labelItem.skuCode!); await p.getByRole("row").filter({ hasText: r.labelItem.skuCode! }).getByRole("button", { name: "Barcode history" }).click(); await expect(p.locator("app-gtin-history")).toBeVisible(); } },
 ];
 
 for (const viewport of VIEWPORTS) {
@@ -127,7 +143,7 @@ for (const viewport of VIEWPORTS) {
     let pos: Record<PoStage | 'pending', TestPo>;
     let runs: DemoRuns;
     test.beforeAll(async ({ request }) => {
-      test.setTimeout(240_000);
+      test.setTimeout(540_000); // the shared setup walks six runs and batches through the event dispatcher
       runs = await demoRuns(request);
       pos = {
         draft: await createPo(request, 'draft'),

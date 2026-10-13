@@ -31,7 +31,7 @@ internal sealed class PrintJobConfiguration : IEntityTypeConfiguration<PrintJob>
         builder.Property(j => j.ReprintReasonId).HasColumnName("RPRT_RSN_ID");
         builder.Property(j => j.Note).HasColumnName("NOTE").HasMaxLength(PrintJob.MaxNoteLength);
         builder.Property(j => j.RequestedBy).HasColumnName("REQ_BY").HasMaxLength(100).IsRequired();
-        builder.Property(j => j.ManualActionBy).HasColumnName("MNL_ACT_BY").HasMaxLength(100);
+        builder.Property(j => j.ManualActionBy).HasColumnName("MNL_BY").HasMaxLength(100);
 
         // The worker's claim query: due Queued jobs of one printer, oldest first.
         builder.HasIndex(j => new { j.PrinterId, j.StatusId, j.NextAttemptAt }).HasDatabaseName("IX_PRT_JOB_CLM");

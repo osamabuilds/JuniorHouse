@@ -214,3 +214,20 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | mode | MODE | | | |
 | outcome | OTCM | | | |
 | scorecard (vendor scorecard facts) | SCRD | | | |
+
+### Added in Sprint 5 (SCRUM-198, Labelling)
+
+`PRNT` is already "parent", so "print" is `PRT`. `ACT` is already "active", so "manual action by" is written `MNL_BY`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| error (error text) | ERR | | printer | PRTR |
+| format | FMT | | reprint | RPRT |
+| GS1 trade item number | GTIN | | request / requested | REQ |
+| job | JOB | | snapshot | SNAP |
+| kind | KIND | | stock keeping unit | SKU |
+| manual | MNL | | sub (as in sub-batch) | SUB |
+| output | OUTP | | void | VOID |
+| parked | PARK | | work (work item) | WORK |
+| prefix | PFX | | | |
+| print | PRT | | | |

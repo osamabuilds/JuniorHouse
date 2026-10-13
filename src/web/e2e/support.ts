@@ -379,3 +379,47 @@ export const openBatch = async (page: Page, batch: ReceivedBatch): Promise<void>
   await page.goto(`/quality/batches/${batch.batchId}`);
   await expect(page.getByRole('heading', { level: 1, name: `QC batch: ${batch.grnNo}` })).toBeVisible();
 };
+
+// ---- Sprint 5: labelling ----
+
+export interface WorkItem {
+  id: number;
+  poId: number;
+  variantId: number | null;
+  skuCode: string | null;
+  gtin: string | null;
+  qty: number;
+  statusCode: string;
+  printedQty: number;
+  remainingQty: number;
+}
+
+/** A batch of the given quantity, accepted by QC through the API (the rest rejected), so its tags are ready to be made. */
+export async function createAcceptedStock(request: APIRequestContext, acceptedQty = 60): Promise<ReceivedBatch> {
+  const batch = await apiReceive(request, await createReceivable(request));
+  const inspectionId = await apiInspect(request, batch);
+  await apiSafety(request, inspectionId);
+  await apiSplit(request, batch, acceptedQty, 3);
+  return batch;
+}
+
+/** Waits for the QC event to reach Labelling and returns the work item it created for a PO (the dispatcher runs on its own timer). */
+export async function waitForWorkItem(request: APIRequestContext, poId: number): Promise<WorkItem> {
+  return poll(async () => {
+    const page = (await (await request.get(`${API}/api/labelling/work-items?pageSize=100`)).json()) as { items: WorkItem[] };
+    return page.items.find((i) => i.poId === poId) ?? null;
+  }, `the label work item for PO ${poId}`, 60_000);
+}
+
+/** Queues tags for a work item through the API on a configured printer (by code) and returns the job. */
+export async function apiQueueTags(
+  request: APIRequestContext,
+  itemId: number,
+  qty: number,
+  printerCode: 'FAKE-PDF' | 'FAKE-JAM' = 'FAKE-PDF',
+): Promise<{ id: number; jobNo: string; gtin: string; skuCode: string }> {
+  return ok(
+    await request.post(`${API}/api/labelling/work-items/${itemId}/print-jobs`, { data: { qty, printerCode, actingPerson: PERSON } }),
+    'queue tags',
+  );
+}
