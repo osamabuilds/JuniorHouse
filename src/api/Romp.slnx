@@ -16,6 +16,12 @@
     <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Domain/Romp.Modules.Catalog.Domain.csproj" />
     <Project Path="src/Modules/Catalog/Romp.Modules.Catalog.Infrastructure/Romp.Modules.Catalog.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Labelling/">
+    <Project Path="src/Modules/Labelling/Romp.Modules.Labelling.Application/Romp.Modules.Labelling.Application.csproj" />
+    <Project Path="src/Modules/Labelling/Romp.Modules.Labelling.Contracts/Romp.Modules.Labelling.Contracts.csproj" />
+    <Project Path="src/Modules/Labelling/Romp.Modules.Labelling.Domain/Romp.Modules.Labelling.Domain.csproj" />
+    <Project Path="src/Modules/Labelling/Romp.Modules.Labelling.Infrastructure/Romp.Modules.Labelling.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Production/">
     <Project Path="src/Modules/Production/Romp.Modules.Production.Application/Romp.Modules.Production.Application.csproj" />
     <Project Path="src/Modules/Production/Romp.Modules.Production.Contracts/Romp.Modules.Production.Contracts.csproj" />
@@ -50,5 +56,6 @@
     <Project Path="tests/Romp.Modules.Quality.Tests/Romp.Modules.Quality.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Catalog.Tests/Romp.Modules.Catalog.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Vendor.Tests/Romp.Modules.Vendor.Tests.csproj" />
+    <Project Path="tests/Romp.Modules.Labelling.Tests/Romp.Modules.Labelling.Tests.csproj" />
   </Folder>
 </Solution>

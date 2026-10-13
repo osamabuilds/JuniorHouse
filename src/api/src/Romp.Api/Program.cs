@@ -10,6 +10,8 @@ using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Catalog.Infrastructure;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
+using Romp.Modules.Labelling.Infrastructure;
+using Romp.Modules.Labelling.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure;
 using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Quality.Infrastructure;
@@ -27,7 +29,7 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule()];
 
 builder.Services.AddSharedPersistence();
 
@@ -41,7 +43,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(Romp.Modules.Catalog.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Vendor.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Production.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Quality.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Quality.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Labelling.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -118,13 +121,15 @@ if (app.Environment.IsDevelopment())
     var vendorContext = scope.ServiceProvider.GetRequiredService<VendorDbContext>();
     var productionContext = scope.ServiceProvider.GetRequiredService<ProductionDbContext>();
     var qualityContext = scope.ServiceProvider.GetRequiredService<QcDbContext>();
+    var labellingContext = scope.ServiceProvider.GetRequiredService<SkuDbContext>();
 
     await Task.WhenAll(
         scope.ServiceProvider.GetRequiredService<ReferenceDbContext>().Database.MigrateAsync(),
         catalogContext.Database.MigrateAsync(),
         vendorContext.Database.MigrateAsync(),
         productionContext.Database.MigrateAsync(),
-        qualityContext.Database.MigrateAsync());
+        qualityContext.Database.MigrateAsync(),
+        labellingContext.Database.MigrateAsync());
 
     // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
     // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough
