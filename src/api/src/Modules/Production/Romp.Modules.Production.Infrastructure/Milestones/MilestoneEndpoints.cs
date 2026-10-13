@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +20,7 @@ internal static class MilestoneEndpoints
 {
     public static void MapMilestoneEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/production/runs").WithTags("Production");
+        var group = endpoints.MapSecuredGroup("/api/production/runs").WithTags("Production");
 
         group.MapPost("/{id:long}/milestones", async (long id, RecordMilestoneRequest body, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(

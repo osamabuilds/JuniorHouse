@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,7 @@ internal static class VendorViewEndpoints
 {
     public static void MapVendorViewEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/purchase-orders").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/purchase-orders").WithTags("Vendor");
 
         // SCRUM-93 task 43. 404 for a missing or never-sent PO - a vendor can't tell those apart.
         group.MapGet("/{id:long}/vendor-view", async (long id, ISender sender, CancellationToken cancellationToken) =>

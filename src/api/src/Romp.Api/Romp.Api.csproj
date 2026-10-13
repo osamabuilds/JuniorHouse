@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Modules\Reference\Romp.Modules.Reference.Infrastructure\Romp.Modules.Reference.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Vendor\Romp.Modules.Vendor.Infrastructure\Romp.Modules.Vendor.Infrastructure.csproj" />
     <ProjectReference Include="..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\BuildingBlocks\Romp.BuildingBlocks.Web\Romp.BuildingBlocks.Web.csproj" />
   </ItemGroup>
 
 </Project>

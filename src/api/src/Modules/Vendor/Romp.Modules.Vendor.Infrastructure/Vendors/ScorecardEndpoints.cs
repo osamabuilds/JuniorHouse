@@ -1,4 +1,5 @@
 using MediatR;
+using Romp.BuildingBlocks.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -13,12 +14,13 @@ internal static class ScorecardEndpoints
 {
     public static void MapScorecardEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/api/vendors/{id:long}/scorecard", async (long id, ISender sender, CancellationToken cancellationToken) =>
+        var group = endpoints.MapSecuredGroup("/api");
+        group.MapGet("/vendors/{id:long}/scorecard", async (long id, ISender sender, CancellationToken cancellationToken) =>
                 Results.Ok(await sender.Send(new GetVendorScorecardQuery(id), cancellationToken)))
             .WithTags("Vendor");
 
         // Received against ordered for one PO (Sprint 4, AC-40): shown on the PO screen.
-        endpoints.MapGet("/api/purchase-orders/{id:long}/receipts", async (long id, ISender sender, CancellationToken cancellationToken) =>
+        group.MapGet("/purchase-orders/{id:long}/receipts", async (long id, ISender sender, CancellationToken cancellationToken) =>
                 Results.Ok(await sender.Send(new GetPoReceiptProgressQuery(id), cancellationToken)))
             .WithTags("Vendor");
     }

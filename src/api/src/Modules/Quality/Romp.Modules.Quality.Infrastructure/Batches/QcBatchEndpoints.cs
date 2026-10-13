@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,7 @@ internal static class QcBatchEndpoints
 {
     public static void MapQcBatchEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/quality").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality").WithTags("Quality");
 
         group.MapGet("/batches", async (
                 short? statusId,

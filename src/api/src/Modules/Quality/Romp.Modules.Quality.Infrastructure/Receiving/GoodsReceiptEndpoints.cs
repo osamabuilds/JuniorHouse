@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +21,7 @@ internal static class GoodsReceiptEndpoints
 {
     public static void MapGoodsReceiptEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/quality/grns").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality/grns").WithTags("Quality");
 
         group.MapGet("/", async (
                 string? search,

@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,7 @@ internal static class InboundDeliveryEndpoints
 {
     public static void MapInboundDeliveryEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/quality/inbound-deliveries").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality/inbound-deliveries").WithTags("Quality");
 
         group.MapGet("/", async (
                 string? status,

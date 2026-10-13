@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +16,7 @@ internal static class SafetyCheckEndpoints
 {
     public static void MapSafetyCheckEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/quality/inspections").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality/inspections").WithTags("Quality");
 
         group.MapPut("/{id:long}/safety-checks", async (long id, RecordSafetyChecksRequest body, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new RecordSafetyChecksCommand(id, body.ActingPerson, body.Checks), cancellationToken)));

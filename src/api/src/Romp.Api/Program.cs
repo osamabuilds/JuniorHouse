@@ -7,6 +7,7 @@ using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.BuildingBlocks.Web;
 using Romp.Modules.Catalog.Infrastructure;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure;
@@ -20,6 +21,9 @@ using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ADR 0011: an explicit request-body ceiling (large uploads keep their own per-endpoint validation).
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 30 * 1024 * 1024);
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
@@ -68,6 +72,8 @@ builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddExceptionHandler<ConcurrencyExceptionHandler>();
 builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddRompAuthorization(builder.Environment);
+builder.Services.AddRompRateLimiting(builder.Configuration);
 builder.Services.AddOpenApi();
 
 // Storefront and admin are separate origins (SSR/SPA hosts, different ports). No auth yet
@@ -87,9 +93,17 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+// ADR 0011 deployment gate: outside Development/Testing the host refuses to start without a real authentication scheme.
+await SecurityGate.VerifyAsync(app.Services, app.Environment);
+
+app.UseRompSecurityHeaders();
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseCors("Default");
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -124,9 +138,9 @@ if (app.Environment.IsDevelopment())
 // Liveness: process is up. Readiness: dependencies are reachable (SEC-22).
 // SCRUM-186: are events flowing? Counts per module outbox (pending, in flight, retrying, dead-lettered) and the oldest waiting age.
 // Admin-only once staff authentication exists (S8, SEC-08); tagged for that sweep.
-app.MapGet("/api/admin/outbox", async (OutboxHealthReader reader, CancellationToken cancellationToken) =>
-        Results.Ok(await reader.ReadAsync(cancellationToken)))
-    .WithTags("Admin");
+app.MapSecuredGroup("/api/admin", Policies.Admin).WithTags("Admin")
+    .MapGet("/outbox", async (OutboxHealthReader reader, CancellationToken cancellationToken) =>
+        Results.Ok(await reader.ReadAsync(cancellationToken)));
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });

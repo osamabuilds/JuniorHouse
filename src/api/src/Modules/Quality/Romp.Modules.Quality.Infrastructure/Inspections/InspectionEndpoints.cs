@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -23,7 +24,7 @@ internal static class InspectionEndpoints
 {
     public static void MapInspectionEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/quality/batches").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality/batches").WithTags("Quality");
 
         group.MapPost("/{id:long}/inspections", async (long id, RecordInspectionRequest body, ISender sender, CancellationToken cancellationToken) =>
         {

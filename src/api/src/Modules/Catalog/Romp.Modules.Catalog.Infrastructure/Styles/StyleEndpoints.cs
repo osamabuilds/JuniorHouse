@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.AspNetCore.Builder;
@@ -11,7 +12,7 @@ internal static class StyleEndpoints
 {
     public static void MapStyleEndpoints(this IEndpointRouteBuilder endpoints, string tag)
     {
-        var group = endpoints.MapGroup("/api/catalog/styles").WithTags(tag);
+        var group = endpoints.MapSecuredGroup("/api/catalog/styles").WithTags(tag);
 
         group.MapPost("/", async (CreateStyleCommand command, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(command, cancellationToken)));

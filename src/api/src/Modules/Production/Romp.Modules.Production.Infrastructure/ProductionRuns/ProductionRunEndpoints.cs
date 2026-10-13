@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ internal static class ProductionRunEndpoints
 {
     public static void MapProductionRunEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/production/runs").WithTags("Production");
+        var group = endpoints.MapSecuredGroup("/api/production/runs").WithTags("Production");
 
         group.MapGet("/", async (
                 short? statusId,
