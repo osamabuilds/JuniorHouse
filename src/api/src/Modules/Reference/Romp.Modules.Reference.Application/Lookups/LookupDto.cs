@@ -13,4 +13,5 @@ public sealed record LookupDto(
     short SortSeq,
     bool IsActive,
     short? ParentCategoryId,
-    decimal? DefaultAdvancePercent);
+    decimal? DefaultAdvancePercent,
+    string? SymbolCode = null);

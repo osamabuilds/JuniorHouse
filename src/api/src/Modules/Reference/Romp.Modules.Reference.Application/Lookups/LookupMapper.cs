@@ -14,5 +14,6 @@ internal static class LookupMapper
         lookup.SortSeq,
         lookup.IsActive,
         (lookup as CategoryLookup)?.ParentCategoryId,
-        (lookup as PaymentTermLookup)?.DefaultAdvancePercent);
+        (lookup as PaymentTermLookup)?.DefaultAdvancePercent,
+        (lookup as CareInstructionLookup)?.SymbolCode);
 }

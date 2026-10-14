@@ -1,0 +1,148 @@
+<p><a routerLink="/catalog/products">← All products</a></p>
+
+@if (loading() && !product()) {
+  <h1>Product</h1>
+  <p class="state-message">Loading…</p>
+} @else if (!product()) {
+  <h1>Product</h1>
+  @if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+} @else {
+  <h1>{{ product()!.name }}</h1>
+  <p class="page-intro">
+    Style {{ product()!.styleCode }} ·
+    <span class="badge" [class.badge--muted]="product()!.status !== 'Published'">{{ product()!.status }}</span>
+  </p>
+
+  <app-section-nav label="Catalog" [links]="links" />
+
+  @if (notice()) {
+    <p class="banner banner--success" role="status">
+      {{ notice() }}
+      <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+    </p>
+  }
+
+  @if (conflict()) {
+    <p class="banner banner--error" role="alert">
+      {{ error()?.message }}
+      <button type="button" class="button button--small" (click)="reload()">Reload the product</button>
+    </p>
+  } @else if (error()) {
+    <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+  }
+
+  @if (needName()) {
+    <p class="banner banner--error" role="alert">Type your name in the "Your name" box first, so the change can be recorded against you.</p>
+  }
+
+  @if (!editable()) {
+    <p class="banner banner--info" role="status">This product is archived, so it is read-only.</p>
+  }
+
+  <div class="toolbar">
+    <label class="toolbar__select">
+      <span class="sr-only">Your name</span>
+      <input type="text" placeholder="Your name" maxlength="100" autocomplete="name" [value]="person()" (input)="onName($event)" />
+    </label>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Product parts">
+    @for (item of tabs; track item.key) {
+      <button
+        type="button"
+        role="tab"
+        class="tabs__tab"
+        [id]="'tab-' + item.key"
+        [attr.aria-selected]="tab() === item.key"
+        [attr.aria-controls]="'panel-' + item.key"
+        [class.is-active]="tab() === item.key"
+        (click)="select(item.key)"
+      >
+        {{ item.label }}
+      </button>
+    }
+  </div>
+
+  <section role="tabpanel" [id]="'panel-' + tab()" [attr.aria-labelledby]="'tab-' + tab()">
+    <h2>{{ tab() === 'content' ? 'Content' : tab() === 'variants' ? 'Variants and prices' : tab() === 'images' ? 'Images' : tab() === 'size-chart' ? 'Size chart' : tab() === 'composition' ? 'Composition and care' : tab() === 'url' ? 'URL' : 'Publish' }}</h2>
+
+    @switch (tab()) {
+      @case ('content') {
+        <app-product-content-form
+          [product]="product()!"
+          [genders]="genders()"
+          [categories]="categories()"
+          [ageBrackets]="ageBrackets()"
+          [collections]="collections()"
+          [saving]="saving()"
+          [disabled]="!editable()"
+          (submitted)="saveContent($event)"
+          (collectionsSaved)="saveCollections($event)"
+        />
+      }
+      @case ('variants') {
+        <app-variants-table
+          [variants]="product()!.variants"
+          [saving]="saving()"
+          [disabled]="!editable()"
+          (pricesSaved)="savePrices($event)"
+          (refreshRequested)="refreshVariants()"
+        />
+      }
+      @case ('images') {
+        <app-images-panel
+          [images]="images()"
+          [colours]="colours()"
+          [fileUrl]="fileUrl"
+          [requireAlt]="product()!.status === 'Published'"
+          [saving]="saving()"
+          [disabled]="!editable()"
+          (uploaded)="upload($event)"
+          (altSaved)="saveAlt($event)"
+          (reordered)="reorder($event)"
+          (deleted)="deleteImage($event)"
+        />
+      }
+      @case ('size-chart') {
+        <app-size-chart-view [chart]="chart()" />
+      }
+      @case ('composition') {
+        <app-composition-care-panel
+          [data]="composition()"
+          [fibres]="fibres()"
+          [careOptions]="careOptions()"
+          [saving]="saving()"
+          [disabled]="!editable()"
+          (compositionSaved)="saveComposition($event)"
+          (careSaved)="saveCare($event)"
+        />
+      }
+      @case ('url') {
+        <app-url-panel
+          [product]="product()!"
+          [genders]="genders()"
+          [categories]="categories()"
+          [history]="history()"
+          [suggestion]="suggestion()"
+          [saving]="saving()"
+          [disabled]="!editable()"
+          (saved)="savePath($event)"
+          (suggestRequested)="suggestSlug($event)"
+        />
+      }
+      @case ('publish') {
+        <app-publish-panel
+          [product]="product()!"
+          [failures]="failures()"
+          [saving]="saving()"
+          (publish)="publish()"
+          (unpublish)="unpublish()"
+          (archive)="archive()"
+          (tabSelected)="select($event)"
+        />
+      }
+    }
+  </section>
+}

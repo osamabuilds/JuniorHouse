@@ -406,8 +406,17 @@ export async function createAcceptedStock(request: APIRequestContext, acceptedQt
 /** Waits for the QC event to reach Labelling and returns the work item it created for a PO (the dispatcher runs on its own timer). */
 export async function waitForWorkItem(request: APIRequestContext, poId: number): Promise<WorkItem> {
   return poll(async () => {
-    const page = (await (await request.get(`${API}/api/labelling/work-items?pageSize=100`)).json()) as { items: WorkItem[] };
-    return page.items.find((i) => i.poId === poId) ?? null;
+    for (let pageNo = 1; pageNo <= 50; pageNo++) {
+      const page = (await (await request.get(`${API}/api/labelling/work-items?pageSize=100&page=${pageNo}`)).json()) as { items: WorkItem[] };
+      const found = page.items.find((i) => i.poId === poId);
+      if (found) {
+        return found;
+      }
+      if (page.items.length < 100) {
+        break;
+      }
+    }
+    return null;
   }, `the label work item for PO ${poId}`, 60_000);
 }
 
@@ -475,8 +484,18 @@ export interface PutawayItemRow {
 /** Waits for QC's accepted batch to reach the warehouse as a putaway item that is ready (its barcode has been assigned). */
 export async function waitForPutawayItem(request: APIRequestContext, poId: number): Promise<PutawayItemRow> {
   return poll(async () => {
-    const page = (await (await request.get(`${API}/api/warehouse/putaway/items?onlyOpen=true&pageSize=100`)).json()) as { items: PutawayItemRow[] };
-    return page.items.find((i) => i.poId === poId && i.statusCode === 'PENDING') ?? null;
+    // The database persists between runs and other journeys leave open items behind, so look through every page, not just the first.
+    for (let pageNo = 1; pageNo <= 50; pageNo++) {
+      const page = (await (await request.get(`${API}/api/warehouse/putaway/items?onlyOpen=true&pageSize=100&page=${pageNo}`)).json()) as { items: PutawayItemRow[] };
+      const found = page.items.find((i) => i.poId === poId && i.statusCode === 'PENDING');
+      if (found) {
+        return found;
+      }
+      if (page.items.length < 100) {
+        break;
+      }
+    }
+    return null;
   }, `the putaway item for PO ${poId}`, 60_000);
 }
 
@@ -499,4 +518,105 @@ export async function createVariant(request: APIRequestContext): Promise<Stocked
 export function randomZone(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   return Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// ---- Sprint 7: catalog ----
+
+/** A small valid PNG header (40x60): the API decides the type from the bytes, not the file name. */
+export const PNG = {
+  name: 'front.png',
+  mimeType: 'image/png',
+  buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 40, 0, 0, 0, 60, 8, 2, 0, 0, 0, 0, 0, 0, 0]),
+};
+
+export interface CatalogProduct {
+  id: number;
+  name: string;
+  styleCode: string;
+  path: string;
+  version: number;
+}
+
+/** A style that Labelling has issued a barcode for (accepted stock, labelled), so a product made from it has a variant that can be bought. */
+export async function createLabelledStyle(request: APIRequestContext): Promise<{ styleId: number; styleCode: string }> {
+  const batch = await createAcceptedStock(request, 40);
+  await waitForWorkItem(request, batch.run.po.id);
+  const styleCode = batch.run.po.styleCode;
+  const page = (await (await request.get(`${API}/api/catalog/styles?search=${encodeURIComponent(styleCode)}&pageSize=100`)).json()) as {
+    items: { id: number; code: string }[];
+  };
+  const style = page.items.find((s) => s.code === styleCode);
+  if (!style) {
+    throw new Error(`Style ${styleCode} not found`);
+  }
+  return { styleId: style.id, styleCode };
+}
+
+/** Creates a draft product from a labelled style through the API (the UI create form is covered by its own journey). */
+export async function createProduct(request: APIRequestContext, name = `E2E Dress ${uniqueSuffix()}`): Promise<CatalogProduct> {
+  const { styleId, styleCode } = await createLabelledStyle(request);
+  const product = await ok<{ id: number; name: string; path: string; version: number }>(
+    await request.post(`${API}/api/catalog/products`, {
+      data: {
+        styleId,
+        name,
+        description: 'A soft cotton dress for the e2e suite.',
+        genderId: await lookupId(request, 'genders', 'Girls'),
+        categoryId: await lookupId(request, 'categories', 'Dresses'),
+        ageBracketId: await lookupId(request, 'age-brackets', 'Toddler (1-3Y)'),
+        actingPerson: PERSON,
+      },
+    }),
+    'create product',
+  );
+  return { id: product.id, name, styleCode, path: product.path, version: product.version };
+}
+
+export async function getProduct(request: APIRequestContext, id: number): Promise<{ version: number; status: string; path: string; variants: { colourId: number; sizeId: number }[] }> {
+  return ok(await request.get(`${API}/api/catalog/products/${id}`), 'get product');
+}
+
+/** Prices every variant, adds a picture with alt text, a 100% composition and one care instruction, so the product can be published. */
+export async function fillProduct(request: APIRequestContext, product: CatalogProduct): Promise<void> {
+  let current = await getProduct(request, product.id);
+  await ok(
+    await request.put(`${API}/api/catalog/products/${product.id}/prices`, {
+      data: { prices: current.variants.map((v) => ({ colourId: v.colourId, sizeId: v.sizeId, price: 1200, compareAtPrice: null })), version: current.version, actingPerson: PERSON },
+    }),
+    'set prices',
+  );
+  await ok(
+    await request.post(`${API}/api/catalog/products/${product.id}/images`, {
+      multipart: { actingPerson: PERSON, altText: 'A white cotton dress, front view', file: PNG },
+    }),
+    'upload image',
+  );
+  const fibres = (await (await request.get(`${API}/api/ref/fibres`)).json()) as { id: number }[];
+  const care = (await (await request.get(`${API}/api/ref/care-instructions`)).json()) as { id: number }[];
+  current = await getProduct(request, product.id);
+  const composed = await ok<{ version: number }>(
+    await request.put(`${API}/api/catalog/products/${product.id}/composition`, {
+      data: { rows: [{ fibreId: fibres[0].id, percent: 100 }], version: current.version, actingPerson: PERSON },
+    }),
+    'set composition',
+  );
+  await ok(
+    await request.put(`${API}/api/catalog/products/${product.id}/care`, {
+      data: { careIds: [care[0].id], note: null, version: composed.version, actingPerson: PERSON },
+    }),
+    'set care',
+  );
+}
+
+export async function publishProduct(request: APIRequestContext, product: CatalogProduct): Promise<void> {
+  const current = await getProduct(request, product.id);
+  await ok(await request.post(`${API}/api/catalog/products/${product.id}/publish`, { data: { version: current.version, actingPerson: PERSON } }), 'publish');
+}
+
+/** Opens a product's editor at a tab (the Your name box is filled so changes can be recorded). */
+export async function openProduct(page: Page, product: CatalogProduct, tab: string): Promise<void> {
+  await page.goto(`/catalog/products/${product.id}`);
+  await expect(page.getByRole('heading', { level: 1, name: product.name })).toBeVisible();
+  await page.getByRole('textbox', { name: 'Your name' }).fill('E2E Admin');
+  await page.getByRole('tab', { name: tab, exact: true }).click();
 }

@@ -34,7 +34,11 @@ internal static class TestServices
         services.AddLogging();
         services.AddSingleton(TimeProvider.System);
 
-        services.AddDbContext<CatalogDbContext>(options => options.UseInMemoryDatabase(databaseName));
+        services.AddDbContext<CatalogDbContext>(options => options
+            .UseInMemoryDatabase(databaseName)
+            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning)));
+        services.AddScoped<Romp.Modules.Catalog.Application.ProductMedia.PendingFileDeletes>();
+        services.AddSingleton<Romp.BuildingBlocks.Storage.IFileStorage, InMemoryFileStorage>();
         services.AddScoped<ICatalogDbContext>(sp => sp.GetRequiredService<CatalogDbContext>());
         services.AddScoped<IPurchaseOrderUsageQueries>(_ => poUsageQueries ?? new FakePurchaseOrderUsageQueries());
 
@@ -48,5 +52,33 @@ internal static class TestServices
         });
 
         return services.BuildServiceProvider();
+    }
+}
+
+/// <summary>An in-memory file store: keys are generated like the real one, never from a file name.</summary>
+internal sealed class InMemoryFileStorage : Romp.BuildingBlocks.Storage.IFileStorage
+{
+    public Dictionary<string, byte[]> Files { get; } = [];
+
+    public bool FailOnSave { get; set; }
+
+    public Task<string> SaveAsync(byte[] content, CancellationToken cancellationToken)
+    {
+        if (FailOnSave)
+        {
+            throw new IOException("The disk is full.");
+        }
+
+        var key = Guid.NewGuid().ToString("N");
+        Files[key] = content;
+        return Task.FromResult(key);
+    }
+
+    public Task<byte[]> RetrieveAsync(string storageKey, CancellationToken cancellationToken) => Task.FromResult(Files[storageKey]);
+
+    public Task DeleteAsync(string storageKey, CancellationToken cancellationToken)
+    {
+        Files.Remove(storageKey);
+        return Task.CompletedTask;
     }
 }

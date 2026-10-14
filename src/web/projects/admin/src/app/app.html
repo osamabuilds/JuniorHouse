@@ -9,6 +9,7 @@
       <ul>
         <li><a routerLink="/reference-data" routerLinkActive="is-active">Reference Data</a></li>
         <li><a routerLink="/styles" routerLinkActive="is-active">Styles</a></li>
+        <li><a routerLink="/catalog" routerLinkActive="is-active">Catalog</a></li>
         <li><a routerLink="/vendors" routerLinkActive="is-active">Vendors</a></li>
         <li><a routerLink="/purchase-orders" routerLinkActive="is-active">Purchase Orders</a></li>
         <li><a routerLink="/production" routerLinkActive="is-active">Production</a></li>
@@ -26,7 +27,7 @@
 
 @if (!chromeless()) {
   <footer class="shell-footer">
-    <p>Romp Admin &middot; Sprint 6 (Warehouse)</p>
+    <p>Romp Admin &middot; Sprint 7 (Publish)</p>
     <app-outbox-health [health]="outboxHealth()" />
   </footer>
 }

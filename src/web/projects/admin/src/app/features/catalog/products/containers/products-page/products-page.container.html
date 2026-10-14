@@ -1,0 +1,63 @@
+<h1>Products</h1>
+<p class="page-intro">
+  A product is what shoppers see: a style with a name, description, photos, prices, size chart, fabric and care. It starts as a draft and goes
+  on sale only when nothing is missing. Barcodes come from Labelling, so a product can be published while some sizes are still waiting for theirs.
+</p>
+
+<app-section-nav label="Catalog" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (createOpen()) {
+  <app-product-create-form
+    [styles]="styles()"
+    [genders]="genders()"
+    [categories]="categories()"
+    [ageBrackets]="ageBrackets()"
+    [saving]="creating()"
+    [error]="createError()"
+    [defaultPerson]="defaultPerson()"
+    (submitted)="create($event)"
+    (cancelled)="closeCreate()"
+  />
+}
+
+<div class="toolbar">
+  <label class="toolbar__search">
+    <span class="sr-only">Search products by name or style code</span>
+    <input type="search" placeholder="Search by name or style code" maxlength="50" [value]="search()" (input)="onSearch($event)" />
+  </label>
+
+  <label class="toolbar__select">
+    <span class="sr-only">Filter by status</span>
+    <select (change)="onStatus($event)">
+      <option value="" [selected]="statusId() === null">All statuses</option>
+      @for (status of statuses; track status.id) {
+        <option [value]="status.id" [selected]="statusId() === status.id">{{ status.label }}</option>
+      }
+    </select>
+  </label>
+
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+  @if (!createOpen()) {
+    <button type="button" class="button button--primary" (click)="openCreate()">Create a product</button>
+  }
+</div>
+
+<app-product-table [products]="rows()" [loading]="loading()" />
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

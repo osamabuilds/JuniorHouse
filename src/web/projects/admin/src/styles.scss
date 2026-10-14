@@ -431,6 +431,36 @@ legend {
   min-width: 0;
 }
 
+/* The tab strip of the product editor: wraps on a phone instead of scrolling sideways, every tab a full-size tap target. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.tabs__tab {
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.tabs__tab:hover {
+  border-color: var(--color-brass);
+}
+
+.tabs__tab.is-active {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-brass-tint);
+}
+
 .toolbar__checkbox {
   display: flex;
   align-items: center;

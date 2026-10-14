@@ -57,6 +57,12 @@ public sealed class ReferenceDbContext(DbContextOptions<ReferenceDbContext> opti
         modelBuilder.ConfigureLookup<PoFileCategoryLookup>("PO_FILE_CATG_LKP")
             .Property(c => c.IsVendorVisible).HasColumnName("VNDR_VSBL_IND").IsRequired();
 
+        // Sprint 7 (SCRUM-201)
+        modelBuilder.ConfigureLookup<CollectionLookup>("COLN_LKP");
+        modelBuilder.ConfigureLookup<FibreLookup>("FIBR_LKP");
+        modelBuilder.ConfigureLookup<CareInstructionLookup>("CARE_LKP")
+            .Property(c => c.SymbolCode).HasColumnName("SYMB_CODE").HasMaxLength(30).IsRequired();
+
         ReferenceSeedData.Apply(modelBuilder);
 
         base.OnModelCreating(modelBuilder);

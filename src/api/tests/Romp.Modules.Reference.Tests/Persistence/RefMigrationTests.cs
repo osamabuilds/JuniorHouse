@@ -32,7 +32,7 @@ public sealed class RefMigrationTests : IAsyncLifetime
         await using var context = new ReferenceDbContext(options);
         await context.Database.MigrateAsync();
 
-        Assert.Equal(10, await context.Set<SizeLookup>().CountAsync());
+        Assert.Equal(14, await context.Set<SizeLookup>().CountAsync());
         Assert.Equal(8, await context.Set<ColourLookup>().CountAsync());
         Assert.Equal(6, await context.Set<FabricLookup>().CountAsync());
         Assert.Equal(3, await context.Set<GenderLookup>().CountAsync());
@@ -46,6 +46,26 @@ public sealed class RefMigrationTests : IAsyncLifetime
 
         var draft = await context.Set<PoStatusLookup>().SingleAsync(s => s.Code == "Draft");
         Assert.True(draft.IsActive);
+    }
+
+    /// <summary>Sprint 7 (plan G2): the collection, fibre and care lookups are seeded; care rows carry their ISO 3758 symbol key.</summary>
+    [Fact]
+    [Trait("Spec", "FR-53")]
+    public async Task Migrate_CreatesCatalogLookups_WithSeedRows()
+    {
+        var options = new DbContextOptionsBuilder<ReferenceDbContext>()
+            .UseNpgsql(_postgres.GetConnectionString())
+            .Options;
+
+        await using var context = new ReferenceDbContext(options);
+        await context.Database.MigrateAsync();
+
+        Assert.Equal(4, await context.Set<CollectionLookup>().CountAsync());
+        Assert.Equal(8, await context.Set<FibreLookup>().CountAsync());
+        var care = await context.Set<CareInstructionLookup>().ToListAsync();
+        Assert.Equal(9, care.Count);
+        Assert.All(care, c => Assert.False(string.IsNullOrWhiteSpace(c.SymbolCode)));
+        Assert.Contains(await context.Set<SizeLookup>().ToListAsync(), s => s.Code == "11-12Y");
     }
 
     /// <summary>SCRUM-93, plan.md's Data section: the 7 Sprint 2 REF lookup tables and their seed rows.</summary>

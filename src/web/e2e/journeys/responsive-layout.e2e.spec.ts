@@ -29,6 +29,10 @@ import {
   openPoById,
   openRun,
   waitForPoStatus,
+  createProduct,
+  fillProduct,
+  openProduct,
+  type CatalogProduct,
 } from '../support';
 
 const API_URL = process.env['API_BASE_URL'] ?? 'http://localhost:8080';
@@ -46,6 +50,8 @@ interface DemoRuns {
   labelItem: WorkItem;
   /** Sprint 6: a bin holding stock with a putaway item still waiting, a low-stock variant (so an alert is open), and a count that has been counted and is ready to review. */
   warehouse: { bin: { id: number; binCode: string }; lowVariant: StockedVariant; countId: number };
+  /** Sprint 7: a product with prices, a picture, composition and care filled in, so every editor tab has content. */
+  product: CatalogProduct;
 }
 
 /** Three runs in different states, created once and shared by every viewport (each needs the outbox dispatcher, which takes seconds). */
@@ -82,7 +88,9 @@ const demoRuns = (request: import('@playwright/test').APIRequestContext): Promis
       data: { binCode: bin.binCode, lines: [{ gtin: labelItem.gtin, gradeId: 1, quantity: 28 }], recount: false, actingPerson: PERSON },
     });
     const warehouse = { bin, lowVariant, countId: count.id };
-    return { fresh, sampleWaiting, busy, qcOpen, qcFresh, qcInspected, qcRework, labelItem, warehouse };
+    const product = await createProduct(request);
+    await fillProduct(request, product);
+    return { fresh, sampleWaiting, busy, qcOpen, qcFresh, qcInspected, qcRework, labelItem, warehouse, product };
   })());
 
 /**
@@ -165,6 +173,17 @@ const screens: Screen[] = [
   { name: 'count sheet', open: async (p, _pos, r) => { await p.goto(`/warehouse/cycle-counts/${r.warehouse.countId}`); await expect(p.locator('app-count-sheet form')).toBeVisible(); } },
   { name: 'count review', open: async (p, _pos, r) => { await p.goto(`/warehouse/cycle-counts/${r.warehouse.countId}`); await p.getByRole('button', { name: 'Review the differences' }).click(); await expect(p.locator('app-review-table table')).toBeVisible(); } },
   { name: 'stock alerts', open: async (p) => { await p.goto('/warehouse/alerts'); await expect(p.locator('app-alert-table table')).toBeVisible(); } },
+  { name: 'products list', open: async (p) => { await p.goto('/catalog/products'); await expect(p.locator('app-product-table table')).toBeVisible(); } },
+  { name: 'create product form', open: async (p) => { await p.goto('/catalog/products'); await p.getByRole('button', { name: 'Create a product' }).click(); await expect(p.locator('app-product-create-form')).toBeVisible(); } },
+  { name: 'product content tab', open: async (p, _pos, r) => { await openProduct(p, r.product, 'Content'); await expect(p.locator('app-product-content-form')).toBeVisible(); } },
+  { name: 'product variants and prices tab', open: async (p, _pos, r) => { await openProduct(p, r.product, 'Variants and prices'); await expect(p.locator('app-variants-table table')).toBeVisible(); } },
+  { name: 'product images tab', open: async (p, _pos, r) => { await openProduct(p, r.product, 'Images'); await expect(p.locator('app-images-panel')).toBeVisible(); } },
+  { name: 'product size chart tab', open: async (p, _pos, r) => { await openProduct(p, r.product, 'Size chart'); await expect(p.locator('app-size-chart-view')).toBeVisible(); } },
+  { name: 'product composition and care tab', open: async (p, _pos, r) => { await openProduct(p, r.product, 'Composition and care'); await expect(p.locator('app-composition-care-panel')).toBeVisible(); } },
+  { name: 'product URL tab', open: async (p, _pos, r) => { await openProduct(p, r.product, 'URL'); await expect(p.locator('app-url-panel')).toBeVisible(); } },
+  { name: 'product publish tab', open: async (p, _pos, r) => { await openProduct(p, r.product, 'Publish'); await expect(p.locator('app-publish-panel')).toBeVisible(); } },
+  { name: 'size charts list', open: async (p) => { await p.goto('/catalog/size-charts'); await expect(p.locator('app-size-chart-table table')).toBeVisible(); } },
+  { name: 'new size chart form', open: async (p) => { await p.goto('/catalog/size-charts'); await p.getByRole('button', { name: 'New size chart' }).click(); await expect(p.locator('app-size-chart-editor')).toBeVisible(); } },
   { name: "barcode history", open: async (p, _pos, r) => { await p.goto("/labelling/register"); await p.getByRole("searchbox", { name: "Search by SKU or barcode" }).fill(r.labelItem.skuCode!); await p.getByRole("row").filter({ hasText: r.labelItem.skuCode! }).getByRole("button", { name: "Barcode history" }).click(); await expect(p.locator("app-gtin-history")).toBeVisible(); } },
 ];
 

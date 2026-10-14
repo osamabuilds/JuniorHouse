@@ -1,0 +1,22 @@
+{
+  // Points C# Dev Kit straight at the solution instead of asking you to pick one.
+  "dotnet.defaultSolution": "src/api/Romp.slnx",
+
+  // Local Postgres, matching .env's default (docker-compose.yml). If you change POSTGRES_PASSWORD
+  // in .env, update this too (or clear "password" below and enable "askForPassword").
+  // Port 5433, not 5432: a native PostgreSQL install commonly claims 5432 on Windows, so
+  // docker-compose.yml publishes the container on 5433 to avoid losing that port race.
+  "sqltools.connections": [
+    {
+      "name": "Romp (local)",
+      "driver": "PostgreSQL",
+      "server": "localhost",
+      "port": 5433,
+      "database": "romp",
+      "username": "romp",
+      "password": "change-me-locally",
+      "connectionTimeout": 15,
+      "previewLimit": 100
+    }
+  ]
+}

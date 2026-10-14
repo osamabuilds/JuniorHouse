@@ -1,0 +1,48 @@
+<h1>Size charts</h1>
+<p class="page-intro">
+  A size chart tells a parent which size to buy: for each size, the age range and measurements. There is one chart per category and audience;
+  the Unisex chart is the fallback. Products with no chart can still be published.
+</p>
+
+<app-section-nav label="Catalog" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (mode() === 'create' || (mode() === 'edit' && chart())) {
+  <app-size-chart-editor
+    [chart]="chart()"
+    [categories]="categories()"
+    [genders]="genders()"
+    [sizes]="sizes()"
+    [saving]="saving()"
+    [error]="formError()"
+    [defaultPerson]="defaultPerson()"
+    (submitted)="save($event)"
+    (cancelled)="close()"
+    (deleted)="remove($event)"
+  />
+} @else if (mode() === 'edit') {
+  <p class="state-message">Loading…</p>
+} @else {
+  <div class="toolbar">
+    <button type="button" class="button button--primary" (click)="startCreate()">New size chart</button>
+  </div>
+}
+
+<app-size-chart-table [charts]="rows()" [categories]="categories()" [genders]="genders()" [loading]="loading()" (edit)="edit($event)" />
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

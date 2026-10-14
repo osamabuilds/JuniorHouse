@@ -11,6 +11,9 @@ public static class Policies
 
     /// <summary>Stock actions (adjustments, counts, alert thresholds; FR-54, FR-60). Capability-shaped: Admin-equivalent until roles exist (S8, SEC-08).</summary>
     public const string Inventory = "Inventory";
+
+    /// <summary>Catalogue actions (products, images, size charts, URLs, publish; Sprint 7). Capability-shaped: Admin-equivalent until roles exist (S8, SEC-08).</summary>
+    public const string Catalogue = "Catalogue";
 }
 
 /// <summary>Named rate-limit policies (ADR 0011).</summary>

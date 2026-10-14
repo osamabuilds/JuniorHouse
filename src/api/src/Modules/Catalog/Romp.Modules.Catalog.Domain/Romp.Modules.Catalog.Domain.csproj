@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\Romp.Modules.Catalog.Contracts\Romp.Modules.Catalog.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

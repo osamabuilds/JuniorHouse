@@ -2,13 +2,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Romp.Modules.Catalog.Domain\Romp.Modules.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\Romp.Modules.Catalog.Contracts\Romp.Modules.Catalog.Contracts.csproj" />
     <ProjectReference Include="..\..\Vendor\Romp.Modules.Vendor.Contracts\Romp.Modules.Vendor.Contracts.csproj" />
+    <ProjectReference Include="..\..\Reference\Romp.Modules.Reference.Contracts\Romp.Modules.Reference.Contracts.csproj" />
+    <ProjectReference Include="..\..\Labelling\Romp.Modules.Labelling.Contracts\Romp.Modules.Labelling.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Storage\Romp.BuildingBlocks.Storage.csproj" />
   </ItemGroup>
 
 </Project>

@@ -106,6 +106,137 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.CareInstructionLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.Property<string>("SymbolCode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("SYMB_CODE");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("CARE_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "WASH-30",
+                            IsActive = true,
+                            Name = "Machine wash at 30 C",
+                            SortSeq = (short)1,
+                            SymbolCode = "wash-30"
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "WASH-40",
+                            IsActive = true,
+                            Name = "Machine wash at 40 C",
+                            SortSeq = (short)2,
+                            SymbolCode = "wash-40"
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "HAND-WASH",
+                            IsActive = true,
+                            Name = "Hand wash only",
+                            SortSeq = (short)3,
+                            SymbolCode = "hand-wash"
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "NO-BLEACH",
+                            IsActive = true,
+                            Name = "Do not bleach",
+                            SortSeq = (short)4,
+                            SymbolCode = "no-bleach"
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "TUMBLE-LOW",
+                            IsActive = true,
+                            Name = "Tumble dry low",
+                            SortSeq = (short)5,
+                            SymbolCode = "tumble-low"
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "NO-TUMBLE",
+                            IsActive = true,
+                            Name = "Do not tumble dry",
+                            SortSeq = (short)6,
+                            SymbolCode = "no-tumble"
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "IRON-LOW",
+                            IsActive = true,
+                            Name = "Iron on low heat",
+                            SortSeq = (short)7,
+                            SymbolCode = "iron-low"
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "NO-IRON",
+                            IsActive = true,
+                            Name = "Do not iron",
+                            SortSeq = (short)8,
+                            SymbolCode = "no-iron"
+                        },
+                        new
+                        {
+                            Id = (short)9,
+                            Code = "NO-DRYCLEAN",
+                            IsActive = true,
+                            Name = "Do not dry clean",
+                            SortSeq = (short)9,
+                            SymbolCode = "no-dryclean"
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.CategoryLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -201,6 +332,82 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Accessories",
                             SortSeq = (short)6
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.CollectionLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("COLN_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "NEW-ARRIVALS",
+                            IsActive = true,
+                            Name = "New Arrivals",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "ESSENTIALS",
+                            IsActive = true,
+                            Name = "Essentials",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "SALE",
+                            IsActive = true,
+                            Name = "Sale",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "BESTSELLERS",
+                            IsActive = true,
+                            Name = "Bestsellers",
+                            SortSeq = (short)4
                         });
                 });
 
@@ -404,6 +611,114 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.FibreLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("FIBR_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "COTTON",
+                            IsActive = true,
+                            Name = "Cotton",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "POLYESTER",
+                            IsActive = true,
+                            Name = "Polyester",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "ELASTANE",
+                            IsActive = true,
+                            Name = "Elastane",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "VISCOSE",
+                            IsActive = true,
+                            Name = "Viscose",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "LINEN",
+                            IsActive = true,
+                            Name = "Linen",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "WOOL",
+                            IsActive = true,
+                            Name = "Wool",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "NYLON",
+                            IsActive = true,
+                            Name = "Nylon",
+                            SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "ACRYLIC",
+                            IsActive = true,
+                            Name = "Acrylic",
+                            SortSeq = (short)8
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.GenderLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -593,6 +908,38 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             IsActive = true,
                             Name = "7-8 Years",
                             SortSeq = (short)10
+                        },
+                        new
+                        {
+                            Id = (short)11,
+                            Code = "8-9Y",
+                            IsActive = true,
+                            Name = "8-9 Years",
+                            SortSeq = (short)11
+                        },
+                        new
+                        {
+                            Id = (short)12,
+                            Code = "9-10Y",
+                            IsActive = true,
+                            Name = "9-10 Years",
+                            SortSeq = (short)12
+                        },
+                        new
+                        {
+                            Id = (short)13,
+                            Code = "10-11Y",
+                            IsActive = true,
+                            Name = "10-11 Years",
+                            SortSeq = (short)13
+                        },
+                        new
+                        {
+                            Id = (short)14,
+                            Code = "11-12Y",
+                            IsActive = true,
+                            Name = "11-12 Years",
+                            SortSeq = (short)14
                         });
                 });
 

@@ -254,3 +254,23 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | movement | MVMT | | | |
 | open | OPEN | | | |
 | created | CRTD | | | |
+
+### Added in Sprint 7 (SCRUM-201, Catalog / Publish)
+
+`PRIC`, `PRDT`, `COLN`, `CLR`, `PCT`, `BYT`, `CNTT`, `HIST`, `MIN`, `MAX`, `MAP`, `VRNT` and `LBL` already existed. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| age | AGE | | instruction | INST |
+| alt text | ALT | | kilogram | KG |
+| archived | ARCH | | length | LEN |
+| care | CARE | | month | MON |
+| centimetre | CM | | original | ORIG |
+| chart | CHRT | | planned | PLAN |
+| chest | CHST | | published | PUBL |
+| compare (compare-at price) | CMPR | | redirect | RDIR |
+| composition | CMPS | | slug | SLUG |
+| fibre | FIBR | | symbol | SYMB |
+| height | HGHT | | waist | WAIS |
+| image | IMG | | weight | WGHT |
+| | | | width | WDTH |
