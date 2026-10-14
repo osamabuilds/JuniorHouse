@@ -7,7 +7,7 @@ Each feature folder has a `README.md` card (what it is, status, where the code i
 | Module | What it covers | Features |
 |---|---|---|
 | [reference](reference/README.md) | Shared lookup data | lookups |
-| [catalog](catalog/README.md) | Styles | styles |
+| [catalog](catalog/README.md) | Styles; products, media, size charts, composition and care, URLs (Sprint 7, approved, in progress) | styles, products, product-media, size-charts, composition-care, urls |
 | [vendor](vendor/README.md) | Vendors and purchase orders | vendors, purchase-orders, revisions, files, vendor-responses, vendor-view |
 | [production](production/README.md) | Production tracking | production-runs, milestones, samples, deliveries |
 | [quality](quality/README.md) | Goods receipt and QC | inbound-deliveries, receiving, batches, inspections, outcomes, safety-checks |
