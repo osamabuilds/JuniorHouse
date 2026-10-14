@@ -30,6 +30,8 @@ internal static class LookupFactory
             var t when t == typeof(SizeLookup) => new SizeLookup(code, name, description, sortSeq),
             var t when t == typeof(ColourLookup) => new ColourLookup(code, name, description, sortSeq),
             var t when t == typeof(FabricLookup) => new FabricLookup(code, name, description, sortSeq),
+            var t when t == typeof(CollectionLookup) => new CollectionLookup(code, name, description, sortSeq),
+            var t when t == typeof(FibreLookup) => new FibreLookup(code, name, description, sortSeq),
             var t when t == typeof(GenderLookup) => new GenderLookup(code, name, description, sortSeq),
             var t when t == typeof(AgeBracketLookup) => new AgeBracketLookup(code, name, description, sortSeq),
             var t when t == typeof(CityLookup) => new CityLookup(code, name, description, sortSeq),

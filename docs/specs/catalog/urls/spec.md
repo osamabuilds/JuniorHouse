@@ -1,6 +1,6 @@
 # SCRUM-201: URL convention and slugs
 
-- **Status:** Approved (owner decisions 2026-10-14; open questions below use the stated defaults)
+- **Status:** Implemented (Sprint 7, SCRUM-201)
 - **Jira:** SCRUM-201 (epic SCRUM-12); source tickets SCRUM-149, SCRUM-78
 - **BRD sections:** §14.1
 - **Requirement IDs:** SEO-02, SEO-05 (sitemap, S9), SEO-06 (canonicals, S9), NFR-01
@@ -52,3 +52,7 @@ Serving redirects, canonical and meta tags, sitemap and robots (S9, SEO-03..06),
 - [ ] **Q-URL-3 Category rename.** If a category is renamed, every product path under it changes. Proposed: the category slug is a stable code that is not renamed with the display name.
 - [ ] **Q-URL-4 Slug source.** SCRUM-149 says "name + distinguishing attribute". Colour is a variant, not the product. Proposed: the product name only, with a number suffix on collision.
 - [ ] **Q-URL-6 Where the slug is unique.** Proposed: unique within gender + category, so `/girls/dresses/x` and `/boys/tops/x` can share a slug.
+
+## As built (Sprint 7)
+- **Address history is kept for products that have been published.** Renaming the address of a draft changes it without leaving a redirect, because nothing public ever pointed there; the URL tab says so ("The product has not been published yet, so no address is being kept."). Once published, every old address keeps resolving to the current one in one hop (URL-2, URL-3).
+- **Open questions** Q-URL-1..6 were built with the defaults above.

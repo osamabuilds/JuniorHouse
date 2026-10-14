@@ -1,6 +1,6 @@
 # SCRUM-201: Composition and care
 
-- **Status:** Approved (owner decisions 2026-10-14; open questions below use the stated defaults)
+- **Status:** Implemented (Sprint 7, SCRUM-201)
 - **Jira:** SCRUM-201 (epic SCRUM-12); source tickets SCRUM-29, SCRUM-78
 - **BRD sections:** §7.2 (FEAT-PDP-03)
 - **Requirement IDs:** FR-09, FEAT-PDP-03, TC-PDP-18..21, NFR-19, SEO-01, SEO-09
@@ -46,3 +46,7 @@ Certifications and test reports, the provenance badge (FEAT-PDP-08), reviews, th
 - [ ] **Q-CMP-2 Icon artwork and licence.** Where the ISO 3758 symbol artwork comes from, and whether its licence allows use on our site, has to be checked before the icons are bundled. Until then the instruction list works with text labels (every symbol needs one anyway).
 - [ ] **Q-CMP-3 Fibre list.** Cotton, polyester, viscose, elastane, wool, linen, nylon… The Style's fabric lookup has Cotton, Denim, Fleece, Jersey, Linen, Polyester; those are fabrics, not fibres. Confirm the launch fibre list.
 - [ ] **Q-CMP-4 Care instruction list.** The standard set is about a dozen (wash temperature, bleach, tumble dry, iron, dry clean). Confirm which ones the business wants available.
+
+## As built (Sprint 7)
+- **A composition that does not total 100% can be saved** while a product is a draft. The Composition tab shows how much is missing, and the publish gate refuses the product with the actual total (CMP-1). Shares are compared in integer tenths, so 33.3 + 33.3 + 33.4 totals exactly 100 (CMP-7).
+- **Reference lists.** Fibres and care instructions come from `FIBR_LKP` and `CARE_LKP` (migration `AddCatalogLookups`), so a new fibre needs no code change (CMP-8). Q-CMP-2..4 stay open for the owner.

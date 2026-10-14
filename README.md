@@ -262,6 +262,33 @@ and enforced then. Stock changes reach other modules through the outbox within s
 `Outbox:PollIntervalSeconds` (default 1). Open questions: bin code format (Q-BIN-1) and what to do with unshelved stock of a voided
 barcode (Q-PUT-2); see the module README.
 
+## Try Sprint 7 (catalog: publish a product)
+
+Sprint 7 turns an accepted, labelled style into a product shoppers will be able to buy (`docs/specs/catalog/`). Same stack
+(`docker compose up -d --build`). A sample girls-dresses size chart is seeded in Development.
+
+**Demo script** (admin app, **Catalog** in the top navigation):
+
+1. **Create.** Products, then *Create a product*: choose a style, name it, say who it is for, the category and the age group. It starts
+   as a **Draft**. Its sizes and colours are the style's. A size gets its SKU and barcode only when Labelling has issued one; the others
+   read "Not yet available" and do not stop you publishing.
+2. **Variants and prices.** Set a price (PKR) per variant and, optionally, a higher "was" price. Every price change is kept as history.
+3. **Images.** Add pictures (JPEG, PNG or WebP; the file type is checked from the file itself, not its name) with alt text. Alt text is
+   required once a product is published.
+4. **Size chart.** Catalog, then *Size charts*: one chart per category and audience. The product's Size chart tab shows it; with no chart
+   the product can still be published and the shop says "size chart coming soon".
+5. **Composition and care.** Fibre shares must total exactly 100% before publishing; the running total is announced as you type. Pick the
+   care instructions.
+6. **URL.** The address is built from audience, category and name (`/girls/dresses/floral-summer-dress`). Rename it and the old address
+   keeps working (a permanent redirect for the shop); reserved words such as `checkout` are refused.
+7. **Publish.** The Publish tab lists **every** missing item at once, each a link to the tab that fixes it. *Take off sale* hides the
+   product without deleting anything; *Archive* is final and keeps the product for order history.
+8. **Two editors.** If someone else saved the product first, your save is refused with a message and a *Reload* button.
+
+Every action asks for your name (kept in this browser), because there is no sign-in until Sprint 8; the `Catalogue` role is declared and
+enforced then. Publishing writes an event through the outbox; the storefront that reads it arrives in Sprint 9. Open questions (defaults
+adopted, see `docs/specs/catalog/README.md`): the age-band names (Q-AGE-2), the launch fibre and care lists, and the URL shape for unisex.
+
 ## Tests
 
 ```bash

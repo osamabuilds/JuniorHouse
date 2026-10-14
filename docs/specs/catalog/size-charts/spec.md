@@ -1,6 +1,6 @@
 # SCRUM-201: Size charts
 
-- **Status:** Approved (owner decisions 2026-10-14; open questions below use the stated defaults)
+- **Status:** Implemented (Sprint 7, SCRUM-201)
 - **Jira:** SCRUM-201 (epic SCRUM-12); source tickets SCRUM-28, SCRUM-78
 - **BRD sections:** §7.2 (FEAT-PDP-02), §12.3.2
 - **Requirement IDs:** FR-08, FEAT-PDP-02, TC-PDP-01, NFR-17, NFR-19, SEO-01
@@ -48,3 +48,8 @@ Automatic size recommendation, body-measurement capture of children (descoped), 
 - [ ] **Q-CHT-3 Inches as well as cm?** Proposed: cm only at MVP.
 - [ ] **Q-CHT-4 Which measurements.** The BRD table has age, height and weight; SCRUM-28 adds chest, waist, length. Proposed: age (months), height, weight (as BRD) plus chest, waist and length (optional). Confirm.
 - [ ] **Q-CHT-5 Category granularity.** Categories are currently six flat ones (Tops, Bottoms, Dresses, Outerwear, Sleepwear, Accessories). Boys and girls often fit differently. Proposed: a chart per category and gender (one chart for Unisex products as the fallback). Confirm.
+
+## As built (Sprint 7)
+- **Sizes beyond 7-8Y** (8-9Y to 11-12Y) are seeded by migration `AddCatalogLookups` with the default labels (Q-CHT-1).
+- **Missing chart** never blocks publishing: the publish tab shows the `NO_SIZE_CHART` warning and the shop will say "size chart coming soon" (CHT-3).
+- **Open questions** Q-CHT-2..5 were built with the defaults above.

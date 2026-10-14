@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API: Romp.Api",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "romp: build api",
+      "program": "${workspaceFolder}/src/api/src/Romp.Api/bin/Debug/net10.0/Romp.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/api/src/Romp.Api",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5051"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Admin: ng serve",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npx ng serve admin --port 4201",
+      "cwd": "${workspaceFolder}/src/web"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Romp: API + Admin",
+      "configurations": ["API: Romp.Api", "Admin: ng serve"],
+      "preLaunchTask": "romp: start infra (postgres, redis, mailpit)",
+      "stopAll": true
+    }
+  ]
+}

@@ -41,6 +41,7 @@ public sealed class ReferenceModule : IModule
         services.AddScoped<IReferenceDbContext>(sp => sp.GetRequiredService<ReferenceDbContext>());
         services.AddScoped<IPaymentTermQueries, PaymentTermQueries>();
         services.AddScoped<IApparelCodeQueries, ApparelCodeQueries>();
+        services.AddScoped<ICatalogLookupQueries, CatalogLookupQueries>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ReferenceTransactionBehavior<,>));
@@ -77,6 +78,11 @@ public sealed class ReferenceModule : IModule
         RegisterOne<AmendmentInitiatorLookup>(services, mutable: false);
         RegisterOne<PoVendorCommTypeLookup>(services, mutable: false);
         RegisterOne<PoFileCategoryLookup>(services, mutable: false);
+
+        // Sprint 7 (SCRUM-201)
+        RegisterOne<CollectionLookup>(services, mutable: true);
+        RegisterOne<FibreLookup>(services, mutable: true);
+        RegisterOne<CareInstructionLookup>(services, mutable: false);
     }
 
     private static void RegisterOne<TLookup>(IServiceCollection services, bool mutable)
@@ -118,5 +124,10 @@ public sealed class ReferenceModule : IModule
         endpoints.MapLookupType<AmendmentInitiatorLookup>("amendment-initiators", mutable: false);
         endpoints.MapLookupType<PoVendorCommTypeLookup>("vendor-comm-types", mutable: false);
         endpoints.MapLookupType<PoFileCategoryLookup>("po-file-categories", mutable: false);
+
+        // Sprint 7 (SCRUM-201)
+        endpoints.MapLookupType<CollectionLookup>("collections", mutable: true);
+        endpoints.MapLookupType<FibreLookup>("fibres", mutable: true);
+        endpoints.MapLookupType<CareInstructionLookup>("care-instructions", mutable: false);
     }
 }

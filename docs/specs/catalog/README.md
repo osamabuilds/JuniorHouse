@@ -9,11 +9,11 @@ Styles (Sprint 1) and, from Sprint 7 (SCRUM-201), **products**: the storefront-f
 | Feature | What it does | Status |
 |---|---|---|
 | [styles](styles/README.md) | Pre-production style record, colourways, size run, targets | Implemented |
-| [products](products/spec.md) | A product (from a style) with storefront content, price, categories and collections; draft, publish, unpublish, archive | Approved, in progress (Sprint 7) |
-| [product-media](product-media/spec.md) | Images with ordering and mandatory alt text at publish | Approved, in progress (Sprint 7) |
-| [size-charts](size-charts/spec.md) | Size charts per category: size → age range and measurements | Approved, in progress (Sprint 7) |
-| [composition-care](composition-care/spec.md) | Fabric composition (fibre + %) and wash-care instructions | Approved, in progress (Sprint 7) |
-| [urls](urls/spec.md) | The URL convention, slug generation, slug history and 301 resolution | Approved, in progress (Sprint 7) |
+| [products](products/spec.md) | A product (from a style) with storefront content, price, categories and collections; draft, publish, unpublish, archive | Implemented |
+| [product-media](product-media/spec.md) | Images with ordering and mandatory alt text at publish | Implemented |
+| [size-charts](size-charts/spec.md) | Size charts per category: size → age range and measurements | Implemented |
+| [composition-care](composition-care/spec.md) | Fabric composition (fibre + %) and wash-care instructions | Implemented |
+| [urls](urls/spec.md) | The URL convention, slug generation, slug history and 301 resolution | Implemented |
 
 ## Sprint 7 scope and boundaries
 

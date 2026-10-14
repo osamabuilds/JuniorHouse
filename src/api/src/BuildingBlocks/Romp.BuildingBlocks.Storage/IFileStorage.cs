@@ -13,4 +13,10 @@ public interface IFileStorage
     Task<string> SaveAsync(byte[] content, CancellationToken cancellationToken);
 
     Task<byte[]> RetrieveAsync(string storageKey, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Removes a stored file (Sprint 7, product images). Missing files are ignored. A default no-op so older storages and test doubles
+    /// keep working; a leftover file is an orphan, never a data error.
+    /// </summary>
+    Task DeleteAsync(string storageKey, CancellationToken cancellationToken) => Task.CompletedTask;
 }

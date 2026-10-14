@@ -36,7 +36,7 @@ describe('App', () => {
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav');
     const linkText = Array.from(nav?.querySelectorAll('a') ?? []).map((a) => a.textContent?.trim());
 
-    expect(linkText).toEqual(['Reference Data', 'Styles', 'Vendors', 'Purchase Orders', 'Production', 'Receiving & QC', 'Labelling', 'Warehouse']);
+    expect(linkText).toEqual(['Reference Data', 'Styles', 'Catalog', 'Vendors', 'Purchase Orders', 'Production', 'Receiving & QC', 'Labelling', 'Warehouse']);
   });
 
   it('hides the admin header, nav and footer on the vendor-facing PO view (SCRUM-93 task 51)', async () => {

@@ -11,6 +11,20 @@ export const routes: Routes = [
     loadChildren: () => import('@features/catalog/styles/styles.routes').then((m) => m.STYLES_ROUTES),
   },
   {
+    path: 'catalog',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'products' },
+      {
+        path: 'products',
+        loadChildren: () => import('@features/catalog/products/products.routes').then((m) => m.PRODUCTS_ROUTES),
+      },
+      {
+        path: 'size-charts',
+        loadChildren: () => import('@features/catalog/size-charts/size-charts.routes').then((m) => m.SIZE_CHARTS_ROUTES),
+      },
+    ],
+  },
+  {
     path: 'vendors',
     loadChildren: () => import('@features/vendor/vendors/vendors.routes').then((m) => m.VENDORS_ROUTES),
   },

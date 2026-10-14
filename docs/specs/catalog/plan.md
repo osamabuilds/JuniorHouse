@@ -2,7 +2,7 @@
 
 - **Module README:** [README.md](README.md) (decisions D1-D6, shared open questions)
 - **Features:** [products](products/plan.md) · [product-media](product-media/plan.md) · [size-charts](size-charts/plan.md) · [composition-care](composition-care/plan.md) · [urls](urls/plan.md)
-- **ADRs:** [0013 URL convention](../../adr/0013-product-url-convention.md) (new, proposed) · [0014 variants from Labelling](../../adr/0014-product-variants-from-labelling.md) (new, proposed) · [0002 modular monolith](../../adr/0002-modular-monolith.md) · [0004 outbox](../../adr/0004-postgres-transactional-outbox.md) · [0008 shared storage](../../adr/0008-production-vendor-coordination-and-shared-storage.md) · [0011 security baseline](../../adr/0011-security-and-coupling-baseline.md)
+- **ADRs:** [0013 URL convention](../../adr/0013-product-url-convention.md) (accepted) · [0014 variants from Labelling](../../adr/0014-product-variants-from-labelling.md) (accepted) · [0002 modular monolith](../../adr/0002-modular-monolith.md) · [0004 outbox](../../adr/0004-postgres-transactional-outbox.md) · [0008 shared storage](../../adr/0008-production-vendor-coordination-and-shared-storage.md) · [0011 security baseline](../../adr/0011-security-and-coupling-baseline.md)
 
 This file holds what the five features share. Each feature plan holds its domain model, use cases, endpoints and its own security review.
 

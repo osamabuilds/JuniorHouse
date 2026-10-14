@@ -1,6 +1,6 @@
 # SCRUM-201: Product media (images and alt text)
 
-- **Status:** Approved (owner decisions 2026-10-14; open questions below use the stated defaults)
+- **Status:** Implemented (Sprint 7, SCRUM-201)
 - **Jira:** SCRUM-201 (epic SCRUM-12); source tickets SCRUM-78 (media), SCRUM-154
 - **BRD sections:** §7.2 (FEAT-PDP-01), §12.3.2, §14.1
 - **Requirement IDs:** SEO-07, FR-53, FR-07 (gallery, rendered in S9), NFR-19
@@ -50,3 +50,9 @@ Resized WebP/AVIF derivatives and CDN delivery (see Q-MED-1), image editing/crop
 - [ ] **Q-MED-3 Alt language.** English only for MVP (SCRUM-154 Q1). Proposed yes.
 - [ ] **Q-MED-4 Where files live.** The shared storage building block from Sprint 2 stores files on local disk in development. Proposed: acceptable until the S8 staging server (object storage per ADR 0003 then).
 - [ ] **Q-MED-5 Colour-specific images.** The BRD lets a colour's images override the product-level ones. Proposed: an image belongs to the product or to one colour of the style; the main image of a colour is its first image.
+
+## As built (Sprint 7)
+- **Upload** takes an optional `altText`. It is required when the product is already published, and a database trigger refuses an empty alt on a published product's image by any route (MED-5).
+- **File deletion.** `IFileStorage` gained `DeleteAsync` (default: no-op) so removing an image can remove its file after the database commit; a failed file delete does not roll back the database change.
+- **Storage path.** Image keys use the same generated-path builder as the URL feature and never the client's file name (MED-9).
+- **Open questions** Q-MED-2..5 were built with the defaults above.

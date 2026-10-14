@@ -19,3 +19,8 @@ The BRD data model shows `Products` and `ProductVariants` with a unique `Variant
 - A second copy of SKU and GTIN exists in `CTLG.VRNT_LBL`. It is a read-side copy owned by the consumer and rebuildable from `IVariantQueries`, which is the only way to keep modules from sharing tables.
 - Stock availability (Warehouse) stays separate: sellable means "has an identity and a price"; in stock is a different question answered in S9 and S11.
 - Catalog will not accept SKU or GTIN input from the admin UI or API.
+
+## As built (Sprint 7)
+
+- The consumers use the event as a trigger and read Labelling's current state of that variant through `IVariantQueries.GetByIdAsync` (added alongside `GetByStyleAsync`); the event payload is only the fallback when the read returns nothing. This keeps a late, repeated or out-of-order event from writing stale data, so the upsert needs no event ordering.
+- `Product.Version` is the PostgreSQL `xmin` token and `Touch()` moves it for edits to a product's children, so the two-editors rule covers the whole product.

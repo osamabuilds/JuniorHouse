@@ -57,6 +57,7 @@ public sealed class LabellingModule : IModule
         // Each feature's public surface, implemented by its own feature and used through the interface (one-way dependencies).
         services.AddScoped<IVariantAssigner, VariantAssigner>();
         services.AddScoped<IVariantReader, VariantReader>();
+        services.AddScoped<IVariantQueries, Variants.VariantContractQueries>();
         services.AddScoped<IPrintProgress, PrintProgress>();
         services.AddScoped<ITagDocumentBuilder, TagDocumentBuilder>();
         services.AddScoped<LabelWorkResolver>();

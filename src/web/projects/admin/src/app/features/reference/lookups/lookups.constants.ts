@@ -17,4 +17,8 @@ export const LOOKUP_TYPES: readonly LookupTypeConfig[] = [
   { key: 'amendment-reasons', label: 'Amendment Reasons', mutable: true },
   { key: 'vendor-comm-channels', label: 'Vendor Communication Channels', mutable: true },
   { key: 'po-statuses', label: 'PO Statuses', mutable: false },
+  // Sprint 7 (SCRUM-201): collections and fibres are staff-maintained; care instructions are read-only because each one is paired with its symbol.
+  { key: 'collections', label: 'Collections', mutable: true },
+  { key: 'fibres', label: 'Fibres', mutable: true },
+  { key: 'care-instructions', label: 'Care Instructions', mutable: false },
 ];

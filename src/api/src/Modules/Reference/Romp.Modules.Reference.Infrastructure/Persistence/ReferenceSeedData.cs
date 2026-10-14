@@ -28,7 +28,13 @@ internal static class ReferenceSeedData
             Row<SizeLookup>(7, "4-5Y", "4-5 Years", 7),
             Row<SizeLookup>(8, "5-6Y", "5-6 Years", 8),
             Row<SizeLookup>(9, "6-7Y", "6-7 Years", 9),
-            Row<SizeLookup>(10, "7-8Y", "7-8 Years", 10));
+            Row<SizeLookup>(10, "7-8Y", "7-8 Years", 10),
+
+            // Sprint 7 (Q-CHT-1 default): the business range is 1-12Y, so the run continues to 11-12Y.
+            Row<SizeLookup>(11, "8-9Y", "8-9 Years", 11),
+            Row<SizeLookup>(12, "9-10Y", "9-10 Years", 12),
+            Row<SizeLookup>(13, "10-11Y", "10-11 Years", 13),
+            Row<SizeLookup>(14, "11-12Y", "11-12 Years", 14));
 
         modelBuilder.Entity<ColourLookup>().HasData(
             Row<ColourLookup>(1, "WHT", "White", 1),
@@ -170,6 +176,35 @@ internal static class ReferenceSeedData
             new { Id = (short)7, Code = "ComplianceTestReport", Name = "Compliance / Test Report", Description = (string?)null, SortSeq = (short)7, IsActive = true, IsVendorVisible = false },
             new { Id = (short)8, Code = "VendorEvidence", Name = "Vendor Evidence", Description = (string?)null, SortSeq = (short)8, IsActive = true, IsVendorVisible = false },
             new { Id = (short)9, Code = "Other", Name = "Other", Description = (string?)null, SortSeq = (short)9, IsActive = true, IsVendorVisible = false });
+
+        // Sprint 7 (SCRUM-201): launch collections and fibres are starter rows the owner can extend through the admin screen (Q-PRD-5, Q-CMP-3).
+        modelBuilder.Entity<CollectionLookup>().HasData(
+            Row<CollectionLookup>(1, "NEW-ARRIVALS", "New Arrivals", 1),
+            Row<CollectionLookup>(2, "ESSENTIALS", "Essentials", 2),
+            Row<CollectionLookup>(3, "SALE", "Sale", 3),
+            Row<CollectionLookup>(4, "BESTSELLERS", "Bestsellers", 4));
+
+        modelBuilder.Entity<FibreLookup>().HasData(
+            Row<FibreLookup>(1, "COTTON", "Cotton", 1),
+            Row<FibreLookup>(2, "POLYESTER", "Polyester", 2),
+            Row<FibreLookup>(3, "ELASTANE", "Elastane", 3),
+            Row<FibreLookup>(4, "VISCOSE", "Viscose", 4),
+            Row<FibreLookup>(5, "LINEN", "Linen", 5),
+            Row<FibreLookup>(6, "WOOL", "Wool", 6),
+            Row<FibreLookup>(7, "NYLON", "Nylon", 7),
+            Row<FibreLookup>(8, "ACRYLIC", "Acrylic", 8));
+
+        // System-owned: each instruction is paired with its ISO 3758 symbol key (D6; Q-CMP-4 for the owner's final list).
+        modelBuilder.Entity<CareInstructionLookup>().HasData(
+            new { Id = (short)1, Code = "WASH-30", Name = "Machine wash at 30 C", Description = (string?)null, SortSeq = (short)1, IsActive = true, SymbolCode = "wash-30" },
+            new { Id = (short)2, Code = "WASH-40", Name = "Machine wash at 40 C", Description = (string?)null, SortSeq = (short)2, IsActive = true, SymbolCode = "wash-40" },
+            new { Id = (short)3, Code = "HAND-WASH", Name = "Hand wash only", Description = (string?)null, SortSeq = (short)3, IsActive = true, SymbolCode = "hand-wash" },
+            new { Id = (short)4, Code = "NO-BLEACH", Name = "Do not bleach", Description = (string?)null, SortSeq = (short)4, IsActive = true, SymbolCode = "no-bleach" },
+            new { Id = (short)5, Code = "TUMBLE-LOW", Name = "Tumble dry low", Description = (string?)null, SortSeq = (short)5, IsActive = true, SymbolCode = "tumble-low" },
+            new { Id = (short)6, Code = "NO-TUMBLE", Name = "Do not tumble dry", Description = (string?)null, SortSeq = (short)6, IsActive = true, SymbolCode = "no-tumble" },
+            new { Id = (short)7, Code = "IRON-LOW", Name = "Iron on low heat", Description = (string?)null, SortSeq = (short)7, IsActive = true, SymbolCode = "iron-low" },
+            new { Id = (short)8, Code = "NO-IRON", Name = "Do not iron", Description = (string?)null, SortSeq = (short)8, IsActive = true, SymbolCode = "no-iron" },
+            new { Id = (short)9, Code = "NO-DRYCLEAN", Name = "Do not dry clean", Description = (string?)null, SortSeq = (short)9, IsActive = true, SymbolCode = "no-dryclean" });
     }
 
     /// <summary>The standard lookup shape's HasData row, for the nine types with no extra column.</summary>

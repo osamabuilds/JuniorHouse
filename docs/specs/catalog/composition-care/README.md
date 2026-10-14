@@ -1,6 +1,6 @@
 # Composition and care
 
-- **Module:** [`catalog`](../README.md) · **Feature:** `composition-care` · **Status:** Planned
+- **Module:** [`catalog`](../README.md) · **Feature:** `composition-care` · **Status:** Implemented
 
 Fabric composition (fibre and percentage, totalling 100%) and wash-care instructions.
 
@@ -11,6 +11,8 @@ Fabric composition (fibre and percentage, totalling 100%) and wash-care instruct
 
 | Tree | Path |
 |---|---|
-| API | not built yet |
-| API tests | none yet |
-| Web | planned: `catalog/composition-care` |
+| API | `src/api/src/Modules/Catalog/*/CompositionCare` |
+| API tests | `src/api/tests/Romp.Modules.Catalog.Tests/CompositionCare`, `src/api/tests/Romp.Api.IntegrationTests/Catalog/` |
+| Web | `src/web/projects/admin/src/app/features/catalog/products/components/composition-care-panel` (the Composition and care tab); e2e `src/web/e2e/catalog/composition-care.e2e.spec.ts` |
+
+See the [traceability](../traceability.md) for the test behind each acceptance criterion.

@@ -28,4 +28,20 @@ public sealed class LocalFileStorage(FileStorageOptions options) : IFileStorage
 
         return File.ReadAllBytesAsync(Path.Combine(options.RootPath, storageKey), cancellationToken);
     }
+
+    public Task DeleteAsync(string storageKey, CancellationToken cancellationToken)
+    {
+        if (storageKey.Contains('/') || storageKey.Contains('\\') || storageKey.Contains(".."))
+        {
+            throw new ArgumentException("Storage key is not a valid generated key.", nameof(storageKey));
+        }
+
+        var path = Path.Combine(options.RootPath, storageKey);
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+
+        return Task.CompletedTask;
+    }
 }

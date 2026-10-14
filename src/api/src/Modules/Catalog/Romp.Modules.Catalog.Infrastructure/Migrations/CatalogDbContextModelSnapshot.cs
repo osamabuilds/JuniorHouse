@@ -23,6 +23,890 @@ namespace Romp.Modules.Catalog.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Romp.BuildingBlocks.Persistence.Inbox.InboxMessage", b =>
+                {
+                    b.Property<long>("MessageId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("MSG_ID");
+
+                    b.Property<string>("HandlerName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("HNDL_NAME");
+
+                    b.Property<DateTimeOffset?>("ProcessedDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("PROC_DTE");
+
+                    b.HasKey("MessageId", "HandlerName");
+
+                    b.ToTable("INBX", "CTLG");
+                });
+
+            modelBuilder.Entity("Romp.BuildingBlocks.Persistence.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("AggregateId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("AGGR_ID");
+
+                    b.Property<string>("AggregateType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("PurchaseOrder")
+                        .HasColumnName("AGGR_TYP");
+
+                    b.Property<short>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("ATMP_CNT");
+
+                    b.Property<string>("ClaimedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("CLM_BY");
+
+                    b.Property<string>("DeadLetterReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DEDL_RSN");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("EVNT_TYP");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsDeadLettered")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("DEDL_IND");
+
+                    b.Property<DateTimeOffset?>("LeaseExpiryDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("LEAS_EXPY_DTE");
+
+                    b.Property<short>("MessageVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)1)
+                        .HasColumnName("MSG_VER");
+
+                    b.Property<DateTimeOffset?>("NextAttemptDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("NXT_ATMP_DTE");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("PYLD");
+
+                    b.Property<DateTimeOffset?>("ProcessedDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("PROC_DTE");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OUTB_MSG", "CTLG");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.CompositionCare.CompositionLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("FibreId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("FIBR_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<decimal>("Percent")
+                        .HasColumnType("numeric(4,1)")
+                        .HasColumnName("PCT");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FibreId");
+
+                    b.HasIndex("ProductId", "FibreId")
+                        .IsUnique();
+
+                    b.ToTable("PRDT_CMPS", "CTLG", t =>
+                        {
+                            t.HasCheckConstraint("CK_PRDT_CMPS_PCT", "\"PCT\" > 0 AND \"PCT\" <= 100");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.CompositionCare.ProductCare", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("CareId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CARE_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CareId");
+
+                    b.HasIndex("ProductId", "CareId")
+                        .IsUnique();
+
+                    b.ToTable("PRDT_CARE_MAP", "CTLG");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.ProductMedia.ProductImage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AltText")
+                        .HasMaxLength(125)
+                        .HasColumnType("character varying(125)")
+                        .HasColumnName("ALT");
+
+                    b.Property<int>("ByteSize")
+                        .HasColumnType("integer")
+                        .HasColumnName("FILE_BYT");
+
+                    b.Property<short?>("ColourId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CLR_ID");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CNTT_TYP");
+
+                    b.Property<string>("FileKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("FILE_KEY");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer")
+                        .HasColumnName("HGHT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("FILE_NAME");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<int>("SortSeq")
+                        .HasColumnType("integer")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer")
+                        .HasColumnName("WDTH");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColourId");
+
+                    b.HasIndex("ProductId", "SortSeq");
+
+                    b.ToTable("PRDT_IMG", "CTLG", t =>
+                        {
+                            t.HasCheckConstraint("CK_PRDT_IMG_ALT", "\"ALT\" IS NULL OR char_length(btrim(\"ALT\")) BETWEEN 1 AND 125");
+
+                            t.HasCheckConstraint("CK_PRDT_IMG_SIZE", "\"WDTH\" > 0 AND \"HGHT\" > 0 AND \"FILE_BYT\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.LabelledVariant", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("ColourId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CLR_ID");
+
+                    b.Property<string>("Gtin")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)")
+                        .HasColumnName("GTIN");
+
+                    b.Property<bool>("GtinVoided")
+                        .HasColumnType("boolean")
+                        .HasColumnName("GTIN_VOID_IND");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("LabellingVariantId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("LBL_VRNT_ID");
+
+                    b.Property<short>("SizeId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SIZE_ID");
+
+                    b.Property<string>("SkuCode")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("SKU_CODE");
+
+                    b.Property<long>("StyleId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("STYL_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LabellingVariantId")
+                        .IsUnique();
+
+                    b.HasIndex("StyleId", "ColourId", "SizeId");
+
+                    b.ToTable("VRNT_LBL", "CTLG");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.PlannedVariant", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("ColourId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CLR_ID");
+
+                    b.Property<decimal?>("CompareAtPrice")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("CMPR_PRIC");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("PRIC");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<short>("SizeId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SIZE_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "ColourId", "SizeId")
+                        .IsUnique();
+
+                    b.ToTable("PRDT_VRNT", "CTLG", t =>
+                        {
+                            t.HasCheckConstraint("CK_PRDT_VRNT_PRIC", "(\"PRIC\" IS NULL OR \"PRIC\" > 0) AND (\"CMPR_PRIC\" IS NULL OR (\"PRIC\" IS NOT NULL AND \"CMPR_PRIC\" > \"PRIC\"))");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.PriceHistoryEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ChangedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("CHNG_BY");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<decimal?>("NewCompareAtPrice")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("NEW_CMPR_PRIC");
+
+                    b.Property<decimal>("NewPrice")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("NEW_PRIC");
+
+                    b.Property<decimal?>("OldCompareAtPrice")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("OLD_CMPR_PRIC");
+
+                    b.Property<decimal?>("OldPrice")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("OLD_PRIC");
+
+                    b.Property<long>("VariantId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_VRNT_ID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VariantId");
+
+                    b.ToTable("PRDT_PRIC_HIST", "CTLG");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.Product", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("AgeBracketId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("AGE_BRKT_ID");
+
+                    b.Property<string>("CareNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("CARE_NOTE");
+
+                    b.Property<short>("CategoryId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CATG_ID");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<short>("GenderId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("GNDR_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("NAME");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("PUBL_DTE");
+
+                    b.Property<string>("PublishedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("PUBL_BY");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("SLUG");
+
+                    b.Property<short>("StatusId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("PRDT_STS_ID");
+
+                    b.Property<long>("StyleId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("STYL_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgeBracketId");
+
+                    b.HasIndex("GenderId");
+
+                    b.HasIndex("StyleId")
+                        .IsUnique();
+
+                    b.HasIndex("StatusId", "CategoryId");
+
+                    b.HasIndex("GenderId", "CategoryId", "Slug")
+                        .IsUnique();
+
+                    b.ToTable("PRDT_MAIN", "CTLG", t =>
+                        {
+                            t.HasCheckConstraint("CK_PRDT_MAIN_SLUG", "\"SLUG\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.ProductCollectionLink", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("CollectionId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("COLN_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CollectionId");
+
+                    b.HasIndex("ProductId", "CollectionId")
+                        .IsUnique();
+
+                    b.ToTable("PRDT_COLN_MAP", "CTLG");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.ProductStatusLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PRDT_STS_LKP", "CTLG");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "DRAFT",
+                            Description = "Being prepared; not visible to shoppers",
+                            IsActive = true,
+                            Name = "Draft",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "PUBLISHED",
+                            Description = "On sale",
+                            IsActive = true,
+                            Name = "Published",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "UNPUBLISHED",
+                            Description = "Taken off sale; kept in history",
+                            IsActive = true,
+                            Name = "Unpublished",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "ARCHIVED",
+                            Description = "Retired for good; its address answers gone",
+                            IsActive = true,
+                            Name = "Archived",
+                            SortSeq = (short)4
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.SizeCharts.SizeChart", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("CategoryId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CATG_ID");
+
+                    b.Property<short>("GenderId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("GNDR_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GenderId");
+
+                    b.HasIndex("CategoryId", "GenderId")
+                        .IsUnique();
+
+                    b.ToTable("CHRT_MAIN", "CTLG");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.SizeCharts.SizeChartLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("AgeMaxMonths")
+                        .HasColumnType("integer")
+                        .HasColumnName("AGE_MAX_MON");
+
+                    b.Property<int?>("AgeMinMonths")
+                        .HasColumnType("integer")
+                        .HasColumnName("AGE_MIN_MON");
+
+                    b.Property<long>("ChartId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("CHRT_ID");
+
+                    b.Property<decimal?>("ChestCm")
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("CHST_CM");
+
+                    b.Property<decimal?>("HeightMaxCm")
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("HGHT_MAX_CM");
+
+                    b.Property<decimal?>("HeightMinCm")
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("HGHT_MIN_CM");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<decimal?>("LengthCm")
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("LEN_CM");
+
+                    b.Property<short>("SizeId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SIZE_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<decimal?>("WaistCm")
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("WAIS_CM");
+
+                    b.Property<decimal?>("WeightMaxKg")
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("WGHT_MAX_KG");
+
+                    b.Property<decimal?>("WeightMinKg")
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("WGHT_MIN_KG");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChartId", "SizeId")
+                        .IsUnique();
+
+                    b.ToTable("CHRT_LINE", "CTLG", t =>
+                        {
+                            t.HasCheckConstraint("CK_CHRT_LINE_POSITIVE", "COALESCE(\"AGE_MIN_MON\", 0) >= 0 AND COALESCE(\"AGE_MAX_MON\", 0) >= 0 AND COALESCE(\"HGHT_MIN_CM\", 0) >= 0 AND COALESCE(\"HGHT_MAX_CM\", 0) >= 0 AND COALESCE(\"WGHT_MIN_KG\", 0) >= 0 AND COALESCE(\"WGHT_MAX_KG\", 0) >= 0 AND COALESCE(\"CHST_CM\", 0) >= 0 AND COALESCE(\"WAIS_CM\", 0) >= 0 AND COALESCE(\"LEN_CM\", 0) >= 0");
+
+                            t.HasCheckConstraint("CK_CHRT_LINE_RANGE", "(\"AGE_MIN_MON\" IS NULL OR \"AGE_MAX_MON\" IS NULL OR \"AGE_MIN_MON\" <= \"AGE_MAX_MON\") AND (\"HGHT_MIN_CM\" IS NULL OR \"HGHT_MAX_CM\" IS NULL OR \"HGHT_MIN_CM\" <= \"HGHT_MAX_CM\") AND (\"WGHT_MIN_KG\" IS NULL OR \"WGHT_MAX_KG\" IS NULL OR \"WGHT_MIN_KG\" <= \"WGHT_MAX_KG\")");
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Catalog.Domain.Styles.Style", b =>
                 {
                     b.Property<long>("Id")
@@ -214,6 +1098,160 @@ namespace Romp.Modules.Catalog.Infrastructure.Migrations
                     b.ToTable("STYL_TGT_LINE", "CTLG");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Urls.PathHistoryEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("CategoryId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CATG_ID");
+
+                    b.Property<short>("GenderId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("GNDR_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("SLUG");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("GenderId", "CategoryId", "Slug")
+                        .IsUnique();
+
+                    b.ToTable("PRDT_SLUG_HIST", "CTLG", t =>
+                        {
+                            t.HasCheckConstraint("CK_PRDT_SLUG_HIST_SLUG", "\"SLUG\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.CompositionCare.CompositionLine", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_CMPS_PRDT_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.CompositionCare.ProductCare", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_CARE_MAP_PRDT_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.ProductMedia.ProductImage", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_IMG_PRDT_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.PlannedVariant", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.Products.Product", null)
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_VRNT_PRDT_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.PriceHistoryEntry", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.Products.PlannedVariant", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_PRIC_HIST_PRDT_VRNT_ID");
+
+                    b.Navigation("Variant");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.Product", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.Products.ProductStatusLookup", null)
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_MAIN_PRDT_STS_ID");
+
+                    b.HasOne("Romp.Modules.Catalog.Domain.Styles.Style", null)
+                        .WithOne()
+                        .HasForeignKey("Romp.Modules.Catalog.Domain.Products.Product", "StyleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_MAIN_STYL_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.ProductCollectionLink", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.Products.Product", null)
+                        .WithMany("Collections")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_COLN_MAP_PRDT_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.SizeCharts.SizeChartLine", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.SizeCharts.SizeChart", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("ChartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_CHRT_LINE_CHRT_ID");
+                });
+
             modelBuilder.Entity("Romp.Modules.Catalog.Domain.Styles.StyleColourway", b =>
                 {
                     b.HasOne("Romp.Modules.Catalog.Domain.Styles.Style", null)
@@ -242,6 +1280,28 @@ namespace Romp.Modules.Catalog.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_STYL_TGT_LINE_STYL_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Urls.PathHistoryEntry", b =>
+                {
+                    b.HasOne("Romp.Modules.Catalog.Domain.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_SLUG_HIST_PRDT_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.Products.Product", b =>
+                {
+                    b.Navigation("Collections");
+
+                    b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Catalog.Domain.SizeCharts.SizeChart", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("Romp.Modules.Catalog.Domain.Styles.Style", b =>

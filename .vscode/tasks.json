@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "romp: start infra (postgres, redis, mailpit)",
+      "type": "shell",
+      "command": "docker compose up -d --wait postgres redis mailpit",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "panel": "shared" }
+    },
+    {
+      "label": "romp: build api",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/api/Romp.slnx",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "dependsOn": ["romp: start infra (postgres, redis, mailpit)"]
+    },
+    {
+      "label": "romp: serve admin",
+      "type": "shell",
+      "command": "npx ng serve admin --port 4201",
+      "options": { "cwd": "${workspaceFolder}/src/web" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Building\\.\\.\\.",
+          "endsPattern": "(Application bundle generation complete|Local:|➜)"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "romp" }
+    },
+    {
+      "label": "romp: test backend",
+      "type": "shell",
+      "command": "dotnet test Romp.slnx",
+      "options": { "cwd": "${workspaceFolder}/src/api" },
+      "problemMatcher": "$msCompile",
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "romp: test admin",
+      "type": "shell",
+      "command": "npx ng test admin --watch=false",
+      "options": { "cwd": "${workspaceFolder}/src/web" },
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "romp: e2e",
+      "type": "shell",
+      "command": "npm run e2e",
+      "options": { "cwd": "${workspaceFolder}/src/web" },
+      "problemMatcher": [],
+      "group": "test"
+    }
+  ]
+}

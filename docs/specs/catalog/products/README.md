@@ -1,6 +1,6 @@
 # Products
 
-- **Module:** [`catalog`](../README.md) · **Feature:** `products` · **Status:** Planned
+- **Module:** [`catalog`](../README.md) · **Feature:** `products` · **Status:** Implemented
 
 A product built from a style: storefront content, per-variant price, categories and collections; draft, publish, unpublish, archive.
 
@@ -11,6 +11,8 @@ A product built from a style: storefront content, per-variant price, categories 
 
 | Tree | Path |
 |---|---|
-| API | not built yet |
-| API tests | none yet |
-| Web | planned: `catalog/products` |
+| API | `src/api/src/Modules/Catalog/*/Products` |
+| API tests | `src/api/tests/Romp.Modules.Catalog.Tests/Products`, `src/api/tests/Romp.Api.IntegrationTests/Catalog/` |
+| Web | `src/web/projects/admin/src/app/features/catalog/products`; e2e `src/web/e2e/catalog/products.e2e.spec.ts` |
+
+See the [traceability](../traceability.md) for the test behind each acceptance criterion.

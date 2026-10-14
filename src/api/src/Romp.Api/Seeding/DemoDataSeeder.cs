@@ -63,6 +63,7 @@ internal static class DemoDataSeeder
         }
 
         await SeedSampleAmendmentAsync(catalogContext, vendorContext, cancellationToken);
+        await DemoCatalogSeeder.SeedAsync(catalogContext, cancellationToken);
         await DemoProductionSeeder.SeedAsync(catalogContext, vendorContext, productionContext, cancellationToken);
         await DemoQualitySeeder.SeedAsync(catalogContext, vendorContext, productionContext, qualityContext, cancellationToken);
     }

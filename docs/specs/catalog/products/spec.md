@@ -1,6 +1,6 @@
 # SCRUM-201: Products (create, edit, publish)
 
-- **Status:** Approved (owner decisions 2026-10-14; open questions below use the stated defaults)
+- **Status:** Implemented (Sprint 7, SCRUM-201)
 - **Jira:** SCRUM-201 (epic SCRUM-12); source ticket SCRUM-78
 - **BRD sections:** §5.8, §5.9, §7.8, §12.3.2
 - **Requirement IDs:** FR-53, FEAT-ADM-01, SEC-08 (declared), FR-59/FR-60 (enforced S8), NFR-17, NFR-19
@@ -62,3 +62,11 @@ Fit Finder mapping (descoped), supplier cost screens, try-on assets, bulk price/
 - [ ] **Q-PRD-6 Tags.** SCRUM-78 lists tags. Free-text tags conflict with the lookup rule. Proposed: out of scope; use collections.
 - [ ] **Q-PRD-9 Where the selling price starts.** The style has a target retail price. Proposed: the product's price is pre-filled from it and can then be changed freely; later changes to the style's target do not touch published prices.
 - [ ] **Q-AGE-2 Age band names** (module README).
+
+## As built (Sprint 7)
+Where the build differs from, or settles, what the plan said:
+- **Concurrency token.** `Product.Version` is the PostgreSQL `xmin` system column. A change to a child (image, composition, care, collections, prices) calls `Touch()` so the token moves and a second editor holding an older copy gets the conflict message (PRD-5).
+- **Status.** `StatusId` points at the lookup row (`PRDT_STS_LKP`); the C# `Status` property is derived and not mapped.
+- **Labelling variants.** The consumer treats the event as a trigger: it reads the variant's current state through `IVariantQueries.GetByIdAsync` (Labelling's contract) and uses the event payload only as a fallback. This is why a late or repeated event cannot leave stale data (PRD-15).
+- **Partial composition saves.** The editor saves a composition that does not yet total 100% as a draft, shows "Total 90%: 10% missing", and leaves the refusal to the publish gate (`COMPOSITION_TOTAL`).
+- **Open questions** Q-PRD-3..9 and Q-AGE-2 were built with the defaults stated above. None has been overturned by the owner.
