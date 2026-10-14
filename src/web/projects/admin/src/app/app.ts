@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { catchError, filter, map, of, switchMap, timer } from 'rxjs';
 import { OutboxHealthService } from '@core/health';
+import { AlertBadgeComponent } from '@features/warehouse/stock-alerts';
 import { OutboxHealthComponent } from '@shared';
 
 const VENDOR_VIEW_SEGMENT = '/vendor-view';
@@ -15,7 +16,7 @@ const VENDOR_VIEW_SEGMENT = '/vendor-view';
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, OutboxHealthComponent],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, OutboxHealthComponent, AlertBadgeComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

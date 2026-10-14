@@ -8,6 +8,9 @@ public static class Policies
 
     /// <summary>Administrative actions (void, cancel, operational data). Staff-equivalent until roles exist (S8, SEC-08).</summary>
     public const string Admin = "Admin";
+
+    /// <summary>Stock actions (adjustments, counts, alert thresholds; FR-54, FR-60). Capability-shaped: Admin-equivalent until roles exist (S8, SEC-08).</summary>
+    public const string Inventory = "Inventory";
 }
 
 /// <summary>Named rate-limit policies (ADR 0011).</summary>

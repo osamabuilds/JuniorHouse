@@ -12,5 +12,6 @@ Each feature folder has a `README.md` card (what it is, status, where the code i
 | [production](production/README.md) | Production tracking | production-runs, milestones, samples, deliveries |
 | [quality](quality/README.md) | Goods receipt and QC | inbound-deliveries, receiving, batches, inspections, outcomes, safety-checks |
 | [labelling](labelling/README.md) | SKU, GTIN and tag printing | label-work, variants, print-jobs, tags |
+| [warehouse](warehouse/README.md) | Bins, putaway, stock ledger, adjustments, cycle counts, alerts (implemented) | bins, putaway, stock-ledger, adjustments, cycle-counts, stock-alerts |
 
-Later sprints add `warehouse`, `publishing`, `storefront`, `orders`, `fulfilment`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).
+Later sprints add `publishing`, `storefront`, `orders`, `fulfilment`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).

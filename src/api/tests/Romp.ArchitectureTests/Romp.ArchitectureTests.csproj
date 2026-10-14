@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\src\Romp.Api\Romp.Api.csproj" />
     <ProjectReference Include="..\..\src\Modules\Catalog\Romp.Modules.Catalog.Infrastructure\Romp.Modules.Catalog.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Labelling\Romp.Modules.Labelling.Infrastructure\Romp.Modules.Labelling.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Warehouse\Romp.Modules.Warehouse.Infrastructure\Romp.Modules.Warehouse.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Production\Romp.Modules.Production.Infrastructure\Romp.Modules.Production.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Quality\Romp.Modules.Quality.Infrastructure\Romp.Modules.Quality.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Reference\Romp.Modules.Reference.Infrastructure\Romp.Modules.Reference.Infrastructure.csproj" />

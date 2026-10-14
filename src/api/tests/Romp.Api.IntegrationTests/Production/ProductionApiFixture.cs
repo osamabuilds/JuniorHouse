@@ -47,6 +47,11 @@ public sealed class ProductionApiFixture : IAsyncLifetime
         Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _postgres.GetConnectionString());
         Environment.SetEnvironmentVariable("Storage__RootPath", StorageRoot);
 
+        // Several suites hammer the API (1,000 scans for a latency check, dozens of strict-policy writes). The limiter itself is tested in
+        // Romp.BuildingBlocks.Web.Tests; here it must not starve unrelated tests that share the host and its single client address.
+        Environment.SetEnvironmentVariable("RateLimit__PerMinute", "1000000");
+        Environment.SetEnvironmentVariable("RateLimit__StrictPerMinute", "1000000");
+
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
         Client = _factory.CreateClient();
 
@@ -59,6 +64,7 @@ public sealed class ProductionApiFixture : IAsyncLifetime
         await scope.ServiceProvider.GetRequiredService<ProductionDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Quality.Infrastructure.Persistence.QcDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Labelling.Infrastructure.Persistence.SkuDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Warehouse.Infrastructure.Persistence.WhseDbContext>().Database.MigrateAsync();
 
         var style = new Style("STY-IT-001", "Integration Dress", "Test", categoryId: 3, genderId: 2, ageBracketId: 3, fabricId: 1, targetUnitCost: 450m, targetRetailPrice: 1200m);
         style.SetColourSizeAndTargets([1, 2], [4, 5], [(4, 1, 50), (4, 2, 40), (5, 1, 30), (5, 2, 25)]);

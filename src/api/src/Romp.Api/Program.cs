@@ -14,6 +14,8 @@ using Romp.Modules.Labelling.Infrastructure;
 using Romp.Modules.Labelling.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure;
 using Romp.Modules.Production.Infrastructure.Persistence;
+using Romp.Modules.Warehouse.Infrastructure;
+using Romp.Modules.Warehouse.Infrastructure.Persistence;
 using Romp.Modules.Quality.Infrastructure;
 using Romp.Modules.Quality.Infrastructure.Persistence;
 using Romp.Modules.Reference.Infrastructure;
@@ -29,7 +31,7 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule()];
 
 builder.Services.AddSharedPersistence();
 
@@ -44,7 +46,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(Romp.Modules.Vendor.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Production.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Quality.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Labelling.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Labelling.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Warehouse.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -68,6 +71,10 @@ builder.Services.AddOutboxDispatcher(new OutboxDispatcherOptions
 {
     ConnectionString = builder.Configuration.GetConnectionString("Postgres")
         ?? throw new InvalidOperationException("Missing 'Postgres' connection string."),
+
+    // NFR-SC-06 (decision D8): stock events must reach their consumers within 5 s p95 of the commit, and that time includes waiting for
+    // the next poll. A 5 s poll could alone use the whole budget, so the default is 1 s; configurable between 0.5 s and 5 s.
+    PollInterval = TimeSpan.FromSeconds(Math.Clamp(builder.Configuration.GetValue("Outbox:PollIntervalSeconds", 1.0), 0.5, 5.0)),
 });
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
@@ -122,6 +129,7 @@ if (app.Environment.IsDevelopment())
     var productionContext = scope.ServiceProvider.GetRequiredService<ProductionDbContext>();
     var qualityContext = scope.ServiceProvider.GetRequiredService<QcDbContext>();
     var labellingContext = scope.ServiceProvider.GetRequiredService<SkuDbContext>();
+    var warehouseContext = scope.ServiceProvider.GetRequiredService<WhseDbContext>();
 
     await Task.WhenAll(
         scope.ServiceProvider.GetRequiredService<ReferenceDbContext>().Database.MigrateAsync(),
@@ -129,7 +137,8 @@ if (app.Environment.IsDevelopment())
         vendorContext.Database.MigrateAsync(),
         productionContext.Database.MigrateAsync(),
         qualityContext.Database.MigrateAsync(),
-        labellingContext.Database.MigrateAsync());
+        labellingContext.Database.MigrateAsync(),
+        warehouseContext.Database.MigrateAsync());
 
     // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
     // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough

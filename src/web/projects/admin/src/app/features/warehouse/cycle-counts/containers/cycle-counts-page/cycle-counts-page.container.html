@@ -1,0 +1,58 @@
+<h1>Cycle counts</h1>
+<p class="page-intro">
+  A cycle count checks a few bins at a time. Count what is physically there without seeing what the system expects; any difference is
+  then recorded as an adjustment with a reason.
+</p>
+
+<app-section-nav label="Warehouse" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (needName()) {
+  <p class="banner banner--error" role="alert">Type your name in the box first, so the count can be recorded against you.</p>
+}
+
+<section class="card" aria-labelledby="cc-start-heading">
+  <h2 id="cc-start-heading">Start a count</h2>
+  <div class="toolbar">
+    <label class="toolbar__search">
+      <span class="sr-only">Filter the bins by zone</span>
+      <input type="search" placeholder="Filter bins by zone" maxlength="3" [value]="binZone()" (input)="onBinZoneInput($event)" />
+    </label>
+  </div>
+  <app-bin-picker [bins]="bins()" [loading]="binsLoading()" [selected]="selected()" (toggled)="toggleBin($event)" />
+  <app-pagination [total]="binsTotal()" [page]="binsPage()" [pageSize]="pageSize()" (pageChanged)="changeBinsPage($event)" />
+  <div class="toolbar">
+    <label class="toolbar__select">
+      <span class="sr-only">Your name</span>
+      <input type="text" placeholder="Your name" maxlength="100" autocomplete="name" [value]="person()" (input)="onNameInput($event)" />
+    </label>
+    <button type="button" class="button button--primary" [disabled]="creating() || selected().length === 0" (click)="start()">
+      {{ creating() ? 'Starting…' : 'Start a count of ' + selected().length + ' bin(s)' }}
+    </button>
+  </div>
+</section>
+
+<h2>Counts</h2>
+<div class="toolbar">
+  <label class="toolbar__select">
+    <span class="sr-only">Show</span>
+    <select [value]="statusFilter()" (change)="onStatusChange($event)">
+      <option value="all">All counts</option>
+      <option value="OPEN">Open</option>
+      <option value="CLOSED">Closed</option>
+      <option value="CANCELLED">Cancelled</option>
+    </select>
+  </label>
+</div>
+<app-count-list [counts]="counts()" [loading]="countsLoading()" />
+<app-pagination [total]="countsTotal()" [page]="countsPage()" [pageSize]="pageSize()" (pageChanged)="changeCountsPage($event)" />

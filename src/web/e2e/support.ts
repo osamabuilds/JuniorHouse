@@ -423,3 +423,80 @@ export async function apiQueueTags(
     'queue tags',
   );
 }
+
+// ---- Sprint 6: warehouse ----
+
+export interface BinRow {
+  id: number;
+  binCode: string;
+}
+
+/** A fresh bin through the API (a zone no other test uses), so each test owns its shelf location. */
+export async function apiCreateBin(request: APIRequestContext, zone = randomZone()): Promise<BinRow> {
+  return ok(
+    await request.post(`${API}/api/warehouse/bins`, { data: { zone, aisle: String(Math.floor(Math.random() * 999) + 1).padStart(3, '0'), shelf: String.fromCharCode(65 + Math.floor(Math.random() * 26)), actingPerson: PERSON } }),
+    'create a bin',
+  );
+}
+
+/** Records a stock adjustment through the API. A found-stock adjustment of +N is how a test puts N units on a shelf quickly. */
+export async function apiAdjust(
+  request: APIRequestContext,
+  options: { gtin: string; binCode: string; change: number; reasonId?: number; reconfirmed?: boolean },
+): Promise<{ id: number; balanceAfter: number }> {
+  return ok(
+    await request.post(`${API}/api/warehouse/adjustments`, {
+      data: {
+        gtin: options.gtin,
+        binCode: options.binCode,
+        gradeId: 1,
+        quantityChange: options.change,
+        reasonId: options.reasonId ?? 4,
+        note: 'e2e',
+        reconfirmed: options.reconfirmed ?? false,
+        idempotencyKey: crypto.randomUUID(),
+        actingPerson: PERSON,
+      },
+    }),
+    'adjust stock',
+  );
+}
+
+export interface PutawayItemRow {
+  id: number;
+  poId: number;
+  skuCode: string | null;
+  gtin: string | null;
+  statusCode: string;
+  qcQuantity: number;
+  pending: number;
+}
+
+/** Waits for QC's accepted batch to reach the warehouse as a putaway item that is ready (its barcode has been assigned). */
+export async function waitForPutawayItem(request: APIRequestContext, poId: number): Promise<PutawayItemRow> {
+  return poll(async () => {
+    const page = (await (await request.get(`${API}/api/warehouse/putaway/items?onlyOpen=true&pageSize=100`)).json()) as { items: PutawayItemRow[] };
+    return page.items.find((i) => i.poId === poId && i.statusCode === 'PENDING') ?? null;
+  }, `the putaway item for PO ${poId}`, 60_000);
+}
+
+export interface StockedVariant {
+  gtin: string;
+  skuCode: string;
+  poId: number;
+  putawayItemId: number;
+}
+
+/** A variant with a barcode (accepted stock that has been labelled), ready to hold stock. No units yet. */
+export async function createVariant(request: APIRequestContext): Promise<StockedVariant> {
+  const batch = await createAcceptedStock(request, 40);
+  const item = await waitForWorkItem(request, batch.run.po.id);
+  const putaway = await waitForPutawayItem(request, batch.run.po.id);
+  return { gtin: item.gtin!, skuCode: item.skuCode!, poId: batch.run.po.id, putawayItemId: putaway.id };
+}
+
+/** Three random letters or digits: with a random aisle and shelf, a bin code no earlier run (the database persists) has used. */
+export function randomZone(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  return Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}

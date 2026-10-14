@@ -13,11 +13,14 @@ src/
   api/                     .NET 10 modular monolith (Romp.slnx)
     src/Romp.Api/          host: loads modules, health checks, OpenAPI
     src/BuildingBlocks/    shared kernel (Entity, AggregateRoot, IDomainEvent, IModule)
-    src/Modules/<Name>/    Domain / Application / Infrastructure per module
-    tests/                 architecture + integration tests
+    src/Modules/<Name>/    Domain / Application / Infrastructure per module, one folder per feature
+    tests/                 architecture, module and integration tests (mirror the feature folders)
   web/                     Angular 22 workspace
     projects/storefront/   customer site, server-side rendered
-    projects/admin/        back-office app
+    projects/admin/        back-office app (features/<module>/<feature>)
+    e2e/                   Playwright specs (e2e/<module>/<feature>.e2e.spec.ts)
+docs/CONSTITUTION.md       the module/feature hierarchy used everywhere, and the architecture rules
+docs/specs/                <module>/<feature>/ specs, plans and tasks
 docs/adr/                  architecture decision records
 ```
 
@@ -196,6 +199,68 @@ Every action asks for your name (kept in this browser for next time), because th
 Settings in `docker-compose.yml`: `Qc__FullInspectionMaxLot` (50), `Qc__DefaultInspectionLevelCode` (II), `Qc__DefaultAqlLevelCode`
 (Aql2_5), `Qc__CriticalDefectTolerance` (0) and `Vndr__Scorecard__WindowDays` (90). The AQL tables are data seeded by the QC migration;
 check them against the published ISO 2859-1 tables before production use (see the spec's implementation notes).
+
+## Try Sprint 5 (labelling: SKUs, barcodes and tag printing)
+
+Sprint 5 turns stock that QC has accepted into something that can be shelved and sold: every size-and-colour gets a readable SKU
+and its own GTIN-13 barcode number, and the tags are printed through a queue that retries when a printer jams
+(`docs/specs/labelling/`). Same stack (`docker compose up -d --build`). The accepted batches from the Sprint 4 demo reach
+**Labelling** on their own a few seconds after the stack starts.
+
+**Demo script** (admin app, **Labelling** in the top navigation, three screens):
+
+1. **Worklist.** Each accepted line of a QC batch is one row, already carrying its SKU (`ROMP-<style>-<colour>-<size>`) and barcode
+   number. Concession stock is marked "Concession (2ND)" because its tag carries a small "2ND" mark. *Preview tag* opens the PDF of
+   exactly what will be printed.
+2. **Queue tags.** Choose *Queue tags*, a count (never more than the accepted quantity) and a printer. Saving never waits for the
+   printer: the job goes into the queue and prints in the background. Try asking for more than are allowed and it says how many are left.
+3. **Print queue.** Jobs show *Waiting*, *Printing now*, *Printed* or *Failed*, and refresh by themselves. Queue a job on the
+   **Jammed printer (always fails)** to see the retry path: it tries again after a few seconds, then ends *Failed* with the reason.
+   *Retry* runs the same job again; *Cancel* ends it. A jammed printer never stops the others.
+4. **SKU register.** Search by SKU or by barcode number. The banner shows how much of the barcode range is used and, in this demo,
+   that the **GS1 test prefix** is in use (numbers made now must never go on real stock).
+5. **Reprint.** *Reprint* on a SKU opens the Print queue with a reprint form: a count, a reason, and your name. The tag shows
+   today's price and the **same** barcode number, so the SKU's history stays continuous. *Print history* lists every printing.
+6. **Void a barcode.** *Void barcode* (with a reason) retires the number for good: it can never be used again, tags already on
+   garments are untouched, and the SKU gets a new number with its next accepted stock. *Barcode history* shows the retired number.
+7. **Price changed?** Change a style's target retail price, then look at the worklist: rows whose tags were queued before the change
+   say so, and a reprint puts the new price on the tag.
+
+Every action asks for your name (kept in this browser for next time), because there is no sign-in until Sprint 8. For the same reason
+the API now refuses to start outside Development unless real authentication is registered (`docs/adr/0011-security-and-coupling-baseline.md`).
+Settings under `Labelling:` (see `appsettings.Development.json`): `CompanyPrefix` (the GS1 test range `0200000` until your real prefix
+arrives; **production refuses a test prefix**), `SparePercent` (0), `MaxTagsPerJob` (5000), `MaxAttempts`, `BackoffSeconds`,
+`AllowFakePrinters` (Development and Testing only) and `AllowedPrinterHosts` for a real label printer.
+
+## Try Sprint 6 (warehouse: bins, putaway, stock and alerts)
+
+Sprint 6 puts accepted, tagged stock on a shelf and keeps an exact, append-only record of where every unit is
+(`docs/specs/warehouse/`). Same stack (`docker compose up -d --build`). Accepted batches from the earlier demos reach
+**Warehouse** on their own a few seconds after the stack starts.
+
+**Demo script** (admin app, **Warehouse** in the top navigation):
+
+1. **Bins.** Add a bin as zone + aisle + shelf (for example `A`, `03`, `2` gives `A-03-2`). A duplicate or a code outside the pattern is
+   refused in plain words. A bin that holds stock cannot be deactivated.
+2. **Putaway.** Stock QC accepted is *not available to sell* until it is shelved. The cursor sits in the barcode box: scan (or type) the
+   13-digit barcode and press Enter, give the bin and the quantity, and confirm. Part of a batch can go to different bins. An item
+   with no tag yet is chosen from the list instead (search by SKU). Asking for more than is waiting is refused and points you to a
+   *Found stock* adjustment.
+3. **Stock.** On hand per variant and grade (accepted or concession), with the bins it sits in, and a full movement history
+   (who, when, before and after). Nothing here can be edited: corrections are new movements.
+4. **Adjustments.** Add or remove units with a reason: *Damage*, *Miscount*, *Theft* or *Found stock*. A change of more than 20 units
+   (setting `Warehouse:LargeAdjustmentUnits`) asks you to confirm a second time.
+5. **Cycle counts.** Pick bins (the picker lists the longest-uncounted first and can be narrowed by zone), count them **blind** (the
+   system quantity is hidden), then review the differences. Each difference needs a reason and becomes an audited adjustment on
+   confirm. Stock that moved while you were counting is flagged for a recount.
+6. **Alerts.** A variant falling to its threshold (default 5, set per variant) raises a *Low stock* alert; reaching zero escalates it
+   to *Out of stock*; restocking closes it by itself. The count shows as a badge on the Warehouse menu. Each alert can be
+   acknowledged. Alerts are in-app and an event only: no email or WhatsApp.
+
+Every action asks for your name (kept in this browser), because there is no sign-in until Sprint 8; the `Inventory` role is declared
+and enforced then. Stock changes reach other modules through the outbox within seconds; the dispatcher's poll interval is
+`Outbox:PollIntervalSeconds` (default 1). Open questions: bin code format (Q-BIN-1) and what to do with unshelved stock of a voided
+barcode (Q-PUT-2); see the module README.
 
 ## Tests
 

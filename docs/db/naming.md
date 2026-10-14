@@ -231,3 +231,26 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | parked | PARK | | work (work item) | WORK |
 | prefix | PFX | | | |
 | print | PRT | | | |
+
+### Added in Sprint 6 (SCRUM-200, Warehouse)
+
+`STCK` is already "stock" and `CNT` is "count", so a cycle count's tables are `CNT_*`. `ACPT` is "acceptable", so the accepted grade is a lookup row, never a column name.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| adjustment | ADJ | | pending | PEND |
+| aisle | AISL | | putaway | PUT |
+| alert | ALRT | | reconfirmed | RCNF |
+| awaiting | AWTG | | scanned | SCAN |
+| balance | BAL | | shelf | SHLF |
+| closed | CLSD | | system (as in system quantity) | SYS |
+| confirmed | CNFM | | threshold | THRS |
+| cycle | CYC | | variance | VARN |
+| grade | GRD | | zone | ZONE |
+| idempotency | IDEM | | | |
+| large | LRG | | | |
+| last | LAST | | | |
+| mark (as in movement mark) | MARK | | | |
+| movement | MVMT | | | |
+| open | OPEN | | | |
+| created | CRTD | | | |

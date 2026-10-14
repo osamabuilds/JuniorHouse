@@ -18,6 +18,11 @@ import {
   createRunInProduction,
   openPo,
   apiQueueTags,
+  apiAdjust,
+  apiCreateBin,
+  createVariant,
+  waitForPutawayItem,
+  type StockedVariant,
   createAcceptedStock,
   waitForWorkItem,
   type WorkItem,
@@ -39,6 +44,8 @@ interface DemoRuns {
   qcRework: ReceivedBatch;
   /** Sprint 5: accepted stock with its SKU and barcode, and one queued tag job, so the Labelling screens have rows. */
   labelItem: WorkItem;
+  /** Sprint 6: a bin holding stock with a putaway item still waiting, a low-stock variant (so an alert is open), and a count that has been counted and is ready to review. */
+  warehouse: { bin: { id: number; binCode: string }; lowVariant: StockedVariant; countId: number };
 }
 
 /** Three runs in different states, created once and shared by every viewport (each needs the outbox dispatcher, which takes seconds). */
@@ -62,7 +69,20 @@ const demoRuns = (request: import('@playwright/test').APIRequestContext): Promis
     const labelStock = await createAcceptedStock(request, 40);
     const labelItem = await waitForWorkItem(request, labelStock.run.po.id);
     await apiQueueTags(request, labelItem.id, 5);
-    return { fresh, sampleWaiting, busy, qcOpen, qcFresh, qcInspected, qcRework, labelItem };
+
+    // Sprint 6: stock in a bin (the 40 accepted units stay waiting for putaway), a low-stock variant with an alert, and a counted cycle count.
+    const bin = await apiCreateBin(request);
+    await apiAdjust(request, { gtin: labelItem.gtin!, binCode: bin.binCode, change: 30, reconfirmed: true });
+    await waitForPutawayItem(request, labelStock.run.po.id);
+    const lowVariant = await createVariant(request);
+    const lowBin = await apiCreateBin(request);
+    await apiAdjust(request, { gtin: lowVariant.gtin, binCode: lowBin.binCode, change: 3 });
+    const count = (await (await request.post(`${API_URL}/api/warehouse/cycle-counts`, { data: { binIds: [bin.id], actingPerson: PERSON } })).json()) as { id: number };
+    await request.put(`${API_URL}/api/warehouse/cycle-counts/${count.id}/lines`, {
+      data: { binCode: bin.binCode, lines: [{ gtin: labelItem.gtin, gradeId: 1, quantity: 28 }], recount: false, actingPerson: PERSON },
+    });
+    const warehouse = { bin, lowVariant, countId: count.id };
+    return { fresh, sampleWaiting, busy, qcOpen, qcFresh, qcInspected, qcRework, labelItem, warehouse };
   })());
 
 /**
@@ -132,6 +152,19 @@ const screens: Screen[] = [
   { name: "reprint form", open: async (p, _pos, r) => { await p.goto(`/labelling/queue?variantId=${r.labelItem.variantId}&reprint=1&sku=${encodeURIComponent(r.labelItem.skuCode!)}`); await expect(p.locator("app-reprint-form")).toBeVisible(); } },
   { name: "SKU register", open: async (p) => { await p.goto("/labelling/register"); await expect(p.locator("app-variant-table table")).toBeVisible(); } },
   { name: "void barcode form", open: async (p, _pos, r) => { await p.goto("/labelling/register"); await p.getByRole("searchbox", { name: "Search by SKU or barcode" }).fill(r.labelItem.skuCode!); await p.getByRole("row").filter({ hasText: r.labelItem.skuCode! }).getByRole("button", { name: "Void barcode" }).click(); await expect(p.locator("app-void-form")).toBeVisible(); } },
+  { name: 'bins list', open: async (p) => { await p.goto('/warehouse/bins'); await expect(p.locator('app-bin-table table')).toBeVisible(); } },
+  { name: 'add bin form', open: async (p) => { await p.goto('/warehouse/bins'); await p.getByRole('button', { name: 'Add a bin' }).click(); await expect(p.locator('app-bin-form')).toBeVisible(); } },
+  { name: 'putaway page', open: async (p) => { await p.goto('/warehouse/putaway'); await expect(p.locator('app-putaway-queue table')).toBeVisible(); } },
+  { name: 'putaway confirm form', open: async (p, _pos, r) => { await p.goto('/warehouse/putaway'); await p.getByRole('searchbox', { name: 'Find an item waiting to be put away by SKU or barcode' }).fill(r.labelItem.skuCode!); await p.getByRole('row').filter({ hasText: r.labelItem.skuCode! }).getByRole('button', { name: 'Choose' }).click(); await expect(p.locator('app-putaway-confirm-form')).toBeVisible(); } },
+  { name: 'stock list', open: async (p) => { await p.goto('/warehouse/stock'); await expect(p.locator('app-stock-table table')).toBeVisible(); } },
+  { name: 'stock movements', open: async (p, _pos, r) => { await p.goto('/warehouse/stock'); await p.getByRole('searchbox', { name: 'Search by SKU or barcode' }).fill(r.labelItem.skuCode!); await p.getByRole('row').filter({ hasText: r.labelItem.skuCode! }).getByRole('button', { name: 'Movements' }).click(); await expect(p.locator('app-movement-list table')).toBeVisible(); } },
+  { name: 'adjustments list', open: async (p) => { await p.goto('/warehouse/adjustments'); await expect(p.locator('app-adjustment-table table')).toBeVisible(); } },
+  { name: 'adjustment form', open: async (p) => { await p.goto('/warehouse/adjustments'); await p.getByRole('button', { name: 'New adjustment' }).click(); await expect(p.locator('app-adjustment-form')).toBeVisible(); } },
+  { name: 'adjustment confirmation step', open: async (p, _pos, r) => { await p.goto('/warehouse/adjustments'); await p.getByRole('button', { name: 'New adjustment' }).click(); await p.getByLabel('Barcode (13 digits)').fill(r.labelItem.gtin!); await p.getByLabel('Bin', { exact: true }).fill(r.warehouse.bin.binCode); await p.getByLabel('Reason', { exact: true }).selectOption({ label: 'Found stock (adds units)' }); await p.getByLabel('Change (use a minus to remove)').fill('45'); await p.getByLabel('Your name').fill('E2E Admin'); await p.getByRole('button', { name: 'Record adjustment' }).click(); await expect(p.getByRole('alertdialog')).toBeVisible(); } },
+  { name: 'cycle counts list', open: async (p) => { await p.goto('/warehouse/cycle-counts'); await expect(p.locator('app-count-list table')).toBeVisible(); } },
+  { name: 'count sheet', open: async (p, _pos, r) => { await p.goto(`/warehouse/cycle-counts/${r.warehouse.countId}`); await expect(p.locator('app-count-sheet form')).toBeVisible(); } },
+  { name: 'count review', open: async (p, _pos, r) => { await p.goto(`/warehouse/cycle-counts/${r.warehouse.countId}`); await p.getByRole('button', { name: 'Review the differences' }).click(); await expect(p.locator('app-review-table table')).toBeVisible(); } },
+  { name: 'stock alerts', open: async (p) => { await p.goto('/warehouse/alerts'); await expect(p.locator('app-alert-table table')).toBeVisible(); } },
   { name: "barcode history", open: async (p, _pos, r) => { await p.goto("/labelling/register"); await p.getByRole("searchbox", { name: "Search by SKU or barcode" }).fill(r.labelItem.skuCode!); await p.getByRole("row").filter({ hasText: r.labelItem.skuCode! }).getByRole("button", { name: "Barcode history" }).click(); await expect(p.locator("app-gtin-history")).toBeVisible(); } },
 ];
 

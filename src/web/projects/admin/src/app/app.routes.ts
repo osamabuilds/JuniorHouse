@@ -41,6 +41,36 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'warehouse',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'putaway' },
+      {
+        path: 'bins',
+        loadChildren: () => import('@features/warehouse/bins/bins.routes').then((m) => m.BINS_ROUTES),
+      },
+      {
+        path: 'putaway',
+        loadChildren: () => import('@features/warehouse/putaway/putaway.routes').then((m) => m.PUTAWAY_ROUTES),
+      },
+      {
+        path: 'adjustments',
+        loadChildren: () => import('@features/warehouse/adjustments/adjustments.routes').then((m) => m.ADJUSTMENTS_ROUTES),
+      },
+      {
+        path: 'cycle-counts',
+        loadChildren: () => import('@features/warehouse/cycle-counts/cycle-counts.routes').then((m) => m.CYCLE_COUNTS_ROUTES),
+      },
+      {
+        path: 'alerts',
+        loadChildren: () => import('@features/warehouse/stock-alerts/stock-alerts.routes').then((m) => m.STOCK_ALERTS_ROUTES),
+      },
+      {
+        path: 'stock',
+        loadChildren: () => import('@features/warehouse/stock-ledger/stock-ledger.routes').then((m) => m.STOCK_LEDGER_ROUTES),
+      },
+    ],
+  },
+  {
     path: 'purchase-orders',
     loadChildren: () => import('@features/vendor/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
   },

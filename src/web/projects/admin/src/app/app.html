@@ -14,6 +14,7 @@
         <li><a routerLink="/production" routerLinkActive="is-active">Production</a></li>
         <li><a routerLink="/quality" routerLinkActive="is-active">Receiving &amp; QC</a></li>
         <li><a routerLink="/labelling" routerLinkActive="is-active">Labelling</a></li>
+        <li><a routerLink="/warehouse" routerLinkActive="is-active">Warehouse</a> <app-alert-badge /></li>
       </ul>
     </nav>
   </header>
@@ -25,7 +26,7 @@
 
 @if (!chromeless()) {
   <footer class="shell-footer">
-    <p>Romp Admin &middot; Sprint 5 (Labelling)</p>
+    <p>Romp Admin &middot; Sprint 6 (Warehouse)</p>
     <app-outbox-health [health]="outboxHealth()" />
   </footer>
 }

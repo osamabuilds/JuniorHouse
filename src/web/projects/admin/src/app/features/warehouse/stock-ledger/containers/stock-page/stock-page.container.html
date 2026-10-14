@@ -1,0 +1,41 @@
+<h1>Stock</h1>
+<p class="page-intro">
+  What is on the shelves, and in which bin. Stock only counts as available once it has been put away. Quantities here cannot be edited:
+  corrections are made as adjustments, and every change stays in the movement history.
+</p>
+
+<app-section-nav label="Warehouse" [links]="links" />
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (historyFor(); as variant) {
+  <app-movement-list
+    [variant]="variant"
+    [movements]="movements()"
+    [loading]="movementsLoading()"
+    [total]="movementsTotal()"
+    [page]="movementsPage()"
+    [pageSize]="pageSize()"
+    (pageChanged)="changeHistoryPage($event)"
+    (closed)="closeHistory()"
+  />
+}
+
+<div class="toolbar">
+  <label class="toolbar__search">
+    <span class="sr-only">Search by SKU or barcode</span>
+    <input type="search" placeholder="Search by SKU or barcode" maxlength="50" [value]="searchText()" (input)="onSearchInput($event)" />
+  </label>
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+</div>
+
+<app-stock-table [rows]="rows()" [loading]="loading()" (history)="showHistory($event)" />
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

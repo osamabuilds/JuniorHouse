@@ -29,7 +29,8 @@ public static class RompAuthorizationExtensions
 
         services.AddAuthorizationBuilder()
             .AddPolicy(Policies.Staff, policy => policy.RequireAuthenticatedUser())
-            .AddPolicy(Policies.Admin, policy => policy.RequireAuthenticatedUser().RequireRole("Admin"));
+            .AddPolicy(Policies.Admin, policy => policy.RequireAuthenticatedUser().RequireRole("Admin"))
+            .AddPolicy(Policies.Inventory, policy => policy.RequireAuthenticatedUser().RequireRole("Inventory", "Admin"));
         return services;
     }
 
