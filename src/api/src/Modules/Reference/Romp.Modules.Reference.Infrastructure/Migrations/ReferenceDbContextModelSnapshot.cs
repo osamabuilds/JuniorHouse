@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Reference.Infrastructure.Persistence;
 
 #nullable disable
@@ -107,198 +106,6 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.AmendmentInitiatorLookup", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasColumnName("ID");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("CODE");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("DSCR");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ACT_IND");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("NAME");
-
-                    b.Property<short>("SortSeq")
-                        .HasColumnType("smallint")
-                        .HasColumnName("SORT_SEQ");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("AMND_INIT_LKP", "REF");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = (short)1,
-                            Code = "Buyer",
-                            IsActive = true,
-                            Name = "Buyer",
-                            SortSeq = (short)1
-                        },
-                        new
-                        {
-                            Id = (short)2,
-                            Code = "Vendor",
-                            IsActive = true,
-                            Name = "Vendor",
-                            SortSeq = (short)2
-                        });
-                });
-
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.AmendmentReasonLookup", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasColumnName("ID");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("CODE");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("DSCR");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ACT_IND");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("NAME");
-
-                    b.Property<short>("SortSeq")
-                        .HasColumnType("smallint")
-                        .HasColumnName("SORT_SEQ");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("AMND_RSN_LKP", "REF");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = (short)1,
-                            Code = "VendorCostIncrease",
-                            IsActive = true,
-                            Name = "Vendor Cost Increase",
-                            SortSeq = (short)1
-                        },
-                        new
-                        {
-                            Id = (short)2,
-                            Code = "MoqConstraint",
-                            IsActive = true,
-                            Name = "MOQ Constraint",
-                            SortSeq = (short)2
-                        },
-                        new
-                        {
-                            Id = (short)3,
-                            Code = "FabricOrTrimUnavailable",
-                            IsActive = true,
-                            Name = "Fabric or Trim Unavailable",
-                            SortSeq = (short)3
-                        },
-                        new
-                        {
-                            Id = (short)4,
-                            Code = "CapacityDelay",
-                            IsActive = true,
-                            Name = "Capacity Delay",
-                            SortSeq = (short)4
-                        },
-                        new
-                        {
-                            Id = (short)5,
-                            Code = "AdvanceRequest",
-                            IsActive = true,
-                            Name = "Advance Request",
-                            SortSeq = (short)5
-                        },
-                        new
-                        {
-                            Id = (short)6,
-                            Code = "SizeMixChange",
-                            IsActive = true,
-                            Name = "Size Mix Change",
-                            SortSeq = (short)6
-                        },
-                        new
-                        {
-                            Id = (short)7,
-                            Code = "ColourChange",
-                            IsActive = true,
-                            Name = "Colour Change",
-                            SortSeq = (short)7
-                        },
-                        new
-                        {
-                            Id = (short)8,
-                            Code = "SpecChange",
-                            IsActive = true,
-                            Name = "Spec Change",
-                            SortSeq = (short)8
-                        },
-                        new
-                        {
-                            Id = (short)9,
-                            Code = "SafetyOrCompliance",
-                            IsActive = true,
-                            Name = "Safety or Compliance",
-                            SortSeq = (short)9
-                        },
-                        new
-                        {
-                            Id = (short)10,
-                            Code = "BuyerDemandChange",
-                            IsActive = true,
-                            Name = "Buyer Demand Change",
-                            SortSeq = (short)10
-                        },
-                        new
-                        {
-                            Id = (short)11,
-                            Code = "Other",
-                            IsActive = true,
-                            Name = "Other",
-                            SortSeq = (short)11
-                        });
-                });
-
             modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.CategoryLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -394,106 +201,6 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Accessories",
                             SortSeq = (short)6
-                        });
-                });
-
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.CityLookup", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasColumnName("ID");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("CODE");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("DSCR");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ACT_IND");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("NAME");
-
-                    b.Property<short>("SortSeq")
-                        .HasColumnType("smallint")
-                        .HasColumnName("SORT_SEQ");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("CITY_LKP", "REF");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = (short)1,
-                            Code = "KHI",
-                            IsActive = true,
-                            Name = "Karachi",
-                            SortSeq = (short)1
-                        },
-                        new
-                        {
-                            Id = (short)2,
-                            Code = "LHE",
-                            IsActive = true,
-                            Name = "Lahore",
-                            SortSeq = (short)2
-                        },
-                        new
-                        {
-                            Id = (short)3,
-                            Code = "ISB",
-                            IsActive = true,
-                            Name = "Islamabad",
-                            SortSeq = (short)3
-                        },
-                        new
-                        {
-                            Id = (short)4,
-                            Code = "FSD",
-                            IsActive = true,
-                            Name = "Faisalabad",
-                            SortSeq = (short)4
-                        },
-                        new
-                        {
-                            Id = (short)5,
-                            Code = "RWP",
-                            IsActive = true,
-                            Name = "Rawalpindi",
-                            SortSeq = (short)5
-                        },
-                        new
-                        {
-                            Id = (short)6,
-                            Code = "MUX",
-                            IsActive = true,
-                            Name = "Multan",
-                            SortSeq = (short)6
-                        },
-                        new
-                        {
-                            Id = (short)7,
-                            Code = "SKT",
-                            IsActive = true,
-                            Name = "Sialkot",
-                            SortSeq = (short)7
                         });
                 });
 
@@ -697,66 +404,6 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.FabricResponsibilityLookup", b =>
-                {
-                    b.Property<short>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("smallint")
-                        .HasColumnName("ID");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("CODE");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("DSCR");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ACT_IND");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("NAME");
-
-                    b.Property<short>("SortSeq")
-                        .HasColumnType("smallint")
-                        .HasColumnName("SORT_SEQ");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("FBRC_RESP_LKP", "REF");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = (short)1,
-                            Code = "VendorSupplied",
-                            IsActive = true,
-                            Name = "Vendor Supplied",
-                            SortSeq = (short)1
-                        },
-                        new
-                        {
-                            Id = (short)2,
-                            Code = "RompSupplied",
-                            IsActive = true,
-                            Name = "Romp Supplied",
-                            SortSeq = (short)2
-                        });
-                });
-
             modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.GenderLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -825,7 +472,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.PaymentTermLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.SizeLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -839,10 +486,6 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("CODE");
-
-                    b.Property<decimal>("DefaultAdvancePercent")
-                        .HasColumnType("numeric(5,2)")
-                        .HasColumnName("DFLT_ADV_PCT");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -868,44 +511,340 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("PAYM_TERM_LKP", "REF");
+                    b.ToTable("SIZE_LKP", "REF");
 
                     b.HasData(
                         new
                         {
                             Id = (short)1,
-                            Code = "ADV100",
-                            DefaultAdvancePercent = 100m,
+                            Code = "0-3M",
                             IsActive = true,
-                            Name = "100% Advance",
+                            Name = "0-3 Months",
                             SortSeq = (short)1
                         },
                         new
                         {
                             Id = (short)2,
-                            Code = "NET50_50",
-                            DefaultAdvancePercent = 50m,
+                            Code = "3-6M",
                             IsActive = true,
-                            Name = "50% Advance / 50% on Delivery",
+                            Name = "3-6 Months",
                             SortSeq = (short)2
                         },
                         new
                         {
                             Id = (short)3,
-                            Code = "NET30_70",
-                            DefaultAdvancePercent = 30m,
+                            Code = "6-12M",
                             IsActive = true,
-                            Name = "30% Advance / 70% on Delivery",
+                            Name = "6-12 Months",
                             SortSeq = (short)3
                         },
                         new
                         {
                             Id = (short)4,
-                            Code = "NET30",
-                            DefaultAdvancePercent = 0m,
+                            Code = "1-2Y",
                             IsActive = true,
-                            Name = "Net 30 (no advance)",
+                            Name = "1-2 Years",
                             SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "2-3Y",
+                            IsActive = true,
+                            Name = "2-3 Years",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "3-4Y",
+                            IsActive = true,
+                            Name = "3-4 Years",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "4-5Y",
+                            IsActive = true,
+                            Name = "4-5 Years",
+                            SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "5-6Y",
+                            IsActive = true,
+                            Name = "5-6 Years",
+                            SortSeq = (short)8
+                        },
+                        new
+                        {
+                            Id = (short)9,
+                            Code = "6-7Y",
+                            IsActive = true,
+                            Name = "6-7 Years",
+                            SortSeq = (short)9
+                        },
+                        new
+                        {
+                            Id = (short)10,
+                            Code = "7-8Y",
+                            IsActive = true,
+                            Name = "7-8 Years",
+                            SortSeq = (short)10
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.AmendmentInitiatorLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("AMND_INIT_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "Buyer",
+                            IsActive = true,
+                            Name = "Buyer",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "Vendor",
+                            IsActive = true,
+                            Name = "Vendor",
+                            SortSeq = (short)2
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.AmendmentReasonLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("AMND_RSN_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "VendorCostIncrease",
+                            IsActive = true,
+                            Name = "Vendor Cost Increase",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "MoqConstraint",
+                            IsActive = true,
+                            Name = "MOQ Constraint",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "FabricOrTrimUnavailable",
+                            IsActive = true,
+                            Name = "Fabric or Trim Unavailable",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "CapacityDelay",
+                            IsActive = true,
+                            Name = "Capacity Delay",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "AdvanceRequest",
+                            IsActive = true,
+                            Name = "Advance Request",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "SizeMixChange",
+                            IsActive = true,
+                            Name = "Size Mix Change",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "ColourChange",
+                            IsActive = true,
+                            Name = "Colour Change",
+                            SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "SpecChange",
+                            IsActive = true,
+                            Name = "Spec Change",
+                            SortSeq = (short)8
+                        },
+                        new
+                        {
+                            Id = (short)9,
+                            Code = "SafetyOrCompliance",
+                            IsActive = true,
+                            Name = "Safety or Compliance",
+                            SortSeq = (short)9
+                        },
+                        new
+                        {
+                            Id = (short)10,
+                            Code = "BuyerDemandChange",
+                            IsActive = true,
+                            Name = "Buyer Demand Change",
+                            SortSeq = (short)10
+                        },
+                        new
+                        {
+                            Id = (short)11,
+                            Code = "Other",
+                            IsActive = true,
+                            Name = "Other",
+                            SortSeq = (short)11
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.PurchaseOrders.FabricResponsibilityLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("FBRC_RESP_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "VendorSupplied",
+                            IsActive = true,
+                            Name = "Vendor Supplied",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "RompSupplied",
+                            IsActive = true,
+                            Name = "Romp Supplied",
+                            SortSeq = (short)2
                         });
                 });
 
@@ -998,6 +937,14 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Other",
                             SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "ProductionAlreadyStarted",
+                            IsActive = true,
+                            Name = "Cancelled after production started",
+                            SortSeq = (short)7
                         });
                 });
 
@@ -1203,6 +1150,38 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Cancelled",
                             SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "InProduction",
+                            IsActive = true,
+                            Name = "In Production",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "PartiallyDelivered",
+                            IsActive = true,
+                            Name = "Partially Delivered",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "Delivered",
+                            IsActive = true,
+                            Name = "Delivered",
+                            SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "Closed",
+                            IsActive = true,
+                            Name = "Closed",
+                            SortSeq = (short)8
                         });
                 });
 
@@ -1374,7 +1353,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Apparel.SizeLookup", b =>
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.CityLookup", b =>
                 {
                     b.Property<short>("Id")
                         .ValueGeneratedOnAdd()
@@ -1413,88 +1392,148 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("SIZE_LKP", "REF");
+                    b.ToTable("CITY_LKP", "REF");
 
                     b.HasData(
                         new
                         {
                             Id = (short)1,
-                            Code = "0-3M",
+                            Code = "KHI",
                             IsActive = true,
-                            Name = "0-3 Months",
+                            Name = "Karachi",
                             SortSeq = (short)1
                         },
                         new
                         {
                             Id = (short)2,
-                            Code = "3-6M",
+                            Code = "LHE",
                             IsActive = true,
-                            Name = "3-6 Months",
+                            Name = "Lahore",
                             SortSeq = (short)2
                         },
                         new
                         {
                             Id = (short)3,
-                            Code = "6-12M",
+                            Code = "ISB",
                             IsActive = true,
-                            Name = "6-12 Months",
+                            Name = "Islamabad",
                             SortSeq = (short)3
                         },
                         new
                         {
                             Id = (short)4,
-                            Code = "1-2Y",
+                            Code = "FSD",
                             IsActive = true,
-                            Name = "1-2 Years",
+                            Name = "Faisalabad",
                             SortSeq = (short)4
                         },
                         new
                         {
                             Id = (short)5,
-                            Code = "2-3Y",
+                            Code = "RWP",
                             IsActive = true,
-                            Name = "2-3 Years",
+                            Name = "Rawalpindi",
                             SortSeq = (short)5
                         },
                         new
                         {
                             Id = (short)6,
-                            Code = "3-4Y",
+                            Code = "MUX",
                             IsActive = true,
-                            Name = "3-4 Years",
+                            Name = "Multan",
                             SortSeq = (short)6
                         },
                         new
                         {
                             Id = (short)7,
-                            Code = "4-5Y",
+                            Code = "SKT",
                             IsActive = true,
-                            Name = "4-5 Years",
+                            Name = "Sialkot",
                             SortSeq = (short)7
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.PaymentTermLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<decimal>("DefaultAdvancePercent")
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("DFLT_ADV_PCT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PAYM_TERM_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "ADV100",
+                            DefaultAdvancePercent = 100m,
+                            IsActive = true,
+                            Name = "100% Advance",
+                            SortSeq = (short)1
                         },
                         new
                         {
-                            Id = (short)8,
-                            Code = "5-6Y",
+                            Id = (short)2,
+                            Code = "NET50_50",
+                            DefaultAdvancePercent = 50m,
                             IsActive = true,
-                            Name = "5-6 Years",
-                            SortSeq = (short)8
+                            Name = "50% Advance / 50% on Delivery",
+                            SortSeq = (short)2
                         },
                         new
                         {
-                            Id = (short)9,
-                            Code = "6-7Y",
+                            Id = (short)3,
+                            Code = "NET30_70",
+                            DefaultAdvancePercent = 30m,
                             IsActive = true,
-                            Name = "6-7 Years",
-                            SortSeq = (short)9
+                            Name = "30% Advance / 70% on Delivery",
+                            SortSeq = (short)3
                         },
                         new
                         {
-                            Id = (short)10,
-                            Code = "7-8Y",
+                            Id = (short)4,
+                            Code = "NET30",
+                            DefaultAdvancePercent = 0m,
                             IsActive = true,
-                            Name = "7-8 Years",
-                            SortSeq = (short)10
+                            Name = "Net 30 (no advance)",
+                            SortSeq = (short)4
                         });
                 });
 

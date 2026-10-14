@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,7 @@ internal static class RevisionEndpoints
 {
     public static void MapRevisionEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/purchase-orders").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/purchase-orders").WithTags("Vendor");
 
         // SCRUM-93 task 29.
         group.MapPost("/{id:long}/amendments", async (

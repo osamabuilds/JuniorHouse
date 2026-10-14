@@ -30,13 +30,13 @@ describe('App', () => {
     expect(root.querySelectorAll('footer').length).toBe(1);
   });
 
-  it('renders a nav link for each of the four Sprint 1 sections', () => {
+  it('renders a nav link for each section', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav');
     const linkText = Array.from(nav?.querySelectorAll('a') ?? []).map((a) => a.textContent?.trim());
 
-    expect(linkText).toEqual(['Reference Data', 'Styles', 'Vendors', 'Purchase Orders']);
+    expect(linkText).toEqual(['Reference Data', 'Styles', 'Vendors', 'Purchase Orders', 'Production', 'Receiving & QC', 'Labelling', 'Warehouse']);
   });
 
   it('hides the admin header, nav and footer on the vendor-facing PO view (SCRUM-93 task 51)', async () => {

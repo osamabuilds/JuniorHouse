@@ -41,8 +41,8 @@ public sealed class RefMigrationTests : IAsyncLifetime
         Assert.Equal(7, await context.Set<CityLookup>().CountAsync());
         Assert.Equal(4, await context.Set<PaymentTermLookup>().CountAsync());
         Assert.Equal(3, await context.Set<VendorSpecialisationLookup>().CountAsync());
-        Assert.Equal(4, await context.Set<PoStatusLookup>().CountAsync());
-        Assert.Equal(6, await context.Set<PoCancelReasonLookup>().CountAsync());
+        Assert.Equal(8, await context.Set<PoStatusLookup>().CountAsync()); // Sprint 3 added InProduction..Closed (ids 5-8)
+        Assert.Equal(7, await context.Set<PoCancelReasonLookup>().CountAsync()); // Sprint 3 added ProductionAlreadyStarted (id 7)
 
         var draft = await context.Set<PoStatusLookup>().SingleAsync(s => s.Code == "Draft");
         Assert.True(draft.IsActive);
@@ -72,5 +72,26 @@ public sealed class RefMigrationTests : IAsyncLifetime
         Assert.True(techPackSpec.IsVendorVisible);
         var costSheet = await context.Set<PoFileCategoryLookup>().SingleAsync(c => c.Code == "CostSheet");
         Assert.False(costSheet.IsVendorVisible);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-14")]
+    [Trait("Spec", "AC-28")]
+    public async Task Migrate_PoStatusesAndCancelReason_SeededWithStableIds()
+    {
+        var options = new DbContextOptionsBuilder<ReferenceDbContext>().UseNpgsql(_postgres.GetConnectionString()).Options;
+
+        await using var context = new ReferenceDbContext(options);
+        await context.Database.MigrateAsync();
+
+        // The VNDR domain refers to these ids as constants (ADR 0002 - it cannot query REF), so they must never move.
+        var statuses = await context.Set<PoStatusLookup>().OrderBy(s => s.Id).Select(s => new { s.Id, s.Code }).ToListAsync();
+        Assert.Equal(
+            [(1, "Draft"), (2, "SentToVendor"), (3, "Acknowledged"), (4, "Cancelled"), (5, "InProduction"), (6, "PartiallyDelivered"), (7, "Delivered"), (8, "Closed")],
+            statuses.Select(s => ((int)s.Id, s.Code)).ToArray());
+
+        var reason = await context.Set<PoCancelReasonLookup>().SingleAsync(r => r.Id == 7);
+        Assert.Equal("ProductionAlreadyStarted", reason.Code);
+        Assert.Equal("Cancelled after production started", reason.Name);
     }
 }

@@ -96,6 +96,10 @@ public sealed class CreatePurchaseOrderCommandHandler(
         dbContext.PurchaseOrders.Add(po);
         await dbContext.SaveChangesAsync(cancellationToken);
 
+        // SCRUM-186: the id exists now, so the created event carries it (and its outbox row gets an AGGR_ID).
+        po.RaiseCreated();
+        await dbContext.SaveChangesAsync(cancellationToken);
+
         return po.ToDto();
     }
 }

@@ -1,0 +1,57 @@
+<h1>Adjustments</h1>
+<p class="page-intro">
+  When the shelf and the books disagree, record why and by how much. Each adjustment keeps its reason and your name and can never be
+  edited or removed.
+</p>
+
+<app-section-nav label="Warehouse" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (formOpen()) {
+  <app-adjustment-form
+    [reasons]="reasons()"
+    [saving]="saving()"
+    [error]="formError()"
+    [reconfirm]="reconfirm()"
+    [defaultPerson]="defaultPerson()"
+    (submitted)="submit($event)"
+    (confirmed)="confirm($event)"
+    (declined)="decline()"
+    (cancelled)="closeForm()"
+  />
+}
+
+<div class="toolbar">
+  <label class="toolbar__select">
+    <span class="sr-only">Show only this reason</span>
+    <select [value]="reasonId() ?? 0" (change)="onReasonFilter($event)">
+      <option value="0">All reasons</option>
+      @for (reason of reasons(); track reason.id) {
+        <option [value]="reason.id">{{ reason.name }}</option>
+      }
+    </select>
+  </label>
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+  @if (!formOpen()) {
+    <button type="button" class="button button--primary" (click)="openForm()">New adjustment</button>
+  }
+</div>
+
+<app-adjustment-table [adjustments]="adjustments()" [loading]="loading()" />
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

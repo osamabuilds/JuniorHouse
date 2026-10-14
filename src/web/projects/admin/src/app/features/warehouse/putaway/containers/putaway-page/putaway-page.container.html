@@ -1,0 +1,62 @@
+<h1>Putaway</h1>
+<p class="page-intro">
+  Stock QC has accepted is not available to sell until it is on a shelf. Scan the barcode on the tag, then the bin it goes into. If a tag
+  has not been printed yet, choose the item from the list instead.
+</p>
+
+<app-section-nav label="Warehouse" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (selection(); as chosen) {
+  <app-putaway-confirm-form
+    [selection]="chosen"
+    [saving]="saving()"
+    [error]="confirmError()"
+    [defaultPerson]="defaultPerson()"
+    (confirmed)="confirm(chosen, $event)"
+    (cancelled)="cancelSelection()"
+  />
+} @else {
+  <app-putaway-scan [scanning]="scanning()" [message]="scanMessage()" [focusToken]="focusToken()" (scanned)="scan($event)" />
+
+  @if (scanResult(); as found) {
+    @if (!found.gtinRetired && found.pendingItems.length > 1) {
+      <section class="card" aria-labelledby="pp-pending-heading">
+        <h2 id="pp-pending-heading">{{ found.skuCode }} has more than one batch waiting</h2>
+        <ul>
+          @for (item of found.pendingItems; track item.itemId) {
+            <li>
+              PO {{ item.poId }}, {{ item.gradeCode === 'CONCESSION' ? 'concession' : 'accepted' }}: {{ item.pending }} to put away
+              <button type="button" class="button button--small" (click)="selectScanned(found, item)">Put this away</button>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+}
+
+<h2>Waiting to be put away</h2>
+<div class="toolbar">
+  <label class="toolbar__search">
+    <span class="sr-only">Find an item waiting to be put away by SKU or barcode</span>
+    <input type="search" placeholder="Find by SKU or barcode" maxlength="50" [value]="itemSearch()" (input)="onItemSearch($event)" />
+  </label>
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+</div>
+<app-putaway-queue [items]="items()" [loading]="loading()" (chosen)="choose($event)" />
+<app-pagination [total]="itemsTotal()" [page]="itemsPage()" [pageSize]="pageSize" (pageChanged)="changeItemsPage($event)" />
+
+<h2>Recent putaways</h2>
+<app-putaway-history [records]="records()" [loading]="recordsLoading()" />
+<app-pagination [total]="recordsTotal()" [page]="recordsPage()" [pageSize]="pageSize" (pageChanged)="changeRecordsPage($event)" />

@@ -1,0 +1,56 @@
+@if (detail(); as count) {
+  <h1>Count {{ count.countNo }}</h1>
+  <p class="page-intro">
+    Status: <strong>{{ statusText[count.statusCode] }}</strong>. Started by {{ count.createdBy }}.
+    <a routerLink="/warehouse/cycle-counts">Back to all counts</a>
+  </p>
+} @else {
+  <h1>Cycle count</h1>
+  @if (detailLoading()) {
+    <p class="state-message">Loading…</p>
+  }
+}
+
+<app-section-nav label="Warehouse" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (needName()) {
+  <p class="banner banner--error" role="alert">Type your name on the count sheet first, so this can be recorded against you.</p>
+}
+
+@if (detail(); as count) {
+  @if (review(); as r) {
+    <app-review-table
+      [review]="r"
+      [reasons]="reasons()"
+      [choices]="choices()"
+      [canConfirm]="canConfirm()"
+      [confirming]="confirming()"
+      (reasonChosen)="chooseReason($event)"
+      (reconfirmToggled)="toggleReconfirm($event)"
+      (confirmed)="confirm()"
+      (closed)="closeReview()"
+    />
+  } @else {
+    <app-count-sheet [count]="count" [submitting]="submitting()" [defaultPerson]="defaultPerson()" (submitted)="submitLines($event)" />
+
+    @if (count.statusCode === 'OPEN') {
+      <div class="form-actions">
+        <button type="button" class="button button--primary" [disabled]="reviewLoading()" (click)="openReview()">
+          {{ reviewLoading() ? 'Loading the review…' : 'Review the differences' }}
+        </button>
+        <button type="button" class="button button--danger" [disabled]="confirming()" (click)="cancel()">Cancel this count</button>
+      </div>
+    }
+  }
+}

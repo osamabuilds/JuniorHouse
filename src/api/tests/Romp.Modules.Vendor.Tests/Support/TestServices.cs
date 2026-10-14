@@ -1,7 +1,9 @@
+using Romp.BuildingBlocks.Storage;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Persistence;
 using Romp.BuildingBlocks.Persistence.Auditing;
@@ -26,6 +28,10 @@ internal sealed class FakeStyleQueries : IStyleQueries
 
     public Task<StyleSummary?> FindActiveStyleAsync(long styleId, CancellationToken cancellationToken) =>
         Task.FromResult(styleId == ActiveStyle.Id ? ActiveStyle : null);
+
+    public Task<IReadOnlyDictionary<long, StyleLabelInfo>> GetLabelInfoAsync(
+        IReadOnlyCollection<long> styleIds, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyDictionary<long, StyleLabelInfo>>(new Dictionary<long, StyleLabelInfo>());
 }
 
 /// <summary>Payment term 900 defaults to a 40% advance - matches what "no override" tests expect.</summary>
@@ -47,7 +53,7 @@ internal sealed class FakePaymentTermQueries : IPaymentTermQueries
 /// </summary>
 internal static class TestServices
 {
-    public static IServiceProvider Build(string databaseName)
+    public static IServiceProvider Build(string databaseName, Action<IServiceCollection>? configure = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -66,6 +72,10 @@ internal static class TestServices
         services.AddSingleton(new PoCommercialTermsOptions());
         services.AddSingleton(new PoFileStorageOptions { MaxFileSizeBytes = 1024, MaxFilesPerPo = 3 });
         services.AddSingleton<IFileStorage, InMemoryFileStorage>();
+        services.AddScoped<OutboxMessageContext>();
+        services.AddScoped<Romp.BuildingBlocks.Persistence.Inbox.InboxGuard>();
+        services.AddSingleton<FakeProductionQueries>();
+        services.AddSingleton<Romp.Modules.Production.Contracts.IProductionQueries>(sp => sp.GetRequiredService<FakeProductionQueries>());
 
         var applicationAssembly = typeof(AssemblyReference).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);
@@ -75,6 +85,10 @@ internal static class TestServices
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             cfg.AddOpenBehavior(typeof(VendorTransactionBehavior<,>));
         });
+
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton(new Romp.Modules.Vendor.Application.Vendors.ScorecardOptions());
+        configure?.Invoke(services);
 
         return services.BuildServiceProvider();
     }

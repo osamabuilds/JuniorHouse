@@ -30,5 +30,6 @@ internal static class PoRevisionMapper
         revision.LatestAcceptableDateShiftDays,
         revision.QuantityDiff,
         revision.IsBeyondLatestAcceptableDate,
-        revision.Lines.Select(l => new PoRevisionLineDto(l.SizeId, l.ColourId, l.Qty)).ToList());
+        revision.Lines.Select(l => new PoRevisionLineDto(l.SizeId, l.ColourId, l.Qty)).ToList(),
+        IsConstructionChange: revision.IsConstructionChange);
 }

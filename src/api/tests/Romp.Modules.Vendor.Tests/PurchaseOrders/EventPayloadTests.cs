@@ -1,3 +1,4 @@
+using Romp.Modules.Vendor.Contracts;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Persistence.Outbox;
@@ -12,6 +13,20 @@ namespace Romp.Modules.Vendor.Tests.PurchaseOrders;
 
 public sealed class EventPayloadTests
 {
+    [Fact]
+    [Trait("Spec", "SCRUM-186")]
+    public async Task PoCreated_HasPoIdAndAggregateId()
+    {
+        var provider = TestServices.Build(Guid.NewGuid().ToString());
+        var po = await PoTestHelpers.CreateDraftPoAsync(provider.GetRequiredService<ISender>());
+
+        var created = Outbox(provider).Single(m => m.EventType == "PoCreatedEvent");
+
+        Assert.Equal(po.Id, JsonDocument.Parse(created.Payload).RootElement.GetProperty("PoId").GetInt64()); // was 0 in Sprint 2
+        Assert.Equal(po.Id, created.AggregateId); // per-aggregate ordering key is now set
+        Assert.Equal("PurchaseOrder", created.AggregateType);
+    }
+
     private static async Task<(IServiceProvider Provider, ISender Sender, PoDto Po)> SentPoAsync()
     {
         var provider = TestServices.Build(Guid.NewGuid().ToString());

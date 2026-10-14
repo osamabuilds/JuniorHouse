@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Storage;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Routing;
@@ -7,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.Modules.Production.Contracts;
+using Romp.Modules.Quality.Contracts;
+using Romp.Modules.Vendor.Application.Vendors;
 using Romp.Modules.Vendor.Application;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Application.Files;
@@ -63,11 +67,12 @@ public sealed class VendorModule : IModule
         // Vndr:PoFileStorage:RootPath (e.g. a mounted volume in Docker Compose).
         services.AddSingleton(new PoFileStorageOptions
         {
-            RootPath = configuration.GetValue("Vndr:PoFileStorage:RootPath", new PoFileStorageOptions().RootPath)!,
+            RootPath = configuration.GetValue("Storage:RootPath", configuration.GetValue("Vndr:PoFileStorage:RootPath", new PoFileStorageOptions().RootPath))!,
             MaxFileSizeBytes = configuration.GetValue("Vndr:PoFileStorage:MaxFileSizeBytes", new PoFileStorageOptions().MaxFileSizeBytes),
             MaxFilesPerPo = configuration.GetValue("Vndr:PoFileStorage:MaxFilesPerPo", new PoFileStorageOptions().MaxFilesPerPo),
         });
-        services.AddSingleton<IFileStorage, LocalFileStorage>();
+        services.AddSingleton<FileStorageOptions>(sp => sp.GetRequiredService<PoFileStorageOptions>());
+        services.AddFileStorage(configuration);
 
         // SCRUM-93 task 13: opt VNDR's OUTB_MSG into the shared dispatcher (SCRUM-181) and give
         // every VNDR event a placeholder handler so messages reach Processed - no module has a
@@ -83,8 +88,23 @@ public sealed class VendorModule : IModule
             typeof(PoRevisionPutInForceEvent),
             typeof(PoRevisionSupersededEvent),
             typeof(PoRevisionRejectedEvent),
-            typeof(PoRevisionWithdrawnEvent));
+            typeof(PoRevisionWithdrawnEvent),
+            typeof(PoProductionStartedEvent),
+            typeof(PoPartiallyDeliveredEvent),
+            typeof(PoDeliveredEvent),
+            typeof(PoClosedEvent));
         services.AddScoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>));
+
+        // Sprint 3 (ADR 0008, SCRUM-185/190): VNDR is a real consumer of PROD's events.
+        services.AddScoped<IOutboxMessageHandler<ProductionStartedEvent>, ProductionStartedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<DeliveryNoteRecordedEvent>, DeliveryNoteRecordedConsumer>();
+
+        // Sprint 4: VNDR also consumes QC events (receipt progress, scorecard facts) and PROD delivery facts for the scorecard.
+        services.AddScoped<IOutboxMessageHandler<GoodsReceiptRecordedEvent>, GoodsReceiptRecordedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<DeliveryNoteRecordedEvent>, ScorecardDeliveryConsumer>();
+        services.AddScoped<IOutboxMessageHandler<QcInspectionRecordedEvent>, ScorecardInspectionConsumer>();
+        services.AddScoped<IVendorScorecardQueries, VendorScorecardQueries>();
+        services.AddSingleton(new ScorecardOptions { WindowDays = configuration.GetValue("Vndr:Scorecard:WindowDays", new ScorecardOptions().WindowDays) });
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
@@ -95,5 +115,6 @@ public sealed class VendorModule : IModule
         endpoints.MapVendorResponseEndpoints();
         endpoints.MapVendorViewEndpoints();
         endpoints.MapPurchaseOrderFileEndpoints();
+        endpoints.MapScorecardEndpoints();
     }
 }

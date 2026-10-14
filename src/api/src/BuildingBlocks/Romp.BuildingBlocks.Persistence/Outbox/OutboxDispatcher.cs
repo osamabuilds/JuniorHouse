@@ -68,18 +68,33 @@ public sealed partial class OutboxDispatcher(
         var handlerType = typeof(IOutboxMessageHandler<>).MakeGenericType(eventType);
 
         await using var scope = scopeFactory.CreateAsyncScope();
-        var handler = scope.ServiceProvider.GetService(handlerType);
-        if (handler is null)
+
+        // ADR 0008: more than one module may consume the same event (the producer's own placeholder
+        // logger plus a real consumer in another module), so every registered handler runs. A
+        // handler that already succeeded is protected on redelivery by its own inbox row.
+        var handlers = ((System.Collections.IEnumerable)scope.ServiceProvider
+            .GetRequiredService(typeof(IEnumerable<>).MakeGenericType(handlerType))).Cast<object>().ToList();
+        if (handlers.Count == 0)
         {
             LogNoHandlerRegistered(eventType.Name, registration.Schema, message.Id);
             return false;
+        }
+
+        var messageContext = scope.ServiceProvider.GetService<OutboxMessageContext>();
+        if (messageContext is not null)
+        {
+            messageContext.MessageId = message.Id;
+            messageContext.Schema = registration.Schema;
         }
 
         var handleMethod = handlerType.GetMethod(nameof(IOutboxMessageHandler<object>.HandleAsync))!;
 
         try
         {
-            await (Task)handleMethod.Invoke(handler, [domainEvent, cancellationToken])!;
+            foreach (var handler in handlers)
+            {
+                await (Task)handleMethod.Invoke(handler, [domainEvent, cancellationToken])!;
+            }
         }
         catch (Exception ex)
         {

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Catalog.Domain.Styles;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
+using Romp.Modules.Production.Infrastructure.Persistence;
+using Romp.Modules.Quality.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Domain.PurchaseOrders;
 using Romp.Modules.Vendor.Domain.Vendors;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
@@ -16,7 +18,9 @@ namespace Romp.Api.Seeding;
 /// </summary>
 internal static class DemoDataSeeder
 {
-    public static async Task SeedAsync(CatalogDbContext catalogContext, VendorDbContext vendorContext, CancellationToken cancellationToken)
+    public static async Task SeedAsync(
+        CatalogDbContext catalogContext, VendorDbContext vendorContext, ProductionDbContext productionContext, QcDbContext qualityContext,
+        CancellationToken cancellationToken)
     {
         if (!await catalogContext.Styles.AnyAsync(cancellationToken))
         {
@@ -59,6 +63,8 @@ internal static class DemoDataSeeder
         }
 
         await SeedSampleAmendmentAsync(catalogContext, vendorContext, cancellationToken);
+        await DemoProductionSeeder.SeedAsync(catalogContext, vendorContext, productionContext, cancellationToken);
+        await DemoQualitySeeder.SeedAsync(catalogContext, vendorContext, productionContext, qualityContext, cancellationToken);
     }
 
     /// <summary>
@@ -88,6 +94,7 @@ internal static class DemoDataSeeder
             paymentTermId: 2, advancePercent: 40m, lines);
         vendorContext.PurchaseOrders.Add(po);
         await vendorContext.SaveChangesAsync(cancellationToken);
+        po.RaiseCreated(); // the id exists now (SCRUM-186); the next save writes the event with it
 
         po.UpdateDraftDetails(
             450m, new DateOnly(2026, 12, 1), 2, 40m,

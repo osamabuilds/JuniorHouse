@@ -46,6 +46,7 @@ internal sealed class PurchaseOrderRevisionConfiguration : IEntityTypeConfigurat
         builder.Property(r => r.LatestAcceptableDateShiftDays).HasColumnName("LATE_ACPT_DT_SHFT_DAY");
         builder.Property(r => r.QuantityDiff).HasColumnName("QTY_DIFF").IsRequired();
         builder.Property(r => r.IsBeyondLatestAcceptableDate).HasColumnName("BYND_LATE_IND").IsRequired();
+        builder.Property(r => r.IsConstructionChange).HasColumnName("CNST_CHNG_IND").IsRequired().HasDefaultValue(false);
         builder.HasAuditColumns();
 
         // ADR 0007: at most one Pending (RevisionStatus.Pending = 1) revision per PO at a time,

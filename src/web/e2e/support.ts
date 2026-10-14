@@ -94,7 +94,11 @@ export interface TestPo {
 export type PoStage = 'draft' | 'sent' | 'acknowledged';
 
 /** Raises a PO through the API and walks it to `stage`. A Draft has valid commercial terms so it can be sent. */
-export async function createPo(request: APIRequestContext, stage: PoStage = 'draft'): Promise<TestPo> {
+export async function createPo(
+  request: APIRequestContext,
+  stage: PoStage = 'draft',
+  options: { fabricResponsibilityId?: number } = {},
+): Promise<TestPo> {
   const style = await createStyle(request);
   const vendor = await createVendor(request);
   const created = await ok<{ id: number; poNo: string; paymentTermId: number; advancePercent: number }>(
@@ -120,7 +124,7 @@ export async function createPo(request: APIRequestContext, stage: PoStage = 'dra
         latestAcceptableDate: '2026-12-15',
         overTolerancePercent: 5,
         underTolerancePercent: 5,
-        fabricResponsibilityId: 1,
+        fabricResponsibilityId: options.fabricResponsibilityId ?? 1,
       },
     }),
     'set PO terms',
@@ -156,4 +160,343 @@ export async function fillAmendment(page: Page, options: { unitCost?: string; no
   if (options.unitCost) {
     await page.locator('#amend-unit-cost').fill(options.unitCost);
   }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Sprint 3 (production tracking)
+// ---------------------------------------------------------------------------------------------
+
+/** Today in Pakistan time (UTC+5): the day the API treats as "today" for milestone and delivery dates. */
+export const today = (offsetDays = 0): string => new Date(Date.now() + 5 * 3600 * 1000 + offsetDays * 86400 * 1000).toISOString().slice(0, 10);
+
+/** Repeats `check` until it returns a value or the time runs out. The outbox dispatcher delivers events every few seconds. */
+export async function poll<T>(check: () => Promise<T | null>, what: string, timeoutMs = 45_000): Promise<T> {
+  const started = Date.now();
+  for (;;) {
+    const value = await check();
+    if (value !== null) {
+      return value;
+    }
+    if (Date.now() - started > timeoutMs) {
+      throw new Error(`Timed out waiting for ${what}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
+
+/** The production run opens by itself once the acknowledge event reaches PROD; wait for it. */
+export async function waitForRun(request: APIRequestContext, poId: number): Promise<number> {
+  return poll(async () => {
+    const response = await request.get(`${API}/api/production/runs/by-po/${poId}`);
+    return response.ok() ? ((await response.json()) as { id: number }).id : null;
+  }, `the production run of PO ${poId}`);
+}
+
+/** Waits until the PO reaches a status (PROD's events change it a moment after the action). */
+export async function waitForPoStatus(request: APIRequestContext, poId: number, statusId: number): Promise<void> {
+  await poll(async () => {
+    const po = (await (await request.get(`${API}/api/purchase-orders/${poId}`)).json()) as { statusId: number };
+    return po.statusId === statusId ? true : null;
+  }, `PO ${poId} to reach status ${statusId}`);
+}
+
+export interface TestRun {
+  po: TestPo;
+  runId: number;
+}
+
+/** An acknowledged PO with its production run open. */
+export async function createRun(request: APIRequestContext, options: { fabricResponsibilityId?: number } = {}): Promise<TestRun> {
+  const po = await createPo(request, 'acknowledged', options);
+  return { po, runId: await waitForRun(request, po.id) };
+}
+
+export const PERSON = 'E2E Buyer';
+
+export async function apiSubmitAndApproveSample(request: APIRequestContext, runId: number): Promise<void> {
+  await ok(await request.post(`${API}/api/production/runs/${runId}/pp-rounds`, { data: { reportedBy: 'E2E Vendor', actingPerson: PERSON } }), 'submit sample');
+  const rounds = await ok<{ roundNo: number }[]>(await request.get(`${API}/api/production/runs/${runId}/pp-rounds`), 'list rounds');
+  await ok(
+    await request.post(`${API}/api/production/runs/${runId}/pp-rounds/${rounds.at(-1)!.roundNo}/decision`, { data: { approve: true, actingPerson: PERSON } }),
+    'approve sample',
+  );
+}
+
+export async function apiStartCutting(request: APIRequestContext, runId: number): Promise<void> {
+  await ok(
+    await request.post(`${API}/api/production/runs/${runId}/milestones`, {
+      data: { typeId: 6, claimedDate: today(), reportedBy: 'E2E Vendor', actingPerson: PERSON },
+    }),
+    'start bulk cutting',
+  );
+}
+
+/** A run whose sample is approved and whose bulk cutting has started (the PO is In Production once the event is delivered). */
+export async function createRunInProduction(request: APIRequestContext, options: { fabricResponsibilityId?: number } = {}): Promise<TestRun> {
+  const run = await createRun(request, options);
+  await apiSubmitAndApproveSample(request, run.runId);
+  await apiStartCutting(request, run.runId);
+  await waitForPoStatus(request, run.po.id, 5);
+  return run;
+}
+
+export async function apiDeliver(
+  request: APIRequestContext,
+  run: TestRun,
+  dnNo: string,
+  qty: number,
+  isFinalShipment = false,
+): Promise<void> {
+  await ok(
+    await request.post(`${API}/api/production/runs/${run.runId}/delivery-notes`, {
+      data: {
+        vendorDnNo: dnNo,
+        dispatchDate: today(),
+        isFinalShipment,
+        lines: [{ sizeId: run.po.sizeId, colourId: run.po.colourId, qty }],
+        actingPerson: PERSON,
+      },
+    }),
+    `deliver ${dnNo}`,
+  );
+}
+
+/** Opens a run's screen. */
+export async function openRun(page: Page, run: TestRun): Promise<void> {
+  await page.goto(`/production/${run.runId}`);
+  await expect(page.getByRole('heading', { level: 1, name: `Production: ${run.po.poNo}` })).toBeVisible();
+}
+
+/** Opens a PO's screen straight from a link, the way the Production screen does. */
+export async function openPoById(page: Page, po: TestPo): Promise<void> {
+  await page.goto(`/purchase-orders?po=${po.id}`);
+  await expect(page.getByRole('heading', { name: po.poNo })).toBeVisible();
+}
+
+// ---- Sprint 4: receiving and QC ----
+
+export interface Receivable {
+  run: TestRun;
+  dnNo: string;
+  /** QC's inbound delivery, created from the delivery note event. */
+  deliveryId: number;
+}
+
+/** A run in production with one final delivery note for 100 pieces, once QC has its copy of the delivery note. */
+export async function createReceivable(request: APIRequestContext, dnNo = `DN-QC-${uniqueSuffix()}`): Promise<Receivable> {
+  const run = await createRunInProduction(request);
+  await apiDeliver(request, run, dnNo, 100, true);
+  const deliveryId = await poll(async () => {
+    const page = (await (await request.get(`${API}/api/quality/inbound-deliveries?search=${run.po.poNo}&pageSize=100`)).json()) as {
+      items: { id: number; vendorDnNo: string }[];
+    };
+    return page.items.find((d) => d.vendorDnNo === dnNo)?.id ?? null;
+  }, `the inbound delivery of ${dnNo}`);
+  return { run, dnNo, deliveryId };
+}
+
+export interface ReceivedBatch extends Receivable {
+  grnNo: string;
+  batchId: number;
+}
+
+/** Records the goods receipt through the API (counted as claimed unless `counted` says otherwise) and returns the QC batch it opened. */
+export async function apiReceive(request: APIRequestContext, receivable: Receivable, counted = 100): Promise<ReceivedBatch> {
+  const grn = await ok<{ grnNo: string }>(
+    await request.post(`${API}/api/quality/grns`, {
+      data: {
+        inboundDeliveryId: receivable.deliveryId,
+        receivedDate: today(),
+        actingPerson: PERSON,
+        note: null,
+        lines: [{ sizeId: receivable.run.po.sizeId, colourId: receivable.run.po.colourId, qty: counted }],
+      },
+    }),
+    'record goods receipt',
+  );
+  const batches = await ok<{ items: { id: number }[] }>(await request.get(`${API}/api/quality/batches?search=${grn.grnNo}`), 'find the batch');
+  return { ...receivable, grnNo: grn.grnNo, batchId: batches.items[0].id };
+}
+
+const ALL_PASS = [1, 2, 3, 4, 5, 6].map((checkTypeId) => ({ checkTypeId, resultId: 1 }));
+
+/** Records an inspection through the API and returns its id. */
+export async function apiInspect(
+  request: APIRequestContext,
+  batch: ReceivedBatch,
+  options: { subBatchId?: number | null; defects?: object[]; failStitching?: boolean } = {},
+): Promise<number> {
+  const inspection = await ok<{ id: number }>(
+    await request.post(`${API}/api/quality/batches/${batch.batchId}/inspections`, {
+      data: {
+        inspectionDate: today(),
+        actingPerson: PERSON,
+        subBatchId: options.subBatchId ?? null,
+        checks: ALL_PASS.map((c) => (options.failStitching && c.checkTypeId === 1 ? { ...c, resultId: 2 } : c)),
+        defects: options.defects ?? [],
+      },
+    }),
+    'record inspection',
+  );
+  return inspection.id;
+}
+
+/** Records both child-safety checks through the API: both Pass, or the choking-hazard check Fail for the whole batch. */
+export async function apiSafety(request: APIRequestContext, inspectionId: number, chokingHazardFails = false): Promise<void> {
+  await ok(
+    await request.put(`${API}/api/quality/inspections/${inspectionId}/safety-checks`, {
+      data: {
+        actingPerson: PERSON,
+        checks: [
+          { safetyTypeId: 1, resultId: chokingHazardFails ? 2 : 1, reason: null, affectedLines: [] },
+          { safetyTypeId: 2, resultId: 1, reason: null, affectedLines: [] },
+        ],
+      },
+    }),
+    'record safety checks',
+  );
+}
+
+/** Splits a batch through the API: the first part is accepted, the second is rejected or sent for rework. */
+export async function apiSplit(request: APIRequestContext, batch: ReceivedBatch, acceptedQty: number, restOutcomeId: 3 | 4): Promise<{ id: number; outcomeId: number }[]> {
+  const { sizeId, colourId } = batch.run.po;
+  const decision = await ok<{ subBatches: { id: number; outcomeId: number }[] }>(
+    await request.post(`${API}/api/quality/batches/${batch.batchId}/decision`, {
+      data: {
+        actingPerson: PERSON,
+        parts: [
+          { outcomeId: 1, reason: null, lines: [{ sizeId, colourId, qty: acceptedQty }] },
+          { outcomeId: restOutcomeId, reason: 'E2E: not good enough', lines: [{ sizeId, colourId, qty: 100 - acceptedQty }] },
+        ],
+      },
+    }),
+    'decide the batch',
+  );
+  return decision.subBatches;
+}
+
+export const openBatch = async (page: Page, batch: ReceivedBatch): Promise<void> => {
+  await page.goto(`/quality/batches/${batch.batchId}`);
+  await expect(page.getByRole('heading', { level: 1, name: `QC batch: ${batch.grnNo}` })).toBeVisible();
+};
+
+// ---- Sprint 5: labelling ----
+
+export interface WorkItem {
+  id: number;
+  poId: number;
+  variantId: number | null;
+  skuCode: string | null;
+  gtin: string | null;
+  qty: number;
+  statusCode: string;
+  printedQty: number;
+  remainingQty: number;
+}
+
+/** A batch of the given quantity, accepted by QC through the API (the rest rejected), so its tags are ready to be made. */
+export async function createAcceptedStock(request: APIRequestContext, acceptedQty = 60): Promise<ReceivedBatch> {
+  const batch = await apiReceive(request, await createReceivable(request));
+  const inspectionId = await apiInspect(request, batch);
+  await apiSafety(request, inspectionId);
+  await apiSplit(request, batch, acceptedQty, 3);
+  return batch;
+}
+
+/** Waits for the QC event to reach Labelling and returns the work item it created for a PO (the dispatcher runs on its own timer). */
+export async function waitForWorkItem(request: APIRequestContext, poId: number): Promise<WorkItem> {
+  return poll(async () => {
+    const page = (await (await request.get(`${API}/api/labelling/work-items?pageSize=100`)).json()) as { items: WorkItem[] };
+    return page.items.find((i) => i.poId === poId) ?? null;
+  }, `the label work item for PO ${poId}`, 60_000);
+}
+
+/** Queues tags for a work item through the API on a configured printer (by code) and returns the job. */
+export async function apiQueueTags(
+  request: APIRequestContext,
+  itemId: number,
+  qty: number,
+  printerCode: 'FAKE-PDF' | 'FAKE-JAM' = 'FAKE-PDF',
+): Promise<{ id: number; jobNo: string; gtin: string; skuCode: string }> {
+  return ok(
+    await request.post(`${API}/api/labelling/work-items/${itemId}/print-jobs`, { data: { qty, printerCode, actingPerson: PERSON } }),
+    'queue tags',
+  );
+}
+
+// ---- Sprint 6: warehouse ----
+
+export interface BinRow {
+  id: number;
+  binCode: string;
+}
+
+/** A fresh bin through the API (a zone no other test uses), so each test owns its shelf location. */
+export async function apiCreateBin(request: APIRequestContext, zone = randomZone()): Promise<BinRow> {
+  return ok(
+    await request.post(`${API}/api/warehouse/bins`, { data: { zone, aisle: String(Math.floor(Math.random() * 999) + 1).padStart(3, '0'), shelf: String.fromCharCode(65 + Math.floor(Math.random() * 26)), actingPerson: PERSON } }),
+    'create a bin',
+  );
+}
+
+/** Records a stock adjustment through the API. A found-stock adjustment of +N is how a test puts N units on a shelf quickly. */
+export async function apiAdjust(
+  request: APIRequestContext,
+  options: { gtin: string; binCode: string; change: number; reasonId?: number; reconfirmed?: boolean },
+): Promise<{ id: number; balanceAfter: number }> {
+  return ok(
+    await request.post(`${API}/api/warehouse/adjustments`, {
+      data: {
+        gtin: options.gtin,
+        binCode: options.binCode,
+        gradeId: 1,
+        quantityChange: options.change,
+        reasonId: options.reasonId ?? 4,
+        note: 'e2e',
+        reconfirmed: options.reconfirmed ?? false,
+        idempotencyKey: crypto.randomUUID(),
+        actingPerson: PERSON,
+      },
+    }),
+    'adjust stock',
+  );
+}
+
+export interface PutawayItemRow {
+  id: number;
+  poId: number;
+  skuCode: string | null;
+  gtin: string | null;
+  statusCode: string;
+  qcQuantity: number;
+  pending: number;
+}
+
+/** Waits for QC's accepted batch to reach the warehouse as a putaway item that is ready (its barcode has been assigned). */
+export async function waitForPutawayItem(request: APIRequestContext, poId: number): Promise<PutawayItemRow> {
+  return poll(async () => {
+    const page = (await (await request.get(`${API}/api/warehouse/putaway/items?onlyOpen=true&pageSize=100`)).json()) as { items: PutawayItemRow[] };
+    return page.items.find((i) => i.poId === poId && i.statusCode === 'PENDING') ?? null;
+  }, `the putaway item for PO ${poId}`, 60_000);
+}
+
+export interface StockedVariant {
+  gtin: string;
+  skuCode: string;
+  poId: number;
+  putawayItemId: number;
+}
+
+/** A variant with a barcode (accepted stock that has been labelled), ready to hold stock. No units yet. */
+export async function createVariant(request: APIRequestContext): Promise<StockedVariant> {
+  const batch = await createAcceptedStock(request, 40);
+  const item = await waitForWorkItem(request, batch.run.po.id);
+  const putaway = await waitForPutawayItem(request, batch.run.po.id);
+  return { gtin: item.gtin!, skuCode: item.skuCode!, poId: batch.run.po.id, putawayItemId: putaway.id };
+}
+
+/** Three random letters or digits: with a random aisle and shelf, a bin code no earlier run (the database persists) has used. */
+export function randomZone(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  return Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }

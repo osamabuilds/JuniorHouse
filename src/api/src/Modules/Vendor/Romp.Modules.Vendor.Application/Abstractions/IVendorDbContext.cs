@@ -20,6 +20,15 @@ public interface IVendorDbContext
 
     DbSet<PurchaseOrderFile> PurchaseOrderFiles { get; }
 
+    /// <summary>Sprint 4: goods receipts recorded against POs (receipt progress, no status change).</summary>
+    DbSet<PoReceipt> PoReceipts { get; }
+
+    /// <summary>Sprint 4: the delivery facts behind the vendor scorecard.</summary>
+    DbSet<ScorecardDelivery> ScorecardDeliveries { get; }
+
+    /// <summary>Sprint 4: the first-pass inspection facts behind the vendor scorecard.</summary>
+    DbSet<ScorecardInspection> ScorecardInspections { get; }
+
     /// <summary>A handler calls this itself only when it needs a DB-generated value back in its response before returning.</summary>
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -1,0 +1,62 @@
+<h1>{{ showingHistory() ? 'Print history' : 'Print queue' }}</h1>
+<p class="page-intro">
+  @if (showingHistory()) {
+    Every time tags were printed for this SKU, including reprints. The barcode number is the same each time.
+  } @else {
+    Tags are saved here first and printed in the background. If a printer jams, its jobs wait and try again; the others keep printing.
+    This list refreshes by itself.
+  }
+</p>
+
+<app-section-nav label="Labelling" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (reprintVariantId(); as variant) {
+  <app-reprint-form
+    [sku]="reprintSku()"
+    [printers]="printers()"
+    [saving]="reprintSaving()"
+    [error]="reprintError()"
+    [defaultPerson]="defaultPerson()"
+    (submitted)="reprint(variant, $event)"
+    (cancelled)="closeReprintForm()"
+  />
+}
+
+<div class="toolbar">
+  @if (showingHistory()) {
+    <button type="button" class="button" (click)="showWholeQueue()">Show the whole queue</button>
+  } @else {
+    <label class="toolbar__select">
+      <span class="sr-only">Show</span>
+      <select [value]="status()" (change)="onStatusChange($event)">
+        <option value="all">All jobs</option>
+        <option value="queued">Waiting</option>
+        <option value="printing">Printing</option>
+        <option value="printed">Printed</option>
+        <option value="failed">Failed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </label>
+  }
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+</div>
+
+<app-job-table [jobs]="jobs()" [loading]="loading()" [busyId]="busyJobId()" (retry)="retry($event)" (cancel)="cancel($event)" />
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

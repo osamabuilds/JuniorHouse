@@ -11,10 +11,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Romp.Api.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Modules\Catalog\Romp.Modules.Catalog.Infrastructure\Romp.Modules.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Labelling\Romp.Modules.Labelling.Infrastructure\Romp.Modules.Labelling.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Warehouse\Romp.Modules.Warehouse.Infrastructure\Romp.Modules.Warehouse.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Production\Romp.Modules.Production.Infrastructure\Romp.Modules.Production.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Quality\Romp.Modules.Quality.Infrastructure\Romp.Modules.Quality.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Reference\Romp.Modules.Reference.Infrastructure\Romp.Modules.Reference.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Vendor\Romp.Modules.Vendor.Infrastructure\Romp.Modules.Vendor.Infrastructure.csproj" />
     <ProjectReference Include="..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\BuildingBlocks\Romp.BuildingBlocks.Web\Romp.BuildingBlocks.Web.csproj" />
   </ItemGroup>
 
 </Project>

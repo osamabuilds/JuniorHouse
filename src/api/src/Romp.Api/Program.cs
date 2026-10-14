@@ -7,8 +7,17 @@ using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.BuildingBlocks.Web;
 using Romp.Modules.Catalog.Infrastructure;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
+using Romp.Modules.Labelling.Infrastructure;
+using Romp.Modules.Labelling.Infrastructure.Persistence;
+using Romp.Modules.Production.Infrastructure;
+using Romp.Modules.Production.Infrastructure.Persistence;
+using Romp.Modules.Warehouse.Infrastructure;
+using Romp.Modules.Warehouse.Infrastructure.Persistence;
+using Romp.Modules.Quality.Infrastructure;
+using Romp.Modules.Quality.Infrastructure.Persistence;
 using Romp.Modules.Reference.Infrastructure;
 using Romp.Modules.Reference.Infrastructure.Persistence;
 using Romp.Modules.Vendor.Domain.Vendors;
@@ -17,9 +26,12 @@ using Romp.Modules.Vendor.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ADR 0011: an explicit request-body ceiling (large uploads keep their own per-endpoint validation).
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 30 * 1024 * 1024);
+
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule()];
 
 builder.Services.AddSharedPersistence();
 
@@ -31,7 +43,11 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
         typeof(Romp.Modules.Reference.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Catalog.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Vendor.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Vendor.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Production.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Quality.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Labelling.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Warehouse.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -55,12 +71,19 @@ builder.Services.AddOutboxDispatcher(new OutboxDispatcherOptions
 {
     ConnectionString = builder.Configuration.GetConnectionString("Postgres")
         ?? throw new InvalidOperationException("Missing 'Postgres' connection string."),
+
+    // NFR-SC-06 (decision D8): stock events must reach their consumers within 5 s p95 of the commit, and that time includes waiting for
+    // the next poll. A 5 s poll could alone use the whole budget, so the default is 1 s; configurable between 0.5 s and 5 s.
+    PollInterval = TimeSpan.FromSeconds(Math.Clamp(builder.Configuration.GetValue("Outbox:PollIntervalSeconds", 1.0), 0.5, 5.0)),
 });
 
 builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
+builder.Services.AddExceptionHandler<ConcurrencyExceptionHandler>();
 builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddRompAuthorization(builder.Environment);
+builder.Services.AddRompRateLimiting(builder.Configuration);
 builder.Services.AddOpenApi();
 
 // Storefront and admin are separate origins (SSR/SPA hosts, different ports). No auth yet
@@ -80,9 +103,17 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+// ADR 0011 deployment gate: outside Development/Testing the host refuses to start without a real authentication scheme.
+await SecurityGate.VerifyAsync(app.Services, app.Environment);
+
+app.UseRompSecurityHeaders();
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseCors("Default");
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -95,22 +126,36 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var catalogContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
     var vendorContext = scope.ServiceProvider.GetRequiredService<VendorDbContext>();
+    var productionContext = scope.ServiceProvider.GetRequiredService<ProductionDbContext>();
+    var qualityContext = scope.ServiceProvider.GetRequiredService<QcDbContext>();
+    var labellingContext = scope.ServiceProvider.GetRequiredService<SkuDbContext>();
+    var warehouseContext = scope.ServiceProvider.GetRequiredService<WhseDbContext>();
 
     await Task.WhenAll(
         scope.ServiceProvider.GetRequiredService<ReferenceDbContext>().Database.MigrateAsync(),
         catalogContext.Database.MigrateAsync(),
-        vendorContext.Database.MigrateAsync());
+        vendorContext.Database.MigrateAsync(),
+        productionContext.Database.MigrateAsync(),
+        qualityContext.Database.MigrateAsync(),
+        labellingContext.Database.MigrateAsync(),
+        warehouseContext.Database.MigrateAsync());
 
     // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
     // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough
     // (README) wants them there without an extra manual step.
     if (builder.Configuration.GetValue("Demo:SeedSampleData", false))
     {
-        await DemoDataSeeder.SeedAsync(catalogContext, vendorContext, CancellationToken.None);
+        await DemoDataSeeder.SeedAsync(catalogContext, vendorContext, productionContext, qualityContext, CancellationToken.None);
     }
 }
 
 // Liveness: process is up. Readiness: dependencies are reachable (SEC-22).
+// SCRUM-186: are events flowing? Counts per module outbox (pending, in flight, retrying, dead-lettered) and the oldest waiting age.
+// Admin-only once staff authentication exists (S8, SEC-08); tagged for that sweep.
+app.MapSecuredGroup("/api/admin", Policies.Admin).WithTags("Admin")
+    .MapGet("/outbox", async (OutboxHealthReader reader, CancellationToken cancellationToken) =>
+        Results.Ok(await reader.ReadAsync(cancellationToken)));
+
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Romp.Modules.Warehouse.Domain\Romp.Modules.Warehouse.Domain.csproj" />
+    <ProjectReference Include="..\Romp.Modules.Warehouse.Contracts\Romp.Modules.Warehouse.Contracts.csproj" />
+    <ProjectReference Include="..\..\Quality\Romp.Modules.Quality.Contracts\Romp.Modules.Quality.Contracts.csproj" />
+    <ProjectReference Include="..\..\Labelling\Romp.Modules.Labelling.Contracts\Romp.Modules.Labelling.Contracts.csproj" />
+    <ProjectReference Include="..\..\Vendor\Romp.Modules.Vendor.Contracts\Romp.Modules.Vendor.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
+</Project>

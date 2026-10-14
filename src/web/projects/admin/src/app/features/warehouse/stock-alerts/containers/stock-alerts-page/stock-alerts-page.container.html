@@ -1,0 +1,59 @@
+<h1>Stock alerts</h1>
+<p class="page-intro">
+  A variant raises an alert when its available stock falls to its threshold, and a stock-out alert when it reaches zero. Alerts close by
+  themselves when stock recovers. Alerts are shown here and in the badge on the menu; emails and messages are not set up yet.
+</p>
+
+<app-section-nav label="Warehouse" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (needName()) {
+  <p class="banner banner--error" role="alert">Type your name in the box first, so the change can be recorded against you.</p>
+}
+
+<div class="toolbar">
+  <label class="toolbar__select">
+    <span class="sr-only">Your name</span>
+    <input type="text" placeholder="Your name" maxlength="100" autocomplete="name" [value]="person()" (input)="onNameInput($event)" />
+  </label>
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+</div>
+
+<h2>Open alerts</h2>
+<div class="toolbar">
+  <label class="toolbar__select">
+    <span class="sr-only">Alert level</span>
+    <select [value]="level()" (change)="onLevelChange($event)">
+      <option value="all">All alerts</option>
+      <option value="LOW">Low stock</option>
+      <option value="OUT">Stock-out</option>
+    </select>
+  </label>
+  <label class="toolbar__check">
+    <input type="checkbox" [checked]="unacknowledgedOnly()" (change)="onUnacknowledgedChange($event)" />
+    Not yet seen only
+  </label>
+</div>
+<app-alert-table [alerts]="alerts()" [loading]="alertsLoading()" [acknowledgingId]="acknowledgingId()" (acknowledge)="acknowledge($event)" />
+<app-pagination [total]="alertsTotal()" [page]="alertsPage()" [pageSize]="pageSize()" (pageChanged)="changeAlertsPage($event)" />
+
+<h2>Thresholds</h2>
+<p class="field-hint">A threshold of 0 means "alert only when the stock runs out".</p>
+<div class="toolbar">
+  <label class="toolbar__search">
+    <span class="sr-only">Search variants by SKU or barcode</span>
+    <input type="search" placeholder="Search by SKU or barcode" maxlength="50" [value]="searchText()" (input)="onSearchInput($event)" />
+  </label>
+</div>
+<app-threshold-table [rows]="thresholds()" [loading]="thresholdsLoading()" [savingVariantId]="savingVariantId()" (save)="saveThreshold($event)" />
+<app-pagination [total]="thresholdsTotal()" [page]="thresholdsPage()" [pageSize]="pageSize()" (pageChanged)="changeThresholdsPage($event)" />

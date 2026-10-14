@@ -1,0 +1,65 @@
+<h1>Label worklist</h1>
+<p class="page-intro">
+  Stock that QC has accepted is waiting here for its tags. Each item already has its SKU and barcode number; queue the tags and they print
+  in the background. If a printer jams, the tags wait and try again, and everything else keeps going.
+</p>
+
+<app-section-nav label="Labelling" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (queueItem(); as item) {
+  <app-queue-tags-form
+    [item]="item"
+    [printers]="printers()"
+    [saving]="queueSaving()"
+    [error]="queueError()"
+    [defaultPerson]="defaultPerson()"
+    (submitted)="queue(item, $event)"
+    (cancelled)="closeQueueForm()"
+  />
+}
+
+<div class="toolbar">
+  <label class="toolbar__select">
+    <span class="sr-only">Show</span>
+    <select [value]="status()" (change)="onStatusChange($event)">
+      <option value="all">All items</option>
+      <option value="ready">Ready to print</option>
+      <option value="attention">Needs attention</option>
+    </select>
+  </label>
+
+  <label class="toolbar__checkbox">
+    <input type="checkbox" [checked]="priceFlagOnly()" (change)="togglePriceFlag()" />
+    Price changed since printing
+  </label>
+
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+</div>
+
+<app-worklist-table
+  [items]="items()"
+  [loading]="loading()"
+  [resolvingId]="resolvingId()"
+  [previewUrlFor]="previewUrlFor"
+  (queue)="openQueueForm($event)"
+  (resolve)="resolve($event, false)"
+  (confirmRetired)="resolve($event, true)"
+/>
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

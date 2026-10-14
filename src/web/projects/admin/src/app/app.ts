@@ -1,7 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { catchError, filter, map, of, switchMap, timer } from 'rxjs';
+import { OutboxHealthService } from '@core/health';
+import { AlertBadgeComponent } from '@features/warehouse/stock-alerts';
+import { OutboxHealthComponent } from '@shared';
 
 const VENDOR_VIEW_SEGMENT = '/vendor-view';
 
@@ -13,12 +16,21 @@ const VENDOR_VIEW_SEGMENT = '/vendor-view';
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, OutboxHealthComponent, AlertBadgeComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
   private readonly router = inject(Router);
+  private readonly outboxHealthService = inject(OutboxHealthService);
+
+  /** SCRUM-186: polled every 30 seconds; when the API cannot answer, nothing is shown rather than a false alarm. */
+  readonly outboxHealth = toSignal(
+    timer(0, 30_000).pipe(
+      switchMap(() => this.outboxHealthService.read().pipe(catchError(() => of(null)))),
+    ),
+    { initialValue: null },
+  );
 
   readonly chromeless = toSignal(
     this.router.events.pipe(

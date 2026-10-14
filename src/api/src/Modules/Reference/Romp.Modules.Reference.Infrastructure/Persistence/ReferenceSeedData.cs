@@ -95,7 +95,12 @@ internal static class ReferenceSeedData
             Row<PoStatusLookup>(1, "Draft", "Draft", 1),
             Row<PoStatusLookup>(2, "SentToVendor", "Sent to Vendor", 2),
             Row<PoStatusLookup>(3, "Acknowledged", "Acknowledged", 3),
-            Row<PoStatusLookup>(4, "Cancelled", "Cancelled", 4));
+            Row<PoStatusLookup>(4, "Cancelled", "Cancelled", 4),
+            // Sprint 3 (SCRUM-183, BRD §5.9): the production part of the lifecycle. Ids 5-8 keep 4 (Cancelled) stable.
+            Row<PoStatusLookup>(5, "InProduction", "In Production", 5),
+            Row<PoStatusLookup>(6, "PartiallyDelivered", "Partially Delivered", 6),
+            Row<PoStatusLookup>(7, "Delivered", "Delivered", 7),
+            Row<PoStatusLookup>(8, "Closed", "Closed", 8));
 
         // Spec Decisions: exact seed list given by the spec itself.
         modelBuilder.Entity<PoCancelReasonLookup>().HasData(
@@ -104,7 +109,9 @@ internal static class ReferenceSeedData
             Row<PoCancelReasonLookup>(3, "QualityConcern", "Quality Concern", 3),
             Row<PoCancelReasonLookup>(4, "StyleDiscontinued", "Style Discontinued", 4),
             Row<PoCancelReasonLookup>(5, "DuplicateEntry", "Duplicate Entry", 5),
-            Row<PoCancelReasonLookup>(6, "Other", "Other", 6));
+            Row<PoCancelReasonLookup>(6, "Other", "Other", 6),
+            // Sprint 3 D16: shown when a PO is cancelled after bulk cutting has started.
+            Row<PoCancelReasonLookup>(7, "ProductionAlreadyStarted", "Cancelled after production started", 7));
 
         // Sprint 2 (SCRUM-93). Staff-maintained (plan.md Data section, exact seed list from the
         // spec's Non-functional constraints).

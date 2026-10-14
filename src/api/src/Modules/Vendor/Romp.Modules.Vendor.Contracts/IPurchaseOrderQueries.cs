@@ -16,6 +16,12 @@ public interface IPurchaseOrderQueries
 
     /// <summary>The vendor-visible files in effect at <paramref name="revisionNumber"/> (the in-force revision when null).</summary>
     Task<IReadOnlyList<PoEffectiveFile>> GetEffectiveFilesAsync(long poId, short? revisionNumber, CancellationToken cancellationToken);
+
+    /// <summary>Sprint 3 (D11): what PROD needs to open a run and bound milestone dates. Null for an unknown PO.</summary>
+    Task<PoProductionContext?> GetProductionContextAsync(long poId, CancellationToken cancellationToken);
+
+    /// <summary>Sprint 3 (D12): the terms of the revision that was in force on <paramref name="asOfDate"/> (Pakistan time); a date before Send returns Rev 0. Null for an unknown or never-sent PO.</summary>
+    Task<PoInForceTerms?> GetTermsAtAsync(long poId, DateOnly asOfDate, CancellationToken cancellationToken);
 }
 
 public sealed record PoTermsLineContract(short SizeId, short ColourId, int Qty);
@@ -48,3 +54,6 @@ public sealed record PoRevisionSummary(
     DateTimeOffset CreatedAt);
 
 public sealed record PoEffectiveFile(long FileId, string FileName, short CategoryId);
+
+/// <summary>The PO facts PROD needs and nothing internal: no cost, notes or files.</summary>
+public sealed record PoProductionContext(long PoId, string PoNo, short StatusId, DateOnly SentDate, short? FabricResponsibilityId);

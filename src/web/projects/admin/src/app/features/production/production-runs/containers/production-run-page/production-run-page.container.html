@@ -1,0 +1,172 @@
+@if (loadError(); as error) {
+  <p><a routerLink="/production">&larr; All production runs</a></p>
+  <h1>Production run</h1>
+  <p class="banner banner--error" role="alert">
+    {{ error.status === 404 ? 'This production run could not be found.' : error.message }}
+  </p>
+} @else if (run(); as run) {
+  <p><a routerLink="/production">&larr; All production runs</a></p>
+  <h1>Production: {{ run.poNo }}</h1>
+  <p class="page-intro">
+    Record what the vendor tells you as it happens. Nothing here changes the purchase order except two things: starting bulk cutting
+    moves it to In Production, and delivery notes move it to Partially Delivered and then Delivered.
+  </p>
+
+  @if (notice()) {
+    <p class="banner banner--success" role="status">{{ notice() }}</p>
+  }
+
+  @if (!isOpen()) {
+    <p class="banner banner--info" role="note">
+      This run is {{ statusLabels[run.statusId].toLowerCase() }}, so nothing more can be recorded on it. Everything already recorded is kept.
+    </p>
+  }
+
+  <app-run-flag-badges [flags]="flags()" />
+
+  <section class="panel run-summary" aria-labelledby="summary-heading">
+    <h2 id="summary-heading">Where it stands</h2>
+    <dl class="facts">
+      <div>
+        <dt>Purchase order</dt>
+        <dd><a [routerLink]="['/purchase-orders']" [queryParams]="{ po: run.poId }">{{ run.poNo }}</a></dd>
+      </div>
+      <div>
+        <dt>Run status</dt>
+        <dd>
+          <span class="badge" [class.badge--muted]="!isOpen()">{{ statusLabels[run.statusId] }}</span>
+        </dd>
+      </div>
+      <div>
+        <dt>Who supplies the fabric</dt>
+        <dd>{{ fabricName() }}</dd>
+      </div>
+      <div>
+        <dt>Order sent to the vendor</dt>
+        <dd>{{ run.poSentDate | appDate }}</dd>
+      </div>
+      <div>
+        <dt>Pre-production sample</dt>
+        <dd>{{ run.hasApprovedSample ? 'Approved' : 'Not approved yet' }}</dd>
+      </div>
+      <div>
+        <dt>Bulk cutting</dt>
+        <dd>{{ run.cuttingStartedDate ? 'Started ' + (run.cuttingStartedDate | appDate) : 'Not started' }}</dd>
+      </div>
+      @if (run.fabricResponsibilityId === 2) {
+        <div>
+          <dt>Fabric sent by Romp</dt>
+          <dd>{{ run.fabricDispatchDate ? (run.fabricDispatchDate | appDate) : 'Not recorded yet' }}</dd>
+        </div>
+      }
+      @if (run.poTerms; as terms) {
+        <div>
+          <dt>Terms judged against</dt>
+          <dd>Revision {{ terms.revisionNumber }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  @if (run.isResampleRecommended) {
+    <p class="banner banner--error" role="note">
+      <strong>A new sample is strongly recommended.</strong> The order was changed after the first sample was approved, and the change affects how
+      the garment is made (fabric, colour or files). Record a new sample round before cutting, or accept the risk.
+    </p>
+  }
+
+  <section class="panel" aria-labelledby="milestones-heading">
+    <h2 id="milestones-heading">Milestones</h2>
+    <app-milestone-timeline [milestones]="run.milestones" [names]="names" />
+
+    @if (panel() === 'milestone' && isOpen()) {
+      <app-milestone-form
+        [run]="run"
+        [names]="names"
+        [saving]="saving()"
+        [error]="panelError()"
+        [defaultPerson]="defaultPerson()"
+        (submitted)="recordMilestone($event)"
+        (cancelled)="closePanel()"
+      />
+    } @else if (isOpen()) {
+      <div class="panel__actions">
+        <button type="button" class="button" (click)="openPanel('milestone')">Record a milestone</button>
+      </div>
+    }
+  </section>
+
+  <section class="panel" aria-labelledby="sample-section-heading">
+    <h2 id="sample-section-heading">Pre-production sample</h2>
+    <p class="page-intro">
+      The vendor sends a sample before cutting the whole order. Bulk cutting cannot be recorded until a sample is approved. If a sample is
+      rejected, the vendor sends another; there is no limit.
+    </p>
+    <app-pp-round-panel
+      [rounds]="run.ppRounds"
+      [canSubmit]="run.canSubmitSample"
+      [runOpen]="isOpen()"
+      [submitFormOpen]="panel() === 'sample'"
+      [minDate]="run.poSentDate"
+      [saving]="saving()"
+      [error]="panelError()"
+      [fileUploading]="fileUploading()"
+      [fileError]="fileError()"
+      [defaultPerson]="defaultPerson()"
+      [fileUrlFor]="sampleFileUrlFor"
+      (submitOpened)="openPanel('sample')"
+      (cancelled)="closePanel()"
+      (submitted)="submitSample($event)"
+      (decided)="decideSample($event)"
+      (fileSelected)="uploadFile($event)"
+      (fileRemoved)="removeFile($event)"
+    />
+  </section>
+
+  <section class="panel" aria-labelledby="expected-section-heading">
+    <h2 id="expected-section-heading">Expected completion</h2>
+    <app-expected-completion-panel
+      [expectedDate]="run.expectedCompletionDate"
+      [latestAcceptableDate]="run.latestAcceptableDate"
+      [history]="run.expectedHistory"
+      [atRisk]="run.isAtRisk"
+      [cuttingStarted]="run.cuttingStartedDate !== null"
+      [runOpen]="isOpen()"
+      [formOpen]="panel() === 'expected'"
+      [saving]="saving()"
+      [error]="panelError()"
+      [defaultPerson]="defaultPerson()"
+      (opened)="openPanel('expected')"
+      (cancelled)="closePanel()"
+      (submitted)="setExpectedCompletion($event)"
+    />
+  </section>
+
+  <section class="panel" aria-labelledby="deliveries-heading">
+    <h2 id="deliveries-heading">Deliveries</h2>
+    <app-delivery-note-list [notes]="run.deliveryNotes" [quantities]="run.quantities" [names]="names" />
+
+    @if (panel() === 'delivery' && isOpen()) {
+      <app-delivery-note-form
+        [quantities]="run.quantities"
+        [names]="names"
+        [minDate]="run.poSentDate"
+        [saving]="saving()"
+        [error]="panelError()"
+        [defaultPerson]="defaultPerson()"
+        (submitted)="recordDeliveryNote($event)"
+        (cancelled)="closePanel()"
+      />
+    } @else if (isOpen()) {
+      <div class="panel__actions">
+        <button type="button" class="button" [disabled]="!run.cuttingStartedDate" (click)="openPanel('delivery')">Record a delivery note</button>
+      </div>
+      @if (!run.cuttingStartedDate) {
+        <p class="field-hint">A delivery note can be recorded once bulk cutting has started.</p>
+      }
+    }
+  </section>
+} @else {
+  <h1>Production run</h1>
+  <p class="state-message">Loading…</p>
+}

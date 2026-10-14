@@ -1,0 +1,215 @@
+@if (loadError(); as error) {
+  <p><a routerLink="/quality/batches">&larr; All QC batches</a></p>
+  <h1>QC batch</h1>
+  <p class="banner banner--error" role="alert">
+    {{ error.status === 404 ? 'This batch could not be found.' : error.message }}
+  </p>
+} @else if (batch(); as batch) {
+  <p><a routerLink="/quality/batches">&larr; All QC batches</a></p>
+  <h1>QC batch: {{ batch.grnNo }}</h1>
+  <p class="page-intro">
+    Inspect the goods against the tech pack, record the two child-safety checks, then decide what happens to them. Only accepted quantity is
+    released for putaway; rejected quantity never is.
+  </p>
+
+  @if (notice()) {
+    <p class="banner banner--success" role="status">{{ notice() }}</p>
+  }
+
+  <section class="panel" aria-labelledby="batch-summary-heading">
+    <h2 id="batch-summary-heading">Where it stands</h2>
+    <dl class="facts">
+      <div>
+        <dt>Goods receipt</dt>
+        <dd>{{ batch.grnNo }}</dd>
+      </div>
+      <div>
+        <dt>Purchase order</dt>
+        <dd>{{ batch.poNo }}</dd>
+      </div>
+      <div>
+        <dt>Delivery note</dt>
+        <dd>{{ batch.vendorDnNo }}</dd>
+      </div>
+      <div>
+        <dt>Pieces received</dt>
+        <dd>{{ batch.lotQty }}</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>
+          <span class="badge" [class.badge--muted]="batch.statusId === 3 || batch.statusId === 5">{{ statusLabels[batch.statusId] }}</span>
+        </dd>
+      </div>
+    </dl>
+    @if (next()) {
+      <p class="banner banner--info" role="note"><strong>Next:</strong> {{ next() }}</p>
+    }
+
+    <table class="responsive">
+      <caption class="sr-only">
+        What is in the batch
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Size</th>
+          <th scope="col">Colour</th>
+          <th scope="col">Pieces</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of batch.lines; track line.sizeId + '-' + line.colourId) {
+          <tr>
+            <td data-label="Size">{{ names.sizeName(line.sizeId) }}</td>
+            <td data-label="Colour">{{ names.colourName(line.colourId) }}</td>
+            <td data-label="Pieces">{{ line.qty }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel" aria-labelledby="inspections-heading">
+    <h2 id="inspections-heading">Inspections</h2>
+
+    @if (batch.inspections.length === 0) {
+      <p class="state-message">Not inspected yet.</p>
+    }
+
+    @for (inspection of batch.inspections; track inspection.id) {
+      <article class="qc-repeat" [attr.aria-label]="scopeName(inspection) + ', round ' + inspection.roundNo">
+        <h3>{{ scopeName(inspection) }}: round {{ inspection.roundNo }}</h3>
+        <p>
+          <span class="qc-flag" [class.qc-flag--ok]="inspection.resultCode === 'Pass'" [class.qc-flag--danger]="inspection.resultCode === 'Fail'">
+            {{ inspection.resultCode === 'Pass' ? 'Passed' : 'Failed' }}
+          </span>
+          {{ modeLabels[inspection.modeCode] }}: {{ inspection.sampleQty }} of {{ inspection.lotQty }} pieces inspected on
+          {{ inspection.inspectionDate | appDate }} by {{ inspection.actingPerson }}. Accept up to {{ inspection.acceptNo }}, reject at
+          {{ inspection.rejectNo }}.
+        </p>
+
+        @if (inspection.defects.length > 0) {
+          <table class="responsive">
+            <caption>
+              Defects found
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Type</th>
+                <th scope="col">Severity</th>
+                <th scope="col">Pieces</th>
+                <th scope="col">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (defect of inspection.defects; track $index) {
+                <tr>
+                  <td data-label="Type">{{ defectLabel(defect.defectTypeId) }}</td>
+                  <td data-label="Severity">{{ severityLabel(defect.severityId) }}</td>
+                  <td data-label="Pieces">{{ defect.qty }}</td>
+                  <td data-label="Note">{{ defect.note }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="field-hint">No defects were recorded.</p>
+        }
+
+        <p class="field-hint">
+          Checklist:
+          @for (check of inspection.checks; track check.checkTypeId; let last = $last) {
+            {{ checkLabel(check.checkTypeId) }} — {{ resultLabels[check.resultId] }}{{ last ? '.' : '; ' }}
+          }
+        </p>
+
+        <app-safety-checks-panel
+          [inspection]="inspection"
+          [lines]="scopeLines(inspection)"
+          [names]="names"
+          [canChange]="canChangeSafety(inspection)"
+          [saving]="saving()"
+          [error]="panel() === 'none' || panel() === 'safety' ? panelError() : null"
+          [defaultPerson]="defaultPerson()"
+          (submitted)="recordSafety($event)"
+        />
+      </article>
+    }
+
+    @if (!first() && panel() !== 'inspect') {
+      <button type="button" class="button button--primary" (click)="openInspect()">Inspect the batch</button>
+    }
+
+    @if (panel() === 'inspect' || (panel() === 'reinspect' && targetPart())) {
+      <app-inspection-form
+        [lines]="inspectionLines()"
+        [names]="names"
+        [plan]="plan()"
+        [subBatchId]="panel() === 'reinspect' ? panelTargetId() : null"
+        [saving]="saving()"
+        [error]="panelError()"
+        [defaultPerson]="defaultPerson()"
+        (submitted)="recordInspection($event)"
+        (cancelled)="closePanel()"
+      />
+    }
+  </section>
+
+  <section class="panel" aria-labelledby="outcome-heading-page">
+    <h2 id="outcome-heading-page">Outcome</h2>
+
+    @if (!hasSubBatches()) {
+      @if (!first()) {
+        <p class="state-message">Inspect the batch first: an outcome cannot be recorded without an inspection.</p>
+      } @else if (panel() !== 'decide') {
+        <button type="button" class="button button--primary" (click)="openPanel('decide')">Record the outcome</button>
+      } @else {
+        <app-outcome-panel
+          [lines]="batch.lines"
+          [names]="names"
+          [safetyRecorded]="safetyRecorded()"
+          [saving]="saving()"
+          [error]="panelError()"
+          [defaultPerson]="defaultPerson()"
+          (submitted)="decide($event)"
+          (cancelled)="closePanel()"
+        />
+      }
+    } @else {
+      <app-sub-batch-table
+        [batch]="batch"
+        [names]="names"
+        (returnRequested)="openPanel('return', $event)"
+        (reinspectRequested)="openReinspect($event)"
+        (decideRequested)="openPanel('decide-part', $event)"
+        (safetyRequested)="openPanel('safety', $event)"
+      />
+
+      @if (panel() === 'return' && targetPart(); as part) {
+        <app-rework-return-form
+          [part]="part"
+          [names]="names"
+          [saving]="saving()"
+          [error]="panelError()"
+          [defaultPerson]="defaultPerson()"
+          (submitted)="recordReturn($event)"
+          (cancelled)="closePanel()"
+        />
+      }
+
+      @if (panel() === 'decide-part' && targetPart(); as part) {
+        <app-part-decision-form
+          [part]="part"
+          [saving]="saving()"
+          [error]="panelError()"
+          [defaultPerson]="defaultPerson()"
+          (submitted)="decidePart($event)"
+          (cancelled)="closePanel()"
+        />
+      }
+    }
+  </section>
+} @else if (loading()) {
+  <h1>QC batch</h1>
+  <p class="state-message">Loading…</p>
+}

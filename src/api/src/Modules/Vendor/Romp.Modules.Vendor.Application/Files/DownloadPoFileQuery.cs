@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Storage;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Vendor.Application.Abstractions;
@@ -20,7 +21,7 @@ public sealed class DownloadPoFileQueryHandler(IVendorDbContext dbContext, IFile
             ?? throw new KeyNotFoundException($"File {request.FileId} was not found on purchase order {request.PoId}.");
 
         var content = await fileStorage.RetrieveAsync(file.StorageKey, cancellationToken);
-        var safeName = PoFileContent.SanitiseFileName(file.FileName);
+        var safeName = FileContent.SanitiseFileName(file.FileName);
 
         return new PoFileDownload(content, file.ContentType, safeName, new Dictionary<string, string>
         {

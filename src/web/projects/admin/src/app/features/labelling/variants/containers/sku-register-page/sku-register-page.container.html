@@ -1,0 +1,74 @@
+<h1>SKU register</h1>
+<p class="page-intro">
+  Every sellable variant (style, colour and size) has one readable SKU and one barcode number. Numbers are given out once and never
+  reused, even after a void.
+</p>
+
+<app-section-nav label="Labelling" [links]="links" />
+
+@if (capacity(); as c) {
+  @if (c.isTestPrefix) {
+    <p class="banner banner--info" role="status">
+      Test barcode prefix {{ c.prefix }} is in use. Numbers made now are for trying things out and must never go on real stock.
+    </p>
+  }
+  <p class="banner" [class.banner--error]="c.warning" [class.banner--info]="!c.warning" role="status">
+    Barcode numbers used: {{ c.used }} of {{ c.capacity }} ({{ c.usedPercent }}%).
+    @if (c.warning) {
+      Running low: ask GS1 for more capacity before labelling much more stock.
+    }
+  </p>
+}
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (voidTarget(); as target) {
+  <app-void-form
+    [variant]="target"
+    [saving]="voidSaving()"
+    [error]="voidError()"
+    [defaultPerson]="defaultPerson()"
+    (submitted)="voidGtin(target, $event)"
+    (cancelled)="closeVoidForm()"
+  />
+}
+
+@if (detail(); as d) {
+  <app-gtin-history [detail]="d" (closed)="closeDetails()" />
+}
+
+<div class="toolbar">
+  <label class="toolbar__search">
+    <span class="sr-only">Search by SKU or barcode</span>
+    <input type="search" placeholder="Search by SKU or barcode" maxlength="50" [value]="searchText()" (input)="onSearchInput($event)" />
+  </label>
+
+  <label class="toolbar__select">
+    <span class="sr-only">Show</span>
+    <select [value]="status()" (change)="onStatusChange($event)">
+      <option value="all">All SKUs</option>
+      <option value="active">Barcode in use</option>
+      <option value="retired">Barcode voided</option>
+    </select>
+  </label>
+
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+</div>
+
+<app-variant-table [variants]="variants()" [loading]="loading()" (details)="showDetails($event)" (voidRequested)="openVoidForm($event)" />
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

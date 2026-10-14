@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +19,7 @@ internal static class LookupEndpoints
     public static void MapLookupType<TLookup>(this IEndpointRouteBuilder endpoints, string routeSegment, bool mutable)
         where TLookup : Lookup
     {
-        var group = endpoints.MapGroup($"/api/ref/{routeSegment}").WithTags("Reference");
+        var group = endpoints.MapSecuredGroup($"/api/ref/{routeSegment}").WithTags("Reference");
 
         group.MapGet("/", async (ISender sender, CancellationToken cancellationToken, bool includeInactive = false) =>
             Results.Ok(await sender.Send(new ListLookupQuery<TLookup>(includeInactive), cancellationToken)));

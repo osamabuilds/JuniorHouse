@@ -26,6 +26,7 @@ internal sealed class StyleConfiguration : IEntityTypeConfiguration<Style>
         builder.HasIndex(s => s.FabricId);
         builder.Property(s => s.TargetUnitCost).HasColumnName("TGT_UNIT_COST_AMT").HasColumnType("numeric(12,2)");
         builder.Property(s => s.TargetRetailPrice).HasColumnName("TGT_RTL_PRIC_AMT").HasColumnType("numeric(12,2)");
+        builder.Property(s => s.TargetPriceChangedAt).HasColumnName("TGT_PRIC_CHG_DTE");
         builder.Property(s => s.IsActive).HasColumnName("ACT_IND").IsRequired();
         builder.HasAuditColumns();
 

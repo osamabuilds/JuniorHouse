@@ -1,4 +1,4 @@
-import { LookupNameResolver } from '@features/reference-data';
+import { LookupNameResolver } from '@features/reference/lookups';
 
 /** A fixed id -> name resolver for presentational component tests (no store needed). */
 export const LOOKUP_NAMES_STUB: LookupNameResolver = {

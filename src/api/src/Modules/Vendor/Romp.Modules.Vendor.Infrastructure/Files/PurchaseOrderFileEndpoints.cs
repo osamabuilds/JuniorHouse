@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,7 @@ internal static class PurchaseOrderFileEndpoints
 {
     public static void MapPurchaseOrderFileEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/purchase-orders").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/purchase-orders").WithTags("Vendor");
 
         // SCRUM-93 task 40. Multipart upload; the content type is detected from the bytes, never trusted from the client.
         group.MapGet("/{id:long}/files", async (long id, ISender sender, CancellationToken cancellationToken) =>

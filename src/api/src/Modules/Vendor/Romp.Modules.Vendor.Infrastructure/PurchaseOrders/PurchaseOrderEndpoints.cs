@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.AspNetCore.Builder;
@@ -11,7 +12,7 @@ internal static class PurchaseOrderEndpoints
 {
     public static void MapPurchaseOrderEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/purchase-orders").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/purchase-orders").WithTags("Vendor");
 
         group.MapPost("/", async (CreatePurchaseOrderCommand command, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(command, cancellationToken)));
@@ -28,6 +29,9 @@ internal static class PurchaseOrderEndpoints
 
         group.MapPost("/{id:long}/acknowledge", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new AcknowledgePurchaseOrderCommand(id), cancellationToken)));
+
+        group.MapPost("/{id:long}/close", async (long id, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new ClosePurchaseOrderCommand(id), cancellationToken)));
 
         group.MapPost("/{id:long}/cancel", async (
                 long id,

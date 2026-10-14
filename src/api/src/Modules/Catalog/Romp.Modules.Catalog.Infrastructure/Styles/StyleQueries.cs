@@ -24,4 +24,21 @@ public sealed class StyleQueries(CatalogDbContext dbContext) : IStyleQueries
                 style.Sizes.Select(s => s.SizeId).ToList(),
                 style.Colourways.Select(c => c.ColourId).ToList());
     }
+
+    public async Task<IReadOnlyDictionary<long, StyleLabelInfo>> GetLabelInfoAsync(
+        IReadOnlyCollection<long> styleIds, CancellationToken cancellationToken)
+    {
+        if (styleIds.Count == 0)
+        {
+            return new Dictionary<long, StyleLabelInfo>();
+        }
+
+        var ids = styleIds.Distinct().ToList();
+        return await dbContext.Styles
+            .AsNoTracking()
+            .Where(s => ids.Contains(s.Id))
+            .Select(s => new StyleLabelInfo(
+                s.Id, s.Code, s.Name, s.TargetRetailPrice, s.TargetPriceChangedAt ?? s.InsrDte, s.IsActive))
+            .ToDictionaryAsync(info => info.Id, cancellationToken);
+    }
 }

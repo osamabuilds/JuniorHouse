@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Domain.Files;
@@ -23,6 +24,12 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
 
     public DbSet<PurchaseOrderFile> PurchaseOrderFiles => Set<PurchaseOrderFile>();
 
+    public DbSet<PoReceipt> PoReceipts => Set<PoReceipt>();
+
+    public DbSet<ScorecardDelivery> ScorecardDeliveries => Set<ScorecardDelivery>();
+
+    public DbSet<ScorecardInspection> ScorecardInspections => Set<ScorecardInspection>();
+
     async Task IVendorDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 
@@ -30,6 +37,7 @@ public sealed class VendorDbContext(DbContextOptions<VendorDbContext> options)
     {
         modelBuilder.HasDefaultSchema("VNDR");
         modelBuilder.HasOutboxTable("VNDR");
+        modelBuilder.HasInboxTable("VNDR");
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(VendorDbContext).Assembly);
 

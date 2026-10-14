@@ -1,9 +1,11 @@
+using Romp.BuildingBlocks.Storage;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Catalog.Contracts;
+using Romp.Modules.Production.Contracts;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Application.Files;
 using Romp.Modules.Vendor.Application.PurchaseOrders;
@@ -55,8 +57,8 @@ public sealed class CreateAmendmentCommandValidator : AbstractValidator<CreateAm
                 .Must(content => content.Length > 0).WithMessage("An added file is empty.")
                 .Must(content => content.LongLength <= fileOptions.MaxFileSizeBytes)
                 .WithMessage($"An added file is larger than the {fileOptions.MaxFileSizeBytes / (1024 * 1024)} MB limit.")
-                .Must(content => content.Length == 0 || PoFileContent.DetectContentType(content) is not null)
-                .WithMessage($"An added file has a type that isn't allowed. Use {PoFileContent.AllowedTypesDescription}.");
+                .Must(content => content.Length == 0 || FileContent.DetectContentType(content) is not null)
+                .WithMessage($"An added file has a type that isn't allowed. Use {FileContent.AllowedTypesDescription}.");
         });
         RuleFor(c => c.ReasonId).GreaterThan((short)0).WithMessage("A reason is required.");
         RuleFor(c => c.ImpactNote).NotEmpty().WithMessage("An internal impact note is required."); // AC-17
@@ -77,7 +79,8 @@ public sealed class CreateAmendmentCommandValidator : AbstractValidator<CreateAm
     }
 }
 
-public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IStyleQueries styleQueries, IFileStorage fileStorage, PoFileStorageOptions fileOptions)
+public sealed class CreateAmendmentCommandHandler(
+    IVendorDbContext dbContext, IStyleQueries styleQueries, IFileStorage fileStorage, PoFileStorageOptions fileOptions, IProductionQueries productionQueries)
     : IRequestHandler<CreateAmendmentCommand, PoRevisionDto>
 {
     public async Task<PoRevisionDto> Handle(CreateAmendmentCommand request, CancellationToken cancellationToken)
@@ -96,6 +99,9 @@ public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IS
             throw new DomainException(
                 $"PO {po.PoNo} cannot be amended while in its current status (only Sent to Vendor or Acknowledged can be amended).");
         }
+
+        // AC-26 (Sprint 3): Delivered and Closed POs can no longer be amended.
+        AmendmentGuards.EnsureNotDelivered(po);
 
         // AC-14: at most one open Pending revision at a time. RevisionStatus is likewise internal.
         var openPending = po.Revisions.FirstOrDefault(r => r.StatusId == 1 /* Pending */);
@@ -124,6 +130,8 @@ public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IS
 
         // AC-16: a true no-op (identical terms and lines to the PO's current position) is rejected.
         var requestedLines = request.Lines.Select(l => (l.SizeId, l.ColourId, l.Qty)).ToList();
+        // AC-26: no line may go below its delivered quantity.
+        await AmendmentGuards.EnsureNotBelowDeliveredAsync(productionQueries, po, requestedLines, cancellationToken);
         var addFiles = request.AddFiles ?? [];
         var retireFileIds = request.RetireFileIds ?? [];
         if (IsNoOp(po, request, requestedLines) && addFiles.Count == 0 && retireFileIds.Count == 0)
@@ -173,7 +181,8 @@ public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IS
             request.AdvancePercent,
             request.FabricResponsibilityId,
             requestedLines,
-            goesImmediatelyInForce);
+            goesImmediatelyInForce,
+            changesFiles: addFiles.Count > 0 || retireFileIds.Count > 0);
 
         // The revision's id only exists once saved; the files' effective window refers to it (AC-43).
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -184,8 +193,8 @@ public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IS
             {
                 var storageKey = await fileStorage.SaveAsync(added.Content, cancellationToken);
                 dbContext.PurchaseOrderFiles.Add(new PurchaseOrderFile(
-                    po.Id, added.CategoryId, PoFileContent.SanitiseFileName(added.FileName), storageKey,
-                    PoFileContent.DetectContentType(added.Content)!, added.Content.LongLength, revision.Id));
+                    po.Id, added.CategoryId, FileContent.SanitiseFileName(added.FileName), storageKey,
+                    FileContent.DetectContentType(added.Content)!, added.Content.LongLength, revision.Id));
             }
 
             foreach (var file in poFiles.Where(f => retireFileIds.Contains(f.Id)))
@@ -196,7 +205,10 @@ public sealed class CreateAmendmentCommandHandler(IVendorDbContext dbContext, IS
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        return revision.ToDto();
+        // AC-27: after a PP sample was approved any amendment is costly (fabric and sampling are committed); the
+        // construction tier (already on the DTO) additionally suggests a new PP round.
+        var costly = await productionQueries.HasApprovedPpSampleAsync(po.Id, cancellationToken);
+        return revision.ToDto() with { IsCostlyAfterPpApproval = costly };
     }
 
     private static bool IsNoOp(PurchaseOrder po, CreateAmendmentCommand request, List<(short SizeId, short ColourId, int Qty)> requestedLines)

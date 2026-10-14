@@ -1,5 +1,7 @@
 # Code structure & naming conventions
 
+> **Where things live (module/feature hierarchy, specs to code to tests) is defined in [`CONSTITUTION.md`](CONSTITUTION.md).** This file covers how code inside a feature is written.
+
 How the admin app (`src/web/projects/admin`) and the API (`src/api`) are organised. Both are
 **feature-first**: code that changes together lives together, and a new feature is a new folder,
 not an edit to a shared one. Database naming is separate: see [`db/naming.md`](db/naming.md).
@@ -11,7 +13,7 @@ src/app/
   core/                 singletons: HTTP client, API base URL, error mapping (@core/*)
   shared/               reusable dumb UI: components/, pipes/, utils/, models/   (@shared)
   features/
-    <feature>/
+    <module>/<feature>/   (see docs/CONSTITUTION.md)
       containers/       smart components: read the store, dispatch actions, pass data down
         <name>-page/<name>-page.container.{ts,html}
       components/       presentational: input()/output() only, OnPush, no Store, no services
@@ -25,8 +27,8 @@ src/app/
   testing/              test-only helpers
 ```
 
-Path aliases: `@core/*`, `@shared`, `@features/<feature>`, `@app/*`. **A feature is imported through
-its `index.ts` only** (`@features/reference-data`), never by reaching into its folders. Features
+Path aliases: `@core/*`, `@shared`, `@features/<module>/<feature>`, `@app/*`. **A feature is imported through
+its `index.ts` only** (`@features/reference/lookups`), never by reaching into its folders. Features
 may depend on `core`, `shared` and another feature's public barrel; never the reverse direction
 (`core`/`shared` never import a feature).
 
@@ -91,4 +93,26 @@ tests/  mirror the source: Romp.Modules.<M>.Tests/<Feature>/..., Support/ for he
 1. Spec, plan, tasks (see `CLAUDE.md`).
 2. API: Domain → Application (use cases) → Infrastructure (configuration, endpoints) → register in `<M>Module.cs` → tests in `tests/.../<Feature>/`.
 3. Web: `features/<feature>/` with `models`, `services`, `store`, `components`, `containers`, `<feature>.routes.ts`, then one lazy route in `app.routes.ts`.
-4. Unit tests beside the code; an E2E spec in `src/web/e2e` for the user flow.
+4. Unit tests beside the code; an E2E spec in `src/web/e2e/<module>/<feature>.e2e.spec.ts` (cross-module journeys in `e2e/journeys/`) for the user flow.
+
+## 4. Lists, paging and queries (required)
+
+- **Every list endpoint that can grow returns a page**, never the whole table: query params `page` and `pageSize`,
+  response `PagedResult<T>` (`Romp.BuildingBlocks.Application.Paging`: `Items, Page, PageSize, TotalCount, TotalPages`).
+  Page size defaults to 25 and is clamped to 1..100. Use `ToPagedResultAsync` on a query that is already ordered by a
+  unique key (`OrderBy(name).ThenBy(id)`). Small, bounded lookups (`REF` lists) may stay unpaged.
+- **Project list rows in SQL** (`Select(x => new RowDto(...))`); never load entities to map them in memory.
+- **No N+1**: no query inside a loop, no lazy loading. Load related rows with `Include` (use `AsSplitQuery` when
+  including two or more collections where the project allows it) or one bulk query filtered by `Contains`.
+- **Web lists** keep `total`, `page`, `pageSize` in the feature store; changing a filter resets to page 1; the UI uses
+  `<app-pagination>` from `@shared`. A pick-list that needs every row uses `fetchAllPages`.
+- **Tests**: a paged endpoint needs a test for ordering across pages and for clamping; E2E specs must not assume a
+  row is on page 1: find it through the list's search or filter.
+
+## 5. Working rules for every session
+
+- Read this file and `CLAUDE.md` before adding a feature; new code follows the structure above without asking.
+- Verify before saying done: `ng test admin`, `ng build admin`, `dotnet test` (in the Docker SDK container on the
+  dev machine), and the Playwright suite against `docker compose up -d --build api admin` for anything user-visible.
+- Adding a module: add it to `ModuleNames` in `Romp.ArchitectureTests`. Changing entities: confirm
+  `dotnet ef migrations has-pending-model-changes` is clean or add a migration.

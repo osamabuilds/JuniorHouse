@@ -1,9 +1,11 @@
+using Romp.BuildingBlocks.Storage;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Catalog.Contracts;
+using Romp.Modules.Production.Contracts;
 using Romp.Modules.Vendor.Application.Abstractions;
 using Romp.Modules.Vendor.Application.Files;
 using Romp.Modules.Vendor.Application.PurchaseOrders;
@@ -57,7 +59,7 @@ public sealed class RecordVendorAmendmentRequestCommandValidator : AbstractValid
     }
 }
 
-public sealed class RecordVendorAmendmentRequestCommandHandler(IVendorDbContext dbContext, IStyleQueries styleQueries, IFileStorage fileStorage)
+public sealed class RecordVendorAmendmentRequestCommandHandler(IVendorDbContext dbContext, IStyleQueries styleQueries, IFileStorage fileStorage, IProductionQueries productionQueries)
     : IRequestHandler<RecordVendorAmendmentRequestCommand, PoRevisionDto>
 {
     public async Task<PoRevisionDto> Handle(RecordVendorAmendmentRequestCommand request, CancellationToken cancellationToken)
@@ -69,7 +71,7 @@ public sealed class RecordVendorAmendmentRequestCommandHandler(IVendorDbContext 
             ?? throw new KeyNotFoundException($"Purchase order {request.PoId} was not found.");
 
         // AC-30: only an Acknowledged PO can carry a vendor amendment request.
-        if (po.StatusId != 3 /* PoStatus.Acknowledged */)
+        if (po.StatusId is not (3 or 5 or 6) /* Acknowledged, InProduction or PartiallyDelivered */)
         {
             throw new DomainException(
                 $"PO {po.PoNo} must be Acknowledged to record a vendor amendment request (current status does not allow it).");
@@ -101,6 +103,7 @@ public sealed class RecordVendorAmendmentRequestCommandHandler(IVendorDbContext 
         }
 
         var requestedLines = req.Lines.Select(l => (l.SizeId, l.ColourId, l.Qty)).ToList();
+        await Revisions.AmendmentGuards.EnsureNotBelowDeliveredAsync(productionQueries, po, requestedLines, cancellationToken);
 
         // AC-16: a true no-op (identical terms and lines to the PO's current position) is rejected.
         if (IsNoOp(po, req, requestedLines))

@@ -46,7 +46,8 @@ public sealed class PurchaseOrderRevision : Entity<long>, IAuditable
         int? latestAcceptableDateShiftDays,
         int quantityDiff,
         bool isBeyondLatestAcceptableDate,
-        IEnumerable<(short SizeId, short ColourId, int Qty)> lines)
+        IEnumerable<(short SizeId, short ColourId, int Qty)> lines,
+        bool isConstructionChange = false)
     {
         PoId = poId;
         RevisionNumber = revisionNumber;
@@ -72,6 +73,7 @@ public sealed class PurchaseOrderRevision : Entity<long>, IAuditable
         LatestAcceptableDateShiftDays = latestAcceptableDateShiftDays;
         QuantityDiff = quantityDiff;
         IsBeyondLatestAcceptableDate = isBeyondLatestAcceptableDate;
+        IsConstructionChange = isConstructionChange;
 
         _lines.AddRange(lines.Select(line => new PoRevisionLine(Id, line.SizeId, line.ColourId, line.Qty)));
         _statusHistory.Add(new PoRevisionStatusHistoryEntry(Id, fromStatusId: null, statusId, note: null));
@@ -154,6 +156,9 @@ public sealed class PurchaseOrderRevision : Entity<long>, IAuditable
     public int QuantityDiff { get; private set; }
 
     public bool IsBeyondLatestAcceptableDate { get; private set; }
+
+    /// <summary>Sprint 3 (D17): true when this revision adds/retires a file, changes fabric responsibility or introduces a colour - a new PP sample is then strongly suggested. Otherwise commercial-only.</summary>
+    public bool IsConstructionChange { get; private set; }
 
     public IReadOnlyCollection<PoRevisionStatusHistoryEntry> StatusHistory => _statusHistory.AsReadOnly();
 

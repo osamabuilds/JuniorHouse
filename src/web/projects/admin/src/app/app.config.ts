@@ -4,7 +4,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { provideReferenceDataStore } from '@features/reference-data';
+import { provideLookupsStore } from '@features/reference/lookups';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -14,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideStore(),
     provideEffects(),
-    provideReferenceDataStore(),
+    provideLookupsStore(),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],
 };

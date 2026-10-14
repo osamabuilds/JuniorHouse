@@ -34,6 +34,57 @@ public sealed class PurchaseOrderQueries(VendorDbContext dbContext) : IPurchaseO
             po.Lines.Select(l => new PoTermsLineContract(l.SizeId, l.ColourId, l.Qty)).ToList());
     }
 
+    /// <summary>Pakistan has no daylight saving; a fixed offset avoids depending on tzdata in a slim container.</summary>
+    private static readonly TimeSpan PakistanOffset = TimeSpan.FromHours(5);
+
+    private const short SentToVendorStatusId = 2;
+
+    private static DateOnly PakistanDate(DateTimeOffset instant) => DateOnly.FromDateTime(instant.ToOffset(PakistanOffset).DateTime);
+
+    public async Task<PoProductionContext?> GetProductionContextAsync(long poId, CancellationToken cancellationToken)
+    {
+        var po = await dbContext.PurchaseOrders.AsNoTracking()
+            .Include(p => p.StatusHistory)
+            .FirstOrDefaultAsync(p => p.Id == poId, cancellationToken);
+
+        var sent = po?.StatusHistory.Where(h => h.PoStatusId == SentToVendorStatusId).OrderBy(h => h.InsrDte).FirstOrDefault();
+        return po is null || sent is null
+            ? null
+            : new PoProductionContext(po.Id, po.PoNo, po.StatusId, PakistanDate(sent.InsrDte), po.FabricResponsibilityId);
+    }
+
+    public async Task<PoInForceTerms?> GetTermsAtAsync(long poId, DateOnly asOfDate, CancellationToken cancellationToken)
+    {
+        var po = await dbContext.PurchaseOrders.AsNoTracking().AsSplitQuery()
+            .Include(p => p.Revisions).ThenInclude(r => r.Lines)
+            .Include(p => p.Revisions).ThenInclude(r => r.StatusHistory)
+            .FirstOrDefaultAsync(p => p.Id == poId, cancellationToken);
+
+        if (po is null || po.StatusId == DraftStatusId || po.Revisions.Count == 0)
+        {
+            return null;
+        }
+
+        // In force on a day means in force at the end of that Pakistan-time day.
+        var cutoff = new DateTimeOffset(asOfDate.AddDays(1).ToDateTime(TimeOnly.MinValue), PakistanOffset);
+
+        var candidates = po.Revisions
+            .Select(r => (Revision: r, InForceAt: r.StatusHistory.Where(h => h.ToStatusId == InForceRevisionStatusId).Select(h => (DateTimeOffset?)h.InsrDte).Min()))
+            .Where(x => x.InForceAt is not null)
+            .ToList();
+
+        // A date before the PO was sent, or backfilled data with no put-in-force time, falls back to the earliest revision (Rev 0 counts from Send).
+        var chosen = candidates.Where(x => x.InForceAt < cutoff).OrderByDescending(x => x.InForceAt).ThenByDescending(x => x.Revision.RevisionNumber)
+            .Select(x => x.Revision).FirstOrDefault()
+            ?? po.Revisions.OrderBy(r => r.RevisionNumber).First();
+
+        return new PoInForceTerms(
+            po.Id, po.PoNo, po.VendorId, po.StyleId, po.StatusId, chosen.RevisionNumber,
+            chosen.UnitCost, chosen.ExpectedDeliveryDate, chosen.LatestAcceptableDate, chosen.OverTolerancePercent, chosen.UnderTolerancePercent,
+            chosen.PaymentTermId, chosen.AdvancePercent, chosen.FabricResponsibilityId,
+            chosen.Lines.Select(l => new PoTermsLineContract(l.SizeId, l.ColourId, l.Qty)).ToList());
+    }
+
     public async Task<IReadOnlyList<PoRevisionSummary>> ListRevisionsAsync(long poId, CancellationToken cancellationToken) =>
         await dbContext.Set<PurchaseOrderRevision>().AsNoTracking()
             .Where(r => r.PoId == poId)

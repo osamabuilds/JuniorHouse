@@ -39,7 +39,7 @@ public sealed class UpdateStyleCommandValidator : AbstractValidator<UpdateStyleC
     }
 }
 
-public sealed class UpdateStyleCommandHandler(ICatalogDbContext dbContext, IPurchaseOrderUsageQueries poUsageQueries)
+public sealed class UpdateStyleCommandHandler(ICatalogDbContext dbContext, IPurchaseOrderUsageQueries poUsageQueries, TimeProvider timeProvider)
     : IRequestHandler<UpdateStyleCommand, StyleDto>
 {
     public async Task<StyleDto> Handle(UpdateStyleCommand request, CancellationToken cancellationToken)
@@ -84,7 +84,8 @@ public sealed class UpdateStyleCommandHandler(ICatalogDbContext dbContext, IPurc
             request.AgeBracketId,
             request.FabricId,
             request.TargetUnitCost,
-            request.TargetRetailPrice);
+            request.TargetRetailPrice,
+            timeProvider.GetUtcNow());
 
         style.SetColourSizeAndTargets(
             request.ColourIds,

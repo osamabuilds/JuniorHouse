@@ -174,3 +174,83 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | | | | visible (e.g. vendor-visible) | VSBL |
 | latest | LATE | | warehouse | WHSE |
 | lead time | LEAD | | year | YR |
+
+### Added in Sprint 3 (SCRUM-183, Production Tracking)
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| acting (the person acting) | ACTR | | new | NEW |
+| change | CHNG | | old | OLD |
+| completion | CMPL | | pre-production | PP |
+| construction | CNST | | recommended | RECM |
+| cutting | CUT | | recorded | RCRD |
+| decision | DCSN | | reporter | RPTR |
+| delay | DLAY | | resample | RSMP |
+| delivery note | DN | | Romp (the company) | ROMP |
+| dispatch | DSPT | | round | RND |
+| final | FNL | | shipment | SHIP |
+| finished | FNSH | | short (short of the ordered quantity) | SHRT |
+| flag | FLAG | | start / started | STRT |
+| | | | submitted | SUBM |
+| | | | superseded | SUPR |
+| | | | timing | TMNG |
+| | | | without | WOUT |
+
+### Added in Sprint 4 (SCRUM-197, Receiving and Quality Control)
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| acceptable quality level | AQL | | quality control | QC |
+| check | CHK | | reconciliation (claimed vs counted) | RCNL |
+| counted | CNTD | | reject | RJCT |
+| excess | EXCS | | result | RSLT |
+| inbound | INBD | | returned | RTRN |
+| inspection | INSP | | rework | RWRK |
+| letter | LTR | | safety | SAFE |
+| limit | LIMT | | severity | SVRT |
+| lot | LOT | | split (sub-batch) | SPLT |
+| maximum | MAX | | | |
+| minimum | MIN | | | |
+| mode | MODE | | | |
+| outcome | OTCM | | | |
+| scorecard (vendor scorecard facts) | SCRD | | | |
+
+### Added in Sprint 5 (SCRUM-198, Labelling)
+
+`PRNT` is already "parent", so "print" is `PRT`. `ACT` is already "active", so "manual action by" is written `MNL_BY`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| error (error text) | ERR | | printer | PRTR |
+| format | FMT | | reprint | RPRT |
+| GS1 trade item number | GTIN | | request / requested | REQ |
+| job | JOB | | snapshot | SNAP |
+| kind | KIND | | stock keeping unit | SKU |
+| manual | MNL | | sub (as in sub-batch) | SUB |
+| output | OUTP | | void | VOID |
+| parked | PARK | | work (work item) | WORK |
+| prefix | PFX | | | |
+| print | PRT | | | |
+
+### Added in Sprint 6 (SCRUM-200, Warehouse)
+
+`STCK` is already "stock" and `CNT` is "count", so a cycle count's tables are `CNT_*`. `ACPT` is "acceptable", so the accepted grade is a lookup row, never a column name.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| adjustment | ADJ | | pending | PEND |
+| aisle | AISL | | putaway | PUT |
+| alert | ALRT | | reconfirmed | RCNF |
+| awaiting | AWTG | | scanned | SCAN |
+| balance | BAL | | shelf | SHLF |
+| closed | CLSD | | system (as in system quantity) | SYS |
+| confirmed | CNFM | | threshold | THRS |
+| cycle | CYC | | variance | VARN |
+| grade | GRD | | zone | ZONE |
+| idempotency | IDEM | | | |
+| large | LRG | | | |
+| last | LAST | | | |
+| mark (as in movement mark) | MARK | | | |
+| movement | MVMT | | | |
+| open | OPEN | | | |
+| created | CRTD | | | |

@@ -40,6 +40,7 @@ public sealed class ReferenceModule : IModule
 
         services.AddScoped<IReferenceDbContext>(sp => sp.GetRequiredService<ReferenceDbContext>());
         services.AddScoped<IPaymentTermQueries, PaymentTermQueries>();
+        services.AddScoped<IApparelCodeQueries, ApparelCodeQueries>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ReferenceTransactionBehavior<,>));

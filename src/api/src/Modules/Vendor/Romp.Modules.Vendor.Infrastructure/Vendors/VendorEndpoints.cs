@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Romp.BuildingBlocks.Application.Paging;
 using Microsoft.AspNetCore.Builder;
@@ -11,7 +12,7 @@ internal static class VendorEndpoints
 {
     public static void MapVendorEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/vendors").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/vendors").WithTags("Vendor");
 
         group.MapPost("/", async (CreateVendorCommand command, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(command, cancellationToken)));

@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,7 @@ internal static class VendorResponseEndpoints
 {
     public static void MapVendorResponseEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/purchase-orders").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/purchase-orders").WithTags("Vendor");
 
         // SCRUM-93 task 33. The route's id always wins over any PoId in the body.
         group.MapPost("/{id:long}/vendor-response", async (
