@@ -99,12 +99,20 @@ public sealed class ProductionApiFixture : IAsyncLifetime
     /// <summary>Runs the dispatcher until nothing more is delivered (an event handled here can enqueue the next hop).</summary>
     public async Task DispatchAsync()
     {
+        // The background dispatcher polls too (every second), so a pass here can find nothing to claim while the
+        // background one holds the messages and is about to enqueue the next hop. Keep going until the outbox is idle.
         var dispatcher = Services.GetRequiredService<IOutboxDispatcher>();
-        for (var pass = 0; pass < 10; pass++)
+        var health = Services.GetRequiredService<OutboxHealthReader>();
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+        var quietPasses = 0;
+        while (DateTime.UtcNow < deadline && quietPasses < 3)
         {
-            if (await dispatcher.DispatchOnceAsync(CancellationToken.None) == 0)
+            var delivered = await dispatcher.DispatchOnceAsync(CancellationToken.None);
+            var idle = (await health.ReadAsync(CancellationToken.None)).All(h => h.Pending == 0 && h.InFlight == 0);
+            quietPasses = delivered == 0 && idle ? quietPasses + 1 : 0;
+            if (quietPasses < 3)
             {
-                return;
+                await Task.Delay(50);
             }
         }
     }
