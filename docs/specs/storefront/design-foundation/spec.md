@@ -1,6 +1,6 @@
 # SCRUM-203: Storefront design foundation (Story 1 of 5)
 
-- **Status:** Approved (owner, 2026-10-17; all Q-DF-1..10 proposed defaults accepted)
+- **Status:** Implemented (approved by owner 2026-10-17; Q-DF-1..10 proposed defaults accepted)
 - **Jira:** SCRUM-203 (umbrella); SCRUM-204 (task under umbrella SCRUM-203)
 - **BRD sections:** §14 (SEO and performance), NFR-01, NFR-17, NFR-19; design source `docs/design-system/` (Romp design system, "Gallery")
 - **Requirement IDs:** NFR-01, NFR-17, NFR-19, SEO-07, SEO-10 (image and performance parts only)
@@ -105,3 +105,5 @@ These are differences between the design system and existing approved text. Noth
 - **Placeholder art (DSF-1, Q-DF-8).** The tonal placeholder and macro-texture rules are isolated in `styles/_placeholders.scss` with raw colours allowed on purpose (deleted when photography exists). Every other raw value was lifted into tokens: `--line-strong-dark`, `--surface-dark-raised`, `--surface-dark-sunken`, `--ink-on-light` (added to `_tokens.scss` by hand; `tokens.json` should get the same four entries).
 - **`rp-image` blur-up.** Uses `NgOptimizedImage`'s own `placeholder` (blur removed on load) instead of the `rp-blur` class. `priority` is static per image (Angular forbids changing it after init).
 - **Foundations route** is registered only when `isDevMode()`, so production builds have no public page yet.
+- **Verification results (2026-10-17).** 25 unit tests; 10 Playwright tests against the storefront container (axe wcag2a/2aa/21aa/22aa clean at 390, 768 and 1280 px, no horizontal scroll, 16/32/56 px margins, all `rp-media` boxes 4:5, no control under 44px, fonts from own origin, priority preload and `noindex` in the server HTML, second view requested only on mouse hover, reduced motion). Lighthouse mobile on the development-configuration container: Accessibility 100, Best practices 100, CLS 0.011 (within the 0.1 budget; the spec's "CLS 0" aspiration is not reached, most likely font swap, to re-measure on a real page). **Performance and LCP are not representative** (development bundle, 9.6 s LCP) and the foundations page is absent from the production build, so the Performance ≥ 90 and LCP ≤ 2.5 s budgets are first measurable on the home page in Story 3. `/` currently returns 200 with an empty page because no public route exists yet (Story 3 adds the home page; the soft-404 rule applies from then).
+- **Docker.** `docker-compose.yml` builds the storefront with `NG_CONFIGURATION=development` (build arg on `Dockerfile.storefront`, default `production`) so the dev-only `/_foundations` page is visible locally at http://localhost:4000/_foundations.

@@ -68,7 +68,7 @@ const photo = (name: string, alt: string): ImageAsset => ({
         <h2 id="img-h" class="rp-display-md">Images</h2>
         <ul class="grid">
           <li>
-            <rp-image [image]="front" [second]="back" [priority]="true" [sizes]="sizes" />
+            <rp-image [image]="front" [second]="fabric" [priority]="true" [sizes]="sizes" />
           </li>
           <li><rp-image [image]="back" [sizes]="sizes" /></li>
           <li><rp-image [image]="null" tone="clay" [sizes]="sizes" /></li>
@@ -93,6 +93,7 @@ const photo = (name: string, alt: string): ImageAsset => ({
 export class FoundationsPage {
   protected readonly front = photo('front', 'Placeholder garment, front view');
   protected readonly back = photo('back', 'Placeholder garment, back view');
+  protected readonly fabric = photo('fabric', 'Placeholder fabric close-up');
   protected readonly sizes = RP_IMAGE_SIZES.card;
   protected readonly icons: RpIconName[] = [
     'search', 'heart', 'bag', 'menu', 'close', 'arrow', 'arrow-left',

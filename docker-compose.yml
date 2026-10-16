@@ -87,6 +87,9 @@ services:
     build:
       context: src/web
       dockerfile: Dockerfile.storefront
+      args:
+        # development keeps the dev-only /_foundations design page; the CD pipeline builds production
+        NG_CONFIGURATION: development
     ports:
       - "4000:4000"
     depends_on:
