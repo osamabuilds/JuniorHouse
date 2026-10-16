@@ -1,0 +1,1 @@
+A single quiet line of reassurance: Made in Pakistan, Easy exchange within 7 days, Cash on delivery or card. Three hairline-divided items with a 20px outline icon; stacked on phones, three across from 64rem. Nothing else in the design makes claims; keep it to three.
