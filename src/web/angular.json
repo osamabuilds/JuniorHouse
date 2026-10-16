@@ -29,7 +29,12 @@
                 "input": "projects/storefront/public"
               }
             ],
-            "styles": ["projects/storefront/src/styles.scss"],
+            "styles": [
+              "@fontsource/instrument-serif/400.css",
+              "@fontsource/instrument-serif/400-italic.css",
+              "@fontsource-variable/dm-sans/index.css",
+              "projects/storefront/src/styles.scss"
+            ],
             "server": "projects/storefront/src/main.server.ts",
             "outputMode": "server",
             "security": {
