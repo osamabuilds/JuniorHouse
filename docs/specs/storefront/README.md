@@ -8,6 +8,7 @@ The public, server-rendered shop window (Sprint 9, "Sell: browse"): navigation, 
 
 | Feature | What it does | Requirements | Status |
 |---|---|---|---|
+| [design-foundation](design-foundation/spec.md) | Story 1 of the storefront design: tokens, self-hosted fonts, global styles, `rp-image` (4:5, blur-up, priority hero), icons, buttons and fields | NFR-01, NFR-17, NFR-19, SEO-07, SEO-10 | Approved |
 | [published-catalog](published-catalog/spec.md) | The storefront's own rebuildable read model of published products, prices, stock availability and images, kept current from Catalog and Warehouse; image derivatives by background job | NFR-01, NFR-02, FR-10 (display), SEO-07 | Approved |
 | [navigation](navigation/spec.md) | Audience and age-bracket mega-menu, breadcrumbs, minimal home page, brand configuration | FR-01, FEAT-CAT-01 | Approved |
 | [listings](listings/spec.md) | New Arrivals, Sale, Category and Collection views; size, colour, price (and age) filters; sorting; pagination; empty states | FR-02, FR-03, FR-05, FEAT-CAT-02..04, 07 | Approved |
