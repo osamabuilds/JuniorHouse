@@ -1,0 +1,3 @@
+The shared parts. **Button**: hairline `ink` outline, uppercase `button` text, 44px (36px small); primary is clay-deep with white text; hover fills ink. **Badge**: pill with a dot and a word, five tones (success, muted, clay-deep, danger; flags are square). **Banner**: tinted ground (`success-tint`, `danger-tint`, sand for info), 1px tone border, text 4.5:1. **Fields**: 44px, `line-strong` border, 16px text (no phone zoom), labels above, hints and errors below. Focus ring: 2px `focus`, 3px offset.
+
+Light theme only. No shadows (cards are 1px hairlines). Instrument Serif is used for `<h1>`, `<h2>` and KPI numbers; everything else DM Sans.
