@@ -90,5 +90,33 @@ public sealed class Page : AggregateRoot<long>, IAuditable
     {
         _blocks.Clear();
         _blocks.AddRange(blocks);
+        for (var i = 0; i < _blocks.Count; i++)
+        {
+            _blocks[i].Place(i + 1);
+        }
     }
+}
+
+/// <summary>An old slug that now answers with a 301 to the page (ST-9). Maps to STFR.PAGE_RDIR.</summary>
+public sealed class PageRedirect : Entity<long>, IAuditable
+{
+    private PageRedirect() => OldSlug = string.Empty;
+
+    public PageRedirect(string oldSlug, long pageId)
+    {
+        OldSlug = oldSlug;
+        PageId = pageId;
+    }
+
+    public string OldSlug { get; private set; }
+
+    public long PageId { get; private set; }
+
+    public DateTimeOffset InsrDte { get; set; }
+
+    public string InsrBy { get; set; } = string.Empty;
+
+    public DateTimeOffset? UpdtDte { get; set; }
+
+    public string? UpdtBy { get; set; }
 }

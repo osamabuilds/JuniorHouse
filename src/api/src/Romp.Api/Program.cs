@@ -16,6 +16,7 @@ using Romp.Modules.Production.Infrastructure;
 using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure;
 using Romp.Modules.Storefront.Infrastructure;
+using Romp.Modules.Storefront.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure.Persistence;
 using Romp.Modules.Quality.Infrastructure;
 using Romp.Modules.Quality.Infrastructure.Persistence;
@@ -140,7 +141,8 @@ if (app.Environment.IsDevelopment())
         productionContext.Database.MigrateAsync(),
         qualityContext.Database.MigrateAsync(),
         labellingContext.Database.MigrateAsync(),
-        warehouseContext.Database.MigrateAsync());
+        warehouseContext.Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<StfrDbContext>().Database.MigrateAsync());
 
     // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
     // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough

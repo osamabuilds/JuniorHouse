@@ -14,53 +14,55 @@ public static class SettingsLimits
     public const int MaxSnapshotBytes = 512 * 1024;
 }
 
-/// <summary>What a navigation entry is. Maps to the <c>NAV_KIND_LKP</c> codes.</summary>
-public enum NavKind
+// The numeric values below are the lookup-row IDs (smallint) seeded by the migration, so they never change or get reused.
+
+/// <summary>What a navigation entry is. Maps to the <c>NAV_KIND_LKP</c> rows.</summary>
+public enum NavKind : short
 {
-    Link,
-    Group,
-    CollectionList,
+    Link = 1,
+    Group = 2,
+    CollectionList = 3,
 }
 
 /// <summary>What a link points at: a typed reference, never a free URL. Maps to <c>LINK_TGT_LKP</c>.</summary>
-public enum LinkTargetKind
+public enum LinkTargetKind : short
 {
-    Path,
-    Page,
-    Collection,
-    Category,
-    External,
+    Path = 1,
+    Page = 2,
+    Collection = 3,
+    Category = 4,
+    External = 5,
 }
 
 /// <summary>Maps to <c>PAGE_STS_LKP</c>.</summary>
-public enum PageStatus
+public enum PageStatus : short
 {
-    Draft,
-    Published,
-    Archived,
+    Draft = 1,
+    Published = 2,
+    Archived = 3,
 }
 
 /// <summary>Maps to <c>BLCK_TYP_LKP</c>.</summary>
-public enum BlockType
+public enum BlockType : short
 {
-    Heading,
-    Paragraph,
-    List,
-    Table,
-    Callout,
-    Fact,
+    Heading = 1,
+    Paragraph = 2,
+    List = 3,
+    Table = 4,
+    Callout = 5,
+    Fact = 6,
 }
 
 /// <summary>Maps to <c>STNG_KEY_LKP</c>.</summary>
-public enum SettingKey
+public enum SettingKey : short
 {
-    BrandName,
-    Tagline,
-    Whatsapp,
-    Email,
-    Hours,
-    Announcement,
-    AnnouncementOn,
+    BrandName = 1,
+    Tagline = 2,
+    Whatsapp = 3,
+    Email = 4,
+    Hours = 5,
+    Announcement = 6,
+    AnnouncementOn = 7,
 }
 
 /// <summary>One problem found while validating the draft: the field it belongs to and what to do about it (ST-4).</summary>

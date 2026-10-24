@@ -44,7 +44,7 @@ public sealed class PageBlock : Entity<long>, IAuditable
         Type = type;
         Text = text ?? string.Empty;
         Level = level;
-        FactKey = factKey;
+        FactId = factKey is null ? null : SettingsFacts.IdOf(factKey);
         Label = label;
         if (items is not null)
         {
@@ -54,11 +54,19 @@ public sealed class PageBlock : Entity<long>, IAuditable
 
     public BlockType Type { get; private set; }
 
+    /// <summary>Position within the page; set by <see cref="Page.ReplaceBlocks"/> so the order survives a save.</summary>
+    public int SortSeq { get; private set; }
+
+    internal void Place(int sortSeq) => SortSeq = sortSeq;
+
     public string Text { get; private set; }
 
     public int Level { get; private set; }
 
-    public string? FactKey { get; private set; }
+    /// <summary>The <c>FACT_LKP</c> row; 0 holds a key that is not a known fact so the validator can reject it.</summary>
+    public short? FactId { get; private set; }
+
+    public string? FactKey => FactId is { } id ? SettingsFacts.KeyOf(id) : null;
 
     public string? Label { get; private set; }
 

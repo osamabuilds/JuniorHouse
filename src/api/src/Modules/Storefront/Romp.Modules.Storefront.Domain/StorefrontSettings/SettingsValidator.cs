@@ -27,6 +27,11 @@ public static class SettingsFacts
     public static readonly IReadOnlyList<string> Keys =
         [ContactWhatsapp, ContactEmail, ContactHours, ExchangeWindow, ExchangeConditions, DeliveryRules];
 
+    /// <summary>The <c>FACT_LKP</c> row id of a fact key (its position in <see cref="Keys"/>, from 1); 0 for an unknown key.</summary>
+    public static short IdOf(string key) => (short)(Keys.ToList().IndexOf(key) + 1);
+
+    public static string? KeyOf(short id) => id >= 1 && id <= Keys.Count ? Keys[id - 1] : null;
+
     public static bool IsFilled(SettingsContent content, string key) => key switch
     {
         ContactWhatsapp => HasItem(content, SettingKey.Whatsapp),

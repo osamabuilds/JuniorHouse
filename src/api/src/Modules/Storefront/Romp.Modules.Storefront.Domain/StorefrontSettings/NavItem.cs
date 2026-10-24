@@ -21,7 +21,8 @@ public sealed class NavItem : Entity<long>, IAuditable
         Key = (key ?? string.Empty).Trim();
         Label = (label ?? string.Empty).Trim();
         Kind = kind;
-        Target = target;
+        TargetKind = target?.Kind;
+        TargetRef = target?.Reference;
         SortSeq = sortSeq;
         IsEnabled = isEnabled;
         ShowAges = showAges;
@@ -33,7 +34,12 @@ public sealed class NavItem : Entity<long>, IAuditable
 
     public NavKind Kind { get; private set; }
 
-    public LinkTarget? Target { get; private set; }
+    /// <summary>Stored as two columns (the lookup id and the reference); see <see cref="Target"/>.</summary>
+    public LinkTargetKind? TargetKind { get; private set; }
+
+    public string? TargetRef { get; private set; }
+
+    public LinkTarget? Target => TargetKind is { } kind ? new LinkTarget(kind, TargetRef ?? string.Empty) : null;
 
     public int SortSeq { get; private set; }
 

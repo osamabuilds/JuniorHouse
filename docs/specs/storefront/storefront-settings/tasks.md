@@ -7,7 +7,7 @@
 - [x] 1. Create the `Storefront` module projects (`Domain`, `Application`, `Infrastructure`, `IModule`), register it in the host, add `Storefront` to `ModuleNames`. Test: `Romp.ArchitectureTests` pass with the module present.
 - [x] 2. Glossary check for every new table and column word (add new abbreviations to `docs/db/naming.md`). Test: the naming architecture test.
 - [x] 3. Domain: `NavItem` tree, `AgeStep`, footer, `SettingItem`, `DeliveryRule`, `ExchangePolicy`, `Page`/`PageBlock`, `SettingsDraft`, `PublishedSnapshot`, `SettingsValidator`. Test: unit specs per invariant (depth 3, unique sibling sort, group needs a member, slug pattern and reserved list, fact must exist, size caps) (ST-4, ST-16, ST-17).
-- [ ] 4. EF configuration for every entity (explicit `ToTable`/`HasColumnName`), lookups seeded, concurrency tokens, indexes on every FK, partial unique index for the current snapshot. Test: naming test and a Testcontainers migration test (ST-16).
+- [x] 4. EF configuration for every entity (explicit `ToTable`/`HasColumnName`), lookups seeded, concurrency tokens, indexes on every FK, partial unique index for the current snapshot. Test: naming test and a Testcontainers migration test (ST-16).
 - [ ] 5. Migration with the launch-set seed (S-1, S-2, WhatsApp, eight page drafts with wording only). Test: migration test reads the seed back; the seed equals the web launch set (contract fixture).
 
 ## B. Commands and queries
@@ -36,3 +36,11 @@
 - [ ] 22. E2E `src/web/e2e/storefront/settings.e2e.spec.ts`: rename an entry, add a member, publish, see it on the storefront within 60 s; edit a page; archive it and see 410. Test: the spec (ST-1, ST-8).
 - [ ] 23. Accessibility pass on the admin screens at 390 px (labels, 44 px targets, button alternatives to drag) with axe. Test: axe spec (ST-15).
 - [ ] 24. Close the loop: spec deviations, mark Implemented, ADR 0020 Accepted, READMEs, memory note.
+
+## Implementation notes (deviations from the plan, to fold into the spec in task 24)
+- **Concurrency token:** rows use PostgreSQL `xmin` (as every other module does, `docs/db/naming.md` section 2), not a `ROW_VER` column. The draft aggregate also keeps `VER_NO` (ST-14).
+- **Sibling positions:** `(PRNT_ID, SORT_SEQ)` is a plain index, not unique: a reorder is saved row by row and a unique check would fail on the intermediate state of a swap. The validator rejects duplicate positions instead.
+- **Tables added to the plan's list:** `POPL_SRCH` (popular searches, a SCRUM-205 contract addition), `FACT_LKP` (the six fact keys as a lookup, referenced by `PAGE_BLCK.FACT_ID`), `DRFT_MAIN` (the draft version counter). The redirect table is `PAGE_RDIR`, the link-target lookup `LINK_TGT_LKP`, the current-snapshot column `CRNT_IND` (glossary clashes: `RDIR`, `TGT`, `CURR` = currency).
+- **Delivery city:** one `DLVR_RULE` row per city (unique `CITY`); there is no separate city lookup, so a new city is a new row, not a schema change.
+- **Code folders:** the API feature folder carries the spec name, `StorefrontSettings`, so `StructureSyncTests` can match it to the spec.
+- **Test tooling:** `dotnet ef` runs in the SDK container from the user's global tool store (net8 tool, `DOTNET_ROLL_FORWARD=Major`); the container has no network, so restore uses `-p:NuGetAudit=false -p:RestoreSources=/root/.nuget/packages`.

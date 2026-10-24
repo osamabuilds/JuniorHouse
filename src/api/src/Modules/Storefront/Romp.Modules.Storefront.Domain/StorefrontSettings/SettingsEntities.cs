@@ -42,14 +42,19 @@ public sealed class FooterLink : Entity<long>, IAuditable
     public FooterLink(string label, LinkTarget target, int sortSeq, bool isEnabled = true)
     {
         Label = (label ?? string.Empty).Trim();
-        Target = target;
+        TargetKind = target.Kind;
+        TargetRef = target.Reference;
         SortSeq = sortSeq;
         IsEnabled = isEnabled;
     }
 
     public string Label { get; private set; }
 
-    public LinkTarget Target { get; private set; } = new(LinkTargetKind.Path, "/");
+    public LinkTargetKind TargetKind { get; private set; }
+
+    public string TargetRef { get; private set; } = string.Empty;
+
+    public LinkTarget Target => new(TargetKind, TargetRef);
 
     public int SortSeq { get; private set; }
 
@@ -162,7 +167,7 @@ public sealed class DeliveryRule : Entity<long>, IAuditable
 /// <summary>The single exchange policy: window in days and ordered plain-text conditions. Maps to STFR.XCHG_POLY and XCHG_COND.</summary>
 public sealed class ExchangePolicy : Entity<long>, IAuditable
 {
-    private readonly List<string> _conditions = [];
+    private readonly List<ExchangeCondition> _conditions = [];
 
     private ExchangePolicy()
     {
@@ -171,12 +176,60 @@ public sealed class ExchangePolicy : Entity<long>, IAuditable
     public ExchangePolicy(int windowDays, IEnumerable<string> conditions)
     {
         WindowDays = windowDays;
-        _conditions.AddRange(conditions.Select(c => (c ?? string.Empty).Trim()));
+        _conditions.AddRange(conditions.Select((c, i) => new ExchangeCondition(c, i + 1)));
     }
 
     public int WindowDays { get; private set; }
 
-    public IReadOnlyList<string> Conditions => _conditions;
+    public IReadOnlyList<ExchangeCondition> Conditions => _conditions;
+
+    public DateTimeOffset InsrDte { get; set; }
+
+    public string InsrBy { get; set; } = string.Empty;
+
+    public DateTimeOffset? UpdtDte { get; set; }
+
+    public string? UpdtBy { get; set; }
+}
+
+/// <summary>One plain-text exchange condition, in reading order. Maps to STFR.XCHG_COND.</summary>
+public sealed class ExchangeCondition : Entity<long>, IAuditable
+{
+    private ExchangeCondition() => Text = string.Empty;
+
+    public ExchangeCondition(string text, int sortSeq)
+    {
+        Text = (text ?? string.Empty).Trim();
+        SortSeq = sortSeq;
+    }
+
+    public string Text { get; private set; }
+
+    public int SortSeq { get; private set; }
+
+    public DateTimeOffset InsrDte { get; set; }
+
+    public string InsrBy { get; set; } = string.Empty;
+
+    public DateTimeOffset? UpdtDte { get; set; }
+
+    public string? UpdtBy { get; set; }
+}
+
+/// <summary>A popular search chip shown in the search overlay, in order. Maps to STFR.POPL_SRCH.</summary>
+public sealed class PopularSearch : Entity<long>, IAuditable
+{
+    private PopularSearch() => Text = string.Empty;
+
+    public PopularSearch(string text, int sortSeq)
+    {
+        Text = (text ?? string.Empty).Trim();
+        SortSeq = sortSeq;
+    }
+
+    public string Text { get; private set; }
+
+    public int SortSeq { get; private set; }
 
     public DateTimeOffset InsrDte { get; set; }
 
