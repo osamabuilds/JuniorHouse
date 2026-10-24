@@ -90,7 +90,7 @@ public sealed partial class LaunchSeedTests : IAsyncLifetime
 
     [Fact]
     [Trait("Spec", "ST-17")]
-    public async Task Seed_Pages_AreEightDraftsAndNoBusinessFactIsSeeded()
+    public async Task Seed_Pages_AreEightDraftsAndEveryQuotedFactIsFilled()
     {
         await using var context = await MigratedAsync();
 
@@ -100,11 +100,15 @@ public sealed partial class LaunchSeedTests : IAsyncLifetime
             pages.Select(p => p.Slug).ToArray());
         Assert.All(pages, p => Assert.Equal(PageStatus.Draft, p.Status));
 
-        Assert.Empty(await context.DeliveryRules.ToListAsync());
-        Assert.Empty(await context.ExchangePolicies.ToListAsync());
+        // The email is real; hours, delivery and exchange are placeholders (migration SeedPlaceholderFacts) so every fact a page quotes is filled.
         var settings = await context.SettingItems.ToListAsync();
         Assert.Equal("+923315613217", settings.Single(s => s.Key == SettingKey.Whatsapp).Value);
-        Assert.DoesNotContain(settings, s => s.Key is SettingKey.Email or SettingKey.Hours);
+        Assert.Equal("osamabuss048@gmail.com", settings.Single(s => s.Key == SettingKey.Email).Value);
+        Assert.NotEmpty(settings.Single(s => s.Key == SettingKey.Hours).Value);
+        Assert.Equal(["Lahore", "Karachi", "Islamabad", "Rest of Pakistan"], (await context.DeliveryRules.OrderBy(r => r.Id).ToListAsync()).Select(r => r.City).ToArray());
+        var exchange = await context.ExchangePolicies.Include(p => p.Conditions).SingleAsync();
+        Assert.Equal(7, exchange.WindowDays);
+        Assert.Equal(3, exchange.Conditions.Count);
     }
 
     [Fact]
