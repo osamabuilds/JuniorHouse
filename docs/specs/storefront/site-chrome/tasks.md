@@ -4,7 +4,7 @@
 - Order matters. Each step is test-first: write the named failing test, then make it pass. Tag tests with the IDs they cover. All work is in `src/web/projects/storefront`, its e2e spec and docs.
 
 ## A. Palette
-- [ ] 1. Change the token values to black and white in `src/styles/_tokens.scss` (plan mapping) and mirror them in `docs/design-system/tokens.json`. Test: extend the contrast spec to assert 4.5:1 text and 3:1 control borders on all four surfaces, and that no clay hex remains (SC-17).
+- [x] 1. Change the token values to black and white in `src/styles/_tokens.scss` (plan mapping) and mirror them in `docs/design-system/tokens.json`. Test: extend the contrast spec to assert 4.5:1 text and 3:1 control borders on all four surfaces, and that no clay hex remains (SC-17).
 - [ ] 2. Re-run Story 1 unit tests, `style-rules.spec.ts` and the Playwright/axe checks; fix only token-driven failures. Test: the existing suites pass (SC-19).
 - [ ] 3. Update Story 1's `design-foundation` spec notes (palette is now black and white). Test: n/a (docs).
 
