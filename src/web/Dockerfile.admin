@@ -1,6 +1,6 @@
 # Build context: src/web. Admin is a client-only SPA (plan.md: no SSR/SEO requirements for the
 # back office), so unlike the storefront it's just static files behind nginx.
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
