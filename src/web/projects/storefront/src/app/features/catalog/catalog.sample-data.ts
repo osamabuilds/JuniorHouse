@@ -75,7 +75,6 @@ export const CATEGORY_NAMES: Readonly<Record<string, string>> = {
   'new-in': 'New in',
   girls: 'Girls',
   boys: 'Boys',
-  baby: 'Baby',
   sale: 'Sale',
 };
 
