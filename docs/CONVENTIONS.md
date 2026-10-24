@@ -70,7 +70,7 @@ The storefront follows the design handoff in `docs/design-system/`, not section 
 - All colours, radii, shadows, spacing and durations come from `src/styles/_tokens.scss`; component SCSS holds layout only. `style-rules.spec.ts` fails on raw colours (allow-list: `_tokens.scss`, `_placeholders.scss`), stray `box-shadow` and any dark-mode rule.
 - Every photograph goes through `rp-image` (4:5 box, one image loader). Exactly one `priority` image per page, the LCP image. Alt text is required unless `decorative` is set.
 - One light theme. WCAG 2.2 AA, targets at least 44px, `prefers-reduced-motion` respected.
-- E2E: `src/web/e2e/storefront/` runs against the storefront container (`docker compose up -d --no-deps storefront`, port 4000, `STOREFRONT_BASE_URL` to override).
+- E2E: `src/web/e2e/storefront/` and the storefront files in `src/web/e2e/journeys/` (frontend-only features: design foundation, site chrome, content pages) run against the storefront container (`docker compose up -d --no-deps storefront`, port 4000, `STOREFRONT_BASE_URL` to override).
 
 ## 2. API (.NET 10 modular monolith)
 

@@ -106,4 +106,4 @@ The full decision log is in [tasks.md](tasks.md); the behaviour is described in 
 - **Saves** replace a whole part inside one transaction; pages have their own row version.
 - **Endpoints:** public `GET /api/storefront/settings` and `/api/storefront/pages/{slug}`, admin routes under `/api/admin/storefront-settings` with the `StorefrontSettings` policy; `Storefront:EnableAdminRoutes` and `Storefront:AllowedExternalHosts` (default `wa.me`) are the configuration.
 - **Storefront wiring (new):** the storefront's SSR server forwards `GET /api/storefront/*` to `API_BASE_URL`; before the first publish the API answers 404 and the built-in launch set keeps serving.
-- **Audit (task 14) is not built:** the `AuditRecorded` interceptor is Sprint 8 work; open question Q-ST-10 in the spec.
+- **Audit (task 14) is not built:** the `AuditRecorded` interceptor is Sprint 8 work; ST-12 is read as "which fields changed" (owner, Q-ST-10, resolved).

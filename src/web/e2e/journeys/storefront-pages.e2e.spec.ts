@@ -1,10 +1,22 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { APIRequestContext, expect, test } from '@playwright/test';
 
 /** SCRUM-205 content pages: real status codes, SEO tags in the server HTML, links that resolve, axe. */
 const BASE = process.env['STOREFRONT_BASE_URL'] ?? 'http://localhost:4000';
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'];
 const PUBLISHED = ['delivery', 'exchanges', 'size-guide', 'our-story', 'made-in-pakistan', 'contact'];
+
+/**
+ * What the shop is serving: the published settings when something has been published (the API document through the storefront's own
+ * forwarder), otherwise the built-in launch set (404 from the API). Tests that depend on which pages are live read it, so they hold on a
+ * fresh stack and on one where the settings have been published.
+ */
+async function liveSettings(request: APIRequestContext): Promise<{ published: Set<string>; delivery: { city: string }[] }> {
+  const res = await request.get('/api/storefront/settings');
+  if (res.status() !== 200) return { published: new Set(PUBLISHED), delivery: [] };
+  const doc = (await res.json()) as { pages: { slug: string; status: string }[]; delivery: { city: string }[] };
+  return { published: new Set(doc.pages.filter((p) => p.status === 'published').map((p) => p.slug)), delivery: doc.delivery };
+}
 
 test.describe('content pages in the server HTML', () => {
   test.use({ baseURL: BASE });
@@ -39,9 +51,11 @@ test.describe('content pages in the server HTML', () => {
     }
   });
 
-  test('ST-8 draft pages (privacy, terms) are not served until published', async ({ request }) => {
-    expect((await request.get('/privacy')).status()).toBe(404);
-    expect((await request.get('/terms')).status()).toBe(404);
+  test('ST-8 privacy and terms are served exactly when they are published, and are a real 404 while drafts', async ({ request }) => {
+    const { published } = await liveSettings(request);
+    for (const slug of ['privacy', 'terms']) {
+      expect((await request.get(`/${slug}`)).status(), slug).toBe(published.has(slug) ? 200 : 404);
+    }
   });
 
   test('SC-12 every internal footer link resolves to a page that returns 200', async ({ request }) => {
@@ -58,15 +72,24 @@ test.describe('content pages in the server HTML', () => {
     }
     expect(dead).toEqual([]);
     for (const slug of PUBLISHED.filter((s) => s !== 'delivery' && s !== 'exchanges' && s !== 'size-guide' && s !== 'contact')) expect(hrefs).toContain(`/${slug}`);
-    expect(hrefs).not.toContain('/privacy');
-    expect(hrefs).not.toContain('/terms');
+    const { published } = await liveSettings(request);
+    for (const slug of ['privacy', 'terms']) {
+      if (published.has(slug)) expect(hrefs).toContain(`/${slug}`);
+      else expect(hrefs).not.toContain(`/${slug}`);
+    }
   });
 
-  test('SC-14 the contact page shows the WhatsApp number from the settings and the delivery page shows no invented facts', async ({ request }) => {
+  test('SC-14 the contact page shows the WhatsApp number from the settings and the delivery page shows only facts held in the settings', async ({ request }) => {
     expect(await (await request.get('/contact')).text()).toContain('href="https://wa.me/923315613217"');
     const delivery = await (await request.get('/delivery')).text();
-    expect(delivery).not.toMatch(/Rs\. ?\d/);
-    expect(delivery).not.toMatch(/\d+ to \d+ days/);
+    const { delivery: rules } = await liveSettings(request);
+    if (rules.length === 0) {
+      // Nothing entered yet: no invented prices or times.
+      expect(delivery).not.toMatch(/Rs. ?d/);
+      expect(delivery).not.toMatch(/d+ to d+ days/);
+    } else {
+      for (const rule of rules) expect(delivery).toContain(rule.city);
+    }
   });
 });
 

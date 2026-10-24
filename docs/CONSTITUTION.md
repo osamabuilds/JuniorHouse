@@ -93,9 +93,9 @@ features/<module>/<feature>/
 `Romp.ArchitectureTests/StructureSyncTests` fails the build when:
 
 1. a backend feature folder has no spec folder (with a `README.md`) under `docs/specs/<module>/`;
-2. a spec feature folder has no backend feature of that name (a card whose status is `**Status:** Planned` is excluded until the feature is built);
+2. a spec feature folder has no backend feature of that name (a card whose status is `**Status:** Planned` is excluded until the feature is built, and a card marked `**Scope:** Frontend-only` is excluded for good: it is built entirely in the web app, such as a design system or the site chrome, and never gets a backend feature);
 3. a web feature folder has no matching backend feature in the same module;
-4. an e2e spec sits outside `e2e/<module>/` or `e2e/journeys/`, or its file name does not start with a feature of that module;
+4. an e2e spec sits outside `e2e/<module>/` or `e2e/journeys/`, or its file name does not start with a feature of that module (an e2e spec for a frontend-only feature lives in `e2e/journeys/`);
 5. a spec, web or e2e file or folder name contains a Jira key (`SCRUM-`) or `sprint`, except under `_sprint-specs/`;
 6. an API test folder (`Romp.Modules.<Module>.Tests/<Feature>`) has no API feature of that name.
 

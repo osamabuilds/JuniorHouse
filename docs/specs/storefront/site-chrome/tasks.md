@@ -34,7 +34,7 @@
 - [x] 20. Launch-set page drafts and the not-publishable rule are SCRUM-206; here only: a page whose `status` is not published renders 404. Test: container spec.
 
 ## F. Verification
-- [x] 21. Playwright + axe `chrome.e2e.spec.ts` at 390, 768 and 1280 px: landmarks, mega-menu by keyboard, mobile menu, search GET without scripting, a page, 404 and 410, no horizontal scroll, axe clean with dialogs open (SC-1..13, 16, 19).
+- [x] 21. Playwright + axe `e2e/journeys/storefront-chrome.e2e.spec.ts` at 390, 768 and 1280 px: landmarks, mega-menu by keyboard, mobile menu, search GET without scripting, a page, 404 and 410, no horizontal scroll, axe clean with dialogs open (SC-1..13, 16, 19).
 - [ ] 22. Lighthouse on a page (SEO 100, Accessibility ≥ 95) in the storefront container (SC-20). — **result:** SEO 100, Accessibility 100, Best Practices 100; Performance 84 and 75, LCP 3.4 and 3.8 s on text-only pages, below the budget; see Implementation notes item 9 (follow-up task proposed).
 - [x] 23. Diff check: only `src/web/projects/storefront`, its e2e spec and docs changed; no formatting-only edits (SC-21).
 - [x] 24. Close the loop: update the spec with any deviations, mark Implemented, update READMEs and the memory note.

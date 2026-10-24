@@ -1,6 +1,6 @@
 # SCRUM-206: Storefront settings (admin-managed configuration)
 
-- **Status:** Implemented, except the central audit trail (ST-12, Q-ST-10 open). Approved by the owner 2026-10-24; as built below
+- **Status:** Implemented, except the central audit trail (ST-12, Sprint 8). Approved by the owner 2026-10-24; as built below
 - **Jira:** SCRUM-206 (task for SCRUM-203, Sprint 9). Consumed by SCRUM-205 (`site-chrome`).
 - **BRD sections:** §4.1 FEAT-CAT-01 (navigation), §14 (SEO), NFR-01; the BRD has no requirement for a settings system. It is an owner decision (below), so **no FR ID applies and none is invented**; the BRD errata list (SCRUM-168) should log it.
 - **Requirement IDs:** FR-01, NAV-5, NAV-9 (navigation data), NFR-01, SEC-08 (admin writes), SEO-01, SEO-04.
@@ -53,7 +53,7 @@ Visual theming and layout changes (colours, fonts, section order on the home pag
 | ST-9 | Given a page's slug changes, then the old URL returns a 301 to the new one | CLAUDE.md SEO |
 | ST-10 | Given page body content from the admin, then it is rendered from structured blocks through Angular bindings; markup or script typed into any field is shown as text or stripped, never executed (no `innerHTML` of admin input without sanitisation) | SEC (input handling) |
 | ST-11 | Given a non-admin or unauthenticated caller, then every write endpoint returns 401/403 and changes nothing; the check is server-side on every request | SEC-08 |
-| ST-12 | Given any change, then an audit record names the user, time, entity, and old and new values; given a bad publish, then the previous published version can be restored | ADR 0016, rollback |
+| ST-12 | Given any change, then an audit record names the user, time, entity and **which fields changed** (never their values, ADR 0016; owner confirmed this reading 2026-10-24); given a bad publish, then the previous published version can be restored | ADR 0016, rollback |
 | ST-13 | Given the settings source is unreachable, then the storefront serves the last good copy; given there is none (first start), then it serves the built-in launch set and logs the fault | NFR-FT (resilience) |
 | ST-14 | Given two admins edit the same entity, then the second save is rejected with a conflict message (concurrency token), not silently overwritten | Constitution |
 | ST-15 | Given the admin screens, then they meet WCAG 2.2 AA, are usable at 390 px, every reorder has a button alternative and every control has a label | NFR-17, NFR-19 |
@@ -81,7 +81,7 @@ What was implemented differs from the text above in these ways. The code and tes
 - Admin: one NgRx store for all screens (navigation, ages, footer, settings, delivery and exchange, pages, publish); every list reorders with labelled buttons and the navigation also has indent and outdent buttons (no drag, ST-15); a two-step restore in the page; an unsaved-changes guard. Verified at 390 px with axe and 44 px targets (`.button--small` and table-row links were enlarged on phones).
 
 **Not built, still open**
-- **ST-12 audit trail.** Every change is stamped with who and when (`INSR_*`, `UPDT_*`, actor `system` until staff login) and a snapshot keeps its note, and restore works. The central `AuditRecorded` trail of ADR 0016 is Sprint 8 work and does not exist yet. ST-12 says "old and new values" but ADR 0016 stores only the names of changed columns, never values (ADR 0016 overrides the BRD); nothing here stores values. See Q-ST-10.
+- **ST-12 audit trail.** Every change is stamped with who and when (`INSR_*`, `UPDT_*`, actor `system` until staff login) and a snapshot keeps its note, and restore works. The central `AuditRecorded` trail of ADR 0016 is Sprint 8 work and does not exist yet. ST-12 was read as "which fields changed" (owner, Q-ST-10) because ADR 0016 stores only the names of changed columns, never values; nothing here stores values.
 - A rendered preview on the storefront (needs the staff login of Sprint 8; the admin shows the preview data).
 - A renamed page's 301 is followed by the storefront's fetch client instead of being turned into a real 301 at the storefront.
 
@@ -95,4 +95,4 @@ What was implemented differs from the text above in these ways. The code and tes
 - [x] **Q-ST-7 Admin app is touched.** Confirmed: this story adds a "Storefront settings" section to the admin app; existing admin screens are not changed. The admin re-skin stays a separate story.
 - [x] **Q-ST-8 Collections entry.** A menu fed by enabled collections from Catalog.
 - [x] **Q-ST-9 Category tree vs Catalog.** Option (b), owner 2026-10-24: Catalog gets a real category hierarchy (own Jira task, SCRUM-207), and navigation items of kind Category point at Catalog categories. Three levels is kept as the working maximum (one constant); the owner did not name another number. Until the Catalog hierarchy exists, the launch set and the seeded tree use placeholder category codes and navigation targets of kind Path, validated against the routes that exist.
-- [ ] **Q-ST-10 ST-12 wording (open, raised 2026-10-24).** ST-12 asks for "old and new values"; ADR 0016 forbids storing values. Confirm that ST-12 means "which fields changed", recorded by the Sprint 8 interceptor. Until then task 14 stays open.
+- [x] **Q-ST-10 ST-12 wording.** Owner, 2026-10-24: ST-12 means "which fields changed", as ADR 0016 allows (names of changed columns, never values). The central audit trail is recorded by the Sprint 8 interceptor; task 14 stays open until then.

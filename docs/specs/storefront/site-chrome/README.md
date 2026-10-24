@@ -1,6 +1,6 @@
 # Site chrome
 
-- **Module:** [`storefront`](../README.md) · **Feature:** `site-chrome` · **Status:** Implemented (perf follow-up open)
+- **Module:** [`storefront`](../README.md) · **Feature:** `site-chrome` · **Scope:** Frontend-only · **Status:** Implemented (perf follow-up open)
 
 Story 2 of the storefront design: data-driven sticky header, mega-menu, mobile menu, search overlay, footer and content page template, rendered from the admin-managed settings (SCRUM-206). Cart, wishlist, newsletter, reveal and view transitions are not in this story.
 
