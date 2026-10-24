@@ -12,7 +12,7 @@ import { PageEffects } from './store/page.effects';
 import { pageFeature } from './store/page.reducer';
 import { selectPageResults } from './store/page.selectors';
 
-function setup(opts: { url: string | null; api?: Partial<PageApi>; settings?: SiteSettings }) {
+function setup(opts: { url: string | null; api?: Partial<PageApi>; settings?: SiteSettings; source?: 'api' | 'launch' | 'fallback' }) {
   TestBed.configureTestingModule({
     providers: [
       provideStore({ [pageFeature.name]: pageFeature.reducer }),
@@ -23,7 +23,7 @@ function setup(opts: { url: string | null; api?: Partial<PageApi>; settings?: Si
     ],
   });
   const store = TestBed.inject(Store);
-  store.dispatch(SiteSettingsActions.loadSuccess({ settings: opts.settings ?? launchSettings, source: 'api' }));
+  store.dispatch(SiteSettingsActions.loadSuccess({ settings: opts.settings ?? launchSettings, source: opts.source ?? 'api' }));
   return { store, results: () => store.selectSignal(selectPageResults)() };
 }
 
@@ -66,5 +66,28 @@ describe('page store (settings API)', () => {
     const { store, results } = setup({ url: '/api/storefront/settings', api: { get: () => of({ status: 'ok' as const, page }) } });
     store.dispatch(PageActions.load({ slug: 'x' }));
     expect(results()['x']).toEqual({ status: 'ok', page });
+  });
+
+  for (const source of ['launch', 'fallback'] as const) {
+    it(`ST-8 serves the built-in launch set while the settings came from "${source}" (nothing published yet), without calling the API`, () => {
+      const get = vi.fn(() => of({ status: 'notFound' as const }));
+      const { store, results } = setup({ url: '/api/storefront/settings', api: { get }, source });
+      store.dispatch(PageActions.load({ slug: 'delivery' }));
+      expect(results()['delivery'].status).toBe('ok');
+      expect(get).not.toHaveBeenCalled();
+    });
+  }
+
+  it('ST-8 an unpublished page answered by the API is gone or not found, as the API says', () => {
+    const { store, results } = setup({ url: '/api/storefront/settings', api: { get: (slug: string) => of(slug === 'old' ? { status: 'gone' as const } : { status: 'notFound' as const }) } });
+    store.dispatch(PageActions.load({ slug: 'old' }));
+    store.dispatch(PageActions.load({ slug: 'nope' }));
+    expect(results()['old']).toEqual({ status: 'gone' });
+    expect(results()['nope']).toEqual({ status: 'notFound' });
+  });
+
+  it('the settings URL defaults to the real endpoint', () => {
+    TestBed.configureTestingModule({});
+    expect(TestBed.inject(SETTINGS_API_URL)).toBe('/api/storefront/settings');
   });
 });

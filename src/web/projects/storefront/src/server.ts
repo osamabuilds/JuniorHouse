@@ -13,16 +13,28 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * Public storefront reads (settings, content pages) go to the API at `API_BASE_URL`. The browser and the server-side render both ask
+ * this origin (`/api/storefront/...`), so the SSR server forwards them. Behind Cloudflare in production the same path can be routed
+ * to the API directly. Only GET on `/api/storefront/` is forwarded: the admin routes are never reachable through the storefront.
  */
+const apiBaseUrl = process.env['API_BASE_URL'] ?? 'http://localhost:5051';
+
+app.get('/api/storefront/{*splat}', async (req, res) => {
+  try {
+    const headers: Record<string, string> = {};
+    const ifNoneMatch = req.header('if-none-match');
+    if (ifNoneMatch) headers['if-none-match'] = ifNoneMatch;
+    const upstream = await fetch(new URL(req.originalUrl, apiBaseUrl), { headers, redirect: 'manual' });
+    res.status(upstream.status);
+    for (const name of ['content-type', 'etag', 'cache-control', 'location']) {
+      const value = upstream.headers.get(name);
+      if (value) res.setHeader(name, value);
+    }
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
 
 /**
  * Serve static files from /browser

@@ -1,5 +1,8 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Storefront.Application.StorefrontSettings;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
 using Testcontainers.PostgreSql;
@@ -174,6 +177,51 @@ public sealed partial class LaunchSeedTests : IAsyncLifetime
         Assert.Equal(
             FactKeys().Matches(pagesTs).Select(m => m.Groups[1].Value).Order().ToArray(),
             pages.SelectMany(p => p.Blocks).Where(b => b.FactKey is not null).Select(b => b.FactKey!).Order().ToArray());
+    }
+
+    [Fact]
+    [Trait("Spec", "ST-1")]
+    public async Task Seed_PublishedDocument_MatchesTheCommittedContractFixture()
+    {
+        await using var context = await MigratedAsync();
+        var all = await context.NavItems.ToListAsync();
+        var content = new SettingsContent(
+            all.Where(n => !all.Any(p => p.Children.Contains(n))).OrderBy(n => n.SortSeq).ToList(),
+            await context.AgeSteps.ToListAsync(),
+            await context.FooterColumns.Include(c => c.Links).ToListAsync(),
+            await context.SettingItems.ToListAsync(),
+            await context.DeliveryRules.ToListAsync(),
+            await context.ExchangePolicies.Include(p => p.Conditions).SingleOrDefaultAsync(),
+            await context.Pages.Include(p => p.Blocks).ThenInclude(b => b.Items).ToListAsync(),
+            await context.PopularSearches.Select(p => p.Text).ToListAsync(),
+            ["wa.me"]);
+
+        // The preview shows drafts as live, so the document carries all eight pages (the seeded ones are drafts, tasks.md).
+        var generated = JsonNode.Parse(SiteDocumentBuilder.Build(content, 0, [], includeDraftPages: true))!;
+        var fixturePath = Path.Combine(WebRoot(), "projects", "storefront", "src", "app", "shared", "data", "contract", "api-launch-document.json");
+
+        if (Environment.GetEnvironmentVariable("ROMP_UPDATE_FIXTURES") == "1")
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(fixturePath)!);
+            File.WriteAllText(fixturePath, generated.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n");
+        }
+
+        var committed = JsonNode.Parse(File.ReadAllText(fixturePath))!;
+        Assert.True(
+            JsonNode.DeepEquals(generated, committed),
+            "The API document for the seed no longer equals api-launch-document.json. Run this test with ROMP_UPDATE_FIXTURES=1, then run the storefront contract spec.");
+    }
+
+    private static string WebRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "src", "web")))
+        {
+            directory = directory.Parent;
+        }
+
+        Assert.NotNull(directory);
+        return Path.Combine(directory.FullName, "src", "web");
     }
 
     [Fact]

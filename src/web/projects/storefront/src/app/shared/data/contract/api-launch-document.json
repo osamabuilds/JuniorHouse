@@ -1,0 +1,741 @@
+{
+  "settings": {
+    "version": 0,
+    "brand": {
+      "name": "Romp",
+      "tagline": "Children\u2019s clothing",
+      "whatsapp": "923315613217",
+      "email": "osamabuss048@gmail.com",
+      "hours": "Monday to Saturday, 10am to 7pm"
+    },
+    "announcement": {
+      "text": "",
+      "enabled": false
+    },
+    "navigation": [
+      {
+        "key": "girls",
+        "label": "Girls",
+        "kind": "group",
+        "target": {
+          "kind": "path",
+          "path": "/girls"
+        },
+        "enabled": true,
+        "sort": 1,
+        "children": [
+          {
+            "key": "girls-dresses",
+            "label": "Dresses",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/girls/dresses"
+            },
+            "enabled": true,
+            "sort": 1,
+            "children": []
+          },
+          {
+            "key": "girls-tops",
+            "label": "Tops and tees",
+            "kind": "group",
+            "target": {
+              "kind": "path",
+              "path": "/girls/tops-and-tees"
+            },
+            "enabled": true,
+            "sort": 2,
+            "children": [
+              {
+                "key": "girls-tees",
+                "label": "T-shirts",
+                "kind": "link",
+                "target": {
+                  "kind": "path",
+                  "path": "/girls/tops-and-tees/t-shirts"
+                },
+                "enabled": true,
+                "sort": 1,
+                "children": []
+              },
+              {
+                "key": "girls-blouses",
+                "label": "Blouses",
+                "kind": "link",
+                "target": {
+                  "kind": "path",
+                  "path": "/girls/tops-and-tees/blouses"
+                },
+                "enabled": true,
+                "sort": 2,
+                "children": []
+              }
+            ]
+          },
+          {
+            "key": "girls-bottoms",
+            "label": "Bottoms",
+            "kind": "group",
+            "target": {
+              "kind": "path",
+              "path": "/girls/bottoms"
+            },
+            "enabled": true,
+            "sort": 3,
+            "children": [
+              {
+                "key": "girls-skirts",
+                "label": "Skirts",
+                "kind": "link",
+                "target": {
+                  "kind": "path",
+                  "path": "/girls/bottoms/skirts"
+                },
+                "enabled": true,
+                "sort": 1,
+                "children": []
+              },
+              {
+                "key": "girls-trousers",
+                "label": "Trousers",
+                "kind": "link",
+                "target": {
+                  "kind": "path",
+                  "path": "/girls/bottoms/trousers"
+                },
+                "enabled": true,
+                "sort": 2,
+                "children": []
+              }
+            ]
+          }
+        ],
+        "showAges": true
+      },
+      {
+        "key": "boys",
+        "label": "Boys",
+        "kind": "group",
+        "target": {
+          "kind": "path",
+          "path": "/boys"
+        },
+        "enabled": true,
+        "sort": 2,
+        "children": [
+          {
+            "key": "boys-tees",
+            "label": "Tees and shirts",
+            "kind": "group",
+            "target": {
+              "kind": "path",
+              "path": "/boys/tees-and-shirts"
+            },
+            "enabled": true,
+            "sort": 1,
+            "children": [
+              {
+                "key": "boys-t-shirts",
+                "label": "T-shirts",
+                "kind": "link",
+                "target": {
+                  "kind": "path",
+                  "path": "/boys/tees-and-shirts/t-shirts"
+                },
+                "enabled": true,
+                "sort": 1,
+                "children": []
+              },
+              {
+                "key": "boys-polos",
+                "label": "Polo shirts",
+                "kind": "link",
+                "target": {
+                  "kind": "path",
+                  "path": "/boys/tees-and-shirts/polo-shirts"
+                },
+                "enabled": true,
+                "sort": 2,
+                "children": []
+              }
+            ]
+          },
+          {
+            "key": "boys-bottoms",
+            "label": "Bottoms",
+            "kind": "group",
+            "target": {
+              "kind": "path",
+              "path": "/boys/bottoms"
+            },
+            "enabled": true,
+            "sort": 2,
+            "children": [
+              {
+                "key": "boys-jeans",
+                "label": "Jeans",
+                "kind": "link",
+                "target": {
+                  "kind": "path",
+                  "path": "/boys/bottoms/jeans"
+                },
+                "enabled": true,
+                "sort": 1,
+                "children": []
+              },
+              {
+                "key": "boys-shorts",
+                "label": "Shorts",
+                "kind": "link",
+                "target": {
+                  "kind": "path",
+                  "path": "/boys/bottoms/shorts"
+                },
+                "enabled": true,
+                "sort": 2,
+                "children": []
+              }
+            ]
+          },
+          {
+            "key": "boys-casual",
+            "label": "Casual shirts",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/boys/casual-shirts"
+            },
+            "enabled": true,
+            "sort": 3,
+            "children": []
+          }
+        ],
+        "showAges": true
+      },
+      {
+        "key": "new-in",
+        "label": "New in",
+        "kind": "link",
+        "target": {
+          "kind": "path",
+          "path": "/new-in"
+        },
+        "enabled": true,
+        "sort": 3,
+        "children": []
+      },
+      {
+        "key": "collections",
+        "label": "Collections",
+        "kind": "collection-list",
+        "target": {
+          "kind": "path",
+          "path": "/collections"
+        },
+        "enabled": true,
+        "sort": 4,
+        "children": []
+      },
+      {
+        "key": "sale",
+        "label": "Sale",
+        "kind": "link",
+        "target": {
+          "kind": "path",
+          "path": "/sale"
+        },
+        "enabled": true,
+        "sort": 5,
+        "children": []
+      }
+    ],
+    "ages": [
+      {
+        "code": "1y",
+        "label": "1Y",
+        "sort": 1,
+        "enabled": true
+      },
+      {
+        "code": "2y",
+        "label": "2Y",
+        "sort": 2,
+        "enabled": true
+      },
+      {
+        "code": "3y",
+        "label": "3Y",
+        "sort": 3,
+        "enabled": true
+      },
+      {
+        "code": "4y",
+        "label": "4Y",
+        "sort": 4,
+        "enabled": true
+      },
+      {
+        "code": "5y",
+        "label": "5Y",
+        "sort": 5,
+        "enabled": true
+      },
+      {
+        "code": "6y",
+        "label": "6Y",
+        "sort": 6,
+        "enabled": true
+      },
+      {
+        "code": "7y",
+        "label": "7Y",
+        "sort": 7,
+        "enabled": true
+      },
+      {
+        "code": "8y",
+        "label": "8Y",
+        "sort": 8,
+        "enabled": true
+      }
+    ],
+    "footer": [
+      {
+        "title": "Shop",
+        "sort": 1,
+        "links": [
+          {
+            "label": "New in",
+            "target": {
+              "kind": "path",
+              "path": "/new-in"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Girls",
+            "target": {
+              "kind": "path",
+              "path": "/girls"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Boys",
+            "target": {
+              "kind": "path",
+              "path": "/boys"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Collections",
+            "target": {
+              "kind": "path",
+              "path": "/collections"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Sale",
+            "target": {
+              "kind": "path",
+              "path": "/sale"
+            },
+            "enabled": true
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "sort": 2,
+        "links": [
+          {
+            "label": "Delivery",
+            "target": {
+              "kind": "page",
+              "slug": "delivery"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Exchanges",
+            "target": {
+              "kind": "page",
+              "slug": "exchanges"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Size guide",
+            "target": {
+              "kind": "page",
+              "slug": "size-guide"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Contact",
+            "target": {
+              "kind": "page",
+              "slug": "contact"
+            },
+            "enabled": true
+          },
+          {
+            "label": "WhatsApp",
+            "target": {
+              "kind": "external",
+              "url": "https://wa.me/923315613217"
+            },
+            "enabled": true
+          }
+        ]
+      },
+      {
+        "title": "Romp",
+        "sort": 3,
+        "links": [
+          {
+            "label": "Our story",
+            "target": {
+              "kind": "page",
+              "slug": "our-story"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Made in Pakistan",
+            "target": {
+              "kind": "page",
+              "slug": "made-in-pakistan"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Privacy",
+            "target": {
+              "kind": "page",
+              "slug": "privacy"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Terms",
+            "target": {
+              "kind": "page",
+              "slug": "terms"
+            },
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "delivery": [
+      {
+        "city": "Islamabad",
+        "minDays": 3,
+        "maxDays": 4,
+        "charge": 300.00,
+        "freeOver": 5000.00,
+        "courier": "TCS",
+        "enabled": true
+      },
+      {
+        "city": "Karachi",
+        "minDays": 3,
+        "maxDays": 4,
+        "charge": 300.00,
+        "freeOver": 5000.00,
+        "courier": "TCS",
+        "enabled": true
+      },
+      {
+        "city": "Lahore",
+        "minDays": 2,
+        "maxDays": 3,
+        "charge": 250.00,
+        "freeOver": 5000.00,
+        "courier": "TCS",
+        "enabled": true
+      },
+      {
+        "city": "Rest of Pakistan",
+        "minDays": 4,
+        "maxDays": 6,
+        "charge": 350.00,
+        "freeOver": 5000.00,
+        "courier": "TCS",
+        "enabled": true
+      }
+    ],
+    "exchange": {
+      "windowDays": 7,
+      "conditions": [
+        "Items must be unworn and unwashed, with the original tags attached.",
+        "Exchanges are for a different size or colour, subject to stock.",
+        "Items bought on sale are exchanged for the same item only."
+      ]
+    },
+    "pages": [
+      {
+        "slug": "contact",
+        "title": "Contact",
+        "status": "published"
+      },
+      {
+        "slug": "delivery",
+        "title": "Delivery",
+        "status": "published"
+      },
+      {
+        "slug": "exchanges",
+        "title": "Exchanges",
+        "status": "published"
+      },
+      {
+        "slug": "made-in-pakistan",
+        "title": "Made in Pakistan",
+        "status": "published"
+      },
+      {
+        "slug": "our-story",
+        "title": "Our story",
+        "status": "published"
+      },
+      {
+        "slug": "privacy",
+        "title": "Privacy",
+        "status": "published"
+      },
+      {
+        "slug": "size-guide",
+        "title": "Size guide",
+        "status": "published"
+      },
+      {
+        "slug": "terms",
+        "title": "Terms",
+        "status": "published"
+      }
+    ],
+    "popularSearches": [
+      "Dresses",
+      "T-shirts",
+      "Shorts"
+    ]
+  },
+  "pages": {
+    "contact": {
+      "slug": "contact",
+      "title": "Contact",
+      "description": "Talk to us about an order, a size or anything else.",
+      "status": "published",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "We are glad to help with an order, a size or a question. The quickest way to reach us is by message."
+        },
+        {
+          "type": "fact",
+          "key": "contact.whatsapp",
+          "label": "WhatsApp"
+        },
+        {
+          "type": "fact",
+          "key": "contact.email",
+          "label": "Email"
+        },
+        {
+          "type": "fact",
+          "key": "contact.hours",
+          "label": "Hours"
+        }
+      ]
+    },
+    "delivery": {
+      "slug": "delivery",
+      "title": "Delivery",
+      "description": "How your order travels from our hands to yours: where we deliver, how long it takes and what it costs.",
+      "status": "published",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Every order is checked, folded and packed with care before it leaves us. We would rather take a moment longer than send anything out that is not right."
+        },
+        {
+          "type": "fact",
+          "key": "delivery.rules",
+          "label": "Where we deliver, and how long it takes"
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Tracking and questions"
+        },
+        {
+          "type": "paragraph",
+          "text": "If you would like an update on an order, message us and we will find out for you."
+        },
+        {
+          "type": "fact",
+          "key": "contact.whatsapp",
+          "label": "Message us"
+        }
+      ]
+    },
+    "exchanges": {
+      "slug": "exchanges",
+      "title": "Exchanges",
+      "description": "Children grow quickly and sizes can surprise. Here is how exchanges work.",
+      "status": "published",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Children grow quickly, and a size that looked right on paper does not always fit on the day. If something is not right, we will help you put it right."
+        },
+        {
+          "type": "fact",
+          "key": "exchange.window",
+          "label": "Exchange window"
+        },
+        {
+          "type": "fact",
+          "key": "exchange.conditions",
+          "label": "Conditions"
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Starting an exchange"
+        },
+        {
+          "type": "paragraph",
+          "text": "Message us with your order number and the item you would like to exchange, and we will take it from there."
+        },
+        {
+          "type": "fact",
+          "key": "contact.whatsapp",
+          "label": "Message us"
+        }
+      ]
+    },
+    "made-in-pakistan": {
+      "slug": "made-in-pakistan",
+      "title": "Made in Pakistan",
+      "description": "How our clothes are made, and the people and standards behind them.",
+      "status": "published",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Our clothes are made in Pakistan, by people who know cloth. We work with our makers closely, and every piece is checked before it is ever offered to you."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Checked before it reaches you"
+        },
+        {
+          "type": "paragraph",
+          "text": "Each garment passes a quality check, is labelled and counted into our warehouse, and is packed by hand when you order."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Fabric and finish"
+        },
+        {
+          "type": "paragraph",
+          "text": "Fabric and care details are shown on every product page, so you know exactly what your child will be wearing and how to look after it."
+        }
+      ]
+    },
+    "our-story": {
+      "slug": "our-story",
+      "title": "Our story",
+      "description": "Why we make clothes for children, and how we think about them.",
+      "status": "published",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Romp makes clothes for children who run, climb, spin and sit on the floor. We think clothes for the young should be comfortable first, beautiful second, and built to be handed down."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Quietly made"
+        },
+        {
+          "type": "paragraph",
+          "text": "We keep our collections small and our colours calm. A few good pieces, chosen with care, beat a wardrobe of things that will not last the season."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "For families"
+        },
+        {
+          "type": "paragraph",
+          "text": "We build Romp around how families actually shop: clear sizes, honest descriptions and a person to talk to when you need one."
+        }
+      ]
+    },
+    "privacy": {
+      "slug": "privacy",
+      "title": "Privacy",
+      "description": "",
+      "status": "published",
+      "blocks": []
+    },
+    "size-guide": {
+      "slug": "size-guide",
+      "title": "Size guide",
+      "description": "How to measure your child and choose the right size.",
+      "status": "published",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The right size is the one that lets a child move, climb and sit comfortably. Measure first, then choose."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "How to measure"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "Ask your child to stand relaxed, in light clothing.",
+            "Measure around the fullest part of the chest, keeping the tape level and snug, not tight.",
+            "Measure around the natural waist, just above the navel.",
+            "Measure height from the floor to the top of the head, standing against a wall."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Between two sizes"
+        },
+        {
+          "type": "paragraph",
+          "text": "If your child falls between two sizes, choose the larger one: there is room to grow, and sleeves and hems are easy to turn up."
+        },
+        {
+          "type": "callout",
+          "text": "Each product page carries its own size chart, so you can check the exact measurements before you order."
+        }
+      ]
+    },
+    "terms": {
+      "slug": "terms",
+      "title": "Terms",
+      "description": "",
+      "status": "published",
+      "blocks": []
+    }
+  },
+  "redirects": {},
+  "gone": []
+}
