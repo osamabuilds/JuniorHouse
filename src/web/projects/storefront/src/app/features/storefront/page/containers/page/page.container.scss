@@ -1,6 +1,7 @@
 :host { display: block; }
 .rp-page { padding-block: var(--space-8) var(--space-12); }
-.rp-crumbs ol { list-style: none; margin: 0 0 var(--space-5); padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); font: 400 13px/18px var(--font-sans); color: var(--ink-muted); }
+.rp-crumbs ol { list-style: none; margin: 0 0 var(--space-5); padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font: 400 13px/18px var(--font-sans); color: var(--ink-muted); }
+.rp-crumbs li { display: flex; align-items: center; }
 .rp-crumbs li + li::before { content: '/'; margin-right: var(--space-2); }
 .rp-crumbs a { display: inline-flex; align-items: center; min-height: var(--tap); color: inherit; }
 h1 { margin: 0; }
