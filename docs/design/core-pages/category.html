@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Romp Girls</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF;color:#000000;font-family:'Manrope',system-ui,sans-serif;font-size:15px;line-height:1.55}
+h1,h2,h3,p,ul,figure,ol{margin:0;padding:0}
+ul,ol{list-style:none}
+a{color:inherit;text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:4px}
+.eyebrow{font-size:12px;line-height:16px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.serif{font-family:'Manrope',system-ui,sans-serif;font-weight:600}
+.ph{background:#F2F2F2;display:flex;align-items:flex-end;padding:16px;box-sizing:border-box;font-size:12px;color:#4D4D4D}
+.chip{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;border:1px solid #E6E6E6;background:#FFFFFF;font:inherit;font-weight:600;font-size:14px;color:#000000;cursor:pointer;box-sizing:border-box}
+.chip:hover{border-color:#000000}
+.chip[aria-pressed="true"]{background:#000000;color:#FFFFFF;border-color:#000000}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid #000000;outline-offset:3px}
+.card a{display:block}
+</style>
+<div style="width:100%;max-width:1440px;margin:0 auto;background:#FFFFFF">
+  <p style="background:#000000;color:#FFFFFF;text-align:center;padding:10px 16px;font-size:12px;letter-spacing:.08em;text-transform:uppercase">Nationwide delivery · Size guide on every piece</p>
+  <header style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;padding:20px 64px;border-bottom:1px solid #E6E6E6">
+    <a href="home.html" class="serif" style="font-size:30px;letter-spacing:-.02em;font-weight:500">romp kids</a>
+    <nav aria-label="Primary"><ul style="display:flex;flex-wrap:wrap;gap:8px 40px;font-weight:600;font-size:14px"><li><a href="category.html" style="display:inline-block;padding:12px 0">New in</a></li><li><a href="category.html" aria-current="page" style="display:inline-block;padding:12px 0;border-bottom:2px solid #000000">Girls</a></li><li><a href="category.html" style="display:inline-block;padding:12px 0">Boys</a></li><li><a href="category.html" style="display:inline-block;padding:12px 0">Sale</a></li></ul></nav>
+    <div style="display:flex;gap:8px">
+      <button type="button" aria-label="Search" style="width:44px;height:44px;border:0;background:none;cursor:pointer;color:#000000"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>
+      <button type="button" aria-label="Account" style="width:44px;height:44px;border:0;background:none;cursor:pointer;color:#000000"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></button>
+      <button type="button" aria-label="Bag, 0 items" style="width:44px;height:44px;border:0;background:none;cursor:pointer;color:#000000"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/></svg></button>
+    </div>
+  </header>
+
+  <main style="padding:0 64px 96px">
+    <nav aria-label="Breadcrumb" style="padding:24px 0;font-size:13px;color:#4D4D4D"><ol style="display:flex;flex-wrap:wrap;gap:8px"><li><a href="home.html">Home</a></li><li aria-hidden="true">/</li><li aria-current="page" style="color:#000000">Girls</li></ol></nav>
+
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;padding:32px 0 48px">
+      <div><p class="eyebrow" style="margin-bottom:12px">Collection</p><h1 class="serif" style="font-size:72px;line-height:.95;letter-spacing:-.025em">Girls</h1></div>
+      <p style="max-width:420px;color:#4D4D4D;font-size:17px;line-height:26px">Dresses, knits and everyday pieces in natural fabrics, sized from 2 to 12 years.</p>
+    </div>
+
+    <div role="toolbar" aria-label="Filters" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:16px 0;border-top:1px solid #E6E6E6;border-bottom:1px solid #E6E6E6;margin-bottom:40px">
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button type="button" class="chip" aria-pressed="true">All</button>
+        <button type="button" class="chip" aria-pressed="false">Dresses</button>
+        <button type="button" class="chip" aria-pressed="false">Tops</button>
+        <button type="button" class="chip" aria-pressed="false">Knitwear</button>
+        <button type="button" class="chip" aria-pressed="false">Bottoms</button>
+        <button type="button" class="chip" aria-pressed="false">Age</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px"><p style="color:#4D4D4D;font-size:13px">24 pieces</p><label for="sort" style="position:absolute;left:-9999px">Sort by</label><select id="sort" style="min-height:44px;padding:0 12px;border:1px solid #E6E6E6;border-radius:2px;background:#FFFFFF;font:inherit;color:#000000"><option>Newest</option><option>Price: low to high</option><option>Price: high to low</option></select></div>
+    </div>
+
+    <ul style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:48px 24px">
+      <li class="card"><a href="product.html"><div class="ph" style="aspect-ratio:3/4">Floral summer dress</div><h2 style="font-size:15px;font-weight:600;padding-top:16px">The Floral Summer Dress</h2><p style="color:#4D4D4D">Rs. 5,250</p></a></li>
+      <li class="card"><a href="product.html"><div class="ph" style="aspect-ratio:3/4;background:#E9E9E9">Linen shirt dress</div><h2 style="font-size:15px;font-weight:600;padding-top:16px">The Linen Shirt Dress</h2><p style="color:#4D4D4D">Rs. 5,450</p></a></li>
+      <li class="card"><a href="product.html"><div class="ph" style="aspect-ratio:3/4">Knit cardigan</div><h2 style="font-size:15px;font-weight:600;padding-top:16px">The Knit Cardigan</h2><p style="color:#4D4D4D">Rs. 4,450</p></a></li>
+      <li class="card"><a href="product.html"><div class="ph" style="aspect-ratio:3/4;background:#E9E9E9">Pleated skirt</div><h2 style="font-size:15px;font-weight:600;padding-top:16px">The Pleated Skirt</h2><p style="color:#4D4D4D">Rs. 3,650</p></a></li>
+      <li class="card"><a href="product.html"><div class="ph" style="aspect-ratio:3/4;background:#E9E9E9">Corduroy pinafore</div><h2 style="font-size:15px;font-weight:600;padding-top:16px">The Corduroy Pinafore</h2><p style="color:#4D4D4D">Rs. 4,750</p></a></li>
+      <li class="card"><a href="product.html"><div class="ph" style="aspect-ratio:3/4">Poplin blouse</div><h2 style="font-size:15px;font-weight:600;padding-top:16px">The Poplin Blouse</h2><p style="color:#4D4D4D">Rs. 3,250</p></a></li>
+      <li class="card"><a href="product.html"><div class="ph" style="aspect-ratio:3/4;background:#E9E9E9">Wide-leg trouser</div><h2 style="font-size:15px;font-weight:600;padding-top:16px">The Wide-Leg Trouser</h2><p style="color:#4D4D4D">Rs. 3,950</p></a></li>
+      <li class="card"><a href="product.html"><div class="ph" style="aspect-ratio:3/4">Quilted jacket</div><h2 style="font-size:15px;font-weight:600;padding-top:16px">The Quilted Jacket</h2><p style="color:#4D4D4D">Rs. 6,950</p></a></li>
+    </ul>
+
+    <nav aria-label="Pagination" style="display:flex;justify-content:center;gap:8px;margin-top:80px">
+      <a class="chip" href="category.html" aria-current="page" style="background:#000000;color:#FFFFFF;border-color:#000000">1</a>
+      <a class="chip" href="category.html">2</a>
+      <a class="chip" href="category.html">3</a>
+      <a class="chip" href="category.html">Next</a>
+    </nav>
+  </main>
+
+  <footer style="border-top:1px solid #E6E6E6;padding:40px 64px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;font-size:13px;color:#4D4D4D">
+    <p>© Romp Kids. All rights reserved.</p>
+    <ul style="display:flex;flex-wrap:wrap;gap:8px 24px"><li><a href="home.html">Size guide</a></li><li><a href="home.html">Delivery</a></li><li><a href="home.html">Returns</a></li><li><a href="home.html">Privacy</a></li></ul>
+  </footer>
+</div>
+</body>
+</html>
