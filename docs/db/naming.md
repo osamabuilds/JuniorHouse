@@ -274,3 +274,28 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | height | HGHT | | waist | WAIS |
 | image | IMG | | weight | WGHT |
 | | | | width | WDTH |
+
+### Added in Sprint 9 (SCRUM-206, Storefront settings)
+
+`AGE`, `ITEM`, `KIND`, `KEY`, `SLUG`, `RDIR`, `PUBL`, `SNAP`, `TGT`, `DLVR`, `DAY`, `MIN`, `MAX`, `NOTE`, `DOC`, `VER`, `NO`, `LVL`, `LBL`, `PRNT`, `CITY`, `EML`, `PHON` and `ACT` (used for "enabled") already existed. `CURR` is already "currency", so "current" is `CRNT`. `RDIR` is "redirect", so the table is `PAGE_RDIR`. `TGT` is "target", so the link-target lookup is `LINK_TGT_LKP`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| announcement | ANNC | | page | PAGE |
+| block | BLCK | | policy | POLY |
+| brand | BRND | | popular | POPL |
+| charge | CHRG | | row | ROW |
+| column | COLM | | rule | RULE |
+| condition | COND | | search | SRCH |
+| courier | CRER | | setting | STNG |
+| current | CRNT | | show | SHOW |
+| draft | DRFT | | step | STEP |
+| exchange | XCHG | | text | TEXT |
+| external | XTRN | | title | TTL |
+| fact | FACT | | window | WNDW |
+| footer | FOOT | | | |
+| free | FREE | | | |
+| hash | HASH | | | |
+| link | LINK | | | |
+| meta | META | | | |
+| navigation | NAV | | | |

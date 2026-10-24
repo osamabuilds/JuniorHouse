@@ -55,9 +55,9 @@ Responses are DTOs with problem-details errors; a stale `rowVersion` returns 409
 | `AuditRecorded` | audit interceptor (ADR 0016) | Identity | yes |
 
 ## Data (`STFR`, names follow `docs/db/naming.md`; any new abbreviation is added to the glossary in the same change)
-Draft: `NAV_ITEM` (self-referencing, `PRNT_ID` indexed, check on level), `AGE_STEP`, `FOOT_COLM`, `FOOT_LINK`, `STNG_ITEM`, `DLVR_RULE`, `XCHG_POLY`, `XCHG_COND`, `PAGE_MAIN`, `PAGE_BLCK`, `PAGE_BLCK_ITM` (list items and table cells, ordered), `PAGE_RDRT`.
-Lookups (`ID` smallint, `CODE`, `NAME`, `DSCR`, `SORT_SEQ`, `ACT_IND`; seeded by migration): `NAV_KIND_LKP`, `LINK_TRGT_LKP`, `STNG_KEY_LKP`, `PAGE_STS_LKP`, `BLCK_TYP_LKP`.
-Published: `PUBL_SNAP` (`ID`, `VER_NO` unique, `DOC` jsonb, `DOC_HASH` char(64), `CURR_IND`, `NOTE`, publish audit columns); a partial unique index allows one `CURR_IND` row.
+Draft: `NAV_ITEM` (self-referencing, `PRNT_ID` indexed, check on level), `AGE_STEP`, `FOOT_COLM`, `FOOT_LINK`, `STNG_ITEM`, `DLVR_RULE`, `XCHG_POLY`, `XCHG_COND`, `PAGE_MAIN`, `PAGE_BLCK`, `PAGE_BLCK_ITM` (list items and table cells, ordered), `PAGE_RDIR`.
+Lookups (`ID` smallint, `CODE`, `NAME`, `DSCR`, `SORT_SEQ`, `ACT_IND`; seeded by migration): `NAV_KIND_LKP`, `LINK_TGT_LKP`, `STNG_KEY_LKP`, `PAGE_STS_LKP`, `BLCK_TYP_LKP`.
+Published: `PUBL_SNAP` (`ID`, `VER_NO` unique, `DOC` jsonb, `DOC_HASH` char(64), `CRNT_IND`, `NOTE`, publish audit columns); a partial unique index allows one `CRNT_IND` row.
 All transactional tables carry `INSR_DTE/INSR_BY/UPDT_DTE/UPDT_BY` and a `ROW_VER` concurrency token; every FK is indexed; unique constraints on `NAV_ITEM.ITEM_KEY`, `(NAV_ITEM.PRNT_ID, SORT_SEQ)`, `AGE_STEP.AGE_CODE`, `PAGE_MAIN.SLUG`. Migration seeds the launch set (S-1, S-2), the contact and brand items (WhatsApp `+923315613217`), and the eight page drafts (delivery, exchanges, size-guide, our-story, made-in-pakistan, contact, privacy, terms; Draft status; wording only, no facts). The snapshot is the only denormalised structure, justified in ADR 0020. Growth: tables are small (tens of rows); no partitioning. Add the module to `ModuleNames` in `Romp.ArchitectureTests`.
 
 ## NFR / security design
