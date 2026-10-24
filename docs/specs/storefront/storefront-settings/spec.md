@@ -11,7 +11,7 @@ Owner decision (2026-10-24): the storefront must be **highly or completely confi
 ## Owner decisions
 | # | Decision |
 |---|---|
-| S-1 | Header entries are configurable and **nested**. Launch set: **Girls, Boys, New in, Collections, Sale** (no Baby, no Unisex, no Gifts). every entry can be a parent with child items (for example Boys: Tees and shirts, Bottoms, Casual shirts). |
+| S-1 | Header entries are configurable and **nested**. Launch set: **Girls, Boys, New in, Collections, Sale** (no Baby, no Unisex, no Gifts). every entry can be a main category with nested members (for example Boys: Tees and shirts, Bottoms, Casual shirts, each with further members). |
 | S-2 | Age steps are configurable. Launch set: **1Y to 8Y, one year apart** (the earlier "from 2" and "to 12" are superseded). |
 | S-3 | Footer links, delivery cities, times and charges, courier, exchange window, contact details (WhatsApp `+92 331 5613217`), the announcement bar text and the content pages are all configurable. |
 | S-4 | An enabled navigation entry with no products shows an empty page (the empty state), not a hidden entry. Where products have sold, the entry may show the **sold items for that season** (Q-ST-4). |
@@ -20,7 +20,7 @@ Owner decision (2026-10-24): the storefront must be **highly or completely confi
 ## Scope
 **In**
 1. **Data (schema `STFR`, owned by the Storefront module, ADR 0018)**, normalised, with lookups and the standard audit columns (names follow `docs/db/naming.md`; the plan fixes them):
-   - **Navigation tree** (owner, 2026-10-24: every entry can have nested items, a **parent and a child menu**; for example Boys → Tees and shirts, Bottoms, Casual shirts, and the same for Girls, New in, Collections and Sale): a top-level entry (parent) has child items, to a maximum of **two levels** (the limit is one constant, so it can be raised later). Every item has a label, a target (a parent may have none and only open its children), an order and an enabled flag.
+   - **Navigation tree** (owner, 2026-10-24): every entry can be a **parent, a main category**; its **children are the members of that category**, and a child may in turn be a category with **further members**. For example Boys → Tees and shirts, Bottoms, Casual shirts, and under a child its own members; the same for Girls, New in, Collections and Sale. Maximum **three levels** (parent, child, grandchild) in the first release; the limit is one constant and is to be confirmed (Q-ST-9). Every item has a label, a target (a category with members may have none and only open its members), an order and an enabled flag.
    - **Age steps**: stable code, label, sort order, enabled. Launch seed 1Y to 8Y. The code, not the label, goes into URLs (NAV-9).
    - **Footer columns and links**: title, order; link label, target, order, enabled.
    - **Brand and contact settings**: key/value rows with a type and a validation rule (brand name, tagline, WhatsApp number, email, hours, announcement text, announcement enabled).
@@ -42,7 +42,7 @@ Visual theming and layout changes (colours, fonts, section order on the home pag
 | ID | Given / When / Then | Source |
 |---|---|---|
 | ST-1 | Given an admin renames, reorders, adds or disables a navigation entry or link and publishes, then the public header, mobile menu and footer show it within 60 s with no deployment | S-1, NAV-5 |
-| ST-1a | Given any entry (Boys, Girls, New in, Collections or Sale) is given child items, then opening it shows them; given a child is given children of its own, then it is rejected with a message that two levels are allowed; given a parent is disabled, then its children disappear with it | S-1, owner (nested) |
+| ST-1a | Given any entry (Boys, Girls, New in, Collections or Sale) is given members, then opening it shows them; given a member is given members of its own, then they show under it; given a fourth level is entered, then it is rejected with a message that three levels are allowed; given a parent is disabled, then its whole subtree disappears with it | S-1, owner (nested) |
 | ST-2 | Given the age steps are edited (added, renamed, disabled) and published, then the mega-menu list follows, and links use the stable code; renaming a label does not change any URL | S-2, NAV-9 |
 | ST-3 | Given a draft with unpublished edits, then the public site shows only the last published set; after Publish the whole set appears at once | Section 4 |
 | ST-4 | Given an admin saves an invalid value (empty label, duplicate key, bad phone number, negative charge, link to a page that does not exist, a menu with no links), then it is rejected with a message naming the field and what to do, and nothing is saved | Validation |
@@ -72,3 +72,4 @@ NFR-01 (settings ride in the server HTML, no client fetch for the chrome), SEC-0
 - [x] **Q-ST-6 Sequence.** SCRUM-206 and SCRUM-205 proceed in parallel against one typed contract (`SiteSettings`), and 205 uses a built-in launch set until the 206 API exists.
 - [x] **Q-ST-7 Admin app is touched.** Confirmed: this story adds a "Storefront settings" section to the admin app; existing admin screens are not changed. The admin re-skin stays a separate story.
 - [x] **Q-ST-8 Collections entry.** A menu fed by enabled collections from Catalog.
+- [ ] **Q-ST-9 Category tree vs Catalog.** The navigation tree reads like a category tree (main category, members, further members), but Catalog has six flat categories and gender as a separate attribute. (a) The menu is configuration only: items link to listing pages or filters that must exist. (b) Catalog gets a real category hierarchy (parent/child categories) and the menu items link to categories. Which, and is three levels the right maximum?
