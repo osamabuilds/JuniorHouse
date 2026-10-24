@@ -8,7 +8,7 @@ COPY . .
 # fonts:false (container configuration): the build container may have no internet to inline Google Fonts; the browser loads them at run time.
 RUN npx ng build admin --configuration container
 
-FROM nginx:1.27-alpine AS runtime
+FROM nginx:1.29-alpine AS runtime
 COPY --from=build /app/dist/admin/browser /usr/share/nginx/html
 COPY nginx.admin.conf /etc/nginx/conf.d/default.conf
 COPY docker-entrypoint-env.sh /docker-entrypoint.d/30-romp-env.sh
