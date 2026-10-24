@@ -19,8 +19,8 @@ describe('SiteFooterComponent', () => {
   it('SC-11 is a dark footer landmark with link columns as lists, from the settings', () => {
     const f = render();
     const root = el(f).querySelector('footer')!;
-    expect(root.classList.contains('rp-dark')).toBe(true);
-    const titles = [...root.querySelectorAll('h2')].map((h) => h.textContent!.trim());
+    expect(root.classList.contains('rp-dark')).toBe(false);
+    const titles = [...root.querySelectorAll('nav h2')].map((h) => h.textContent!.trim());
     expect(titles).toEqual(['Shop', 'Help', 'Romp']);
     expect(root.querySelectorAll('nav ul').length).toBe(3);
     const hrefs = [...root.querySelectorAll('nav a')].map((a) => a.getAttribute('href'));
@@ -45,9 +45,10 @@ describe('SiteFooterComponent', () => {
     expect(el(f).querySelector('input[type="email"]')).toBeNull();
   });
 
-  it('SC-11 the oversized wordmark is decorative and hidden from assistive technology', () => {
-    const big = el(render()).querySelector('.rp-footer__big')!;
-    expect(big.getAttribute('aria-hidden')).toBe('true');
+  it('CR-3 shows the configured brand name as a heading and has no decorative wordmark', () => {
+    const f = render();
+    expect(el(f).querySelector('.rp-footer__brand')!.textContent!.trim()).toBe('romp');
+    expect(el(f).querySelector('.rp-footer__big')).toBeNull();
   });
 
   it('SC-3 SC-12 follows the settings: a new link appears, a link to an unpublished page disappears', () => {
