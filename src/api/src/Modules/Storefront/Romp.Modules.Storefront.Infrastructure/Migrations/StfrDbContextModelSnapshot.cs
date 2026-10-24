@@ -904,9 +904,13 @@ namespace Romp.Modules.Storefront.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("INSR_DTE");
 
+                    b.Property<bool>("IsOrdered")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ORDR_IND");
+
                     b.Property<string>("Label")
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
                         .HasColumnName("LBL");
 
                     b.Property<short>("Level")

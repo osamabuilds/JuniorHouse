@@ -87,7 +87,8 @@ internal sealed class PageBlockConfiguration : IEntityTypeConfiguration<PageBloc
         builder.Property(b => b.Text).HasColumnName("TEXT").HasMaxLength(5000).IsRequired();
         builder.Property(b => b.Level).HasColumnName("LVL").HasColumnType("smallint").IsRequired();
         builder.Property(b => b.FactId).HasColumnName("FACT_ID");
-        builder.Property(b => b.Label).HasColumnName("LBL").HasMaxLength(40);
+        builder.Property(b => b.Label).HasColumnName("LBL").HasMaxLength(120);
+        builder.Property(b => b.IsOrdered).HasColumnName("ORDR_IND").IsRequired();
 
         builder.HasOne<BlockTypeLookup>().WithMany().HasForeignKey(b => b.Type).HasConstraintName("FK_PAGE_BLCK_BLCK_TYP_ID").OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<FactLookup>().WithMany().HasForeignKey(b => b.FactId).HasConstraintName("FK_PAGE_BLCK_FACT_ID").OnDelete(DeleteBehavior.Restrict);

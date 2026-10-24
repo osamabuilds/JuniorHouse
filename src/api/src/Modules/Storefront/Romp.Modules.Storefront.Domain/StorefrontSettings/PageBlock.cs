@@ -39,9 +39,17 @@ public sealed class PageBlock : Entity<long>, IAuditable
 
     private PageBlock() => Text = string.Empty;
 
-    public PageBlock(BlockType type, string text = "", int level = 0, string? factKey = null, string? label = null, IEnumerable<PageBlockItem>? items = null)
+    public PageBlock(
+        BlockType type,
+        string text = "",
+        int level = 0,
+        string? factKey = null,
+        string? label = null,
+        IEnumerable<PageBlockItem>? items = null,
+        bool isOrdered = false)
     {
         Type = type;
+        IsOrdered = isOrdered;
         Text = text ?? string.Empty;
         Level = level;
         FactId = factKey is null ? null : SettingsFacts.IdOf(factKey);
@@ -68,7 +76,11 @@ public sealed class PageBlock : Entity<long>, IAuditable
 
     public string? FactKey => FactId is { } id ? SettingsFacts.KeyOf(id) : null;
 
+    /// <summary>A fact block's heading, or a table's caption.</summary>
     public string? Label { get; private set; }
+
+    /// <summary>For a list block: numbered (steps) rather than bulleted (SCRUM-205 contract: <c>ordered</c>).</summary>
+    public bool IsOrdered { get; private set; }
 
     public IReadOnlyList<PageBlockItem> Items => _items;
 

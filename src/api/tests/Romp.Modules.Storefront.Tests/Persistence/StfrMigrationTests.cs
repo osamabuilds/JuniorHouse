@@ -141,21 +141,21 @@ public sealed class StfrMigrationTests : IAsyncLifetime
         await using (var write = NewContext())
         {
             await write.Database.MigrateAsync();
-            var leaf = Stamp(new NavItem("frocks", "Frocks", NavKind.Link, new LinkTarget(LinkTargetKind.Path, "/girls/dresses/frocks"), 1));
-            var mid = Stamp(new NavItem("dresses", "Dresses", NavKind.Link, new LinkTarget(LinkTargetKind.Path, "/girls/dresses"), 1)).AddChild(leaf);
-            var root = Stamp(new NavItem("girls", "Girls", NavKind.Link, new LinkTarget(LinkTargetKind.Path, "/girls"), 1, showAges: true)).AddChild(mid);
+            var leaf = Stamp(new NavItem("t-frocks", "Frocks", NavKind.Link, new LinkTarget(LinkTargetKind.Path, "/girls/dresses/frocks"), 1));
+            var mid = Stamp(new NavItem("t-dresses", "Dresses", NavKind.Link, new LinkTarget(LinkTargetKind.Path, "/girls/dresses"), 1)).AddChild(leaf);
+            var root = Stamp(new NavItem("t-girls", "Girls", NavKind.Link, new LinkTarget(LinkTargetKind.Path, "/girls"), 9, showAges: true)).AddChild(mid);
             write.NavItems.Add(root);
             await write.SaveChangesAsync();
         }
 
         await using var read = NewContext();
         var all = await read.NavItems.Include(n => n.Children).ToListAsync();
-        var girls = all.Single(n => n.Key == "girls");
+        var girls = all.Single(n => n.Key == "t-girls");
 
         Assert.True(girls.ShowAges);
         Assert.Equal(new LinkTarget(LinkTargetKind.Path, "/girls"), girls.Target);
-        Assert.Equal("dresses", Assert.Single(girls.Children).Key);
-        Assert.Equal("frocks", Assert.Single(girls.Children[0].Children).Key);
+        Assert.Equal("t-dresses", Assert.Single(girls.Children).Key);
+        Assert.Equal("t-frocks", Assert.Single(girls.Children[0].Children).Key);
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public sealed class StfrMigrationTests : IAsyncLifetime
         await using (var write = NewContext())
         {
             await write.Database.MigrateAsync();
-            var page = Stamp(new Page("delivery", "Delivery", "How we deliver."));
+            var page = Stamp(new Page("t-delivery", "Delivery", "How we deliver."));
             page.ReplaceBlocks(
             [
                 Stamp(new PageBlock(BlockType.Heading, "Delivery", level: 2)),
@@ -177,7 +177,7 @@ public sealed class StfrMigrationTests : IAsyncLifetime
         }
 
         await using var read = NewContext();
-        var loaded = await read.Pages.Include(p => p.Blocks).ThenInclude(b => b.Items).SingleAsync(p => p.Slug == "delivery");
+        var loaded = await read.Pages.Include(p => p.Blocks).ThenInclude(b => b.Items).SingleAsync(p => p.Slug == "t-delivery");
         var blocks = loaded.Blocks.OrderBy(b => b.SortSeq).ToList();
 
         Assert.Equal([BlockType.Heading, BlockType.Fact, BlockType.List], blocks.Select(b => b.Type).ToArray());
