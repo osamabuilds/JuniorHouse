@@ -1,6 +1,6 @@
 # SCRUM-xxx: Mega-menu and mobile menu to the new design references
 
-- **Status:** Draft (awaiting approval)
+- **Status:** Approved (owner, 2026-10-24; open questions resolved with the recommendations)
 - **Jira:** SCRUM-xxx (to be created under SCRUM-203)
 - **BRD sections:** §4.1 FEAT-CAT-01
 - **Requirement IDs:** FR-01 (presentation), NFR-17, NFR-19, SEO-01
@@ -66,9 +66,9 @@ NFR-17, NFR-19 WCAG 2.2 AA, SEO-01 (all menu content in the server HTML). Tile i
 Account and Bag controls; the sample categories, age bands and tile photos in the references; search overlay changes; the content of the Boys, New in, Collections and Sale entries (set by the owner in settings, not designed here).
 
 ## Open questions
-- [ ] **Q-MR-1 Age chips.** The reference shows age *bands* ("2–3 Y"); the owner decided one chip per year (1Y to 8Y). Keep per-year chips (recommended; eight chips wrap onto two lines) or group them?
-- [ ] **Q-MR-2 Age query parameter.** Menu age links use `?age=<code>`; SEO-02 discourages query strings on indexable pages (the references' README raises the same). Keep `?age=` for now (recommended, as built) or move to path URLs such as `/girls/age-4`? Path URLs would need the listings spec to change.
-- [ ] **Q-MR-3 Tiles need images.** Tiles use the media library. Is there a source of editorial photos, or should tiles stay hidden at launch (recommended, since the launch set has no photos)?
-- [ ] **Q-MR-4 "The edit" content.** The references list New arrivals, Essentials, Occasion, Sale. Which links does the owner want at launch (or none)?
-- [ ] **Q-MR-5 Admin work.** The settings and admin additions touch the backend contract. Include them in this feature (recommended, per O-6) or split into a second feature after the storefront part?
+- [x] **Q-MR-1 Age chips.** The reference shows age *bands* ("2–3 Y"); the owner decided one chip per year (1Y to 8Y). Keep per-year chips (recommended; eight chips wrap onto two lines) or group them? **Resolved: recommendation adopted.**
+- [x] **Q-MR-2 Age query parameter.** Menu age links use `?age=<code>`; SEO-02 discourages query strings on indexable pages (the references' README raises the same). Keep `?age=` for now (recommended, as built) or move to path URLs such as `/girls/age-4`? Path URLs would need the listings spec to change. **Resolved: recommendation adopted.**
+- [x] **Q-MR-3 Tiles need images.** Tiles use the media library. Is there a source of editorial photos, or should tiles stay hidden at launch (recommended, since the launch set has no photos)? **Resolved: recommendation adopted.**
+- [x] **Q-MR-4 "The edit" content.** The references list New arrivals, Essentials, Occasion, Sale. Which links does the owner want at launch (or none)? **Resolved: recommendation adopted.**
+- [x] **Q-MR-5 Admin work.** The settings and admin additions touch the backend contract. Include them in this feature (recommended, per O-6) or split into a second feature after the storefront part? **Resolved: recommendation adopted.**
 - [ ] **Q-MR-6 Jira key.**
