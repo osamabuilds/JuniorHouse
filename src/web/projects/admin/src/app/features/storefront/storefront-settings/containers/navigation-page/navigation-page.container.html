@@ -1,0 +1,32 @@
+<h1>Navigation</h1>
+<p class="page-intro">
+  The entries in the shop's header, up to three levels deep: a main entry, its members, and their members. Changes are kept here until you save,
+  and reach the shop only when you publish.
+</p>
+
+<app-section-nav label="Storefront settings" [links]="links" />
+
+<app-settings-banners
+  [notice]="notice()"
+  [loadError]="loadError()"
+  [saveError]="saveError()"
+  [generalFields]="['navigation']"
+  (dismissed)="dismissNotice()"
+  (reload)="reload()"
+/>
+
+@if (loading() && !draft()) {
+  <p class="state-message" role="status">Loading the navigation…</p>
+} @else {
+  <ul class="nav-tree" aria-label="Navigation entries">
+    @for (item of items(); track item.key; let i = $index) {
+      <li app-nav-node [item]="item" [path]="[i]" [root]="items()" [fieldErrors]="fieldErrors()" (action)="onAction($event)"></li>
+    } @empty {
+      <li class="state-message">There are no entries yet. Add one to start the menu.</li>
+    }
+  </ul>
+
+  <app-save-bar label="Save navigation" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()">
+    <button type="button" class="button" (click)="addEntry()">Add an entry</button>
+  </app-save-bar>
+}

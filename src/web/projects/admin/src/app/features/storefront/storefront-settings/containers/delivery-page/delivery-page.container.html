@@ -1,0 +1,17 @@
+<h1>Delivery and exchange</h1>
+<p class="page-intro">
+  Where you deliver, how long it takes and what it costs, and your exchange policy. The delivery and exchange pages quote these, so they are
+  entered once. A page that quotes an empty value cannot be published.
+</p>
+
+<app-section-nav label="Storefront settings" [links]="links" />
+
+<app-settings-banners [notice]="notice()" [loadError]="loadError()" [saveError]="saveError()" (dismissed)="dismissNotice()" (reload)="reload()" />
+
+@if (loading() && !draft()) {
+  <p class="state-message" role="status">Loading delivery and exchange…</p>
+} @else {
+  <app-delivery-editor [values]="values()" [errors]="fieldErrors()" (valuesChange)="values.set($event)" (addRule)="addRule()" />
+
+  <app-save-bar label="Save delivery and exchange" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
+}

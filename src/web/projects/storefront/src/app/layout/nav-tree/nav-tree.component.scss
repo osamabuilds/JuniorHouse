@@ -1,0 +1,17 @@
+:host { display: block; }
+.rp-navtree { list-style: none; margin: 0; padding: 0; }
+.rp-navtree .rp-navtree { padding-left: var(--space-4); }
+.rp-navlink, .rp-navlabel, summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  color: inherit;
+  text-decoration: none;
+}
+.rp-navlabel { color: var(--ink-muted); }
+.rp-navlink:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+summary { cursor: pointer; list-style: none; justify-content: space-between; font-weight: 500; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '+'; margin-left: var(--space-3); }
+details[open] > summary::after { content: '\2212'; }
+.rp-navacc { border-bottom: var(--border-line) solid var(--line); }

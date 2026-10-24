@@ -1,0 +1,19 @@
+<h1>Footer</h1>
+<p class="page-intro">
+  The columns of links at the bottom of every page. A link can go to a path on the shop, a content page, a collection or an allowed website.
+  Changes reach the shop when you publish.
+</p>
+
+<app-section-nav label="Storefront settings" [links]="links" />
+
+<app-settings-banners [notice]="notice()" [loadError]="loadError()" [saveError]="saveError()" (dismissed)="dismissNotice()" (reload)="reload()" />
+
+@if (loading() && !draft()) {
+  <p class="state-message" role="status">Loading the footer…</p>
+} @else {
+  <app-footer-editor [columns]="columns()" [errors]="fieldErrors()" (columnsChange)="columns.set($event)" />
+
+  <app-save-bar label="Save footer" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()">
+    <button type="button" class="button" (click)="addColumn()">Add a column</button>
+  </app-save-bar>
+}

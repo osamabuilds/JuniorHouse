@@ -1,0 +1,129 @@
+// Romp design tokens (v7, gallery), recoloured black and white (owner decision 2026-10-24, SCRUM-205). Keep docs/design-system/tokens.json in step.
+// Fonts: load via @fontsource packages (see Implementation.md); no @font-face here.
+
+:root {
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f5f5f5;
+  --surface-dark: #111111;
+  --on-dark: #ffffff;
+  --on-dark-muted: #c4c4c4;
+  --line-dark: #3a3a3a;
+  --line-strong-dark: #8a8a8a;
+  --surface-dark-raised: #1c1c1c;
+  --surface-dark-sunken: #0a0a0a;
+  --ink-on-light: #111111;
+  --ink: #111111;
+  --ink-muted: #5f5f5f;
+  --line: #e5e5e5;
+  --line-strong: #767676;
+  --accent: #111111;
+  --accent-deep: #333333;
+  --on-accent: #ffffff;
+  --success-text: #2f6b4f;
+  --danger-text: #a8321f;
+  --success-tint: #e6efe9;
+  --danger-tint: #f7e8e4;
+  --focus: #111111;
+  --scrim-image: #11111199;
+  --on-image: #ffffff;
+  --overlay: #11111170;
+  --lightbox: #111111f2;
+  --skeleton: #ececec;
+  --skeleton-hi: #f6f6f6;
+  --tone-oat: #e6e6e6;
+  --tone-stone: #d2d2d2;
+  --tone-clay: #bdbdbd;
+  --tone-sage: #dcdcdc;
+  --tone-sand: #f0f0f0;
+  --tone-dusk: #6e6e6e;
+  --shadow-float: 0 24px 48px -24px #11111159;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+  --space-12: 64px;
+  --space-16: 96px;
+  --space-28: 112px;
+  --radius-sm: 2px;
+  --radius-pill: 999px;
+  --container-max: 1600px;
+  --margin-mobile: 16px;
+  --margin-tablet: 32px;
+  --margin-desktop: 56px;
+  --grid-gap-mobile: 8px;
+  --grid-gap-desktop: 16px;
+  --image-ratio: 4 / 5;
+  --header-h-mobile: 56px;
+  --header-h-desktop: 72px;
+  --tap: 44px;
+  --border-line: 1px;
+  --drawer-w: 440px;
+  --dur-fast: 200ms;
+  --dur-base: 300ms;
+  --dur-slow: 400ms;
+  --ease-out: cubic-bezier(0.2,0.7,0.2,1);
+  --ease-inout: cubic-bezier(0.65,0,0.35,1);
+  --font-display: 'Instrument Serif', "Times New Roman", Georgia, serif;
+  --font-sans: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+// Type styles (use as classes or @extend). Display sizes are fluid: vw replaces the previews' container width.
+.t-display-xl {
+  font: 400 clamp(52px, 8vw, 112px)/0.95 var(--font-display);
+  letter-spacing: -0.025em;
+}
+.t-display-lg {
+  font: 400 clamp(40px, 5.2vw, 72px)/1.03 var(--font-display);
+  letter-spacing: -0.02em;
+}
+.t-display-md {
+  font: 400 clamp(30px, 3.4vw, 48px)/1.12 var(--font-display);
+  letter-spacing: -0.02em;
+}
+.t-display-sm {
+  font: 400 clamp(24px, 2.2vw, 30px)/1.2 var(--font-display);
+  letter-spacing: -0.01em;
+}
+.t-display-xs {
+  font: 400 20px/26px var(--font-display);
+  letter-spacing: 0;
+}
+.t-body-lg {
+  font: 400 18px/30px var(--font-sans);
+  letter-spacing: 0;
+}
+.t-body {
+  font: 400 16px/26px var(--font-sans);
+  letter-spacing: 0;
+}
+.t-body-sm {
+  font: 400 14px/22px var(--font-sans);
+  letter-spacing: 0;
+}
+.t-caption {
+  font: 400 12px/18px var(--font-sans);
+  letter-spacing: 0.01em;
+}
+.t-eyebrow {
+  font: 500 11px/16px var(--font-sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.t-nav {
+  font: 500 13px/16px var(--font-sans);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.t-button {
+  font: 500 13px/16px var(--font-sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.t-price {
+  font: 500 15px/22px var(--font-sans);
+  letter-spacing: 0.01em;
+}

@@ -4,7 +4,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN npx ng build storefront
+ARG NG_CONFIGURATION=production
+RUN npx ng build storefront --configuration ${NG_CONFIGURATION}
 
 FROM node:24-alpine AS runtime
 WORKDIR /app

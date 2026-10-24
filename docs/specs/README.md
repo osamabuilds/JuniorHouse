@@ -13,5 +13,9 @@ Each feature folder has a `README.md` card (what it is, status, where the code i
 | [quality](quality/README.md) | Goods receipt and QC | inbound-deliveries, receiving, batches, inspections, outcomes, safety-checks |
 | [labelling](labelling/README.md) | SKU, GTIN and tag printing | label-work, variants, print-jobs, tags |
 | [warehouse](warehouse/README.md) | Bins, putaway, stock ledger, adjustments, cycle counts, alerts (implemented) | bins, putaway, stock-ledger, adjustments, cycle-counts, stock-alerts |
+| [identity](identity/README.md) | Staff accounts, sign-in, MFA, roles, audit trail (Sprint 8, specs approved) | staff-accounts, sessions, mfa, roles, audit-trail |
+| [platform](platform/README.md) | Cross-cutting, not a module: staging deployment, health probes, logging policy (Sprint 8, specs approved) | deployment, observability |
 
-Later sprints add `publishing`, `storefront`, `orders`, `fulfilment`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).
+| [storefront](storefront/README.md) | Public server-rendered shop: read model, navigation, listings, search, product pages, SEO baseline (Sprint 9; design-foundation, site-chrome and storefront-settings implemented) | design-foundation, site-chrome, storefront-settings, published-catalog, navigation, listings, search, product-pages, seo |
+
+Later sprints add `orders`, `fulfilment`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).

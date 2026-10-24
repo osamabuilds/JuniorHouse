@@ -1,0 +1,79 @@
+<h1>Publish</h1>
+<p class="page-intro">
+  What you save here stays private until you publish. Publishing checks everything first, then puts the whole set on the shop at once. If a
+  version turns out to be wrong, restore an earlier one.
+</p>
+
+<app-section-nav label="Storefront settings" [links]="links" />
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (loadError()) {
+  <p class="banner banner--error" role="alert">{{ loadError()?.message }}</p>
+}
+
+@if (error(); as failure) {
+  <div class="banner banner--error" role="alert">
+    @if (problems().length > 0) {
+      <p>It can't be published yet. Fix these, then publish again:</p>
+      <ul class="report">
+        @for (problem of problems(); track problem.where) {
+          <li>
+            <strong>{{ problem.where }}</strong>
+            @for (message of problem.messages; track message) {
+              <span class="report__message">{{ message }}</span>
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <p>{{ failure.message }}</p>
+    }
+  </div>
+}
+
+<section class="card" aria-labelledby="pp-ready">
+  <h2 id="pp-ready">What will go live</h2>
+  @if (summary(); as s) {
+    <ul>
+      <li>{{ s.entries }} navigation {{ s.entries === 1 ? 'entry' : 'entries' }}</li>
+      <li>{{ s.published }} published {{ s.published === 1 ? 'page' : 'pages' }}, {{ s.drafts }} {{ s.drafts === 1 ? 'draft' : 'drafts' }} (drafts are not shown), {{ s.archived }} archived</li>
+    </ul>
+  } @else {
+    <p class="state-message" role="status">Loading the draft…</p>
+  }
+
+  <div class="form-field form-field--wide">
+    <label for="pp-note">Note for this version (optional)</label>
+    <input id="pp-note" type="text" maxlength="500" autocomplete="off" [value]="note()" (input)="noteInput($event)" />
+    <small class="field-hint">A few words so you can tell versions apart later, for example "New delivery charges".</small>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="button button--primary" [disabled]="publishing() || !summary()" (click)="publish()">
+      {{ publishing() ? 'Publishing…' : 'Publish now' }}
+    </button>
+    <a class="button" [href]="previewUrl" target="_blank" rel="noopener">Preview the draft (opens the data in a new tab)</a>
+  </div>
+</section>
+
+@if (restoreCandidate(); as candidate) {
+  <div class="banner banner--info" role="alertdialog" aria-labelledby="pp-restore-title">
+    <p id="pp-restore-title"><strong>Restore version {{ candidate }}?</strong> A copy of it goes on the shop straight away as a new version. Your current draft is not changed.</p>
+    <div class="form-actions">
+      <button type="button" class="button button--primary" (click)="confirmRestore()">Yes, restore version {{ candidate }}</button>
+      <button type="button" class="button" (click)="cancelRestore()">Cancel</button>
+    </div>
+  </div>
+}
+
+<section aria-labelledby="pp-versions">
+  <h2 id="pp-versions">Published versions</h2>
+  <app-snapshots-table [snapshots]="snapshots()" [loading]="snapshotsLoading()" [restoringVersion]="restoringVersion()" (restore)="askRestore($event)" />
+  <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" />
+</section>

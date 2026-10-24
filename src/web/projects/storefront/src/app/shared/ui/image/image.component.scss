@@ -1,0 +1,31 @@
+:host {
+  display: block;
+}
+
+.rp-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rp-image__second {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+@media (hover: hover) {
+  :host(:hover) .rp-image__second,
+  :host-context(.rp-card:hover) .rp-image__second,
+  :host-context(.rp-card:focus-within) .rp-image__second {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-image__second {
+    transition: none;
+  }
+}

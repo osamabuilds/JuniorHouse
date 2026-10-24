@@ -1,0 +1,14 @@
+<dialog rpDialog class="rp-sheet" aria-label="Menu">
+  <div class="rp-dialog__head">
+    <span class="t-eyebrow">Menu</span>
+    <button type="button" class="rp-icon-btn" aria-label="Close menu" (click)="close()"><rp-icon name="close" /></button>
+  </div>
+  <div class="rp-dialog__body">
+    <form class="rp-mobile-search" role="search" action="/search" method="get">
+      <input class="rp-input" type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off" />
+    </form>
+    <nav aria-label="Menu">
+      <rp-nav-tree [items]="entries()" mode="accordion" (navigate)="close()" />
+    </nav>
+  </div>
+</dialog>

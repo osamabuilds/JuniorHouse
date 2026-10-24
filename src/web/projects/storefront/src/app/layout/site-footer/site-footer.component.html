@@ -1,0 +1,36 @@
+<footer class="rp-footer rp-dark">
+  <div class="rp-wrap rp-footer__grid">
+    <div>
+      <p class="rp-footer__lede">{{ brand().tagline }}</p>
+      @if (whatsapp(); as wa) {
+        <p class="rp-footer__contact">
+          <a class="rp-link" [href]="wa.href" rel="noopener">WhatsApp {{ wa.display }}</a>
+        </p>
+      }
+    </div>
+    <nav aria-label="Footer" class="rp-footer__cols">
+      @for (col of columns(); track col.title) {
+        <div>
+          <h2 class="t-eyebrow">{{ col.title }}</h2>
+          <ul>
+            @for (link of col.links; track link.href) {
+              <li>
+                @if (internal(link.href)) {
+                  <a data-footer-link [routerLink]="link.href">{{ link.label }}</a>
+                } @else {
+                  <a data-footer-link [href]="link.href" rel="noopener">{{ link.label }}</a>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </nav>
+  </div>
+  <div class="rp-wrap">
+    <div class="rp-footer__big" aria-hidden="true" [attr.data-text]="brand().name.toLowerCase()"></div>
+    <p class="rp-footer__legal">
+      <small>© {{ year }} {{ brand().name }}</small>
+    </p>
+  </div>
+</footer>

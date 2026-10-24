@@ -15,6 +15,8 @@ using Romp.Modules.Labelling.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure;
 using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure;
+using Romp.Modules.Storefront.Infrastructure;
+using Romp.Modules.Storefront.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure.Persistence;
 using Romp.Modules.Quality.Infrastructure;
 using Romp.Modules.Quality.Infrastructure.Persistence;
@@ -31,7 +33,7 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule()];
 
 builder.Services.AddSharedPersistence();
 
@@ -47,7 +49,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(Romp.Modules.Production.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Quality.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Labelling.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Warehouse.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Warehouse.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Storefront.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -138,7 +141,8 @@ if (app.Environment.IsDevelopment())
         productionContext.Database.MigrateAsync(),
         qualityContext.Database.MigrateAsync(),
         labellingContext.Database.MigrateAsync(),
-        warehouseContext.Database.MigrateAsync());
+        warehouseContext.Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<StfrDbContext>().Database.MigrateAsync());
 
     // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
     // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough

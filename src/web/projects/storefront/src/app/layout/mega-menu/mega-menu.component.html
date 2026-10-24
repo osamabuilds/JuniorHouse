@@ -1,0 +1,21 @@
+<div class="rp-mega" role="region" [attr.aria-label]="entry().label + ' menu'">
+  <div class="rp-wrap rp-mega__grid">
+    @if (showAges()) {
+      <div>
+        <h3>Shop by age</h3>
+        <ul class="rp-mega__ages">
+          @for (age of ages(); track age.code) {
+            <li>
+              <a class="rp-navlink" [routerLink]="entryHref()" [queryParams]="{ age: age.code }" (click)="navigate.emit()">{{ age.label }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+    @for (member of entry().children; track member.key) {
+      <div>
+        <rp-nav-tree [items]="[member]" mode="list" (navigate)="navigate.emit()" />
+      </div>
+    }
+  </div>
+</div>

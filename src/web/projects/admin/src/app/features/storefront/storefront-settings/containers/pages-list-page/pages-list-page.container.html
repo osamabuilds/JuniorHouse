@@ -1,0 +1,33 @@
+<h1>Pages</h1>
+<p class="page-intro">
+  The content pages of the shop: delivery, exchanges, the size guide, your story and so on. A page is a draft until you publish it, and an
+  archived page leaves the shop for good.
+</p>
+
+<app-section-nav label="Storefront settings" [links]="links" />
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<div class="toolbar">
+  <label class="toolbar__select">
+    <span class="sr-only">Show pages with status</span>
+    <select (change)="filter($event)">
+      <option value="" [selected]="status() === ''">All pages</option>
+      @for (option of statuses; track option.value) {
+        <option [value]="option.value" [selected]="status() === option.value">{{ option.label }} only</option>
+      }
+    </select>
+  </label>
+  <a class="button button--primary" routerLink="/storefront/pages/new">New page</a>
+</div>
+
+<app-pages-table [pages]="pages()" [loading]="loading()" />
+<app-pagination
+  [total]="total()"
+  [page]="currentPage()"
+  [pageSize]="pageSize()"
+  (pageChanged)="changePage($event)"
+  (pageSizeChanged)="changePageSize($event)"
+/>

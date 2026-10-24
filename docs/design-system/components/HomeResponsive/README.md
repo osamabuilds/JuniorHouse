@@ -1,0 +1,1 @@
+The same home page at 390 and 768 px, cropped. Check these against the build: the hero keeps its text bottom-left, the split stacks on phones and sits side by side from 40rem, the grid is 2, 3 then 4 columns, the editorial band stacks, the fabric band's macro tiles fall to two across.

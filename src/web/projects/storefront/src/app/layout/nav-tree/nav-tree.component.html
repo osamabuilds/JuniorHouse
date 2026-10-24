@@ -1,0 +1,32 @@
+<ng-template #link let-item let-text="text">
+  @if (href(item); as h) {
+    @if (internal(h)) {
+      <a class="rp-navlink" [routerLink]="h" (click)="navigate.emit()">{{ text }}</a>
+    } @else {
+      <a class="rp-navlink" [href]="h" rel="noopener" (click)="navigate.emit()">{{ text }}</a>
+    }
+  } @else {
+    <span class="rp-navlabel">{{ text }}</span>
+  }
+</ng-template>
+
+<ul class="rp-navtree">
+  @for (item of items(); track item.key) {
+    <li>
+      @if (item.children.length > 0 && mode() === 'accordion') {
+        <details class="rp-navacc">
+          <summary>{{ item.label }}</summary>
+          @if (href(item)) {
+            <ng-container *ngTemplateOutlet="link; context: { $implicit: item, text: 'All ' + item.label }" />
+          }
+          <rp-nav-tree [items]="item.children" mode="accordion" (navigate)="navigate.emit()" />
+        </details>
+      } @else {
+        <ng-container *ngTemplateOutlet="link; context: { $implicit: item, text: item.label }" />
+        @if (item.children.length > 0) {
+          <rp-nav-tree [items]="item.children" mode="list" (navigate)="navigate.emit()" />
+        }
+      }
+    </li>
+  }
+</ul>

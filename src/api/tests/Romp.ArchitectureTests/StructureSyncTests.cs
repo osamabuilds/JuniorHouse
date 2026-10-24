@@ -53,14 +53,14 @@ public sealed class StructureSyncTests
             {
                 var feature = Path.GetFileName(featureDir);
                 var hasApi = api.TryGetValue(module, out var set) && set.Contains(feature);
-                if (!hasApi && !IsPlanned(featureDir))
+                if (!hasApi && !IsPlanned(featureDir) && !IsFrontendOnly(featureDir))
                 {
                     orphans.Add($"{module}/{feature}");
                 }
             }
         }
 
-        Assert.True(orphans.Count == 0, "Spec features with no API feature (mark the card 'Planned' if intended):" + Environment.NewLine + string.Join(Environment.NewLine, orphans));
+        Assert.True(orphans.Count == 0, "Spec features with no API feature (mark the card 'Planned' if not built yet, or '**Scope:** Frontend-only' if it never has a backend):" + Environment.NewLine + string.Join(Environment.NewLine, orphans));
     }
 
     [Fact]
@@ -179,6 +179,13 @@ public sealed class StructureSyncTests
     {
         var card = Path.Combine(featureDir, "README.md");
         return File.Exists(card) && File.ReadAllText(card).Contains("**Status:** Planned", StringComparison.Ordinal);
+    }
+
+    /// <summary>A feature built entirely in the web app (design system, site chrome): its card says `**Scope:** Frontend-only` and it never gets a backend feature.</summary>
+    private static bool IsFrontendOnly(string featureDir)
+    {
+        var card = Path.Combine(featureDir, "README.md");
+        return File.Exists(card) && File.ReadAllText(card).Contains("**Scope:** Frontend-only", StringComparison.Ordinal);
     }
 
     /// <summary>Module name (PascalCase) -> top-level feature folders found in its Domain/Application/Infrastructure projects.</summary>
