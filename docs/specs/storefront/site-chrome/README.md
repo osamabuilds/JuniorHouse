@@ -2,8 +2,8 @@
 
 - **Module:** [`storefront`](../README.md) · **Feature:** `site-chrome` · **Status:** Spec approved; plan awaiting approval
 
-Story 2 of the storefront design: sticky header, mega-menu, mobile menu, search overlay, bag drawer and dark footer, plus the reveal directive and view transitions. Placeholder data only.
+Story 2 of the storefront design: data-driven sticky header, mega-menu, mobile menu, search overlay, footer and content page template, rendered from the admin-managed settings (SCRUM-206). Cart, wishlist, newsletter, reveal and view transitions are not in this story.
 
 ## Specification
-- [spec.md](spec.md) (Draft) · module context: [../README.md](../README.md)
+- [spec.md](spec.md) (Approved) · module context: [../README.md](../README.md)
 - [plan.md](plan.md) (awaiting approval)
