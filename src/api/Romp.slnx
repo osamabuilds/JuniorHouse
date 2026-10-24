@@ -71,5 +71,6 @@
     <Project Path="tests/Romp.Modules.Vendor.Tests/Romp.Modules.Vendor.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Labelling.Tests/Romp.Modules.Labelling.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Warehouse.Tests/Romp.Modules.Warehouse.Tests.csproj" />
+    <Project Path="tests/Romp.Modules.Storefront.Tests/Romp.Modules.Storefront.Tests.csproj" />
   </Folder>
 </Solution>
