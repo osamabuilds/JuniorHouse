@@ -10,6 +10,7 @@ const link = (key: string, label: string, path: string, sort: number, children: 
 });
 
 const girls: NavItem = {
+  showAges: true,
   ...link('girls', 'Girls', '/girls', 1, [
     link('girls-dresses', 'Dresses', '/girls/dresses', 1),
     link('girls-tops', 'Tops and tees', '/girls/tops-and-tees', 2, [
@@ -24,6 +25,7 @@ const girls: NavItem = {
 };
 
 const boys: NavItem = {
+  showAges: true,
   ...link('boys', 'Boys', '/boys', 2, [
     link('boys-tees', 'Tees and shirts', '/boys/tees-and-shirts', 1, [
       link('boys-t-shirts', 'T-shirts', '/boys/tees-and-shirts/t-shirts', 1),

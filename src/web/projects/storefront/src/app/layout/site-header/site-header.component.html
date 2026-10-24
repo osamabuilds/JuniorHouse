@@ -1,0 +1,50 @@
+<header class="rp-header">
+  <div class="rp-wrap rp-header__bar">
+    <div class="rp-left">
+      <button type="button" class="rp-icon-btn rp-menu-btn" aria-label="Open menu" (click)="menuOpen.emit()">
+        <rp-icon name="menu" />
+      </button>
+      <button type="button" class="rp-icon-btn rp-search-btn" aria-label="Search" (click)="searchOpen.emit()">
+        <rp-icon name="search" />
+      </button>
+      <nav aria-label="Primary">
+        <ul class="rp-nav">
+          @for (entry of entries(); track entry.key) {
+            <li>
+              @if (entry.children.length > 0) {
+                <button
+                  type="button"
+                  aria-haspopup="true"
+                  [attr.aria-expanded]="openKey() === entry.key"
+                  [attr.aria-controls]="'mega-' + entry.key"
+                  (click)="toggle(entry.key)"
+                >{{ entry.label }}</button>
+              } @else if (href(entry); as h) {
+                <a [routerLink]="h" routerLinkActive="is-active" ariaCurrentWhenActive="page">{{ entry.label }}</a>
+              } @else {
+                <span>{{ entry.label }}</span>
+              }
+            </li>
+          }
+        </ul>
+      </nav>
+    </div>
+
+    <a class="rp-logo" routerLink="/" [attr.aria-label]="brand().name + ', home'">{{ brand().name.toLowerCase() }}<i></i></a>
+
+    <div class="rp-tools">
+      <form class="rp-search" role="search" action="/search" method="get">
+        <rp-icon name="search" />
+        <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off" (focus)="searchOpen.emit()" />
+      </form>
+    </div>
+  </div>
+
+  @for (entry of entries(); track entry.key) {
+    @if (entry.children.length > 0) {
+      <div class="rp-mega-host" [id]="'mega-' + entry.key" [hidden]="openKey() !== entry.key">
+        <rp-mega-menu [entry]="entry" [ages]="ages()" (navigate)="openKey.set(null)" />
+      </div>
+    }
+  }
+</header>

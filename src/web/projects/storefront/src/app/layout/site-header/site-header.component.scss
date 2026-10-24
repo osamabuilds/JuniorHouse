@@ -1,0 +1,9 @@
+:host { display: block; position: sticky; top: 0; z-index: 30; }
+/* The sticky element is the host, so the design's .rp-header must not stick on its own. */
+.rp-header { position: static; }
+.rp-mega-host { position: absolute; left: 0; right: 0; top: 100%; }
+.rp-mega-host[hidden] { display: none; }
+/* The mega-menu belongs to wide screens; phones use the mobile menu. */
+@media (max-width: 63.99rem) { .rp-mega-host { display: none; } }
+.rp-nav { list-style: none; margin: 0; padding: 0; }
+.rp-nav li { margin: 0; }

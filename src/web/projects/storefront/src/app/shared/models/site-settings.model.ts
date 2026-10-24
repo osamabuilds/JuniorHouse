@@ -17,6 +17,8 @@ export interface NavItem {
   readonly enabled: boolean;
   readonly sort: number;
   readonly children: readonly NavItem[];
+  /** The mega-menu adds a "Shop by age" column of the configured ages (links carry the age code). */
+  readonly showAges?: boolean;
 }
 
 export interface AgeStep {

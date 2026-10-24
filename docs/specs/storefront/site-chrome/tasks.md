@@ -16,13 +16,13 @@
 - [x] 8. `features/storefront/site-settings`: NgRx state, actions, reducer, selectors (`selectHeaderEntries`, `selectAges`, `selectFooter`, `selectBrand`), `SiteSettingsApi`, effects with fallback (API error to last good copy to launch set), `TransferState` hand-off. Test: reducer and selector specs; effect spec with a failing API (ST-13).
 
 ## C. Dialog and shared pieces
-- [ ] 9. `layout/dialog` controller on native `<dialog>`: `showModal()`, scrim click, Esc, scroll lock, focus return. Test: opens, traps, closes on Esc and scrim, returns focus (SC-8).
-- [ ] 10. `rp-nav-tree` recursive template (depth constant 3). Test: renders members and sub-members as links; no fourth level (SC-3a).
+- [x] 9. `layout/dialog` controller on native `<dialog>`: `showModal()`, scrim click, Esc, scroll lock, focus return. Test: opens, traps, closes on Esc and scrim, returns focus (SC-8).
+- [x] 10. `rp-nav-tree` recursive template (depth constant 3). Test: renders members and sub-members as links; no fourth level (SC-3a).
 
 ## D. Layout components
-- [ ] 11. `rp-announcement-bar` (from settings, hidden when disabled). Test: shows/hides by setting.
-- [ ] 12. `rp-site-header` and nav list: landmark, entries from the store, wordmark, desktop search field as a GET form. Test: server-rendered HTML has `<header>`, `<nav aria-label="Primary">`, the enabled entries only; works without scripting (SC-1, SC-2, SC-10).
-- [ ] 13. `rp-mega-menu`: opens on click/Enter only, Esc and outside click close, focus to first link, route change closes, hidden under 64rem. Test: keyboard and click specs; hover does not open (SC-3a, SC-6).
+- [x] 11. `rp-announcement-bar` (from settings, hidden when disabled). Test: shows/hides by setting.
+- [x] 12. `rp-site-header` and nav list: landmark, entries from the store, wordmark, desktop search field as a GET form. Test: server-rendered HTML has `<header>`, `<nav aria-label="Primary">`, the enabled entries only; works without scripting (SC-1, SC-2, SC-10).
+- [x] 13. `rp-mega-menu`: opens on click/Enter only, Esc and outside click close, focus to first link, route change closes, hidden under 64rem. Test: keyboard and click specs; hover does not open (SC-3a, SC-6).
 - [ ] 14. `rp-mobile-menu` on the dialog controller: nested accordions, search field, 44 px targets. Test: opens, nested expand, closes with focus return (SC-7, SC-8).
 - [ ] 15. `rp-search-overlay` and `searchSuggest` feature: 200 ms debounce, `switchMap`, results capped at 4, text-only rendering, empty state, Enter to `/search?q=`. Test: fake-timer spec for debounce; markup typed into the box is shown as text; empty-state links (SC-9, SC-10).
 - [ ] 16. `rp-site-footer`: columns from settings, contact and WhatsApp link, decorative wordmark, legal row, no newsletter. Test: footer renders from a settings fixture and follows a changed fixture (SC-11, SC-3).
