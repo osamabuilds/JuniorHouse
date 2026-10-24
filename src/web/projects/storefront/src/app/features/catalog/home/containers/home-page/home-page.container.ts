@@ -14,7 +14,6 @@ export class HomePageContainer {
   protected readonly collections = [
     { label: 'Girls', path: '/girls' },
     { label: 'Boys', path: '/boys' },
-    { label: 'Baby', path: '/baby' },
     { label: 'Essentials', path: '/new-in' },
   ];
   protected readonly edit = SAMPLE_PRODUCTS.slice(0, 4);
