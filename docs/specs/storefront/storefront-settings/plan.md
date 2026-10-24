@@ -97,3 +97,13 @@ Alternatives in ADR 0020. Risks: the settings routes before S8 (mitigated by the
 
 ## Contract additions from SCRUM-205 (site chrome), 2026-10-24
 The storefront built against the `SiteSettings` contract and added to it; SCRUM-206 must store and publish these: `NavItem.showAges` (boolean per navigation item); `popularSearches` (ordered list of terms, a setting); `PageBlock` type `fact` with an optional `label`, and the fact keys `contact.whatsapp`, `contact.email`, `contact.hours`, `exchange.window`, `exchange.conditions`, `delivery.rules` (a page that uses a fact whose value is empty cannot be published, ST-17); privacy and terms are seeded as Draft with no text. The seeded wording lives in the storefront's `launch-pages.ts` and must equal the migration seed (contract fixture test, task 5 and 21).
+
+## As built (differences from this plan, 2026-10-24)
+The full decision log is in [tasks.md](tasks.md); the behaviour is described in the "As built" section of [spec.md](spec.md). In short:
+- **Concurrency:** `xmin` row versions plus a draft version counter, not a `ROW_VER` column; sibling positions are a plain index, validated in code.
+- **Tables:** `POPL_SRCH`, `FACT_LKP`, `DRFT_MAIN`, `PAGE_RDIR` and `LINK_TGT_LKP` were added; the current snapshot is `CRNT_IND`; delivery is one row per city.
+- **Names:** the feature folder (API and web) and the e2e file are called `storefront-settings` (the plan said `settings`) so `StructureSyncTests` can match the spec.
+- **Saves** replace a whole part inside one transaction; pages have their own row version.
+- **Endpoints:** public `GET /api/storefront/settings` and `/api/storefront/pages/{slug}`, admin routes under `/api/admin/storefront-settings` with the `StorefrontSettings` policy; `Storefront:EnableAdminRoutes` and `Storefront:AllowedExternalHosts` (default `wa.me`) are the configuration.
+- **Storefront wiring (new):** the storefront's SSR server forwards `GET /api/storefront/*` to `API_BASE_URL`; before the first publish the API answers 404 and the built-in launch set keeps serving.
+- **Audit (task 14) is not built:** the `AuditRecorded` interceptor is Sprint 8 work; open question Q-ST-10 in the spec.

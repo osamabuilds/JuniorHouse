@@ -1,6 +1,6 @@
 # SCRUM-206: Storefront settings (admin-managed configuration)
 
-- **Status:** Approved (owner, 2026-10-24: every open question answered with the proposed default; Q-ST-5 as stated below)
+- **Status:** Implemented, except the central audit trail (ST-12, Q-ST-10 open). Approved by the owner 2026-10-24; as built below
 - **Jira:** SCRUM-206 (task for SCRUM-203, Sprint 9). Consumed by SCRUM-205 (`site-chrome`).
 - **BRD sections:** §4.1 FEAT-CAT-01 (navigation), §14 (SEO), NFR-01; the BRD has no requirement for a settings system. It is an owner decision (below), so **no FR ID applies and none is invented**; the BRD errata list (SCRUM-168) should log it.
 - **Requirement IDs:** FR-01, NAV-5, NAV-9 (navigation data), NFR-01, SEC-08 (admin writes), SEO-01, SEO-04.
@@ -63,7 +63,29 @@ Visual theming and layout changes (colours, fonts, section order on the home pag
 ## Non-functional constraints
 NFR-01 (settings ride in the server HTML, no client fetch for the chrome), SEC-08, ADR 0016 (audit), NFR-FT (last-good fallback). Settings contain no personal data. Architecture: Storefront module only; Admin talks to it over its own API; no cross-schema access.
 
-## Open questions (all resolved by the owner, 2026-10-24)
+## As built (SCRUM-206, closed 2026-10-24)
+What was implemented differs from the text above in these ways. The code and tests describe the final behaviour; `tasks.md` has the full decision log.
+
+**Data**
+- Concurrency uses PostgreSQL `xmin` (as every other module), plus a draft version counter `VER_NO`; there is no `ROW_VER` column (ST-14). Sibling positions `(PRNT_ID, SORT_SEQ)` are a plain index, not unique, because a reorder is saved row by row; the validator rejects duplicate positions instead.
+- Tables added to the plan: `POPL_SRCH` (popular searches), `FACT_LKP` (the six fact keys, referenced by `PAGE_BLCK.FACT_ID`), `DRFT_MAIN` (the draft version counter), `PAGE_RDIR` (redirects), `LINK_TGT_LKP` (link target kinds). The current snapshot is flagged by `CRNT_IND`. Delivery is one `DLVR_RULE` row per city (a new city is a new row).
+- Contract additions stored and published: `NavItem.showAges`, `popularSearches`, a `List` block `ordered` flag, a `Table` block caption (the block label) with its header as row 0, block labels up to 120 characters, and the six `Fact` keys.
+- The seed is the launch set (S-1, S-2), the WhatsApp number and eight **Draft** pages. Opening hours, the four delivery cities, the 7-day exchange window and its three conditions are **placeholders** to replace in the admin app before launch; the contact email is real.
+
+**Behaviour**
+- Each save replaces its whole part (navigation, ages, footer, contact and popular searches, delivery and exchange) inside one transaction; row ids change on every save. Every save quotes the draft version it loaded and a stale one is a 409. Pages carry their own row version.
+- A link to a page is accepted at save if the page exists and is not archived; publish requires it to be published and names each dead link. A slug change does not rewrite links to the old slug. Category targets are refused until the Catalog hierarchy exists (SCRUM-207).
+- The snapshot document is `{ settings, pages, redirects, gone }`. A navigation Link with members is emitted as the web kind `group`, WhatsApp without the `+`. Publishing equal content returns the existing version. Restore publishes a copy of an old snapshot as a new version and leaves the draft alone.
+- Public reads: `GET /api/storefront/settings` and `/api/storefront/pages/{slug}` (ETag, `max-age=60`, 304; a moved page answers 301 with the new slug, an archived one 410), served from a 60 s memory copy dropped when `StorefrontSettingsPublished` is consumed. Admin routes are under `/api/admin/storefront-settings`, policy `StorefrontSettings` (role `StorefrontSettings` or `Admin`); the module refuses to map them when `Storefront:EnableAdminRoutes` is off, and the host refuses to start without real authentication outside Development and Testing.
+- Storefront: the settings URL defaults to `/api/storefront/settings`. Until the first publish the endpoint answers 404 and the storefront keeps serving its built-in launch set; the page lookup asks the API only once the settings came from it. The storefront's SSR server forwards `GET /api/storefront/*` to `API_BASE_URL`. A contract fixture (`api-launch-document.json`) ties the API document to the web launch set; they differ only in page status (seeded drafts), business facts and `version`.
+- Admin: one NgRx store for all screens (navigation, ages, footer, settings, delivery and exchange, pages, publish); every list reorders with labelled buttons and the navigation also has indent and outdent buttons (no drag, ST-15); a two-step restore in the page; an unsaved-changes guard. Verified at 390 px with axe and 44 px targets (`.button--small` and table-row links were enlarged on phones).
+
+**Not built, still open**
+- **ST-12 audit trail.** Every change is stamped with who and when (`INSR_*`, `UPDT_*`, actor `system` until staff login) and a snapshot keeps its note, and restore works. The central `AuditRecorded` trail of ADR 0016 is Sprint 8 work and does not exist yet. ST-12 says "old and new values" but ADR 0016 stores only the names of changed columns, never values (ADR 0016 overrides the BRD); nothing here stores values. See Q-ST-10.
+- A rendered preview on the storefront (needs the staff login of Sprint 8; the admin shows the preview data).
+- A renamed page's 301 is followed by the storefront's fetch client instead of being turned into a real 301 at the storefront.
+
+## Open questions (Q-ST-1 to 9 resolved by the owner, 2026-10-24)
 - [x] **Q-ST-1 Home.** The Storefront module (schema `STFR`) gets a small write side for settings. ADR [0020](../../adr/0020-storefront-settings-and-published-snapshot.md).
 - [x] **Q-ST-2 Page content format.** Structured blocks (heading, paragraph, list, table, call-out), edited with form fields.
 - [x] **Q-ST-3 Images in pages.** Text-only pages at launch.
@@ -73,3 +95,4 @@ NFR-01 (settings ride in the server HTML, no client fetch for the chrome), SEC-0
 - [x] **Q-ST-7 Admin app is touched.** Confirmed: this story adds a "Storefront settings" section to the admin app; existing admin screens are not changed. The admin re-skin stays a separate story.
 - [x] **Q-ST-8 Collections entry.** A menu fed by enabled collections from Catalog.
 - [x] **Q-ST-9 Category tree vs Catalog.** Option (b), owner 2026-10-24: Catalog gets a real category hierarchy (own Jira task, SCRUM-207), and navigation items of kind Category point at Catalog categories. Three levels is kept as the working maximum (one constant); the owner did not name another number. Until the Catalog hierarchy exists, the launch set and the seeded tree use placeholder category codes and navigation targets of kind Path, validated against the routes that exist.
+- [ ] **Q-ST-10 ST-12 wording (open, raised 2026-10-24).** ST-12 asks for "old and new values"; ADR 0016 forbids storing values. Confirm that ST-12 means "which fields changed", recorded by the Sprint 8 interceptor. Until then task 14 stays open.

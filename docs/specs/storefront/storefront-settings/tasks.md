@@ -35,7 +35,7 @@
 - [x] 21. Storefront `SiteSettingsApi` points at the real endpoints; the contract fixture test compares the API document with the web launch set. Test: contract spec (ST-1).
 - [x] 22. E2E `src/web/e2e/storefront/storefront-settings.e2e.spec.ts`: rename an entry, add a member, publish, see it on the storefront within 60 s; edit a page; archive it and see 410. Test: the spec (ST-1, ST-8).
 - [x] 23. Accessibility pass on the admin screens at 390 px (labels, 44 px targets, button alternatives to drag) with axe. Test: axe spec (ST-15).
-- [ ] 24. Close the loop: spec deviations, mark Implemented, ADR 0020 Accepted, READMEs, memory note.
+- [x] 24. Close the loop: spec deviations, mark Implemented, ADR 0020 Accepted, READMEs, memory note. **Done except task 14 (audit), which stays open pending Q-ST-10 and Sprint 8.**
 
 ## Implementation notes (deviations from the plan, to fold into the spec in task 24)
 - **Concurrency token:** rows use PostgreSQL `xmin` (as every other module does, `docs/db/naming.md` section 2), not a `ROW_VER` column. The draft aggregate also keeps `VER_NO` (ST-14).

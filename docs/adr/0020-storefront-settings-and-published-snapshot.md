@@ -29,3 +29,6 @@ The owner wants the storefront to be configured from the admin app, so that navi
 - A new table family and a new admin section; a published-snapshot size grows with page text (small, kept under a size limit in validation).
 - Facts used by several pages are single records, which later checkout and emails can read from the same snapshot.
 - The deployment must keep the settings feature switched off on public hosts until S8 lands.
+
+## Implementation notes (2026-10-24)
+Built as decided. Differences of detail: rows use PostgreSQL `xmin` as the concurrency token (as every module does) plus a draft version counter; the snapshot document is `{ settings, pages, redirects, gone }`; the public copy is dropped by the outbox consumer of `StorefrontSettingsPublished` (60 s expiry as backstop); restore publishes a copy of an old snapshot as a new version. The audit trail that the decision relies on (ADR 0016) is not available until Sprint 8. See the spec's "As built" section.
