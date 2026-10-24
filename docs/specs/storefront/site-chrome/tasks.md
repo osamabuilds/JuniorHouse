@@ -20,7 +20,7 @@
 - [x] 10. `rp-nav-tree` recursive template (depth constant 3). Test: renders members and sub-members as links; no fourth level (SC-3a).
 
 ## D. Layout components
-- [x] 11. `rp-announcement-bar` (from settings, hidden when disabled). Test: shows/hides by setting.
+- [ ] 11. `rp-announcement-bar` (from settings, hidden when disabled). Test: shows/hides by setting.
 - [x] 12. `rp-site-header` and nav list: landmark, entries from the store, wordmark, desktop search field as a GET form. Test: server-rendered HTML has `<header>`, `<nav aria-label="Primary">`, the enabled entries only; works without scripting (SC-1, SC-2, SC-10).
 - [x] 13. `rp-mega-menu`: opens on click/Enter only, Esc and outside click close, focus to first link, route change closes, hidden under 64rem. Test: keyboard and click specs; hover does not open (SC-3a, SC-6).
 - [ ] 14. `rp-mobile-menu` on the dialog controller: nested accordions, search field, 44 px targets. Test: opens, nested expand, closes with focus return (SC-7, SC-8).

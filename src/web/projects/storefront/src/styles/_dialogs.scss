@@ -1,0 +1,27 @@
+/* Native <dialog> surfaces (mobile menu, search overlay). Layout and motion only; every value is a token. */
+body.rp-no-scroll { overflow: hidden; }
+
+dialog.rp-sheet,
+dialog.rp-fullscreen {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  max-width: none;
+  max-height: none;
+  background: var(--surface);
+  color: var(--ink);
+}
+dialog.rp-sheet { position: fixed; inset: 0 auto 0 0; width: min(24rem, 100%); height: 100dvh; overflow-y: auto; }
+dialog.rp-fullscreen { position: fixed; inset: 0; width: 100%; height: 100dvh; overflow-y: auto; }
+dialog.rp-sheet::backdrop,
+dialog.rp-fullscreen::backdrop { background: var(--overlay); }
+
+@media (prefers-reduced-motion: no-preference) {
+  dialog.rp-sheet[open] { animation: rp-slide-in var(--dur-base) var(--ease-inout); }
+  dialog.rp-fullscreen[open] { animation: rp-fade-in var(--dur-base) var(--ease-out); }
+}
+@keyframes rp-slide-in { from { transform: translateX(-100%); } to { transform: none; } }
+@keyframes rp-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.rp-dialog__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--header-h-mobile); padding-inline: var(--margin-mobile); border-bottom: var(--border-line) solid var(--line); }
+.rp-dialog__body { padding: var(--space-4) var(--margin-mobile) var(--space-8); }
