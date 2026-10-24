@@ -1,0 +1,120 @@
+<section class="rp-hero" aria-labelledby="hero-h">
+  <div class="rp-ph rp-ph--sun" role="img" aria-label="Placeholder image: a child in the courtyard, north light">
+    <span class="rp-arch"></span><span class="rp-floor"></span>
+  </div>
+  <div class="rp-hero__scrim"></div>
+  <div class="rp-wrap">
+    <div class="rp-hero__copy">
+      <span class="rp-eyebrow">Autumn / Winter · Ages 1 to 12</span>
+      <h1 id="hero-h" class="rp-display-xl">Dressed for the day</h1>
+      <div class="rp-hero__ctas">
+        <a class="rp-btn rp-btn--light" routerLink="/new-in">Shop new in</a>
+        <a class="rp-link rp-link--light" routerLink="/girls">Shop girls <rp-icon name="arrow" /></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="rp-section" aria-label="Shop by category">
+  <div class="rp-wrap">
+    <div class="rp-split">
+      <a class="rp-tile rp-zoomable" routerLink="/girls">
+        <div class="rp-zoom"><div class="rp-ph rp-ph--clay" role="img" aria-label="Placeholder image: girls"><rp-garment shape="dress" /></div></div>
+        <div class="rp-tile__scrim"></div>
+        <div class="rp-tile__cap">
+          <div><span class="rp-eyebrow">Ages 1 to 12</span><h2 class="rp-display-md">Girls</h2></div>
+          <span class="rp-link rp-link--light">Shop girls <rp-icon name="arrow" /></span>
+        </div>
+      </a>
+      <a class="rp-tile rp-zoomable" routerLink="/boys">
+        <div class="rp-zoom"><div class="rp-ph rp-ph--sage" role="img" aria-label="Placeholder image: boys"><rp-garment shape="shirt" /></div></div>
+        <div class="rp-tile__scrim"></div>
+        <div class="rp-tile__cap">
+          <div><span class="rp-eyebrow">Ages 1 to 12</span><h2 class="rp-display-md">Boys</h2></div>
+          <span class="rp-link rp-link--light">Shop boys <rp-icon name="arrow" /></span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="rp-section" aria-labelledby="new-h">
+  <div class="rp-wrap">
+    <div class="rp-head">
+      <div><span class="rp-eyebrow">Just in</span><h2 id="new-h" class="rp-display-md">New in</h2></div>
+      <a class="rp-link" routerLink="/new-in">View all <rp-icon name="arrow" /></a>
+    </div>
+    <ul class="rp-grid">
+      @for (product of newIn; track product.slug) {
+        <li><rp-product-card [product]="product" /></li>
+      }
+    </ul>
+  </div>
+</section>
+
+<section class="rp-section rp-dark" aria-labelledby="story-h">
+  <div class="rp-wrap">
+    <div class="rp-edit">
+      <div class="rp-edit__img rp-zoomable">
+        <div class="rp-zoom"><div class="rp-ph rp-ph--stone" role="img" aria-label="Placeholder image: the studio"><span class="rp-arch"></span><span class="rp-floor"></span></div></div>
+      </div>
+      <div class="rp-edit__copy">
+        <h2 id="story-h" class="rp-eyebrow">The studio</h2>
+        <blockquote>Clothes that keep up with them, and last long enough to be handed down.</blockquote>
+        <a class="rp-link" routerLink="/our-story">Our story <rp-icon name="arrow" /></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="rp-section rp-band" aria-labelledby="gift-h">
+  <div class="rp-wrap">
+    <div class="rp-head">
+      <div><span class="rp-eyebrow">Gifts</span><h2 id="gift-h" class="rp-display-md">Something they will wear on repeat</h2></div>
+      <a class="rp-link" routerLink="/new-in">Shop gifts <rp-icon name="arrow" /></a>
+    </div>
+    <ul class="rp-gifts">
+      @for (gift of gifts; track gift.title) {
+        <li>
+          <a class="rp-gift rp-zoomable" routerLink="/new-in">
+            <div style="overflow: hidden; border-radius: 2px">
+              <div class="rp-zoom"><div class="rp-ph rp-ph--{{ gift.tone }}" role="img" [attr.aria-label]="'Placeholder image: ' + gift.title"><rp-garment [shape]="gift.shape" /></div></div>
+            </div>
+            <div><h3>{{ gift.title }}</h3><p>{{ gift.note }}</p></div>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<section class="rp-section rp-band" aria-labelledby="fab-h">
+  <div class="rp-wrap">
+    <div class="rp-fabric">
+      <div class="rp-fabric__head">
+        <span class="rp-eyebrow">Fabric and care</span>
+        <h2 id="fab-h" class="rp-display-md">Felt before it is worn</h2>
+        <p class="rp-lead">Soft, breathable cotton and linen, washed before cutting so it feels right from the first day. Machine wash cold, line dry.</p>
+        <a class="rp-link" routerLink="/size-guide" style="justify-self: start">Care guide <rp-icon name="arrow" /></a>
+      </div>
+      <div class="rp-fabric__grid">
+        @for (fabric of fabrics; track fabric.name) {
+          <figure>
+            <div class="rp-tex rp-tex--{{ fabric.tex }}" role="img" [attr.aria-label]="'Macro fabric placeholder: ' + fabric.name"></div>
+            <figcaption><b>{{ fabric.name }}</b>{{ fabric.note }}</figcaption>
+          </figure>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="rp-section rp-section--tight" aria-label="Why Romp">
+  <div class="rp-wrap">
+    <ul class="rp-trust">
+      <li><rp-icon name="pin" /><b>Made in Pakistan</b></li>
+      <li><rp-icon name="swap" /><b>Easy exchange within 7 days</b></li>
+      <li><rp-icon name="cash" /><b>Cash on delivery or card</b></li>
+    </ul>
+  </div>
+</section>

@@ -1,0 +1,73 @@
+<div class="rp-wrap">
+  <div class="rp-lhead">
+    <nav class="rp-crumbs" aria-label="Breadcrumb">
+      <a routerLink="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">{{ category().name }}</span>
+    </nav>
+    <h1 class="rp-display-lg">{{ category().name }}</h1>
+    <p class="rp-lead">{{ category().lead }}</p>
+  </div>
+</div>
+
+<div class="rp-filterbar">
+  <div class="rp-wrap rp-filterbar__in">
+    <div class="rp-chips" role="group" aria-label="Filter by age">
+      @for (band of ageBands; track band.value) {
+        <button type="button" class="rp-chip" [attr.aria-pressed]="age()?.value === band.value" (click)="setAge(age()?.value === band.value ? null : band.value)">
+          Age: {{ band.label }}
+        </button>
+      }
+    </div>
+    <div style="display: flex; align-items: center; gap: 20px">
+      <span class="rp-count-note">{{ filtered().length }} pieces</span>
+      <label class="sr-only" for="sort">Sort</label>
+      <select id="sort" class="rp-select" [value]="sort()" (change)="setSort($any($event.target).value)">
+        @for (s of sorts; track s.value) {
+          <option [value]="s.value" [selected]="s.value === sort()">{{ s.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="rp-wrap">
+  @if (age(); as band) {
+    <div class="rp-active">
+      <span class="rp-count-note">Filtered by</span>
+      <button type="button" class="rp-chip" (click)="setAge(null)">Age: {{ band.label }} <rp-icon name="close" /></button>
+      <button type="button" class="rp-link" style="margin-left: 8px" (click)="setAge(null)">Clear all</button>
+    </div>
+  }
+
+  @if (filtered().length === 0) {
+    <p class="rp-lead" style="padding-block: 64px">Nothing in this age range yet. <a class="rp-link" routerLink="/new-in">See what is new</a></p>
+  } @else {
+    <ul class="rp-grid">
+      @for (product of firstRow(); track product.slug) {
+        <li><rp-product-card [product]="product" /></li>
+      }
+      @if (rest().length) {
+        <li style="grid-column: 1 / -1; list-style: none">
+          <div class="rp-banner">
+            <div class="rp-ph rp-ph--sage" role="img" aria-label="Placeholder image: the edit"><span class="rp-arch"></span><span class="rp-floor"></span></div>
+            <div class="rp-hero__scrim"></div>
+            <div class="rp-banner__copy">
+              <span class="rp-eyebrow" style="color: var(--on-image)">The edit</span>
+              <span class="rp-display-md">Linen, in four colours</span>
+              <a class="rp-link rp-link--light" routerLink="/new-in">Shop linen <rp-icon name="arrow" /></a>
+            </div>
+          </div>
+        </li>
+      }
+      @for (product of rest(); track product.slug) {
+        <li><rp-product-card [product]="product" /></li>
+      }
+    </ul>
+    <div class="rp-more">
+      <span class="rp-count-note">Showing {{ visible().length }} of {{ filtered().length }}</span>
+      @if (visible().length < filtered().length) {
+        <button type="button" class="rp-btn rp-btn--ghost" (click)="showMore()">Show more</button>
+      }
+    </div>
+  }
+</div>
+<div style="height: 96px"></div>
