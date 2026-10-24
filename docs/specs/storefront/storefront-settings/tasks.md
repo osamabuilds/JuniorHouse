@@ -33,7 +33,7 @@
 
 ## E. Wiring and verification
 - [x] 21. Storefront `SiteSettingsApi` points at the real endpoints; the contract fixture test compares the API document with the web launch set. Test: contract spec (ST-1).
-- [ ] 22. E2E `src/web/e2e/storefront/storefront-settings.e2e.spec.ts`: rename an entry, add a member, publish, see it on the storefront within 60 s; edit a page; archive it and see 410. Test: the spec (ST-1, ST-8).
+- [x] 22. E2E `src/web/e2e/storefront/storefront-settings.e2e.spec.ts`: rename an entry, add a member, publish, see it on the storefront within 60 s; edit a page; archive it and see 410. Test: the spec (ST-1, ST-8).
 - [ ] 23. Accessibility pass on the admin screens at 390 px (labels, 44 px targets, button alternatives to drag) with axe. Test: axe spec (ST-15).
 - [ ] 24. Close the loop: spec deviations, mark Implemented, ADR 0020 Accepted, READMEs, memory note.
 
@@ -77,3 +77,7 @@
   - *Until the first publish:* the settings endpoint answers 404, the load fails and the storefront keeps serving the built-in launch set (source `fallback`). The page effect waits for the settings to settle and asks the pages API only when the settings came from the API (source `api`); otherwise it serves the launch pages as before. So the seeded drafts do not turn the six fallback pages into 404s before the owner publishes.
   - *Contract:* the API test `Seed_PublishedDocument_MatchesTheCommittedContractFixture` builds the document from the seeded database (preview mode, drafts shown as live) and compares it with `shared/data/contract/api-launch-document.json` (`ROMP_UPDATE_FIXTURES=1` rewrites it). The storefront spec `launch-settings.contract.spec.ts` compares that fixture with `launchSettings` and `launchPages` (navigation, ages, footer, brand, popular searches, page titles and content). Known differences: page status, business facts and `version`.
   - *Not handled:* a 301 for a renamed page is followed by the fetch client (same-origin proxy) and renders the new page at the old URL; turning it into a real 301 in the storefront is still to do.
+- **Task 22 (e2e) decisions:**
+  - *Set-up through the API:* the seeded pages are drafts and the first publish is refused until they are published (ST-17), so the spec publishes them (the two legal placeholders get a description) and resets the menu before it starts. The checks themselves go through the admin UI: rename an entry, add a member, save, publish with a note; edit a page paragraph, save, publish; archive and publish. The shop is polled for up to 60 s; the archived address must answer 410.
+  - *Side effect (open):* after the spec runs, privacy and terms stay published in that database, so `pages.e2e.spec.ts` "ST-8 draft pages (privacy, terms) are not served until published" fails on a stack where the settings have been published. A publish cannot be undone, only superseded.
+  - *Admin page load:* `goto` waits for `domcontentloaded`, not `load`, because the admin index requests Google Fonts.
