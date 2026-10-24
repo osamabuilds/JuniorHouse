@@ -45,6 +45,11 @@ public sealed class UpdatePageCommandValidator : AbstractValidator<UpdatePageCom
     }
 }
 
+public sealed class ChangePageStatusCommandValidator : AbstractValidator<ChangePageStatusCommand>
+{
+    public ChangePageStatusCommandValidator() => RuleFor(c => c.Status).IsInEnum().WithMessage("Choose draft, published or archived.");
+}
+
 internal static class PageSupport
 {
     /// <summary>Problems of the one page, plus a slug that is already an old address of another page (it would answer two ways).</summary>

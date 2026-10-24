@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Romp.Modules.Storefront.Domain.StorefrontSettings;
 
 /// <summary>The caps from the plan's "Size limits" (one constant each, Q-ST-9).</summary>
@@ -17,6 +19,7 @@ public static class SettingsLimits
 // The numeric values below are the lookup-row IDs (smallint) seeded by the migration, so they never change or get reused.
 
 /// <summary>What a navigation entry is. Maps to the <c>NAV_KIND_LKP</c> rows.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum NavKind : short
 {
     Link = 1,
@@ -25,6 +28,7 @@ public enum NavKind : short
 }
 
 /// <summary>What a link points at: a typed reference, never a free URL. Maps to <c>LINK_TGT_LKP</c>.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum LinkTargetKind : short
 {
     Path = 1,
@@ -35,6 +39,7 @@ public enum LinkTargetKind : short
 }
 
 /// <summary>Maps to <c>PAGE_STS_LKP</c>.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PageStatus : short
 {
     Draft = 1,
@@ -43,6 +48,7 @@ public enum PageStatus : short
 }
 
 /// <summary>Maps to <c>BLCK_TYP_LKP</c>.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum BlockType : short
 {
     Heading = 1,
@@ -54,6 +60,7 @@ public enum BlockType : short
 }
 
 /// <summary>Maps to <c>STNG_KEY_LKP</c>.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum SettingKey : short
 {
     BrandName = 1,

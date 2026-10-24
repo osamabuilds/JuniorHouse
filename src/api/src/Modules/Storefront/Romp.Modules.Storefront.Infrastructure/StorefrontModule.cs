@@ -1,6 +1,10 @@
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Romp.BuildingBlocks.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +42,7 @@ public sealed class StorefrontModule : IModule
         services.AddSingleton<IExternalHostPolicy, ExternalHostPolicy>();
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
+        services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(StorefrontTransactionBehavior<,>));
@@ -50,6 +55,21 @@ public sealed class StorefrontModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        // Endpoints arrive with task 12.
+        endpoints.MapPublicStorefrontEndpoints();
+
+        var services = endpoints.ServiceProvider;
+        var options = services.GetRequiredService<IOptions<StorefrontOptions>>().Value;
+        var environment = services.GetRequiredService<IHostEnvironment>();
+        var schemes = services.GetRequiredService<IAuthenticationSchemeProvider>().GetAllSchemesAsync().GetAwaiter().GetResult();
+        StorefrontAdminRoutesGuard.Verify(
+            options.EnableAdminRoutes,
+            RompAuthorizationExtensions.IsDevelopmentLike(environment),
+            schemes.Any(s => s.Name != RompAuthorizationExtensions.DevelopmentScheme),
+            environment.EnvironmentName);
+
+        if (options.EnableAdminRoutes)
+        {
+            endpoints.MapAdminStorefrontSettingsEndpoints();
+        }
     }
 }

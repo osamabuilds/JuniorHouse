@@ -110,6 +110,7 @@ internal sealed class StorefrontHost : IDisposable
         services.AddSingleton<IExternalHostPolicy, FakeExternalHostPolicy>();
         services.AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()));
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
+        services.AddScoped<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries, PublishedPageSitemapSource>();
 
         var applicationAssembly = typeof(AssemblyReference).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);
@@ -139,6 +140,14 @@ internal sealed class StorefrontHost : IDisposable
     {
         await using var scope = _root.CreateAsyncScope();
         return await query(scope.ServiceProvider.GetRequiredService<StfrDbContext>());
+    }
+
+    /// <summary>The pages the sitemap would list, through the Storefront contract other modules use.</summary>
+    public async Task<IReadOnlyList<Romp.Modules.Storefront.Contracts.PublishedPageRef>> ListSitemapPagesAsync()
+    {
+        await using var scope = _root.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries>()
+            .ListPublishedPagesAsync(default);
     }
 
     public async Task<int> DraftVersionAsync() => (await SendAsync(new GetDraftSettingsQuery())).Version;

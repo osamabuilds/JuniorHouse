@@ -12,6 +12,7 @@ namespace Romp.Modules.Storefront.Application.StorefrontSettings;
 public sealed record PublishedDocument(
     int VersionNo,
     string Hash,
+    DateTimeOffset PublishedAt,
     string SettingsJson,
     IReadOnlyDictionary<string, string> PagesJson,
     IReadOnlyDictionary<string, string> Redirects,
@@ -19,12 +20,13 @@ public sealed record PublishedDocument(
 {
     public string ETag => $"\"{Hash}\"";
 
-    public static PublishedDocument Parse(int versionNo, string hash, string document)
+    public static PublishedDocument Parse(int versionNo, string hash, DateTimeOffset publishedAt, string document)
     {
         var root = JsonNode.Parse(document)!;
         return new PublishedDocument(
             versionNo,
             hash,
+            publishedAt,
             root["settings"]!.ToJsonString(),
             root["pages"]!.AsObject().ToDictionary(p => p.Key, p => p.Value!.ToJsonString(), StringComparer.Ordinal),
             root["redirects"]!.AsObject().ToDictionary(p => p.Key, p => p.Value!.GetValue<string>(), StringComparer.Ordinal),
@@ -56,8 +58,8 @@ internal static class PublishedDocumentLoader
         cache.GetOrLoadAsync(async ct =>
         {
             var current = await db.Snapshots.AsNoTracking().Where(s => s.IsCurrent)
-                .Select(s => new { s.VersionNo, s.DocumentHash, s.Document }).FirstOrDefaultAsync(ct);
-            return current is null ? null : PublishedDocument.Parse(current.VersionNo, current.DocumentHash, current.Document);
+                .Select(s => new { s.VersionNo, s.DocumentHash, s.InsrDte, s.Document }).FirstOrDefaultAsync(ct);
+            return current is null ? null : PublishedDocument.Parse(current.VersionNo, current.DocumentHash, current.InsrDte, current.Document);
         }, cancellationToken);
 }
 
@@ -94,5 +96,22 @@ public sealed class GetPublishedPageQueryHandler(IStorefrontDbContext db, IPubli
         }
 
         return new PublishedPageResult(document.GoneSlugs.Contains(slug) ? PublishedPageOutcome.Gone : PublishedPageOutcome.NotFound);
+    }
+}
+
+/// <summary>The published pages for the sitemap, from the current snapshot (the 60 s copy), through the Storefront contract.</summary>
+public sealed class PublishedPageSitemapSource(IStorefrontDbContext db, IPublishedDocumentCache cache) : Contracts.IStorefrontPageQueries
+{
+    public async Task<IReadOnlyList<Contracts.PublishedPageRef>> ListPublishedPagesAsync(CancellationToken cancellationToken)
+    {
+        var document = await PublishedDocumentLoader.GetAsync(db, cache, cancellationToken);
+        if (document is null)
+        {
+            return [];
+        }
+
+        return [.. document.PagesJson
+            .OrderBy(p => p.Key, StringComparer.Ordinal)
+            .Select(p => new Contracts.PublishedPageRef(p.Key, JsonNode.Parse(p.Value)!["title"]!.GetValue<string>(), document.PublishedAt))];
     }
 }

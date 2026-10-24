@@ -125,6 +125,12 @@ public static partial class SettingsValidator
                     problems.Add(new SettingsProblem(field, $"Two entries at the same level share position {item.SortSeq}. Give each its own position."));
                 }
 
+                if (!Enum.IsDefined(item.Kind))
+                {
+                    problems.Add(new SettingsProblem(field, "Choose what kind of entry this is: link, group or collection list."));
+                    continue;
+                }
+
                 if (item.Kind == NavKind.Link)
                 {
                     if (item.Target is null)
@@ -232,6 +238,12 @@ public static partial class SettingsValidator
     {
         foreach (var item in content.Items)
         {
+            if (!Enum.IsDefined(item.Key))
+            {
+                problems.Add(new SettingsProblem("settings", "Unknown setting."));
+                continue;
+            }
+
             var field = $"settings.{item.Key}";
             switch (item.Key)
             {
@@ -367,6 +379,12 @@ public static partial class SettingsValidator
 
         foreach (var block in page.Blocks)
         {
+            if (!Enum.IsDefined(block.Type))
+            {
+                problems.Add(new SettingsProblem(field, "Choose a block type: heading, paragraph, list, table, callout or fact."));
+                continue;
+            }
+
             switch (block.Type)
             {
                 case BlockType.Heading when block.Level is not (2 or 3):

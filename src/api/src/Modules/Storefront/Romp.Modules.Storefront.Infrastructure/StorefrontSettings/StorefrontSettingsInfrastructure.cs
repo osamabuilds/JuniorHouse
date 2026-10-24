@@ -14,6 +14,12 @@ public sealed class StorefrontOptions
 {
     /// <summary>The external sites a navigation or footer link may point at (plan: allow-listed). Hosts only, no scheme.</summary>
     public string[] AllowedExternalHosts { get; set; } = ["wa.me"];
+
+    /// <summary>
+    /// Whether the admin routes for settings and pages are mapped. On by default; outside Development/Testing the host will not start with it on
+    /// unless real authentication is registered (<see cref="StorefrontAdminRoutesGuard"/>).
+    /// </summary>
+    public bool EnableAdminRoutes { get; set; } = true;
 }
 
 public sealed class ExternalHostPolicy(IOptions<StorefrontOptions> options) : IExternalHostPolicy
