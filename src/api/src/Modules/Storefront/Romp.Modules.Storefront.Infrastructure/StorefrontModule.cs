@@ -1,11 +1,17 @@
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
+using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Storefront.Application.Abstractions;
+using Romp.Modules.Storefront.Contracts;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
+using Romp.Modules.Storefront.Infrastructure.StorefrontSettings;
 
 namespace Romp.Modules.Storefront.Infrastructure;
 
@@ -23,12 +29,27 @@ public sealed class StorefrontModule : IModule
             .UseNpgsql(
                 configuration.GetConnectionString("Postgres"),
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "STFR"))
-            .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>()));
+            .AddInterceptors(
+                sp.GetRequiredService<AuditSaveChangesInterceptor>(),
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
+
+        services.Configure<StorefrontOptions>(configuration.GetSection("Storefront"));
+        services.AddSingleton<IExternalHostPolicy, ExternalHostPolicy>();
+        services.AddMemoryCache();
+        services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
+
+        services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(StorefrontTransactionBehavior<,>));
+
+        // The published event goes through the shared dispatcher; the cache drops its copy once it is committed.
+        services.AddOutboxModule("STFR", typeof(StorefrontSettingsPublishedEvent));
+        services.TryAdd(ServiceDescriptor.Scoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>)));
+        services.AddScoped<IOutboxMessageHandler<StorefrontSettingsPublishedEvent>, SettingsPublishedCacheInvalidator>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        // Endpoints arrive with their features (tasks 11 and 12).
+        // Endpoints arrive with task 12.
     }
 }

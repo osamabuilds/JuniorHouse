@@ -12,7 +12,14 @@ public sealed record SettingsContent(
     ExchangePolicy? Exchange,
     IReadOnlyList<Page> Pages,
     IReadOnlyList<string> PopularSearches,
-    IReadOnlyCollection<string> AllowedExternalHosts);
+    IReadOnlyCollection<string> AllowedExternalHosts)
+{
+    /// <summary>True once the Catalog category tree exists (SCRUM-207); until then a category target is refused.</summary>
+    public bool AllowCategoryTargets { get; init; }
+
+    /// <summary>True (the default) when the whole draft is checked for publishing; saving a part sets it false so links to draft pages are allowed.</summary>
+    public bool PagesMustBePublished { get; init; } = true;
+}
 
 /// <summary>The facts a page may quote, and whether each is filled in yet (ST-17).</summary>
 public static class SettingsFacts
@@ -83,7 +90,7 @@ public static partial class SettingsValidator
         var keys = new HashSet<string>(StringComparer.Ordinal);
         var count = 0;
         var hasEnabledLink = false;
-        var publishedSlugs = content.Pages.Where(p => p.Status == PageStatus.Published).Select(p => p.Slug).ToHashSet(StringComparer.Ordinal);
+        var publishedSlugs = UsablePageSlugs(content);
 
         void Walk(IReadOnlyList<NavItem> siblings, int level, string path)
         {
@@ -156,9 +163,16 @@ public static partial class SettingsValidator
         }
     }
 
+    /// <summary>The pages a link may point at: published ones when publishing, any page that is not archived when saving a draft.</summary>
+    private static HashSet<string> UsablePageSlugs(SettingsContent content) =>
+        content.Pages
+            .Where(p => content.PagesMustBePublished ? p.Status == PageStatus.Published : p.Status != PageStatus.Archived)
+            .Select(p => p.Slug)
+            .ToHashSet(StringComparer.Ordinal);
+
     private static void CheckTarget(string field, LinkTarget target, SettingsContent content, HashSet<string> publishedSlugs, List<SettingsProblem> problems)
     {
-        var problem = LinkTarget.Check(target.Kind, target.Reference, content.AllowedExternalHosts);
+        var problem = LinkTarget.Check(target.Kind, target.Reference, content.AllowedExternalHosts, content.AllowCategoryTargets);
         if (problem is not null)
         {
             problems.Add(new SettingsProblem(field, problem));
@@ -193,7 +207,7 @@ public static partial class SettingsValidator
 
     private static void ValidateFooter(SettingsContent content, List<SettingsProblem> problems)
     {
-        var publishedSlugs = content.Pages.Where(p => p.Status == PageStatus.Published).Select(p => p.Slug).ToHashSet(StringComparer.Ordinal);
+        var publishedSlugs = UsablePageSlugs(content);
         foreach (var column in content.Footer)
         {
             if (column.Title.Length is 0 or > SettingsLimits.MaxLabelLength)

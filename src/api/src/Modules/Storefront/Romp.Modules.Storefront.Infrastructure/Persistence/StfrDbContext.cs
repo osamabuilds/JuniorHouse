@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 using Romp.Modules.Storefront.Application.Abstractions;
 
@@ -29,12 +30,22 @@ public sealed class StfrDbContext(DbContextOptions<StfrDbContext> options) : DbC
 
     public DbSet<PublishedSnapshot> Snapshots => Set<PublishedSnapshot>();
 
+    uint IStorefrontDbContext.RowVersionOf(Page page) => Entry(page).Property<uint>("xmin").CurrentValue;
+
+    void IStorefrontDbContext.RequireRowVersion(Page page, uint expectedRowVersion)
+    {
+        var entry = Entry(page);
+        entry.Property<uint>("xmin").OriginalValue = expectedRowVersion;
+        entry.State = EntityState.Modified;
+    }
+
     async Task IStorefrontDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("STFR");
+        modelBuilder.HasOutboxTable("STFR");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(StfrDbContext).Assembly);
         StorefrontLookupConfiguration.Apply(modelBuilder);
         base.OnModelCreating(modelBuilder);

@@ -12,8 +12,13 @@ public sealed record LinkTarget(LinkTargetKind Kind, string Reference)
     private static readonly Regex CodePattern = new("^[a-z0-9-]{2,40}$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     /// <summary>The first problem with the target, or null when it is acceptable.</summary>
-    public static string? Check(LinkTargetKind kind, string? reference, IReadOnlyCollection<string> allowedHosts)
+    public static string? Check(LinkTargetKind kind, string? reference, IReadOnlyCollection<string> allowedHosts, bool allowCategory = false)
     {
+        if (kind == LinkTargetKind.Category && !allowCategory)
+        {
+            return "Category links are not available yet. Link to the category path instead.";
+        }
+
         var value = (reference ?? string.Empty).Trim();
         switch (kind)
         {

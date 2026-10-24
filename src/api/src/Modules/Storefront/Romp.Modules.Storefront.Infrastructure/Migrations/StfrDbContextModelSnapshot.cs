@@ -23,6 +23,87 @@ namespace Romp.Modules.Storefront.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Romp.BuildingBlocks.Persistence.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("AggregateId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("AGGR_ID");
+
+                    b.Property<string>("AggregateType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("PurchaseOrder")
+                        .HasColumnName("AGGR_TYP");
+
+                    b.Property<short>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("ATMP_CNT");
+
+                    b.Property<string>("ClaimedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("CLM_BY");
+
+                    b.Property<string>("DeadLetterReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DEDL_RSN");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("EVNT_TYP");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsDeadLettered")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("DEDL_IND");
+
+                    b.Property<DateTimeOffset?>("LeaseExpiryDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("LEAS_EXPY_DTE");
+
+                    b.Property<short>("MessageVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)1)
+                        .HasColumnName("MSG_VER");
+
+                    b.Property<DateTimeOffset?>("NextAttemptDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("NXT_ATMP_DTE");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("PYLD");
+
+                    b.Property<DateTimeOffset?>("ProcessedDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("PROC_DTE");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OUTB_MSG", "STFR");
+                });
+
             modelBuilder.Entity("Romp.Modules.Storefront.Domain.StorefrontSettings.AgeStep", b =>
                 {
                     b.Property<long>("Id")

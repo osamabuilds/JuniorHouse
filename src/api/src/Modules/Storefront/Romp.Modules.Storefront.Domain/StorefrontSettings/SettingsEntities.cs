@@ -316,6 +316,9 @@ public sealed class PublishedSnapshot : AggregateRoot<long>, IAuditable
 
     public void Retire() => IsCurrent = false;
 
+    /// <summary>Raises the event that tells caches to drop their copy; the outbox writes it in the same transaction as the snapshot.</summary>
+    public void MarkPublished() => Raise(new Contracts.StorefrontSettingsPublishedEvent(VersionNo, DocumentHash));
+
     public static string HashOf(string document) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(document))).ToLowerInvariant();
 }
