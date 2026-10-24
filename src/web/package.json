@@ -39,7 +39,7 @@
     "@playwright/test": "^1.63.0",
     "@types/express": "^5.0.1",
     "@types/node": "^22.12.0",
-    "jsdom": "^30.0.0",
+    "jsdom": "^30.1.2",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
     "vitest": "^5.0.0"
