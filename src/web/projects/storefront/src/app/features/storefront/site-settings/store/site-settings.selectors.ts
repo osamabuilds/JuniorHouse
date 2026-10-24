@@ -31,3 +31,5 @@ export const selectFooter = createSelector(selectSettings, (s): readonly FooterC
     }))
     .filter((col) => col.links.length > 0);
 });
+
+export const selectPopularSearches = createSelector(selectSettings, (s) => s.popularSearches);

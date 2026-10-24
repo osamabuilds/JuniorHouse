@@ -77,4 +77,5 @@ export const launchSettings: SiteSettings = {
   delivery: [],
   exchange: { windowDays: 0, conditions: [] },
   pages,
+  popularSearches: ['Dresses', 'T-shirts', 'Shorts'],
 };

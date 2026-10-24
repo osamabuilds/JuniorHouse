@@ -79,6 +79,8 @@ export interface SiteSettings {
   readonly delivery: readonly DeliveryRule[];
   readonly exchange: { readonly windowDays: number; readonly conditions: readonly string[] };
   readonly pages: readonly PageSummary[];
+  /** Terms shown as chips in the search overlay. */
+  readonly popularSearches: readonly string[];
 }
 
 export type PageBlock =

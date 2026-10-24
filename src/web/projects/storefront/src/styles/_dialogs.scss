@@ -25,3 +25,15 @@ dialog.rp-fullscreen::backdrop { background: var(--overlay); }
 
 .rp-dialog__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--header-h-mobile); padding-inline: var(--margin-mobile); border-bottom: var(--border-line) solid var(--line); }
 .rp-dialog__body { padding: var(--space-4) var(--margin-mobile) var(--space-8); }
+
+/* Search overlay layout (colours and type come from the design classes in _components.scss). */
+.rp-search-ov__form { flex: 1; min-width: 0; height: 100%; }
+.rp-search-ov__form input { width: 100%; }
+.rp-search-ov__status { margin: 0; min-height: var(--space-5); }
+.rp-chips { list-style: none; margin: 0; padding: 0; }
+.rp-suggestions { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--grid-gap-mobile); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rp-suggestions a { display: grid; gap: var(--space-2); color: inherit; text-decoration: none; min-height: var(--tap); }
+.rp-suggestions a:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.rp-search-ov__empty ul { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); }
+@media (min-width: 40rem) { .rp-suggestions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--grid-gap-desktop); } }
+@media (min-width: 64rem) { .rp-suggestions { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

@@ -1,0 +1,65 @@
+<dialog rpDialog class="rp-fullscreen" aria-label="Search" (closed)="reset()">
+  <div class="rp-search-ov">
+    <div class="rp-wrap rp-search-ov__top">
+      <form class="rp-search-ov__form" role="search" action="/search" method="get">
+        <input
+          #field
+          type="search"
+          name="q"
+          placeholder="Search"
+          aria-label="Search"
+          autocomplete="off"
+          [value]="query()"
+          (input)="onInput($event)"
+          (keydown.arrowdown)="focusFirst($event)"
+        />
+      </form>
+      <button type="button" class="rp-icon-btn" aria-label="Close search" (click)="close()"><rp-icon name="close" /></button>
+    </div>
+
+    <div class="rp-wrap rp-search-ov__body">
+      <p class="rp-search-ov__status t-caption" aria-live="polite">
+        @if (suggestions().searched && suggestions().results.length > 0) {
+          {{ suggestions().results.length }} suggestions
+        }
+      </p>
+
+      @if (!query().trim()) {
+        @if (popular().length > 0) {
+          <section aria-labelledby="rp-popular">
+            <h2 id="rp-popular" class="t-eyebrow">Popular</h2>
+            <ul class="rp-chips">
+              @for (term of popular(); track term) {
+                <li><a class="rp-chip" routerLink="/search" [queryParams]="{ q: term }" (click)="close()">{{ term }}</a></li>
+              }
+            </ul>
+          </section>
+        }
+      } @else if (suggestions().searched === query().trim() && suggestions().results.length > 0) {
+        <section aria-labelledby="rp-suggested">
+          <h2 id="rp-suggested" class="t-eyebrow">Suggestions</h2>
+          <ul class="rp-suggestions">
+            @for (p of suggestions().results; track p.id; let i = $index) {
+              <li>
+                <a routerLink="/search" [queryParams]="{ q: p.name }" (click)="close()" (keydown)="onSuggestionKey($event, i)">
+                  <rp-image [image]="p.image" tone="oat" sizes="(min-width: 64rem) 25vw, 50vw" [decorative]="true" />
+                  <span class="t-display-xs">{{ p.name }}</span>
+                  <span class="t-caption">Rs. {{ p.price | number }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </section>
+      } @else if (suggestions().searched === query().trim()) {
+        <section class="rp-search-ov__empty" aria-labelledby="rp-nothing">
+          <h2 id="rp-nothing" class="t-display-sm">Nothing for “{{ suggestions().searched }}”</h2>
+          <ul>
+            @for (l of links(); track l.href) {
+              <li><a class="rp-link" [routerLink]="l.href" (click)="close()">{{ l.label }}</a></li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  </div>
+</dialog>

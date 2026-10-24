@@ -1,0 +1,5 @@
+:host { display: block; }
+ul { list-style: none; margin: 0; padding: 0; }
+.rp-footer__contact { margin: var(--space-4) 0 0; }
+.rp-footer__contact a, .rp-footer li a { min-height: var(--tap); display: inline-flex; align-items: center; }
+.rp-footer a:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
