@@ -5,7 +5,7 @@
 
 ## Domain model
 `Romp.Modules.Storefront.Domain/Settings/…`, no EF or ASP.NET references.
-- **`NavEntry`** (aggregate with `NavColumn` → `NavLink`): key (unique, `^[a-z0-9-]{2,40}$`), label (1..40), kind (`Link` | `Menu` | `CollectionList`), target (kind + reference, validated), sort, enabled. Invariants: unique key; `Menu` has at least one enabled column and each column at least one link; `Link` has a target; `CollectionList` has none.
+- **`NavItem`** (one self-referencing tree, aggregate root = the draft navigation): key (unique, `^[a-z0-9-]{2,40}$`), label (1..40), parent (nullable), level (1..2, derived and checked), kind (`Link` | `Group` | `CollectionList`), target (kind + reference, validated; none for a `Group`), sort (unique among siblings), enabled. Invariants: maximum depth 2 (one constant); a `Group` has at least one enabled child; a `Link` has a target and may also have children (it then opens them and is itself reachable from the panel); any entry may be a parent; a `CollectionList` adds the enabled collections as its children and may also have manual ones; disabling an item hides its subtree; an item cannot be its own ancestor.
 - **`AgeStep`**: stable code (`^[a-z0-9-]{1,20}$`, immutable after first publish), label, sort, enabled. Launch seed `1y`..`8y`.
 - **`FooterColumn` → `FooterLink`**: title, sort; link label, target, sort, enabled.
 - **`SettingItem`** (brand and contact): key from a lookup (`BRAND_NAME`, `TAGLINE`, `WHATSAPP`, `EMAIL`, `HOURS`, `ANNOUNCEMENT`, `ANNOUNCEMENT_ON`), a typed value with a per-key rule (phone E.164, email, length).
@@ -18,7 +18,7 @@
 | Command / Query | Input | Output | Covers |
 |---|---|---|---|
 | `GetDraftSettingsQuery` | none | whole draft (admin) | ST-1 |
-| `SaveNavigationCommand` | entries with columns and links, row versions | saved tree | ST-1, 4, 14 |
+| `SaveNavigationCommand` | the whole nested tree (items with children), row versions | saved tree | ST-1, 1a, 4, 14 |
 | `SaveAgeStepsCommand` | ordered steps | saved steps | ST-2 |
 | `SaveFooterCommand` | columns and links | saved footer | ST-1 |
 | `SaveContactSettingsCommand` | key/value items | saved items | ST-4 |
@@ -55,20 +55,20 @@ Responses are DTOs with problem-details errors; a stale `rowVersion` returns 409
 | `AuditRecorded` | audit interceptor (ADR 0016) | Identity | yes |
 
 ## Data (`STFR`, names follow `docs/db/naming.md`; any new abbreviation is added to the glossary in the same change)
-Draft: `NAV_ENTY`, `NAV_COLM`, `NAV_LINK`, `AGE_STEP`, `FOOT_COLM`, `FOOT_LINK`, `STNG_ITEM`, `DLVR_RULE`, `XCHG_POLY`, `XCHG_COND`, `PAGE_MAIN`, `PAGE_BLCK`, `PAGE_BLCK_ITM` (list items and table cells, ordered), `PAGE_RDRT`.
+Draft: `NAV_ITEM` (self-referencing, `PRNT_ID` indexed, check on level), `AGE_STEP`, `FOOT_COLM`, `FOOT_LINK`, `STNG_ITEM`, `DLVR_RULE`, `XCHG_POLY`, `XCHG_COND`, `PAGE_MAIN`, `PAGE_BLCK`, `PAGE_BLCK_ITM` (list items and table cells, ordered), `PAGE_RDRT`.
 Lookups (`ID` smallint, `CODE`, `NAME`, `DSCR`, `SORT_SEQ`, `ACT_IND`; seeded by migration): `NAV_KIND_LKP`, `LINK_TRGT_LKP`, `STNG_KEY_LKP`, `PAGE_STS_LKP`, `BLCK_TYP_LKP`.
 Published: `PUBL_SNAP` (`ID`, `VER_NO` unique, `DOC` jsonb, `DOC_HASH` char(64), `CURR_IND`, `NOTE`, publish audit columns); a partial unique index allows one `CURR_IND` row.
-All transactional tables carry `INSR_DTE/INSR_BY/UPDT_DTE/UPDT_BY` and a `ROW_VER` concurrency token; every FK is indexed; unique constraints on `NAV_ENTY.ENTY_KEY`, `AGE_STEP.AGE_CODE`, `PAGE_MAIN.SLUG`. Migration seeds the launch set (S-1, S-2), the contact and brand items (WhatsApp `+923315613217`), and the eight page drafts (delivery, exchanges, size-guide, our-story, made-in-pakistan, contact, privacy, terms; Draft status; wording only, no facts). The snapshot is the only denormalised structure, justified in ADR 0020. Growth: tables are small (tens of rows); no partitioning. Add the module to `ModuleNames` in `Romp.ArchitectureTests`.
+All transactional tables carry `INSR_DTE/INSR_BY/UPDT_DTE/UPDT_BY` and a `ROW_VER` concurrency token; every FK is indexed; unique constraints on `NAV_ITEM.ITEM_KEY`, `(NAV_ITEM.PRNT_ID, SORT_SEQ)`, `AGE_STEP.AGE_CODE`, `PAGE_MAIN.SLUG`. Migration seeds the launch set (S-1, S-2), the contact and brand items (WhatsApp `+923315613217`), and the eight page drafts (delivery, exchanges, size-guide, our-story, made-in-pakistan, contact, privacy, terms; Draft status; wording only, no facts). The snapshot is the only denormalised structure, justified in ADR 0020. Growth: tables are small (tens of rows); no partitioning. Add the module to `ModuleNames` in `Romp.ArchitectureTests`.
 
 ## NFR / security design
 - **SEC-08:** policy on the route group, tested for 401 and 403 on every write route (ST-11). A host start-up check refuses to enable the admin settings routes when authentication is the development handler and the environment is not Development/Test.
 - **Input handling:** DTOs are not entities; strings are trimmed, length-capped and rejected on control characters; block text is plain text and rendered by bindings only (ST-10); slugs and keys are pattern-checked; link targets are a typed reference (internal page, listing path, collection, external https URL on an allow-list), never a free `javascript:` URL.
 - **Freshness and resilience (ST-13):** API cache 60 s, SSR last-good copy in memory and on disk, built-in launch set.
 - **Concurrency (ST-14):** `ROW_VER` per row and a draft version on the aggregate; save with a stale version returns 409.
-- **Size limits:** snapshot ≤ 512 KB, ≤ 100 nav links, ≤ 40 pages, ≤ 60 blocks per page, ≤ 5,000 characters per paragraph.
+- **Size limits:** snapshot ≤ 512 KB, ≤ 100 navigation items in all, depth ≤ 2, ≤ 40 pages, ≤ 60 blocks per page, ≤ 5,000 characters per paragraph.
 
 ## Frontend (admin: `src/web/projects/admin/src/app/features/storefront/settings/`)
-Admin conventions (CONVENTIONS §1): `containers/` (navigation-page, ages-page, footer-page, contact-page, delivery-page, pages-list-page, page-editor-page, publish-page), `components/` (presentational; reorderable list with up/down buttons, link-target picker, block editor with one component per block type), `forms/`, `models/`, `services/settings-api.service.ts`, `store/` (NgRx), `utils/`, `settings.routes.ts`, `index.ts`, one lazy route and one nav group in the admin shell. Lists use `<app-pagination>` and the paged endpoints. Inline, specific validation messages; reorder by buttons (WCAG 2.5.7); an unsaved-changes guard; a Preview button that opens the storefront with the draft (admin-only, `noindex`). Admin E2E in `src/web/e2e/storefront/settings.e2e.spec.ts`.
+Admin conventions (CONVENTIONS §1): `containers/` (navigation-page, ages-page, footer-page, contact-page, delivery-page, pages-list-page, page-editor-page, publish-page), `components/` (presentational; nested tree editor (add child, move up/down, indent/outdent buttons; no drag-only action), link-target picker, block editor with one component per block type), `forms/`, `models/`, `services/settings-api.service.ts`, `store/` (NgRx), `utils/`, `settings.routes.ts`, `index.ts`, one lazy route and one nav group in the admin shell. Lists use `<app-pagination>` and the paged endpoints. Inline, specific validation messages; reorder by buttons (WCAG 2.5.7); an unsaved-changes guard; a Preview button that opens the storefront with the draft (admin-only, `noindex`). Admin E2E in `src/web/e2e/storefront/settings.e2e.spec.ts`.
 
 ## Risks & alternatives considered
 Alternatives in ADR 0020. Risks: the settings routes before S8 (mitigated by the start-up check and the deployment note); a wrong publish (mitigated by validate-on-publish, preview and one-click restore); page abuse by a compromised admin account (plain-text blocks only, external links allow-listed, audit trail).
