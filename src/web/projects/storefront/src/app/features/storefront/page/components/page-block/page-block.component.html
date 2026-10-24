@@ -1,0 +1,55 @@
+@if (heading(); as h) {
+  @if (h.level === 2) { <h2 class="t-display-sm">{{ h.text }}</h2> } @else { <h3 class="t-display-xs">{{ h.text }}</h3> }
+}
+@if (paragraph(); as p) {
+  <p class="t-body-lg">{{ p.text }}</p>
+}
+@if (list(); as l) {
+  @if (l.ordered) {
+    <ol class="t-body-lg">@for (item of l.items; track $index) { <li>{{ item }}</li> }</ol>
+  } @else {
+    <ul class="t-body-lg">@for (item of l.items; track $index) { <li>{{ item }}</li> }</ul>
+  }
+}
+@if (table(); as t) {
+  <div class="rp-tablewrap">
+    <table>
+      @if (t.caption) { <caption>{{ t.caption }}</caption> }
+      <thead><tr>@for (h of t.headers; track $index) { <th scope="col">{{ h }}</th> }</tr></thead>
+      <tbody>@for (row of t.rows; track $index) { <tr>@for (cell of row; track $index) { <td>{{ cell }}</td> }</tr> }</tbody>
+    </table>
+  </div>
+}
+@if (callout(); as c) {
+  <aside class="rp-callout"><p class="t-body-lg">{{ c.text }}</p></aside>
+}
+@if (fact(); as f) {
+  <section class="rp-fact">
+    @if (f.label) { <h2 class="t-display-sm">{{ f.label }}</h2> }
+    @switch (f.kind) {
+      @case ('link') { <p class="t-body-lg"><a class="rp-link" [href]="f.href">{{ f.text }}</a></p> }
+      @case ('text') { <p class="t-body-lg">{{ f.text }}</p> }
+      @case ('list') { <ul class="t-body-lg">@for (item of f.items; track $index) { <li>{{ item }}</li> }</ul> }
+      @case ('delivery') {
+        <div class="rp-tablewrap">
+          <table>
+            <thead><tr><th scope="col">City</th><th scope="col">Delivery time</th><th scope="col">Charge</th><th scope="col">Courier</th></tr></thead>
+            <tbody>
+              @for (r of f.rules; track r.city) {
+                <tr>
+                  <th scope="row">{{ r.city }}</th>
+                  <td>{{ r.minDays }} to {{ r.maxDays }} days</td>
+                  <td>
+                    @if (r.charge === 0) { Free } @else { Rs. {{ r.charge | number }} }
+                    @if (r.freeOver) { <small>, free over Rs. {{ r.freeOver | number }}</small> }
+                  </td>
+                  <td>{{ r.courier }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </section>
+}

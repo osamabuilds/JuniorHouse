@@ -29,9 +29,9 @@
 - [x] 17. App shell (`app.html`): skip link, header, `<main>`, footer. Test: `app.spec.ts` asserts one `<main>`, skip link target, landmarks (SC-1).
 
 ## E. Pages
-- [ ] 18. `features/storefront/page`: `:slug` route, container, block components (heading, paragraph, list, table, callout, fact), `page` store and `PageApi`. Test: each block renders as text; a `fact` block shows the settings value; markup in text is not executed (ST-10).
-- [ ] 19. SSR status and SEO: 404 for unknown slug, 410 for archived, title, description, canonical, Open Graph and Twitter tags, breadcrumb and `BreadcrumbList` JSON-LD. Test: unit spec on the meta service; e2e on server HTML and status codes (SC-13).
-- [ ] 20. Launch-set page drafts and the not-publishable rule are SCRUM-206; here only: a page whose `status` is not published renders 404. Test: container spec.
+- [x] 18. `features/storefront/page`: `:slug` route, container, block components (heading, paragraph, list, table, callout, fact), `page` store and `PageApi`. Test: each block renders as text; a `fact` block shows the settings value; markup in text is not executed (ST-10).
+- [x] 19. SSR status and SEO: 404 for unknown slug, 410 for archived, title, description, canonical, Open Graph and Twitter tags, breadcrumb and `BreadcrumbList` JSON-LD. Test: unit spec on the meta service; e2e on server HTML and status codes (SC-13).
+- [x] 20. Launch-set page drafts and the not-publishable rule are SCRUM-206; here only: a page whose `status` is not published renders 404. Test: container spec.
 
 ## F. Verification
 - [x] 21. Playwright + axe `chrome.e2e.spec.ts` at 390, 768 and 1280 px: landmarks, mega-menu by keyboard, mobile menu, search GET without scripting, a page, 404 and 410, no horizontal scroll, axe clean with dialogs open (SC-1..13, 16, 19).

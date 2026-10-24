@@ -13,4 +13,12 @@ const devRoutes: Routes = isDevMode()
     ]
   : [];
 
-export const routes: Routes = [...devRoutes];
+/**
+ * Content pages are served from the settings by slug. The catch-all gives every other address a real 404 until the
+ * home page, listings and product pages (stories 3 to 5) take their routes ahead of it.
+ */
+export const routes: Routes = [
+  ...devRoutes,
+  { path: ':slug', loadComponent: () => import('./features/storefront/page/containers/page/page.container').then((m) => m.PageContainer) },
+  { path: '**', data: { notFound: true }, loadComponent: () => import('./features/storefront/page/containers/page/page.container').then((m) => m.PageContainer) },
+];

@@ -89,7 +89,7 @@ export type PageBlock =
   | { readonly type: 'list'; readonly ordered: boolean; readonly items: readonly string[] }
   | { readonly type: 'table'; readonly caption?: string; readonly headers: readonly string[]; readonly rows: readonly (readonly string[])[] }
   | { readonly type: 'callout'; readonly text: string }
-  | { readonly type: 'fact'; readonly key: string };
+  | { readonly type: 'fact'; readonly key: string; readonly label?: string };
 
 export interface ContentPage {
   readonly slug: string;

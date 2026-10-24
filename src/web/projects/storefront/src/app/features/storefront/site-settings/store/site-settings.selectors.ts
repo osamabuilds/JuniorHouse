@@ -1,5 +1,6 @@
 import { createSelector } from '@ngrx/store';
-import { AgeStep } from '../../../../shared/models/site-settings.model';
+import { AgeStep, DeliveryRule } from '../../../../shared/models/site-settings.model';
+import { whatsappLink } from '../../../../shared/utils/whatsapp';
 import { resolveHref } from '../../../../shared/utils/resolve-href';
 import { visibleEntries } from '../../../../shared/utils/visible-entries';
 import { siteSettingsFeature } from './site-settings.reducer';
@@ -33,3 +34,30 @@ export const selectFooter = createSelector(selectSettings, (s): readonly FooterC
 });
 
 export const selectPopularSearches = createSelector(selectSettings, (s) => s.popularSearches);
+
+export interface FactsView {
+  readonly whatsapp: { readonly href: string; readonly display: string } | null;
+  readonly email: string | null;
+  readonly hours: string | null;
+  readonly exchangeWindowDays: number | null;
+  readonly exchangeConditions: readonly string[];
+  readonly deliveryRules: readonly DeliveryRule[];
+}
+
+/** Business facts entered in the admin app. A missing fact is null or empty, and the page shows nothing for it. */
+export const selectFacts = createSelector(selectSettings, (s): FactsView => ({
+  whatsapp: whatsappLink(s.brand.whatsapp),
+  email: s.brand.email?.trim() || null,
+  hours: s.brand.hours?.trim() || null,
+  exchangeWindowDays: s.exchange.windowDays > 0 ? s.exchange.windowDays : null,
+  exchangeConditions: s.exchange.conditions,
+  deliveryRules: s.delivery.filter((d) => d.enabled),
+}));
+
+/** Top-level entries as plain links (for the not-found page and search empty states). Unsafe targets are dropped. */
+export const selectTopLinks = createSelector(selectHeaderEntries, (entries) =>
+  entries.flatMap((e) => {
+    const href = e.target ? resolveHref(e.target) : null;
+    return href ? [{ label: e.label, href }] : [];
+  }),
+);

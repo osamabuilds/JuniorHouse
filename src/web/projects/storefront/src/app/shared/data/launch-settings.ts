@@ -49,7 +49,9 @@ const pageSlugs: readonly [string, string][] = [
   ['privacy', 'Privacy'],
   ['terms', 'Terms'],
 ];
-const pages: readonly PageSummary[] = pageSlugs.map(([slug, title]) => ({ slug, title, status: 'published' }));
+/** Privacy and terms are legal text the owner supplies: they stay drafts (not linked, not served) until published in the admin app. */
+const drafts = new Set(['privacy', 'terms']);
+const pages: readonly PageSummary[] = pageSlugs.map(([slug, title]) => ({ slug, title, status: drafts.has(slug) ? 'draft' : 'published' }));
 const page = (label: string, slug: string) => ({ label, target: { kind: 'page', slug } as const, enabled: true });
 const path = (label: string, p: string) => ({ label, target: { kind: 'path', path: p } as const, enabled: true });
 
