@@ -341,7 +341,24 @@ legend {
 .button--small {
   padding: var(--space-1) var(--space-3);
   font-size: var(--text-xs);
-  min-height: 2.25rem;
+  /* Phones keep the full touch target (44 px, ST-15); the compact size is for pointers. */
+  min-height: var(--tap);
+}
+
+@media (min-width: 40rem) {
+  .button--small {
+    min-height: 2.25rem;
+  }
+}
+
+/* A link that is the main action of a table row (a page title) keeps the touch target on phones (ST-15). */
+@media (max-width: 39.999rem) {
+  table th[scope="row"] > a,
+  table td > a:not(.button) {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
 }
 
 .button--danger {

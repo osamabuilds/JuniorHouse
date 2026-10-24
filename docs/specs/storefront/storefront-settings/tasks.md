@@ -34,7 +34,7 @@
 ## E. Wiring and verification
 - [x] 21. Storefront `SiteSettingsApi` points at the real endpoints; the contract fixture test compares the API document with the web launch set. Test: contract spec (ST-1).
 - [x] 22. E2E `src/web/e2e/storefront/storefront-settings.e2e.spec.ts`: rename an entry, add a member, publish, see it on the storefront within 60 s; edit a page; archive it and see 410. Test: the spec (ST-1, ST-8).
-- [ ] 23. Accessibility pass on the admin screens at 390 px (labels, 44 px targets, button alternatives to drag) with axe. Test: axe spec (ST-15).
+- [x] 23. Accessibility pass on the admin screens at 390 px (labels, 44 px targets, button alternatives to drag) with axe. Test: axe spec (ST-15).
 - [ ] 24. Close the loop: spec deviations, mark Implemented, ADR 0020 Accepted, READMEs, memory note.
 
 ## Implementation notes (deviations from the plan, to fold into the spec in task 24)
@@ -81,3 +81,7 @@
   - *Set-up through the API:* the seeded pages are drafts and the first publish is refused until they are published (ST-17), so the spec publishes them (the two legal placeholders get a description) and resets the menu before it starts. The checks themselves go through the admin UI: rename an entry, add a member, save, publish with a note; edit a page paragraph, save, publish; archive and publish. The shop is polled for up to 60 s; the archived address must answer 410.
   - *Side effect (open):* after the spec runs, privacy and terms stay published in that database, so `pages.e2e.spec.ts` "ST-8 draft pages (privacy, terms) are not served until published" fails on a stack where the settings have been published. A publish cannot be undone, only superseded.
   - *Admin page load:* `goto` waits for `domcontentloaded`, not `load`, because the admin index requests Google Fonts.
+- **Task 23 (accessibility) decisions:**
+  - *Spec:* `e2e/storefront/storefront-settings.a11y.e2e.spec.ts` scans the eight screens plus the page editor at 390 px with axe (WCAG 2 A/AA to 2.2), checks there is no horizontal scroll and that every button, link, field and checkbox label in the main area is at least 44 px (inline text links exempt), that the primary admin nav fits, and that a navigation entry reorders by keyboard and buttons only.
+  - *Fixes:* `.button--small` was 36 px: it now keeps the 44 px tap size on phones (compact from 40 rem up); links that are the main action of a table row (page titles) get the tap size in the stacked phone layout. Axe found no violations on any screen.
+  - *Run against real data:* the dev admin must be on an origin the API allows (:4200 or :4201, `Cors:AllowedOrigins`); on another port the screens load empty and the scan proves nothing.
