@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Romp Checkout Mobile</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#fff;color:#000;font-family:'Manrope',system-ui,sans-serif;font-size:15px;line-height:1.55}
+h1,h2,p,ul,dl,dd,fieldset,legend{margin:0;padding:0}
+fieldset{border:0;min-width:0}
+ul{list-style:none}
+a{color:inherit}
+label.l{display:block;font-weight:600;font-size:14px;margin-bottom:8px}
+.field{width:100%;min-height:52px;padding:0 14px;border:1px solid #000;border-radius:2px;background:#fff;font:inherit;color:#000;box-sizing:border-box}
+.step{padding:32px 0;border-top:1px solid #E6E6E6}
+.step h2,.step legend span.t{font-size:22px;line-height:1.1;font-weight:600;letter-spacing:-.02em;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #000;border-radius:50%;font-size:13px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:16px;border:1px solid #E6E6E6;box-sizing:border-box}
+.opt input[type=radio]{width:20px;height:20px;accent-color:#000;margin:2px 0 0;flex:none}
+.opt.on{border-color:#000}
+.pill{display:flex;align-items:center;justify-content:center;min-height:56px;width:100%;border:0;border-radius:999px;font:inherit;font-weight:600;font-size:15px;background:#D9A62E;color:#000}
+.row{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #000;outline-offset:3px}
+</style>
+<div style="width:100%;max-width:480px;margin:0 auto;position:relative">
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px 8px 4px;border-bottom:1px solid #E6E6E6">
+    <a href="cart-mobile.html" aria-label="Back to bag" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></a>
+    <a href="#" style="font-size:26px;font-weight:600;letter-spacing:-.04em;text-decoration:none">romp kids</a>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Secure checkout" style="margin-right:12px"><rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+  </header>
+
+  <details style="background:#F2F2F2;border-bottom:1px solid #E6E6E6">
+    <summary style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;list-style:none;font-weight:600;min-height:24px"><span>Show order summary ⌄</span><span>Rs. 18,100</span></summary>
+    <div style="padding:0 20px 20px"><ul style="display:grid;gap:10px;font-size:14px"><li class="row"><span>The Floral Summer Dress × 1</span><span>Rs. 5,250</span></li><li class="row"><span>The Knit Cardigan × 2</span><span>Rs. 8,900</span></li><li class="row"><span>The Wide-Leg Trouser × 1</span><span>Rs. 3,950</span></li></ul></div>
+  </details>
+
+  <main style="padding:0 20px 130px">
+    <h1 style="font-size:36px;line-height:1;font-weight:600;letter-spacing:-.03em;padding:28px 0 20px">Checkout</h1>
+    <form aria-label="Checkout">
+      <section class="step" aria-labelledby="s1">
+        <h2 id="s1"><span class="num" aria-hidden="true">1</span>Contact</h2>
+        <div style="display:grid;gap:18px">
+          <div><label class="l" for="mob">Mobile number</label><input id="mob" class="field" type="tel" autocomplete="tel" placeholder="03XX XXXXXXX"></div>
+          <div><label class="l" for="em">Email address <span style="font-weight:400;color:#4D4D4D">(optional)</span></label><input id="em" class="field" type="email" autocomplete="email"></div>
+        </div>
+        <p style="margin-top:12px;font-size:14px;color:#4D4D4D">Have an account? <a href="../customer-account/login-mobile.html" style="color:#000;font-weight:600">Sign in</a></p>
+      </section>
+
+      <section class="step" aria-labelledby="s2">
+        <h2 id="s2"><span class="num" aria-hidden="true">2</span>Delivery address</h2>
+        <div style="display:grid;gap:18px">
+          <div><label class="l" for="fn">Full name</label><input id="fn" class="field" type="text" autocomplete="name"></div>
+          <div><label class="l" for="ad">Address</label><input id="ad" class="field" type="text" autocomplete="street-address" placeholder="House, street, area"></div>
+          <div><label class="l" for="ct">City</label><select id="ct" class="field"><option>Select a city</option></select></div>
+          <div><label class="l" for="pc">Postal code <span style="font-weight:400;color:#4D4D4D">(optional)</span></label><input id="pc" class="field" type="text" autocomplete="postal-code"></div>
+        </div>
+      </section>
+
+      <fieldset class="step">
+        <legend style="float:left;width:100%"><span class="t" style="font-size:22px;line-height:1.1;font-weight:600;letter-spacing:-.02em;margin-bottom:20px;display:flex;align-items:center;gap:10px"><span class="num" aria-hidden="true">3</span>Delivery method</span></legend>
+        <label class="opt on" style="clear:both"><input type="radio" name="dm" checked><span style="flex:1"><strong>Standard delivery</strong><br><span style="color:#4D4D4D;font-size:14px">[X–Y] working days</span></span><span style="font-weight:600">Rs. [fee]</span></label>
+      </fieldset>
+
+      <fieldset class="step" style="border-bottom:1px solid #E6E6E6">
+        <legend style="float:left;width:100%"><span class="t" style="font-size:22px;line-height:1.1;font-weight:600;letter-spacing:-.02em;margin-bottom:20px;display:flex;align-items:center;gap:10px"><span class="num" aria-hidden="true">4</span>Payment</span></legend>
+        <div style="clear:both;display:grid;gap:12px">
+          <div class="opt on" style="flex-direction:column;gap:18px">
+            <label style="display:flex;gap:12px;align-items:flex-start;width:100%"><input type="radio" name="pm" checked style="width:20px;height:20px;accent-color:#000;margin:2px 0 0"><span style="flex:1"><strong>Card</strong><br><span style="color:#4D4D4D;font-size:14px">Debit or credit card</span></span></label>
+            <div style="display:grid;gap:16px;width:100%">
+              <div><label class="l" for="cn">Card number</label><input id="cn" class="field" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000"></div>
+              <div><label class="l" for="cm">Name on card</label><input id="cm" class="field" type="text" autocomplete="cc-name"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div><label class="l" for="ce">Expiry</label><input id="ce" class="field" type="text" autocomplete="cc-exp" placeholder="MM / YY"></div><div><label class="l" for="cv">Security code</label><input id="cv" class="field" type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC"></div></div>
+              <p style="font-size:13px;color:#4D4D4D">Card details go straight to our payment provider. We never see or store them.</p>
+            </div>
+          </div>
+          <label class="opt"><input type="radio" name="pm"><span style="flex:1"><strong>Cash on delivery</strong><br><span style="color:#4D4D4D;font-size:14px">Pay in cash when your order arrives. [COD fee, if any]</span></span></label>
+        </div>
+      </fieldset>
+    </form>
+  </main>
+
+  <div style="position:sticky;bottom:0;background:#fff;border-top:1px solid #E6E6E6;padding:12px 20px 16px">
+    <div style="display:flex;justify-content:space-between;font-weight:600;margin-bottom:10px"><span>Total</span><span>Rs. 18,100 + delivery</span></div>
+    <button type="submit" class="pill">Place order</button>
+  </div>
+</div>
+</body>
+</html>
