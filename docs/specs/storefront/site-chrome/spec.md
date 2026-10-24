@@ -1,6 +1,6 @@
 # SCRUM-205: Storefront site chrome (Story 2 of 5)
 
-- **Status:** Draft v3 (owner answers of 2026-10-24 applied; awaiting approval; nothing is built)
+- **Status:** Approved (owner, 2026-10-24: every open question answered with the proposed default)
 - **Jira:** SCRUM-205 (task for SCRUM-203, Sprint 9). Story 1 is SCRUM-204 (`design-foundation`, implemented, not yet pushed).
 - **BRD sections:** §4.1 FEAT-CAT-01, FEAT-CAT-05, §5.1, §14; design source `docs/design-system/` (SiteHeader, MegaMenu, SearchOverlay, SiteFooter), used as a guide, not as exact values
 - **Requirement IDs:** FR-01 (presentation), FR-04 (search box and suggestions UI only), NFR-01, NFR-17, NFR-19, SEO-01, SEO-04, SEO-08
@@ -45,7 +45,7 @@ Storefront has only the Story 1 foundation: tokens, `rp-image`, `rp-icon`, butto
 
 ## Scope
 **In** (all under `src/web/projects/storefront`)
-1. **Settings contract and renderer.** A typed `SiteSettings` model (navigation entries and menu columns, age steps, footer columns and links, brand and contact, announcement, delivery and exchange facts, content pages) in `shared/models`, a `SiteSettingsService` that supplies it (the real API client arrives with SCRUM-206; until then it returns a built-in launch set from `shared/data/launch-settings.ts`), and a signal store the layout components read. Header, mega-menu, mobile menu, footer and pages render from it; no label, URL, number or count is written in a template.
+1. **Settings contract and renderer.** A typed `SiteSettings` model (navigation entries and menu columns, age steps, footer columns and links, brand and contact, announcement, delivery and exchange facts, content pages) in `shared/models`, a `SiteSettingsService` that supplies it (the real API client arrives with SCRUM-206; until then it returns a built-in launch set from `shared/data/launch-settings.ts`), and an NgRx store the layout components read (ADR 0019). Header, mega-menu, mobile menu, footer and pages render from it; no label, URL, number or count is written in a template.
 2. `layout/site-header`: sticky; announcement bar; wordmark placeholder (brand name from configuration); entries from the configuration; desktop search field; search icon on phones.
 3. `layout/mega-menu`: Shop by age (the configured ages, launch 1Y to 8Y), Clothing (categories), The edit (collections), one image tile (placeholder). Opens on hover/focus-in (desktop) and click/Enter; Esc closes; closes on leaving the panel and on route change; focus moves to the first link; `aria-expanded` on the trigger. Not rendered under 64rem.
 4. `layout/mobile-menu`: left drawer on `<dialog>`; search at the top; accordion lists for entries that have a menu.
@@ -114,11 +114,11 @@ The pages are **content stored in the settings**, written in the admin app (SCRU
 ## Non-functional constraints
 NFR-01 (no layout shift from the chrome, fonts already local, dialogs add no JavaScript to first paint beyond the header), NFR-17, NFR-19 WCAG 2.2 AA, SEO-01 (header, menu links, footer and footer pages are in the server HTML). Security: all text from data or user input is rendered through Angular bindings (no `innerHTML`); no personal data is collected by the chrome.
 
-## Open questions
-- [ ] **Q-SC-1 Palette.** The Story 1 tokens are warm off-white and clay. For black and white, do I (a) change the storefront tokens in this story (token-only, no component changes, contrast re-checked), or (b) keep clay until a later restyle? Proposed: (a). **Still unanswered.**
-- [ ] **Q-SC-2 Order of work.** Proposed: SCRUM-206 (settings backend and admin) is specified and approved first; this story builds against the typed contract and a built-in launch set, so it can proceed in parallel. Or build SCRUM-206 first? (Also Q-ST-6.)
-- [ ] **Q-SC-3 Catalog age rows.** May I log the Catalog age-lookup change to 1Y to 8Y as its own task?
-- [ ] **Q-SC-4 Search overlay.** Proposed: header field and overlay are a GET form to /search first, enhanced by the dialog and a mock-backed suggestion service, with the combobox pattern on the input. Acceptable?
-- [ ] **Q-SC-5 Reveal and view transitions.** Optional scroll-in and page-crossfade motion. Proposed: not in this story.
-- [ ] **Q-SC-6 Collections entry.** Menu of live collections or a link? (Also Q-ST-8.)
-- [ ] **Q-SC-7 Facts and copy.** The seeded page drafts and facts (delivery, exchange, contact, claims) are entered by you in the admin app; I only write the draft wording. Confirm, and tell me if /privacy and /terms should also be seeded.
+## Open questions (all resolved by the owner, 2026-10-24)
+- [x] **Q-SC-1 Palette.** The storefront tokens change to black and white in this story, as a token-only change (no component changes), with the contrast checks re-run. This amends Story 1 (`design-foundation`), whose notes are updated.
+- [x] **Q-SC-2 Order of work.** SCRUM-206 and this story run in parallel against the `SiteSettings` contract and a built-in launch set.
+- [x] **Q-SC-3 Catalog age rows.** The Catalog age lookup change to 1Y to 8Y is logged as its own task (see Open follow-ups in the plan).
+- [x] **Q-SC-4 Search overlay.** A GET form first, enhanced by the dialog and a mock-backed suggestion service, with the combobox pattern on the input.
+- [x] **Q-SC-5 Reveal and view transitions.** Not in this story.
+- [x] **Q-SC-6 Collections entry.** A menu of live collections (settings Q-ST-8).
+- [x] **Q-SC-7 Facts and copy.** The owner enters facts in the admin app; seeded drafts are wording only. Privacy and terms pages are seeded as drafts as well (assumed from "yes to all"; remove from the seed if unwanted).

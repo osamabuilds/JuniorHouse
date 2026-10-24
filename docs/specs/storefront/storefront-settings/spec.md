@@ -1,6 +1,6 @@
 # SCRUM-206: Storefront settings (admin-managed configuration)
 
-- **Status:** Draft (awaiting owner approval; nothing is built)
+- **Status:** Approved (owner, 2026-10-24: every open question answered with the proposed default; Q-ST-5 as stated below)
 - **Jira:** SCRUM-206 (task for SCRUM-203, Sprint 9). Consumed by SCRUM-205 (`site-chrome`).
 - **BRD sections:** §4.1 FEAT-CAT-01 (navigation), §14 (SEO), NFR-01; the BRD has no requirement for a settings system. It is an owner decision (below), so **no FR ID applies and none is invented**; the BRD errata list (SCRUM-168) should log it.
 - **Requirement IDs:** FR-01, NAV-5, NAV-9 (navigation data), NFR-01, SEC-08 (admin writes), SEO-01, SEO-04.
@@ -62,12 +62,12 @@ Visual theming and layout changes (colours, fonts, section order on the home pag
 ## Non-functional constraints
 NFR-01 (settings ride in the server HTML, no client fetch for the chrome), SEC-08, ADR 0016 (audit), NFR-FT (last-good fallback). Settings contain no personal data. Architecture: Storefront module only; Admin talks to it over its own API; no cross-schema access.
 
-## Open questions
-- [ ] **Q-ST-1 Home of the settings.** Proposed: the **Storefront module** (schema `STFR`, already planned as a read-model schema) gets a second, small *write* side for settings, since its own consumers are the storefront. Alternative: a new `Content` module. Needs an ADR either way. Which?
-- [ ] **Q-ST-2 Page content format.** (a) Structured blocks (heading, paragraph, list, table, image, call-out) edited with form fields: safest and most consistent, matches "premium" typography. (b) Rich-text/Markdown: more freedom, more risk. Proposed: (a).
-- [ ] **Q-ST-3 Images in pages.** Allow image upload for pages now (reuses the image delivery of the published-catalog feature) or text-only pages for launch? Proposed: text-only at launch.
-- [ ] **Q-ST-4 "Sold items for that season".** The catalogue has no "season" concept today. Is a season a **collection** (for example "Summer 2027"), a date range, or a field on the style? And should sold items show only on an otherwise-empty entry, or always? Proposed: a season is a collection; sold items appear only when no in-stock item exists.
-- [ ] **Q-ST-5 Who can edit and when.** Authentication and roles land in S8. Until then the admin has no login (CLAUDE.md); the settings endpoints must not be deployed publicly before S8. Which role may edit (Content editor? Admin only?) and who may publish?
-- [ ] **Q-ST-6 Sequence.** Proposed: SCRUM-206 backend + admin first (or the minimum slice: navigation, ages, brand/contact), then SCRUM-205 consumes it. SCRUM-205 can start earlier against the same typed contract with a built-in launch set. Which order do you want?
-- [ ] **Q-ST-7 Admin is touched.** The earlier rule was "storefront only, never touch admin" (design stories). This story changes the admin app. Confirm that is intended, and whether the admin re-skin is still separate.
-- [ ] **Q-ST-8 Collections entry.** Is "Collections" in the header a **menu** listing the live collections, or a **link** to an all-collections page? Proposed: a menu fed by enabled collections from Catalog.
+## Open questions (all resolved by the owner, 2026-10-24)
+- [x] **Q-ST-1 Home.** The Storefront module (schema `STFR`) gets a small write side for settings. ADR [0020](../../adr/0020-storefront-settings-and-published-snapshot.md).
+- [x] **Q-ST-2 Page content format.** Structured blocks (heading, paragraph, list, table, call-out), edited with form fields.
+- [x] **Q-ST-3 Images in pages.** Text-only pages at launch.
+- [x] **Q-ST-4 Season.** A season is a **collection** (for example "Summer 2027"). Sold items show only when an entry has no in-stock item.
+- [x] **Q-ST-5 Who edits.** The **Admin role only**, for both edit and publish. Roles and login arrive in S8; until then the settings endpoints are not deployed publicly.
+- [x] **Q-ST-6 Sequence.** SCRUM-206 and SCRUM-205 proceed in parallel against one typed contract (`SiteSettings`), and 205 uses a built-in launch set until the 206 API exists.
+- [x] **Q-ST-7 Admin app is touched.** Confirmed: this story adds a "Storefront settings" section to the admin app; existing admin screens are not changed. The admin re-skin stays a separate story.
+- [x] **Q-ST-8 Collections entry.** A menu fed by enabled collections from Catalog.
