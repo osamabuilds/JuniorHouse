@@ -1,0 +1,38 @@
+# SCRUM-206: Storefront settings: tasks
+
+- **Spec:** [spec.md](spec.md) · **Plan:** [plan.md](plan.md) · **ADR:** [0020](../../../adr/0020-storefront-settings-and-published-snapshot.md) (plan approved by the owner, 2026-10-24; ADR 0020 to be marked Accepted with it)
+- Test-first, tagged with the IDs they cover. Backend tests run in the Linux SDK container (see the docker dotnet test workaround); CI is the authority for the integration tests. The Storefront module is created here.
+
+## A. Module and data
+- [ ] 1. Create the `Storefront` module projects (`Domain`, `Application`, `Infrastructure`, `IModule`), register it in the host, add `Storefront` to `ModuleNames`. Test: `Romp.ArchitectureTests` pass with the module present.
+- [ ] 2. Glossary check for every new table and column word (add new abbreviations to `docs/db/naming.md`). Test: the naming architecture test.
+- [ ] 3. Domain: `NavItem` tree, `AgeStep`, footer, `SettingItem`, `DeliveryRule`, `ExchangePolicy`, `Page`/`PageBlock`, `SettingsDraft`, `PublishedSnapshot`, `SettingsValidator`. Test: unit specs per invariant (depth 3, unique sibling sort, group needs a member, slug pattern and reserved list, fact must exist, size caps) (ST-4, ST-16, ST-17).
+- [ ] 4. EF configuration for every entity (explicit `ToTable`/`HasColumnName`), lookups seeded, concurrency tokens, indexes on every FK, partial unique index for the current snapshot. Test: naming test and a Testcontainers migration test (ST-16).
+- [ ] 5. Migration with the launch-set seed (S-1, S-2, WhatsApp, eight page drafts with wording only). Test: migration test reads the seed back; the seed equals the web launch set (contract fixture).
+
+## B. Commands and queries
+- [ ] 6. `SaveNavigationCommand` with validator and handler. Test: valid tree saves; fourth level, empty group, duplicate key and dead target are rejected with field messages (ST-1, ST-1a, ST-4).
+- [ ] 7. `SaveAgeStepsCommand`, `SaveFooterCommand`, `SaveContactSettingsCommand`, `SaveDeliveryAndExchangeCommand`. Test: handler specs, E.164 phone, email, negative charge rejected, code immutable after publish (ST-2, ST-4, ST-7).
+- [ ] 8. Page commands: create, update (blocks), change status, slug change writing a redirect. Test: plain-text blocks, markup stored as text, reserved slug rejected, 301 row created (ST-9, ST-10).
+- [ ] 9. `PublishSettingsCommand`: validate the whole draft, write the snapshot and the outbox event in one transaction; same hash returns the existing version. Test: publish makes the set current atomically; a draft edit after publish is not visible; empty fact blocks publish (ST-3, ST-17).
+- [ ] 10. `RestoreSnapshotCommand`, `ListSnapshotsQuery` (paged), `PreviewSettingsQuery`, `GetDraftSettingsQuery`. Test: restore creates a new current version; paging order and clamping test (ST-12).
+- [ ] 11. Public queries `GetPublishedSettingsQuery` (60 s cache, ETag) and `GetPublishedPageQuery` (200, 404, 410, redirect). Test: cache invalidated by the published event; archived page is Gone (ST-8, ST-13).
+
+## C. API and security
+- [ ] 12. Endpoints and the `StorefrontSettings.Admin` policy; start-up check refusing to expose the admin routes in a non-development environment without real authentication. Test: 401 and 403 for every write route; the host refuses to start with the switch on and development authentication outside Development/Test (ST-11).
+- [ ] 13. Concurrency: stale row version returns 409. Test: two saves, second rejected (ST-14).
+- [ ] 14. Audit via the ADR 0016 interceptor, publish/restore recorded with user and note. Test: an audit record exists for a draft edit and a publish (ST-12).
+- [ ] 15. Sitemap source: published pages from the snapshot. Test: a published page appears, an archived one does not (ST-8).
+
+## D. Admin app (`features/storefront/settings`)
+- [ ] 16. Feature skeleton: models, `settings-api.service`, store (state, actions, reducer, selectors, effects), routes, admin nav group. Test: reducer and effect specs.
+- [ ] 17. Navigation screen: nested tree editor with add member, move up/down, indent/outdent buttons, inline validation. Test: component specs, keyboard-only reordering (ST-1, ST-1a, ST-15).
+- [ ] 18. Ages, footer, contact/brand/announcement, delivery and exchange screens. Test: component and form specs with specific error messages (ST-2, ST-4, ST-7).
+- [ ] 19. Pages list (paged) and page editor with one editor per block type, fact picker, status control. Test: specs for each block editor and the paged list (ST-8, ST-10, ST-17).
+- [ ] 20. Publish screen: preview link, validation report, publish with note, version list (paged), restore. Test: specs for publish and restore flows (ST-3, ST-12).
+
+## E. Wiring and verification
+- [ ] 21. Storefront `SiteSettingsApi` points at the real endpoints; the contract fixture test compares the API document with the web launch set. Test: contract spec (ST-1).
+- [ ] 22. E2E `src/web/e2e/storefront/settings.e2e.spec.ts`: rename an entry, add a member, publish, see it on the storefront within 60 s; edit a page; archive it and see 410. Test: the spec (ST-1, ST-8).
+- [ ] 23. Accessibility pass on the admin screens at 390 px (labels, 44 px targets, button alternatives to drag) with axe. Test: axe spec (ST-15).
+- [ ] 24. Close the loop: spec deviations, mark Implemented, ADR 0020 Accepted, READMEs, memory note.

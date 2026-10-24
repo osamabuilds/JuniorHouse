@@ -1,6 +1,6 @@
 # 0020: Storefront settings, draft/publish and the published snapshot
 
-- **Status:** Proposed (owner decisions S-1..S-5 and Q-ST-1..8 approved 2026-10-24; this ADR awaits approval with the plan)
+- **Status:** Accepted (owner approved the plan, 2026-10-24)
 - **Date:** 2026-10-24
 
 ## Context
