@@ -1,0 +1,93 @@
+<p><a routerLink="/storefront/pages">&larr; All pages</a></p>
+<h1>{{ isNew() ? 'New page' : 'Edit page' }}</h1>
+<p class="page-intro">
+  A page is made of blocks of plain text: headings, paragraphs, lists, tables, notes, and values taken from your settings. It stays a draft until
+  you publish it, and reaches the shop when you publish the settings.
+</p>
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error(); as failure) {
+  <div class="banner banner--error" role="alert">
+    @if (failure.status === 409) {
+      <p>{{ failure.message }} Reload this page to see the latest version.</p>
+    } @else if (problems().length > 0) {
+      <p>This can't be saved yet:</p>
+      <ul>
+        @for (problem of problems(); track problem) {
+          <li>{{ problem }}</li>
+        }
+      </ul>
+    } @else {
+      <p>{{ failure.message }}</p>
+    }
+  </div>
+}
+
+@if (loading()) {
+  <p class="state-message" role="status">Loading the page…</p>
+} @else {
+  @if (page(); as current) {
+    <section class="card" aria-labelledby="pe-status">
+      <h2 id="pe-status">Status: {{ current.status }}</h2>
+      <p class="field-hint">
+        @switch (current.status) {
+          @case ('Draft') { Not on the shop yet. }
+          @case ('Published') { On the shop once you publish the settings. }
+          @case ('Archived') { Taken off the shop for good: its address now says the page is gone. }
+        }
+        @if (dirty()) {
+          Save your changes before you change the status.
+        }
+      </p>
+      <div class="form-actions">
+        @if (current.status !== 'Published') {
+          <button type="button" class="button button--primary" [disabled]="saving() || dirty()" (click)="setStatus('Published')">Mark as published</button>
+        }
+        @if (current.status === 'Published') {
+          <button type="button" class="button" [disabled]="saving() || dirty()" (click)="setStatus('Draft')">Return to draft</button>
+        }
+        @if (current.status !== 'Archived') {
+          <button type="button" class="button button--danger" [disabled]="saving() || dirty()" (click)="setStatus('Archived')">Archive</button>
+        }
+        <a class="button" [href]="previewUrl" target="_blank" rel="noopener">Preview all drafts (opens the data in a new tab)</a>
+      </div>
+    </section>
+  }
+
+  <section class="card" aria-labelledby="pe-details">
+    <h2 id="pe-details">Details</h2>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="pe-title">Page title</label>
+        <input id="pe-title" type="text" maxlength="120" required autocomplete="off" [value]="value().title" (input)="edit({ title: text($event) })" />
+        <small class="field-hint">The heading on the page and the title in search results.</small>
+      </div>
+      <div class="form-field">
+        <label for="pe-slug">Page address</label>
+        <input id="pe-slug" type="text" maxlength="60" required autocomplete="off" aria-describedby="pe-slug-hint" [value]="value().slug" (input)="edit({ slug: text($event) })" />
+        <small class="field-hint" id="pe-slug-hint">Lowercase letters, digits and hyphens, for example size-guide. It appears as /{{ value().slug || 'size-guide' }}.</small>
+        @if (redirectNote(); as note) {
+          <p class="field-hint" role="status">{{ note }}</p>
+        }
+      </div>
+      <div class="form-field form-field--wide">
+        <label for="pe-description">Search description</label>
+        <textarea id="pe-description" rows="2" [attr.maxlength]="maxDescription" aria-describedby="pe-description-hint" [value]="value().metaDescription" (input)="edit({ metaDescription: text($event) })"></textarea>
+        <small class="field-hint" id="pe-description-hint">Shown under the title in search results. {{ maxDescription - value().metaDescription.length }} characters left.</small>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="pe-content">
+    <h2 id="pe-content">Content</h2>
+    <app-page-blocks-editor [blocks]="value().blocks" (blocksChange)="edit({ blocks: $event })" />
+  </section>
+
+  <app-save-bar [label]="isNew() ? 'Create the page' : 'Save the page'" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
+}

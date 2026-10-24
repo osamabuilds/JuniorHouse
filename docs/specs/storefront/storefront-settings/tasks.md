@@ -24,16 +24,16 @@
 - [ ] 14. Audit via the ADR 0016 interceptor, publish/restore recorded with user and note. Test: an audit record exists for a draft edit and a publish (ST-12). **Partly done, blocked on Sprint 8:** every change is stamped with who and when and a snapshot keeps its note (tested); the central `AuditRecorded` trail does not exist yet (see the notes below).
 - [x] 15. Sitemap source: published pages from the snapshot. Test: a published page appears, an archived one does not (ST-8).
 
-## D. Admin app (`features/storefront/settings`)
-- [ ] 16. Feature skeleton: models, `settings-api.service`, store (state, actions, reducer, selectors, effects), routes, admin nav group. Test: reducer and effect specs.
-- [ ] 17. Navigation screen: nested tree editor with add member, move up/down, indent/outdent buttons, inline validation. Test: component specs, keyboard-only reordering (ST-1, ST-1a, ST-15).
-- [ ] 18. Ages, footer, contact/brand/announcement, delivery and exchange screens. Test: component and form specs with specific error messages (ST-2, ST-4, ST-7).
-- [ ] 19. Pages list (paged) and page editor with one editor per block type, fact picker, status control. Test: specs for each block editor and the paged list (ST-8, ST-10, ST-17).
-- [ ] 20. Publish screen: preview link, validation report, publish with note, version list (paged), restore. Test: specs for publish and restore flows (ST-3, ST-12).
+## D. Admin app (`features/storefront/storefront-settings`)
+- [x] 16. Feature skeleton: models, `settings-api.service`, store (state, actions, reducer, selectors, effects), routes, admin nav group. Test: reducer and effect specs.
+- [x] 17. Navigation screen: nested tree editor with add member, move up/down, indent/outdent buttons, inline validation. Test: component specs, keyboard-only reordering (ST-1, ST-1a, ST-15).
+- [x] 18. Ages, footer, contact/brand/announcement, delivery and exchange screens. Test: component and form specs with specific error messages (ST-2, ST-4, ST-7).
+- [x] 19. Pages list (paged) and page editor with one editor per block type, fact picker, status control. Test: specs for each block editor and the paged list (ST-8, ST-10, ST-17).
+- [x] 20. Publish screen: preview link, validation report, publish with note, version list (paged), restore. Test: specs for publish and restore flows (ST-3, ST-12).
 
 ## E. Wiring and verification
 - [ ] 21. Storefront `SiteSettingsApi` points at the real endpoints; the contract fixture test compares the API document with the web launch set. Test: contract spec (ST-1).
-- [ ] 22. E2E `src/web/e2e/storefront/settings.e2e.spec.ts`: rename an entry, add a member, publish, see it on the storefront within 60 s; edit a page; archive it and see 410. Test: the spec (ST-1, ST-8).
+- [ ] 22. E2E `src/web/e2e/storefront/storefront-settings.e2e.spec.ts`: rename an entry, add a member, publish, see it on the storefront within 60 s; edit a page; archive it and see 410. Test: the spec (ST-1, ST-8).
 - [ ] 23. Accessibility pass on the admin screens at 390 px (labels, 44 px targets, button alternatives to drag) with axe. Test: axe spec (ST-15).
 - [ ] 24. Close the loop: spec deviations, mark Implemented, ADR 0020 Accepted, READMEs, memory note.
 
@@ -63,3 +63,12 @@
   - *Start-up guard:* `Storefront:EnableAdminRoutes` (default true). The host already refuses to start without a real authentication scheme outside Development/Testing (ADR 0011); the module repeats the check for its own routes (`StorefrontAdminRoutesGuard`) and does not map them when the switch is off. 401/403 is proved for every admin route by enumerating the real endpoint table.
   - *Sitemap source:* `IStorefrontPageQueries` in `Storefront.Contracts` lists the published pages of the current snapshot (slug, title, last modified = when that snapshot was published). The sitemap job (SEO feature) will consume it.
   - *Audit (task 14), open for the owner:* ADR 0016's `AuditRecorded` interceptor, its `[NotAudited]` attribute and the Identity consumer are Sprint 8 work and are not built (S8 is parked), so nothing here can produce them. Until then the audit columns (`INSR_*`, `UPDT_*`, actor `system` until staff login) and the snapshot note answer "who, when, why" for the publish path. **ST-12 asks for "old and new values"; ADR 0016 forbids storing values (names of changed columns only).** ADR 0016 overrides the BRD, so I have built nothing that stores values; confirm that ST-12 should be read as "which fields changed" before this task is closed.
+- **Section D decisions (tasks 16 to 20), to fold into the spec/plan in task 24:**
+  - *Folder and e2e names:* the web feature is `features/storefront/storefront-settings/` and its e2e file `storefront-settings.e2e.spec.ts`, because `StructureSyncTests` requires the web feature, the API feature and the spec folder to share a name (the plan said `settings`).
+  - *One store, many screens:* a single NgRx feature (`storefrontSettings`) holds the draft and its version for the five part screens, the page list, the page being edited and the versions. Every part screen reloads the draft when it opens, quotes the loaded version on Save, and a 409 offers "Reload the latest settings". Edits stay in the container (a `linkedSignal` over the stored draft) until Save, so a failed save keeps them and a successful one or a reload replaces them.
+  - *Reordering:* every list (navigation, ages, footer, popular searches, delivery rows, conditions, page blocks) reorders with labelled Move up / Move down buttons; the navigation also has "Make a member of the one above" and "Move out a level". No action needs dragging (WCAG 2.5.7, ST-15). Add member is refused with a visible reason on the third level.
+  - *Ages:* a code that is already saved is read-only and the row cannot be removed (switch it off instead), matching the server rule.
+  - *Page editor:* status changes are separate buttons that wait until edits are saved (the status call quotes the loaded row version). Empty text blocks are dropped before saving. The editor warns that renaming a live page sends the old address on (301).
+  - *Publish screen:* a plain report of every field the server refused ("footer › Help › Delivery"), a note, "Preview the draft" (opens the preview JSON in a new tab; a rendered preview in the storefront needs the staff login of Sprint 8), and a two-step restore (ask, then confirm) in the page rather than a browser dialog.
+  - *Unsaved-changes guard:* `unsavedChangesGuard` on the editable routes asks before leaving with unsaved edits (browser confirm).
+  - *Not done here:* the rendered "Preview" on the storefront, and axe/390 px checks (task 23).
