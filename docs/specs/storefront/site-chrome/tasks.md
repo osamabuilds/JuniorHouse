@@ -24,9 +24,9 @@
 - [x] 12. `rp-site-header` and nav list: landmark, entries from the store, wordmark, desktop search field as a GET form. Test: server-rendered HTML has `<header>`, `<nav aria-label="Primary">`, the enabled entries only; works without scripting (SC-1, SC-2, SC-10).
 - [x] 13. `rp-mega-menu`: opens on click/Enter only, Esc and outside click close, focus to first link, route change closes, hidden under 64rem. Test: keyboard and click specs; hover does not open (SC-3a, SC-6).
 - [x] 14. `rp-mobile-menu` on the dialog controller: nested accordions, search field, 44 px targets. Test: opens, nested expand, closes with focus return (SC-7, SC-8).
-- [ ] 15. `rp-search-overlay` and `searchSuggest` feature: 200 ms debounce, `switchMap`, results capped at 4, text-only rendering, empty state, Enter to `/search?q=`. Test: fake-timer spec for debounce; markup typed into the box is shown as text; empty-state links (SC-9, SC-10).
-- [ ] 16. `rp-site-footer`: columns from settings, contact and WhatsApp link, decorative wordmark, legal row, no newsletter. Test: footer renders from a settings fixture and follows a changed fixture (SC-11, SC-3).
-- [ ] 17. App shell (`app.html`): skip link, header, `<main>`, footer. Test: `app.spec.ts` asserts one `<main>`, skip link target, landmarks (SC-1).
+- [x] 15. `rp-search-overlay` and `searchSuggest` feature: 200 ms debounce, `switchMap`, results capped at 4, text-only rendering, empty state, Enter to `/search?q=`. Test: fake-timer spec for debounce; markup typed into the box is shown as text; empty-state links (SC-9, SC-10).
+- [x] 16. `rp-site-footer`: columns from settings, contact and WhatsApp link, decorative wordmark, legal row, no newsletter. Test: footer renders from a settings fixture and follows a changed fixture (SC-11, SC-3).
+- [x] 17. App shell (`app.html`): skip link, header, `<main>`, footer. Test: `app.spec.ts` asserts one `<main>`, skip link target, landmarks (SC-1).
 
 ## E. Pages
 - [ ] 18. `features/storefront/page`: `:slug` route, container, block components (heading, paragraph, list, table, callout, fact), `page` store and `PageApi`. Test: each block renders as text; a `fact` block shows the settings value; markup in text is not executed (ST-10).
@@ -34,7 +34,7 @@
 - [ ] 20. Launch-set page drafts and the not-publishable rule are SCRUM-206; here only: a page whose `status` is not published renders 404. Test: container spec.
 
 ## F. Verification
-- [ ] 21. Playwright + axe `chrome.e2e.spec.ts` at 390, 768 and 1280 px: landmarks, mega-menu by keyboard, mobile menu, search GET without scripting, a page, 404 and 410, no horizontal scroll, axe clean with dialogs open (SC-1..13, 16, 19).
+- [x] 21. Playwright + axe `chrome.e2e.spec.ts` at 390, 768 and 1280 px: landmarks, mega-menu by keyboard, mobile menu, search GET without scripting, a page, 404 and 410, no horizontal scroll, axe clean with dialogs open (SC-1..13, 16, 19).
 - [ ] 22. Lighthouse on a page (SEO 100, Accessibility ≥ 95) in the storefront container (SC-20).
 - [ ] 23. Diff check: only `src/web/projects/storefront`, its e2e spec and docs changed; no formatting-only edits (SC-21).
 - [ ] 24. Close the loop: update the spec with any deviations, mark Implemented, update READMEs and the memory note.

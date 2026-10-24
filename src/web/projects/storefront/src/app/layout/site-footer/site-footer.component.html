@@ -28,7 +28,7 @@
     </nav>
   </div>
   <div class="rp-wrap">
-    <div class="rp-footer__big" aria-hidden="true">{{ brand().name.toLowerCase() }}</div>
+    <div class="rp-footer__big" aria-hidden="true" [attr.data-text]="brand().name.toLowerCase()"></div>
     <p class="rp-footer__legal">
       <small>© {{ year }} {{ brand().name }}</small>
     </p>

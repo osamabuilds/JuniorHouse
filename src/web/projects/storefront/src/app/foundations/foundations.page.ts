@@ -23,10 +23,10 @@ const photo = (name: string, alt: string): ImageAsset => ({
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './foundations.page.scss',
   template: `
-    <header class="rp-wrap rp-section--tight">
+    <div class="rp-wrap rp-section--tight">
       <p class="t-eyebrow">Design foundation</p>
-    </header>
-    <main class="rp-wrap">
+    </div>
+    <div class="rp-wrap">
       <h1 class="rp-display-lg">Dressed for <em>the day</em></h1>
       <p class="t-body-lg lead">Tokens, type, buttons, fields, icons and images, in one place.</p>
 
@@ -84,10 +84,10 @@ const photo = (name: string, alt: string): ImageAsset => ({
           }
         </ul>
       </section>
-    </main>
-    <footer class="rp-wrap rp-section--tight">
+    </div>
+    <div class="rp-wrap rp-section--tight">
       <p class="t-caption">Placeholders only. No brand assets.</p>
-    </footer>
+    </div>
   `,
 })
 export class FoundationsPage {

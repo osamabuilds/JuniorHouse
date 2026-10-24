@@ -37,3 +37,4 @@ dialog.rp-fullscreen::backdrop { background: var(--overlay); }
 .rp-search-ov__empty ul { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); }
 @media (min-width: 40rem) { .rp-suggestions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--grid-gap-desktop); } }
 @media (min-width: 64rem) { .rp-suggestions { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.rp-mobile-search { margin-bottom: var(--space-3); }

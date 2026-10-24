@@ -14,3 +14,20 @@ html {
   scroll-padding-top: 96px;
   scroll-padding-bottom: 80px;
 }
+
+/* Skip link: off-screen until it takes focus, then the first thing on the page. */
+.rp-skip {
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-2);
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  background: var(--ink);
+  color: var(--surface);
+  transform: translateY(-200%);
+}
+.rp-skip:focus { transform: none; }
+main:focus { outline: none; }
+
+/* The design places the field icon with left only; centre it vertically. */
+.rp-search .rp-ico { top: 50%; transform: translateY(-50%); }

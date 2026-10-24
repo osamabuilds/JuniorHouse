@@ -9,9 +9,9 @@ describe('FoundationsPage', () => {
     f.detectChanges();
     const el = f.nativeElement as HTMLElement;
     expect(el.querySelectorAll('h1').length).toBe(1);
-    expect(el.querySelectorAll('main').length).toBe(1);
-    expect(el.querySelector('header')).not.toBeNull();
-    expect(el.querySelector('footer')).not.toBeNull();
+    // The app shell supplies the header, main and footer landmarks; the page itself must not repeat them.
+    expect(el.querySelector('main')).toBeNull();
+    expect(el.querySelector('header, footer')).toBeNull();
     const levels = Array.from(el.querySelectorAll('h1,h2,h3,h4')).map((h) => Number(h.tagName[1]));
     levels.reduce((prev, cur) => {
       expect(cur - prev).toBeLessThanOrEqual(1);

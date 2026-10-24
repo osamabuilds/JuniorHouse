@@ -27,7 +27,7 @@ for (const vp of VIEWPORTS) {
       const metrics = await page.evaluate(() => ({
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
-        margin: parseFloat(getComputedStyle(document.querySelector('main')!).paddingLeft),
+        margin: parseFloat(getComputedStyle(document.querySelector('main .rp-wrap')!).paddingLeft),
       }));
       expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
       expect(metrics.margin).toBe(vp.margin);
@@ -42,6 +42,8 @@ for (const vp of VIEWPORTS) {
       }
       const small = await page.$$eval('button, input, a', (els) =>
         els
+          // controls inside a closed dialog are not rendered, so they have no size to check
+          .filter((e) => e.getClientRects().length > 0)
           .filter((e) => e.getBoundingClientRect().height < 44)
           // links get an invisible 44px hit area through ::after (design system)
           .filter((e) => !(e.classList.contains('rp-link') && getComputedStyle(e, '::after').content !== 'none'))
