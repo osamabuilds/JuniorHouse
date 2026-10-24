@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Romp Bag Mobile</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#fff;color:#000;font-family:'Manrope',system-ui,sans-serif;font-size:15px;line-height:1.55}
+h1,h2,h3,p,ul,ol,dl,dd,figure{margin:0;padding:0}
+ul,ol{list-style:none}
+a{color:inherit;text-decoration:none}
+.ph{background:#F2F2F2;margin:0;display:flex;align-items:flex-end;padding:6px;box-sizing:border-box;font-size:10px;color:#4D4D4D}
+.item{display:grid;grid-template-columns:96px minmax(0,1fr);gap:16px;padding:20px 0;border-top:1px solid #E6E6E6}
+.qty{display:inline-flex;align-items:center;border:1px solid #000;border-radius:2px}
+.qty button{width:44px;height:44px;border:0;background:none;font:inherit;font-size:20px;color:#000}
+.qty output{min-width:32px;text-align:center;font-weight:600}
+.link-btn{border:0;background:none;padding:10px 0;font:inherit;font-size:14px;color:#000;text-decoration:underline;text-underline-offset:4px}
+.row{display:flex;justify-content:space-between;gap:16px;padding:6px 0}
+.pill{display:flex;align-items:center;justify-content:center;min-height:56px;border:0;border-radius:999px;font:inherit;font-weight:600;font-size:15px;background:#D9A62E;color:#000}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #000;outline-offset:3px}
+</style>
+<div style="width:100%;max-width:480px;margin:0 auto;position:relative">
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:8px 8px 8px 4px;border-bottom:1px solid #E6E6E6">
+    <a href="#" aria-label="Continue shopping" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></a>
+    <a href="#" style="font-size:26px;font-weight:600;letter-spacing:-.04em">romp kids</a>
+    <span style="width:48px"></span>
+  </header>
+  <main style="padding:0 20px 120px">
+    <div style="display:flex;align-items:baseline;gap:12px;padding:28px 0 20px"><h1 style="font-size:40px;line-height:1;font-weight:600;letter-spacing:-.03em">Your bag</h1><p style="color:#4D4D4D">3 items</p></div>
+
+    <ul>
+      <li class="item">
+        <figure class="ph" style="aspect-ratio:3/4">Floral dress</figure>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+          <div style="display:flex;justify-content:space-between;gap:12px"><h2 style="font-size:15px;font-weight:600">The Floral Summer Dress</h2><p style="font-weight:600;white-space:nowrap">Rs. 5,250</p></div>
+          <p style="color:#4D4D4D;font-size:14px">Size: 4–5 Y</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto"><div class="qty" role="group" aria-label="Quantity of The Floral Summer Dress"><button type="button" aria-label="Decrease quantity">−</button><output aria-live="polite">1</output><button type="button" aria-label="Increase quantity">+</button></div><button type="button" class="link-btn">Remove</button></div>
+        </div>
+      </li>
+      <li class="item">
+        <figure class="ph" style="aspect-ratio:3/4;background:#E9E9E9">Knit cardigan</figure>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+          <div style="display:flex;justify-content:space-between;gap:12px"><h2 style="font-size:15px;font-weight:600">The Knit Cardigan</h2><p style="font-weight:600;white-space:nowrap">Rs. 8,900</p></div>
+          <p style="color:#4D4D4D;font-size:14px">Size: 4–5 Y · Rs. 4,450 each</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto"><div class="qty" role="group" aria-label="Quantity of The Knit Cardigan"><button type="button" aria-label="Decrease quantity">−</button><output aria-live="polite">2</output><button type="button" aria-label="Increase quantity">+</button></div><button type="button" class="link-btn">Remove</button></div>
+        </div>
+      </li>
+      <li class="item" style="border-bottom:1px solid #E6E6E6">
+        <figure class="ph" style="aspect-ratio:3/4">Wide-leg trouser</figure>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+          <div style="display:flex;justify-content:space-between;gap:12px"><h2 style="font-size:15px;font-weight:600">The Wide-Leg Trouser</h2><p style="font-weight:600;white-space:nowrap">Rs. 3,950</p></div>
+          <p style="color:#4D4D4D;font-size:14px">Size: 6–7 Y</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto"><div class="qty" role="group" aria-label="Quantity of The Wide-Leg Trouser"><button type="button" aria-label="Decrease quantity">−</button><output aria-live="polite">1</output><button type="button" aria-label="Increase quantity">+</button></div><button type="button" class="link-btn">Remove</button></div>
+        </div>
+      </li>
+    </ul>
+
+    <section aria-labelledby="sum" style="margin-top:32px">
+      <h2 id="sum" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:16px">Order summary</h2>
+      <form style="display:flex;gap:8px;margin-bottom:20px" aria-label="Promo code"><label for="pc" style="position:absolute;left:-9999px">Promo code</label><input id="pc" type="text" placeholder="Promo code" style="flex:1;min-width:0;min-height:48px;padding:0 14px;border:1px solid #000;border-radius:2px;font:inherit;box-sizing:border-box"><button type="submit" style="min-height:48px;padding:0 20px;border:1px solid #000;border-radius:999px;background:none;font:inherit;font-weight:600;font-size:14px">Apply</button></form>
+      <dl>
+        <div class="row"><dt>Subtotal</dt><dd>Rs. 18,100</dd></div>
+        <div class="row"><dt>Delivery</dt><dd style="color:#4D4D4D">Calculated at checkout</dd></div>
+      </dl>
+    </section>
+  </main>
+
+  <div style="position:sticky;bottom:0;background:#fff;border-top:1px solid #E6E6E6;padding:12px 20px 16px">
+    <div style="display:flex;justify-content:space-between;font-weight:600;font-size:17px;margin-bottom:10px"><span>Estimated total</span><span>Rs. 18,100</span></div>
+    <a class="pill" href="#">Checkout</a>
+  </div>
+</div>
+</body>
+</html>

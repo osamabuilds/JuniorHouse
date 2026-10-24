@@ -6,6 +6,7 @@ Static design reference for the customer **Sign in**, **Create account** and **f
 |---|---|---|
 | Sign in | [login.html](login.html) · [png](login.png) | [login-mobile.html](login-mobile.html) · [png](login-mobile.png) |
 | Create account | [signup.html](signup.html) · [png](signup.png) | [signup-mobile.html](signup-mobile.html) · [png](signup-mobile.png) |
+| Sign in, error state | [login-error.html](login-error.html) · [png](login-error.png) | n/a |
 | Forgot password (request) | [forgot-password.html](forgot-password.html) · [png](forgot-password.png) | [forgot-password-mobile.html](forgot-password-mobile.html) · [png](forgot-password-mobile.png) |
 | Check your email (sent) | [forgot-password-sent.html](forgot-password-sent.html) · [png](forgot-password-sent.png) | [forgot-password-sent-mobile.html](forgot-password-sent-mobile.html) · [png](forgot-password-sent-mobile.png) |
 | Set a new password | [reset-password.html](reset-password.html) · [png](reset-password.png) | [reset-password-mobile.html](reset-password-mobile.html) · [png](reset-password-mobile.png) |
@@ -36,6 +37,6 @@ Customer accounts are not in `docs/specs/` yet: `identity` covers staff only, an
 - **FR-39 vs SEC-02:** hard account lockout, or progressive throttling plus CAPTCHA. This decides the sign-in error and locked-out states, which are not designed.
 - **Password rules:** shown as a placeholder (`[Password rules to be confirmed]`).
 - **Sign-up fields:** whether a mobile number is collected or used to sign in is not stated by the BRD.
-- **Not designed yet:** email verification, and the error and success states of sign-in and sign-up.
+- **Not designed yet:** email verification, the error states of sign-up and reset, and the locked-out state (needs the FR-39 vs SEC-02 decision). The sign-in error state is drawn in [login-error.html](login-error.html).
 - **Guest checkout:** `docs/design-system/Pages.md` says checkout is guest by default, so these pages must not gate it.
 - **SEO:** account pages are blocked in `robots.txt` and carry `noindex` (SEO-05).
