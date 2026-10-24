@@ -88,7 +88,7 @@ The goal is for Romp to rank as high as possible. Google decides the actual posi
 - Exactly one `<h1>` per page, and headings never skip a level.
 - Use `<a href>` for navigation and `<button>` for actions, never a clickable `div`/`span`. Lists are `<ul>`/`<ol>`, tables are `<table>` with `<th scope>`, and images are `<img>` (inside `<figure>`/`<figcaption>` where there's a caption).
 - Every form control has a `<label>`. Use `aria-*` only when native semantics can't express the meaning.
-- Meet WCAG 2.1 AA (NFR-19): contrast, visible focus, full keyboard operation, meaningful alt text (empty `alt=""` only for decorative images).
+- Meet WCAG 2.2 AA (NFR-19): contrast, visible focus, full keyboard operation, meaningful alt text (empty `alt=""` only for decorative images).
 
 **SEO (storefront)**
 - **Every public route is server-rendered** (SEO-01). The full content, links, meta tags and structured data must be in the HTML the server returns, never added only after hydration.

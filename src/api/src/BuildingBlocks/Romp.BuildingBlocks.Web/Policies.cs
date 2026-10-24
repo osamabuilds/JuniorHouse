@@ -14,6 +14,12 @@ public static class Policies
 
     /// <summary>Catalogue actions (products, images, size charts, URLs, publish; Sprint 7). Capability-shaped: Admin-equivalent until roles exist (S8, SEC-08).</summary>
     public const string Catalogue = "Catalogue";
+
+    /// <summary>Storefront settings and content pages (Sprint 9, ADR 0020). Capability-shaped: Admin-equivalent until roles exist (S8, SEC-08).</summary>
+    public const string StorefrontSettings = "StorefrontSettings";
+
+    /// <summary>Deliberately open to anonymous callers: the public storefront reads (published settings and pages). Naming it keeps ADR 0011 true: every group states who may call it.</summary>
+    public const string Public = "Public";
 }
 
 /// <summary>Named rate-limit policies (ADR 0011).</summary>

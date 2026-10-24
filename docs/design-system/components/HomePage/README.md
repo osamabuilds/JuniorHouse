@@ -1,0 +1,1 @@
+Home, in order: announcement and header, `Hero`, `CategorySplit`, New in grid (eight 4:5 cards), `EditorialBand` (espresso), `GiftsStrip`, `FabricBand`, `TrustLine`, `SiteFooter` (espresso). See `Pages.md`.

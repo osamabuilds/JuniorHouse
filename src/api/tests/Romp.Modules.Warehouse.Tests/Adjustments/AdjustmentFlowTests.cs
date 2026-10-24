@@ -269,7 +269,7 @@ public sealed class AdjustmentFlowTests(WarehousePostgres postgres)
         var damage = await host.SendAsync(new SearchAdjustmentsQuery(AdjustmentReasons.Damage, variant.RefId, Page: 1, PageSize: 2));
         var small = counter.Count;
         var all = await host.SendAsync(new SearchAdjustmentsQuery(VariantRefId: variant.RefId, PageSize: 100));
-        var today = DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5));
+        var today = DateOnly.FromDateTime(host.Time.GetUtcNow().UtcDateTime.AddHours(5)); // the host runs on a fixed clock, so the window follows it, not the wall clock
         var dated = await host.SendAsync(new SearchAdjustmentsQuery(VariantRefId: variant.RefId, From: today.AddDays(-1), To: today.AddDays(1)));
         var past = await host.SendAsync(new SearchAdjustmentsQuery(VariantRefId: variant.RefId, From: today.AddDays(-10), To: today.AddDays(-5)));
 

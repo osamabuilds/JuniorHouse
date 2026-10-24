@@ -1,12 +1,22 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SiteFooterComponent } from './shared/components/site-footer/site-footer.component';
-import { SiteHeaderComponent } from './shared/components/site-header/site-header.component';
+import { Store } from '@ngrx/store';
+import { SiteSettingsActions } from './features/storefront/site-settings';
+import { AnnouncementBarComponent } from './layout/announcement-bar/announcement-bar.component';
+import { MobileMenuComponent } from './layout/mobile-menu/mobile-menu.component';
+import { SearchOverlayComponent } from './layout/search-overlay/search-overlay.component';
+import { SiteFooterComponent } from './layout/site-footer/site-footer.component';
+import { SiteHeaderComponent } from './layout/site-header/site-header.component';
 
 @Component({
-  imports: [RouterOutlet, SiteHeaderComponent, SiteFooterComponent],
+  imports: [RouterOutlet, AnnouncementBarComponent, SiteHeaderComponent, SiteFooterComponent, MobileMenuComponent, SearchOverlayComponent],
   selector: 'app-root',
-  styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'rp-root' },
   templateUrl: './app.html',
 })
-export class App {}
+export class App {
+  constructor() {
+    inject(Store).dispatch(SiteSettingsActions.load());
+  }
+}

@@ -1,0 +1,19 @@
+<h1>Ages</h1>
+<p class="page-intro">
+  The ages in the "Shop by age" menu. Each age has a code that links use and a label shoppers read. You can rename a label or switch an age off
+  at any time; once saved, a code cannot change, because links depend on it.
+</p>
+
+<app-section-nav label="Storefront settings" [links]="links" />
+
+<app-settings-banners [notice]="notice()" [loadError]="loadError()" [saveError]="saveError()" (dismissed)="dismissNotice()" (reload)="reload()" />
+
+@if (loading() && !draft()) {
+  <p class="state-message" role="status">Loading the ages…</p>
+} @else {
+  <app-ages-editor [steps]="steps()" [lockedCodes]="lockedCodes()" [errors]="fieldErrors()" (stepsChange)="steps.set($event)" />
+
+  <app-save-bar label="Save ages" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()">
+    <button type="button" class="button" (click)="add()">Add an age</button>
+  </app-save-bar>
+}

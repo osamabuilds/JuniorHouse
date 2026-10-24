@@ -1,0 +1,21 @@
+/* Stand-ins for photography (tonal grounds, flat garments, macro textures). Raw colours here are allowed on purpose and the whole file is deleted when real photography exists. */
+/* ---------- Imagery placeholders (swap for real photography at the same aspect ratio) ---------- */
+.rp-ph { position: relative; overflow: hidden; background-color: var(--tone-oat); }
+.rp-ph::before { content: ""; position: absolute; inset: 0; background: radial-gradient(110% 80% at 25% 0%, rgba(255,252,246,0.6), transparent 62%), linear-gradient(180deg, transparent 62%, rgba(28,25,23,0.1)); }
+.rp-ph::after { content: ""; position: absolute; inset: 0; opacity: 0.3; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.rp-ph--oat { background-color: var(--tone-oat); --ph: var(--tone-oat); } .rp-ph--stone { background-color: var(--tone-stone); --ph: var(--tone-stone); } .rp-ph--clay { background-color: var(--tone-clay); --ph: var(--tone-clay); } .rp-ph--sage { background-color: var(--tone-sage); --ph: var(--tone-sage); } .rp-ph--sand { background-color: var(--tone-sand); --ph: var(--tone-sand); } .rp-ph--dusk { background-color: var(--tone-dusk); --ph: var(--tone-dusk); }
+.rp-ph--sun { --ph: var(--tone-clay); background: linear-gradient(165deg, var(--tone-oat) 0%, var(--tone-clay) 55%, color-mix(in srgb, var(--tone-clay) 70%, var(--ink)) 100%); }
+.rp-garment .gf { fill: color-mix(in srgb, var(--ph, var(--tone-oat)) 68%, var(--ink)); } .rp-garment .gf2 { fill: color-mix(in srgb, var(--ph, var(--tone-oat)) 58%, var(--ink)); }
+.rp-ph svg.rp-garment { position: absolute; z-index: 1; left: 50%; bottom: 10%; width: 60%; height: auto; transform: translateX(-50%); }
+.rp-ph--close svg.rp-garment { width: 100%; bottom: -12%; }
+.rp-ph--dusk::before { background: radial-gradient(90% 80% at 70% 15%, rgba(255,236,214,0.45), transparent 60%), linear-gradient(180deg, transparent 40%, rgba(28,25,23,0.35)); }
+.rp-ph .rp-arch { position: absolute; z-index: 1; left: 56%; bottom: 0; width: 34%; height: 62%; border-radius: 999px 999px 0 0; background: linear-gradient(180deg, rgba(255,240,222,0.5), rgba(255,240,222,0.12)); }
+.rp-hero .rp-floor { display: none; }
+.rp-ph .rp-floor { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 18%; background: rgba(28,25,23,0.2); }
+/* Macro fabric textures (stand-ins for macro photography) */
+.rp-tex { position: relative; overflow: hidden; background-color: var(--tone-sand); }
+.rp-tex::after { content: ""; position: absolute; inset: 0; background: radial-gradient(90% 90% at 30% 20%, rgba(255,252,246,0.35), transparent 60%), radial-gradient(120% 120% at 100% 100%, rgba(28,25,23,0.16), transparent 60%); }
+.rp-tex--linen { background-image: repeating-linear-gradient(0deg, rgba(28,25,23,0.09) 0 1px, transparent 1px 4px), repeating-linear-gradient(90deg, rgba(28,25,23,0.08) 0 1px, transparent 1px 5px), repeating-linear-gradient(0deg, rgba(255,255,255,0.28) 0 2px, transparent 2px 9px); }
+.rp-tex--rib { background-color: var(--tone-clay); background-image: repeating-linear-gradient(90deg, rgba(28,25,23,0.2) 0 2px, rgba(255,255,255,0.18) 2px 6px, transparent 6px 9px); }
+.rp-tex--twill { background-color: var(--tone-sage); background-image: repeating-linear-gradient(45deg, rgba(28,25,23,0.14) 0 2px, transparent 2px 7px), repeating-linear-gradient(45deg, rgba(255,255,255,0.2) 0 1px, transparent 1px 7px); }
+.rp-tex--poplin { background-color: var(--tone-oat); background-image: repeating-linear-gradient(0deg, rgba(28,25,23,0.06) 0 1px, transparent 1px 2px), repeating-linear-gradient(90deg, rgba(28,25,23,0.06) 0 1px, transparent 1px 2px); }

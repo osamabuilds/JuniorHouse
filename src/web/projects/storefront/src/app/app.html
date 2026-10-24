@@ -1,6 +1,9 @@
-<a class="skip-link" href="#main">Skip to content</a>
-<app-site-header />
-<main id="main">
+<a class="rp-skip" href="#main">Skip to content</a>
+<rp-announcement-bar />
+<rp-site-header (menuOpen)="menu.open()" (searchOpen)="search.open()" />
+<main id="main" tabindex="-1">
   <router-outlet />
 </main>
-<app-site-footer />
+<rp-site-footer />
+<rp-mobile-menu #menu />
+<rp-search-overlay #search />

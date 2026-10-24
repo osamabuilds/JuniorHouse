@@ -87,6 +87,12 @@ services:
     build:
       context: src/web
       dockerfile: Dockerfile.storefront
+      args:
+        # development keeps the dev-only /_foundations design page; the CD pipeline builds production
+        NG_CONFIGURATION: development
+    environment:
+      # The SSR server forwards /api/storefront/* (published settings and pages) to the API inside the Docker network.
+      API_BASE_URL: http://api:8080
     ports:
       - "4000:4000"
     depends_on:

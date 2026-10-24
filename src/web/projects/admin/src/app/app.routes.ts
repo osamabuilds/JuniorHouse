@@ -85,6 +85,10 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'storefront',
+    loadChildren: () => import('@features/storefront/storefront-settings/storefront-settings.routes').then((m) => m.STOREFRONT_SETTINGS_ROUTES),
+  },
+  {
     path: 'purchase-orders',
     loadChildren: () => import('@features/vendor/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
   },

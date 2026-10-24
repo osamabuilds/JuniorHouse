@@ -1,0 +1,17 @@
+<h1>Settings</h1>
+<p class="page-intro">
+  The brand name, how shoppers reach you, the announcement bar and the popular searches. Pages can quote these values, so a change here shows
+  everywhere once you publish.
+</p>
+
+<app-section-nav label="Storefront settings" [links]="links" />
+
+<app-settings-banners [notice]="notice()" [loadError]="loadError()" [saveError]="saveError()" (dismissed)="dismissNotice()" (reload)="reload()" />
+
+@if (loading() && !draft()) {
+  <p class="state-message" role="status">Loading the settings…</p>
+} @else {
+  <app-contact-form [values]="values()" [errors]="fieldErrors()" (valuesChange)="values.set($event)" />
+
+  <app-save-bar label="Save settings" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
+}

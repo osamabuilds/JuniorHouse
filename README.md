@@ -289,6 +289,18 @@ Every action asks for your name (kept in this browser), because there is no sign
 enforced then. Publishing writes an event through the outbox; the storefront that reads it arrives in Sprint 9. Open questions (defaults
 adopted, see `docs/specs/catalog/README.md`): the age-band names (Q-AGE-2), the launch fibre and care lists, and the URL shape for unisex.
 
+## Try Sprint 9 (storefront settings)
+Staff change the shop's menu, ages, footer, contact, delivery and exchange facts and content pages in the admin app; a publish puts the whole set on the shop within a minute (SCRUM-206, [spec](docs/specs/storefront/storefront-settings/spec.md)).
+
+```bash
+docker compose up -d --build api admin storefront   # admin :4201, storefront :4000, API :8080
+```
+
+1. Open http://localhost:4201/storefront (the **Storefront** link at the right end of the top bar). Edit the navigation, then **Pages**: mark the pages you want live as published.
+2. Open **Publish**, add a note and press **Publish now**. Until the first publish the shop shows its built-in launch set.
+3. Reload http://localhost:4000 within a minute: your menu and pages are there; an archived page answers 410.
+4. Opening hours, the four delivery cities and the exchange window are **placeholders**: replace them under Settings and Delivery before launch. The settings screens have no login until Sprint 8, so they must not be deployed publicly yet.
+
 ## Tests
 
 ```bash
