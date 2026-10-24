@@ -40,12 +40,8 @@ describe('storefront styles', () => {
     const html = readFileSync(join(SRC, 'index.html'), 'utf8');
     const angular = readFileSync(join(process.cwd(), 'angular.json'), 'utf8');
     expect(html).not.toMatch(/fonts\.(googleapis|gstatic)\.com/);
-    expect(angular).toContain('@fontsource/instrument-serif/400.css');
-    expect(angular).toContain('@fontsource-variable/dm-sans/index.css');
-    const css = readFileSync(
-      join(process.cwd(), 'node_modules/@fontsource/instrument-serif/400.css'),
-      'utf8',
-    );
+    expect(angular).toContain('@fontsource-variable/manrope/index.css');
+    const css = readFileSync(join(process.cwd(), 'node_modules/@fontsource-variable/manrope/index.css'), 'utf8');
     expect(css).toContain('font-display: swap');
   });
 });

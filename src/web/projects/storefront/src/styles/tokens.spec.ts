@@ -27,6 +27,13 @@ const t = (name: string): string => {
   return v;
 };
 
+describe('storefront action colour (marigold)', () => {
+  it('SC-17 ink on the action fill and its hover meets 4.5:1 for the button label', () => {
+    expect(ratio(t('on-action'), t('action'))).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(t('surface'), t('action-deep'))).toBeGreaterThanOrEqual(3);
+  });
+});
+
 const LIGHT = ['surface', 'surface-raised', 'surface-sunken'];
 const DARK = ['surface-dark', 'surface-dark-raised', 'surface-dark-sunken'];
 

@@ -1,0 +1,50 @@
+// Shared building blocks for the catalogue pages (home, category, product). They sit on the design tokens; the
+// --c-* names are aliases so the page styles stay readable. Marigold (--action) is the one main action per screen.
+:root {
+  --c-bg: var(--surface);
+  --c-ink: var(--ink);
+  --c-muted: var(--ink-muted);
+  --c-line: var(--line);
+  --c-tile: var(--surface-sunken);
+  --c-tile-alt: var(--tone-oat);
+  --c-accent: var(--action);
+  --c-accent-deep: var(--action-deep);
+  --c-success: var(--success-text);
+  --c-disabled: var(--line-strong);
+  --gutter: var(--margin-mobile);
+  --radius-field: var(--radius-sm);
+}
+@media (min-width: 900px) {
+  :root { --gutter: var(--margin-desktop); }
+}
+
+.eyebrow { font: 600 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; }
+.display { font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.display-xl { font-size: clamp(44px, 6vw, 80px); line-height: 0.98; }
+.display-lg { font-size: clamp(34px, 4vw, 48px); line-height: 1.05; }
+.muted { color: var(--c-muted); }
+.page { padding-inline: var(--gutter); }
+.section { padding-block: 64px 0; }
+@media (min-width: 900px) { .section { padding-block: 96px 0; } }
+.section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 32px; }
+.section-head .eyebrow { margin-bottom: 12px; }
+.link-underline { font-weight: 600; border-bottom: 1px solid var(--c-ink); padding-bottom: 2px; }
+.link-underline:hover { text-decoration: none; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 12px; }
+@media (min-width: 700px) { .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 48px 24px; } }
+
+// Image placeholder until real photography is wired in.
+.ph { display: flex; align-items: flex-end; padding: 12px; margin: 0; background: var(--c-tile); color: var(--c-muted); font-size: 12px; aspect-ratio: 3 / 4; }
+.ph.alt { background: var(--c-tile-alt); }
+
+.pill { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap); padding: 0 32px; border: 1px solid transparent; border-radius: var(--radius-pill); font: 600 14px/1 var(--font-sans); letter-spacing: 0.02em; cursor: pointer; background: none; color: var(--c-ink); }
+.pill:hover { text-decoration: none; }
+.pill-accent { background: var(--action); color: var(--on-action); }
+.pill-accent:hover { background: var(--action-deep); color: var(--surface); }
+.pill-line { border-color: var(--c-ink); }
+.pill-line:hover { background: var(--c-ink); color: var(--c-bg); }
+.pill-block { width: 100%; min-height: 56px; font-size: 15px; }
+.chip { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 20px; border: 1px solid var(--c-line); border-radius: var(--radius-pill); background: var(--c-bg); font: 600 14px/1 var(--font-sans); color: var(--c-ink); cursor: pointer; }
+.chip:hover { border-color: var(--c-ink); text-decoration: none; }
+.chip[aria-pressed='true'], .chip[aria-current='page'] { background: var(--c-ink); color: var(--c-bg); border-color: var(--c-ink); }
+.field { min-height: 48px; padding: 0 14px; border: 1px solid var(--c-ink); border-radius: var(--radius-field); background: var(--c-bg); font: inherit; color: var(--c-ink); }

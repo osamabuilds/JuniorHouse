@@ -1,0 +1,62 @@
+<div class="page">
+  <app-breadcrumbs [items]="crumbs()" />
+
+  <div class="layout">
+    <section class="gallery" aria-label="Product images">
+      <figure class="ph main">Main image · on model, north light</figure>
+      <figure class="ph alt">Detail · hem</figure>
+      <figure class="ph alt">Detail · fabric</figure>
+    </section>
+
+    <section class="info" aria-labelledby="product-title">
+      <p class="eyebrow">{{ categoryName() }}</p>
+      <h1 id="product-title" class="display">{{ name() }}</h1>
+      @if (product(); as p) {
+        <p class="price">Rs. {{ p.price | number }}</p>
+      }
+      <p class="lead">
+        A relaxed, lightly gathered piece in washed cotton. Cut with room to run, climb and sit
+        cross-legged.
+      </p>
+
+      <div class="size-head">
+        <h2 id="size-label" class="eyebrow">Size</h2>
+        <a href="#size-guide">Size guide</a>
+      </div>
+      <div class="sizes" role="group" aria-labelledby="size-label">
+        @for (size of sizes; track size.label) {
+          <button
+            type="button"
+            class="size"
+            [disabled]="!size.inStock"
+            [attr.aria-pressed]="size.label === selectedSize()"
+            (click)="selectSize(size.label)"
+          >
+            {{ size.label }}
+          </button>
+        }
+      </div>
+
+      <button type="button" class="pill pill-accent pill-block">Add to bag</button>
+      <p class="stock">In stock · ready to ship</p>
+
+      <div class="details">
+        @for (item of details; track item.title) {
+          <details [open]="item.open">
+            <summary>{{ item.title }}</summary>
+            <p class="muted">{{ item.text }}</p>
+          </details>
+        }
+      </div>
+    </section>
+  </div>
+
+  <section class="related" aria-labelledby="related-title">
+    <h2 id="related-title" class="display display-lg">Wear it with</h2>
+    <ul class="grid">
+      @for (item of related(); track item.slug; let odd = $odd) {
+        <li><app-product-card [product]="item" [alt]="odd" /></li>
+      }
+    </ul>
+  </section>
+</div>

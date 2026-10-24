@@ -30,9 +30,7 @@
               }
             ],
             "styles": [
-              "@fontsource/instrument-serif/400.css",
-              "@fontsource/instrument-serif/400-italic.css",
-              "@fontsource-variable/dm-sans/index.css",
+              "@fontsource-variable/manrope/index.css",
               "projects/storefront/src/styles.scss"
             ],
             "server": "projects/storefront/src/main.server.ts",

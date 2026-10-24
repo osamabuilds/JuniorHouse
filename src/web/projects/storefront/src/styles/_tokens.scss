@@ -1,4 +1,4 @@
-// Romp design tokens (v7, gallery), recoloured black and white (owner decision 2026-10-24, SCRUM-205). Keep docs/design-system/tokens.json in step.
+// Romp design tokens (v7, gallery), recoloured black and white (owner decision 2026-10-24, SCRUM-205). One typeface (Manrope), and one marigold action colour (--action) for the main call to action on a screen (redesign, PR #44). Keep docs/design-system/tokens.json in step.
 // Fonts: load via @fontsource packages (see Implementation.md); no @font-face here.
 
 :root {
@@ -17,6 +17,9 @@
   --ink-muted: #5f5f5f;
   --line: #e5e5e5;
   --line-strong: #767676;
+  --action: #d9a62e;
+  --action-deep: #b07c1a;
+  --on-action: #111111;
   --accent: #111111;
   --accent-deep: #333333;
   --on-accent: #ffffff;
@@ -67,29 +70,29 @@
   --dur-slow: 400ms;
   --ease-out: cubic-bezier(0.2,0.7,0.2,1);
   --ease-inout: cubic-bezier(0.65,0,0.35,1);
-  --font-display: 'Instrument Serif', "Times New Roman", Georgia, serif;
-  --font-sans: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: 'Manrope Variable', 'Manrope', system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: 'Manrope Variable', 'Manrope', system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 // Type styles (use as classes or @extend). Display sizes are fluid: vw replaces the previews' container width.
 .t-display-xl {
-  font: 400 clamp(52px, 8vw, 112px)/0.95 var(--font-display);
+  font: 600 clamp(52px, 8vw, 112px)/0.95 var(--font-display);
   letter-spacing: -0.025em;
 }
 .t-display-lg {
-  font: 400 clamp(40px, 5.2vw, 72px)/1.03 var(--font-display);
+  font: 600 clamp(40px, 5.2vw, 72px)/1.03 var(--font-display);
   letter-spacing: -0.02em;
 }
 .t-display-md {
-  font: 400 clamp(30px, 3.4vw, 48px)/1.12 var(--font-display);
+  font: 600 clamp(30px, 3.4vw, 48px)/1.12 var(--font-display);
   letter-spacing: -0.02em;
 }
 .t-display-sm {
-  font: 400 clamp(24px, 2.2vw, 30px)/1.2 var(--font-display);
+  font: 600 clamp(24px, 2.2vw, 30px)/1.2 var(--font-display);
   letter-spacing: -0.01em;
 }
 .t-display-xs {
-  font: 400 20px/26px var(--font-display);
+  font: 600 20px/26px var(--font-display);
   letter-spacing: 0;
 }
 .t-body-lg {

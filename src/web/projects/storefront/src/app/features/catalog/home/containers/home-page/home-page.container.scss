@@ -1,0 +1,124 @@
+:host {
+  display: block;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column-reverse;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.hero-media {
+  aspect-ratio: 4 / 5;
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  padding-block: 40px 56px;
+}
+
+.soft {
+  color: var(--c-muted);
+  font-weight: 500;
+}
+
+.lead {
+  max-width: 440px;
+}
+
+.cta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tile {
+  display: block;
+}
+
+.tile:hover {
+  text-decoration: none;
+}
+
+.tile-label {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  font-weight: 600;
+}
+
+.story {
+  margin-top: 96px;
+  padding: 80px var(--gutter);
+  background: var(--c-ink);
+  color: var(--c-bg);
+  text-align: center;
+}
+
+.story .eyebrow {
+  margin-bottom: 24px;
+  color: var(--c-accent);
+}
+
+.story blockquote {
+  margin: 0 auto;
+  max-width: 880px;
+}
+
+.story p {
+  font-size: clamp(26px, 3.4vw, 44px);
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.promises {
+  padding-block: 64px 0;
+}
+
+.promises ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px 48px;
+}
+
+.promises h3 {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+@media (min-width: 900px) {
+  .hero {
+    flex-direction: row;
+    min-height: 640px;
+  }
+
+  .hero > * {
+    flex: 1 1 50%;
+  }
+
+  .hero-media {
+    aspect-ratio: auto;
+  }
+
+  .hero-copy {
+    padding-block: 96px;
+    gap: 28px;
+  }
+
+  .cta {
+    flex-direction: row;
+  }
+
+  .story {
+    margin-top: 128px;
+    padding-block: 128px;
+  }
+
+  .promises {
+    padding-block: 96px 0;
+  }
+}

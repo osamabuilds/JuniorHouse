@@ -1,0 +1,5 @@
+<a [routerLink]="link()">
+  <figure class="ph" [class.alt]="alt()">{{ product().name }}</figure>
+  <h3>{{ product().name }}</h3>
+  <p class="muted">Rs. {{ product().price | number }}</p>
+</a>

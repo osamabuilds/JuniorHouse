@@ -1,0 +1,72 @@
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-copy page">
+    <p class="eyebrow">Autumn / Winter</p>
+    <h1 id="hero-title" class="display display-xl">
+      Childhood joy,<br />
+      <span class="soft">dressed with care.</span>
+    </h1>
+    <p class="lead">
+      Considered western wear for ages 0–12. Soft fabrics, honest construction, made to be played
+      in.
+    </p>
+    <div class="cta">
+      <a class="pill pill-accent" routerLink="/new-in">Shop new arrivals</a>
+      <a class="pill pill-line" routerLink="/girls">Shop by age</a>
+    </div>
+  </div>
+  <figure class="ph alt hero-media">Photo · child mid-motion, courtyard, north light</figure>
+</section>
+
+<section class="section page" aria-labelledby="shop-title">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Shop by</p>
+      <h2 id="shop-title" class="display display-lg">Find their fit</h2>
+    </div>
+    <a class="link-underline" routerLink="/new-in">View all</a>
+  </div>
+  <ul class="grid">
+    @for (item of collections; track item.path; let odd = $odd) {
+      <li>
+        <a class="tile" [routerLink]="item.path">
+          <figure class="ph" [class.alt]="odd">{{ item.label }}</figure>
+          <span class="tile-label">{{ item.label }} <span aria-hidden="true">→</span></span>
+        </a>
+      </li>
+    }
+  </ul>
+</section>
+
+<section class="section page" aria-labelledby="edit-title">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">New arrivals</p>
+      <h2 id="edit-title" class="display display-lg">The autumn edit</h2>
+    </div>
+  </div>
+  <ul class="grid">
+    @for (product of edit; track product.slug; let odd = $odd) {
+      <li><app-product-card [product]="product" [alt]="odd" /></li>
+    }
+  </ul>
+</section>
+
+<section class="story" aria-labelledby="story-title">
+  <h2 id="story-title" class="eyebrow">The story</h2>
+  <blockquote>
+    <p>
+      We make clothes the way we would for our own children: soft, simple and built to be lived in.
+    </p>
+  </blockquote>
+</section>
+
+<section class="page promises" aria-label="Our promise">
+  <ul>
+    @for (item of promises; track item.title) {
+      <li>
+        <h3>{{ item.title }}</h3>
+        <p class="muted">{{ item.text }}</p>
+      </li>
+    }
+  </ul>
+</section>

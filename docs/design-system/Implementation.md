@@ -19,7 +19,7 @@ Scope: **storefront only** (`src/web/projects/storefront`). Do not touch the adm
 
 `src/styles.scss`: `@use './styles/tokens'; @use './styles/components';` plus a small reset (`body { margin: 0; background: var(--surface); color: var(--ink); font: 400 16px/26px var(--font-sans); } html { scroll-padding-top: 96px; scroll-padding-bottom: 80px; }`). Put `class="rp-root"` on the app root element. Tokens live in one place: no raw colours, sizes or durations in component SCSS.
 
-Fonts (no CDN): `npm i @fontsource/instrument-serif @fontsource-variable/dm-sans`; add `@fontsource/instrument-serif/400.css`, `@fontsource/instrument-serif/400-italic.css` and `@fontsource-variable/dm-sans/index.css` to the `styles` array in `angular.json`. `_tokens.scss` already lists `'Instrument Serif'` and `'DM Sans Variable'` first. Preload only the Instrument Serif 400 latin file and the DM Sans latin file; `font-display: swap`.
+Fonts (no CDN): `npm i @fontsource-variable/manrope`; add `@fontsource-variable/manrope/index.css` to the `styles` array in `angular.json`. `_tokens.scss` lists `'Manrope Variable'` first for both display and body. Preload only the Manrope latin file; `font-display: swap`.
 
 ## Structure
 
