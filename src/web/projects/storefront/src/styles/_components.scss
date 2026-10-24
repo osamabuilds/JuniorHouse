@@ -1,6 +1,6 @@
 /* Romp storefront components, "Gallery". Every value is a tokens.css custom property.
    Idea: the interface is a quiet gallery frame; the garment photography is the only loud thing on screen.
-   Warm off-white, charcoal, tonal sand and espresso layers, clay (5% of the screen), Instrument Serif headlines, hairlines, 2px radius, no shadows except overlays.
+   Warm off-white, charcoal, tonal sand and espresso layers, clay (5% of the screen), Manrope throughout, marigold action, hairlines, 2px radius, no shadows except overlays.
    Converted from the previews: @container rules are @media (min-width) at 40rem and 64rem, and cqw is vw. */
 
 .rp-root { background: var(--surface); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 26px; -webkit-font-smoothing: antialiased; }
@@ -217,7 +217,7 @@
 .rp-edit__img { overflow: hidden; border-radius: var(--radius-sm); }
 .rp-edit__img .rp-ph { aspect-ratio: var(--image-ratio); }
 .rp-edit__copy { display: grid; gap: var(--space-5); justify-items: start; }
-.rp-edit blockquote { margin: 0; font: 400 clamp(34px, 4.4vw, 64px)/1.08 var(--font-display); letter-spacing: -0.02em; font-style: italic; text-wrap: balance; }
+.rp-edit blockquote { margin: 0; font: 400 clamp(34px, 4.4vw, 64px)/1.08 var(--font-display); letter-spacing: -0.02em; text-wrap: balance; }
 @media (min-width: 64rem) { .rp-edit { grid-template-columns: repeat(12, 1fr); gap: var(--space-5); } .rp-edit__img { grid-column: 1 / 6; } .rp-edit__copy { grid-column: 7 / 13; } }
 
 /* ---------- Fabric band (macro textures) ---------- */

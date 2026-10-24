@@ -32,8 +32,8 @@ const photo = (name: string, alt: string): ImageAsset => ({
 
       <section class="rp-section" aria-labelledby="type-h">
         <h2 id="type-h" class="rp-display-md">Type</h2>
-        <p class="rp-display-sm">Display small, Instrument Serif</p>
-        <p class="t-body">Body, DM Sans. Calm, specific, understated.</p>
+        <p class="rp-display-sm">Display small, Manrope</p>
+        <p class="t-body">Body, Manrope. Calm, specific, understated.</p>
         <p class="t-caption">Caption, 12 pixels</p>
         <p class="t-eyebrow">Eyebrow</p>
       </section>
