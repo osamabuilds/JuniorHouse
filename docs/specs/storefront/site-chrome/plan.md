@@ -61,7 +61,7 @@ Unit: settings selectors and `visibleEntries`/`resolveHref`/`validateSettings`; 
 - **Contract drift between 205 and 206.** Mitigated by a single typed `SiteSettings` model, owned by 206's plan, and one shared fixture (launch set) tested against both sides.
 - **NgRx for settings.** ADR 0019 puts API-fetching features on NgRx; the spec's earlier "signal store" wording is corrected to NgRx.
 - **Palette change touches Story 1.** Token values only; Story 1 tests (contrast, style rules, axe) re-run; Story 1's notes updated.
-- **Open follow-up tasks:** Catalog age lookup to 1Y to 8Y; Catalog `ICollectionQueries` for the collections menu; storefront read model counts for "empty vs sold" (published-catalog feature).
+- **Open follow-up tasks:** SCRUM-207 Catalog category hierarchy (owner chose a real hierarchy); Catalog age lookup to 1Y to 8Y; Catalog `ICollectionQueries` for the collections menu; storefront read model counts for "empty vs sold" (published-catalog feature).
 
 ## Security & coupling review
 
