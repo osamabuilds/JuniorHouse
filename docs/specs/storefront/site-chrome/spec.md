@@ -1,6 +1,6 @@
 # SCRUM-205: Storefront site chrome (Story 2 of 5)
 
-- **Status:** Approved (owner, 2026-10-24: every open question answered with the proposed default)
+- **Status:** Implemented (2026-10-24), with one open finding: SC-20 performance, see Implementation notes item 9
 - **Jira:** SCRUM-205 (task for SCRUM-203, Sprint 9). Story 1 is SCRUM-204 (`design-foundation`, implemented, not yet pushed).
 - **BRD sections:** §4.1 FEAT-CAT-01, FEAT-CAT-05, §5.1, §14; design source `docs/design-system/` (SiteHeader, MegaMenu, SearchOverlay, SiteFooter), used as a guide, not as exact values
 - **Requirement IDs:** FR-01 (presentation), FR-04 (search box and suggestions UI only), NFR-01, NFR-17, NFR-19, SEO-01, SEO-04, SEO-08
@@ -123,3 +123,18 @@ NFR-01 (no layout shift from the chrome, fonts already local, dialogs add no Jav
 - [x] **Q-SC-5 Reveal and view transitions.** Not in this story.
 - [x] **Q-SC-6 Collections entry.** A menu of live collections (settings Q-ST-8).
 - [x] **Q-SC-7 Facts and copy.** The owner enters facts in the admin app; seeded drafts are wording only. Privacy and terms pages are seeded as drafts as well (assumed from "yes to all"; remove from the seed if unwanted).
+
+## Implementation notes (what was built, and where it differs)
+Implemented on 2026-10-24 on branch `SCRUM-205-storefront-site-chrome`, with one open finding (SC-20 performance, item 9). Verification: 141 unit tests (Vitest), 48 Playwright tests including axe (wcag2a/2aa/21aa/22aa) at 390, 768 and 1280 px against the storefront container, Lighthouse on a development and a production container.
+
+1. **Search overlay is not an ARIA combobox (SC-9, Q-SC-4).** It is a labelled dialog with a plain GET form, a live "n suggestions" announcement and arrow-key movement between the field and the suggestions. A full combobox/listbox needs the real suggest API and belongs to the search feature (SRC-9). Suggestion cards link to `/search?q=<name>` because product pages do not exist yet; suggestions come from `shared/data/mock-products.ts`.
+2. **Contract additions** (recorded in the settings plan for SCRUM-206): `NavItem.showAges` (the mega-menu's "Shop by age" column per entry), `SiteSettings.popularSearches` (search chips), `PageBlock` `fact` blocks with a `label`, and these fact keys: `contact.whatsapp`, `contact.email`, `contact.hours`, `exchange.window`, `exchange.conditions`, `delivery.rules`.
+3. **Privacy and terms are seeded as drafts and are not served or linked** until the owner supplies the legal text and publishes them in the admin app. The other six pages are seeded as published draft wording. The wording states no business fact; facts appear only through `fact` blocks and a block whose fact is not entered shows nothing (heading included).
+4. **No price, city, courier or phone in any template or seeded text** (SC-14): a test over the delivery page fails on `Rs.` or `n to n days`.
+5. **Announcement bar** ships disabled (Q-SC-8 text not decided); it appears when the setting is enabled.
+6. **Footer wordmark** is drawn from a CSS pseudo-element (`data-text`) because axe reads real text as a contrast failure; it stays decorative and `aria-hidden`.
+7. **Routing:** content pages are served at `/:slug` with a catch-all that returns a real 404 (and `noindex`) until the home, listing and product routes (stories 3 to 5) are added ahead of it. In production `/` therefore returns 404 until Story 3. Draft pages return 404 and archived pages 410 (unit-tested; no archived page in the launch set).
+8. **Story 1 tests adjusted, not weakened:** the foundations page no longer declares its own header/main/footer (the shell supplies them), the margin check reads the first `.rp-wrap` inside `main`, and the 44 px check ignores controls inside closed dialogs. The wordmark link now has a 44 px target (found by that check).
+9. **SC-20 Lighthouse (production container, mobile, simulated 4G):** SEO 100, Accessibility 100, Best Practices 100 on `/contact` and `/size-guide`; CLS 0.001 and 0.018; **Performance 84 and 75, LCP 3.4 s and 3.8 s, which is below the Performance ≥ 90 and LCP ≤ 2.5 s budgets.** These pages are text only, so the LCP element is a paragraph. Contributors: about 380 kB of JavaScript on first load (231 kB framework chunk, 124 kB reported unused) and fonts that are not preloaded (Story 1 deviation: hashed font file names). The budgets are formally measured on the home, category and product pages, which do not exist yet. Proposed follow-up task before those pages: lazy-load the mobile menu, search overlay and suggest store on first use, and give the fonts stable file names so they can be preloaded.
+10. **Settings source:** `SETTINGS_API_URL` is null, so the store uses the built-in launch set (`shared/data/launch-settings.ts`, `launch-pages.ts`). Pointing it at `/api/storefront/settings` is SCRUM-206 task 21; the store already validates a received document, keeps the last good copy and transfers state from server to browser.
+11. **Canonical origin:** `SITE_URL` defaults to `http://localhost:4000`; the SEO feature sets it from configuration.
