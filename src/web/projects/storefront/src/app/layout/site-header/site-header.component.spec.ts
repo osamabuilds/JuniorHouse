@@ -128,4 +128,11 @@ describe('SiteHeaderComponent', () => {
     expect(q(f, '.rp-menu-btn').getAttribute('aria-label')).toBe('Open menu');
     expect(q(f, '.rp-search-btn').getAttribute('aria-label')).toBe('Search');
   });
+
+  it('CR-5 has no account or bag control and no newsletter form until those features exist', () => {
+    const f = render();
+    const labels = qa(f, 'button, a').map((e) => (e.getAttribute('aria-label') ?? '').toLowerCase());
+    expect(labels.some((l) => l.includes('account') || l.includes('bag'))).toBe(false);
+    expect(q(f, 'input[type="email"]')).toBeNull();
+  });
 });
