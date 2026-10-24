@@ -1,4 +1,5 @@
 # Tasks: menu-redesign
+n> **Deferred (owner, 2026-10-25):** nothing below is started. Pick up at task 1.
 
 Each step names the test that proves it. Ordered so every step leaves the build green.
 

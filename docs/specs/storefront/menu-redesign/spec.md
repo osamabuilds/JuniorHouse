@@ -1,6 +1,6 @@
 # SCRUM-xxx: Mega-menu and mobile menu to the new design references
 
-- **Status:** Approved (owner, 2026-10-24; open questions resolved with the recommendations)
+- **Status:** Approved, deferred by the owner (2026-10-25): spec and plan are approved, no code is started; resume from tasks.md
 - **Jira:** SCRUM-xxx (to be created under SCRUM-203)
 - **BRD sections:** §4.1 FEAT-CAT-01
 - **Requirement IDs:** FR-01 (presentation), NFR-17, NFR-19, SEO-01
