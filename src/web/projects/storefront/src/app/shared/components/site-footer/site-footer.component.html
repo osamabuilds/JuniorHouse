@@ -1,0 +1,55 @@
+<footer class="foot page">
+  <div class="cols">
+    <section class="brand" aria-labelledby="foot-brand">
+      <h2 id="foot-brand" class="logo">romp kids</h2>
+      <p class="muted">Notes on new arrivals and quiet sales, never more than twice a month.</p>
+      <form class="signup" (submit)="$event.preventDefault()">
+        <label for="foot-email" class="visually-hidden">Email address</label>
+        <input
+          id="foot-email"
+          class="field"
+          type="email"
+          name="email"
+          placeholder="Email address"
+          autocomplete="email"
+        />
+        <button type="submit" class="pill pill-line">Subscribe</button>
+      </form>
+    </section>
+
+    <nav aria-labelledby="foot-shop">
+      <h2 id="foot-shop" class="eyebrow">Shop</h2>
+      <ul>
+        @for (item of shop; track item.path) {
+          <li>
+            <a [routerLink]="item.path">{{ item.label }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="foot-help">
+      <h2 id="foot-help" class="eyebrow">Help</h2>
+      <ul>
+        @for (item of help; track item) {
+          <li>
+            <a href="#">{{ item }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="foot-company">
+      <h2 id="foot-company" class="eyebrow">Romp</h2>
+      <ul>
+        @for (item of company; track item) {
+          <li>
+            <a href="#">{{ item }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+
+  <p class="legal muted">© Romp Kids. All rights reserved.</p>
+</footer>

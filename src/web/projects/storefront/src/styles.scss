@@ -1,1 +1,294 @@
-/* You can add global styles to this file, and also import other style files */
+/* Romp storefront: monochrome editorial theme. Marigold is the single accent, reserved for the one main action per screen. */
+:root {
+  --c-bg: #ffffff;
+  --c-ink: #000000;
+  --c-muted: #4d4d4d;
+  --c-line: #e6e6e6;
+  --c-tile: #f2f2f2;
+  --c-tile-alt: #e9e9e9;
+  --c-accent: #d9a62e;
+  --c-accent-deep: #b07c1a;
+  --c-success: #4b6350;
+  --c-disabled: #8c8c8c;
+
+  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --gutter: 20px;
+  --radius-field: 2px;
+  --radius-pill: 999px;
+}
+
+@media (min-width: 900px) {
+  :root {
+    --gutter: 64px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure,
+dl,
+dd {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--c-ink);
+  outline-offset: 3px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -64px;
+  z-index: 100;
+  background: var(--c-ink);
+  color: var(--c-bg);
+  padding: 12px 16px;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+/* Typography */
+.eyebrow {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.display {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.display-xl {
+  font-size: clamp(44px, 6vw, 80px);
+  line-height: 0.98;
+}
+
+.display-lg {
+  font-size: clamp(34px, 4vw, 48px);
+  line-height: 1.05;
+}
+
+.lead {
+  font-size: 17px;
+  line-height: 26px;
+  color: var(--c-muted);
+}
+
+.muted {
+  color: var(--c-muted);
+}
+
+/* Layout */
+.page {
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-block: 64px 0;
+}
+
+@media (min-width: 900px) {
+  .section {
+    padding-block: 96px 0;
+  }
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.section-head .eyebrow {
+  margin-bottom: 12px;
+}
+
+.link-underline {
+  font-weight: 600;
+  border-bottom: 1px solid var(--c-ink);
+  padding-bottom: 2px;
+}
+
+.link-underline:hover {
+  text-decoration: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 12px;
+}
+
+@media (min-width: 700px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 48px 24px;
+  }
+}
+
+/* Image placeholder until real photography is wired in */
+.ph {
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+  margin: 0;
+  background: var(--c-tile);
+  color: var(--c-muted);
+  font-size: 12px;
+  aspect-ratio: 3 / 4;
+}
+
+.ph.alt {
+  background: var(--c-tile-alt);
+}
+
+/* Buttons */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 32px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  background: none;
+  color: var(--c-ink);
+}
+
+.pill:hover {
+  text-decoration: none;
+}
+
+.pill-accent {
+  background: var(--c-accent);
+}
+
+.pill-accent:hover {
+  background: var(--c-accent-deep);
+  color: var(--c-bg);
+}
+
+.pill-line {
+  border-color: var(--c-ink);
+}
+
+.pill-line:hover {
+  background: var(--c-ink);
+  color: var(--c-bg);
+}
+
+.pill-block {
+  width: 100%;
+  min-height: 56px;
+  font-size: 15px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-pill);
+  background: var(--c-bg);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--c-ink);
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--c-ink);
+  text-decoration: none;
+}
+
+.chip[aria-pressed='true'],
+.chip[aria-current='page'] {
+  background: var(--c-ink);
+  color: var(--c-bg);
+  border-color: var(--c-ink);
+}
+
+.field {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--c-ink);
+  border-radius: var(--radius-field);
+  background: var(--c-bg);
+  font: inherit;
+  color: var(--c-ink);
+}

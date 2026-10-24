@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+a {
+  display: block;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+a:hover h3 {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 600;
+  padding-top: 14px;
+}

@@ -1,0 +1,42 @@
+:host {
+  display: block;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding-block: 16px 32px;
+}
+
+.head h1 {
+  font-size: clamp(44px, 7vw, 72px);
+  margin-top: 12px;
+}
+
+.head .lead {
+  max-width: 420px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 16px;
+  margin-bottom: 32px;
+  border-block: 1px solid var(--c-line);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.count {
+  font-size: 13px;
+}
