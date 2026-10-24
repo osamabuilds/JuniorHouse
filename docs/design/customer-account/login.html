@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Romp Login</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#fff;color:#000;font-family:'Manrope',system-ui,sans-serif;font-size:15px;line-height:1.55}
+h1,h2,p,ul{margin:0;padding:0}
+ul{list-style:none}
+a{color:inherit}
+a:hover{text-decoration:underline;text-underline-offset:4px}
+.eyebrow{font-size:12px;line-height:16px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+label{display:block;font-weight:600;font-size:14px;margin-bottom:8px}
+.field{width:100%;min-height:52px;padding:0 14px;border:1px solid #000;border-radius:2px;background:#fff;font:inherit;color:#000;box-sizing:border-box}
+.pill{display:inline-flex;align-items:center;justify-content:center;min-height:56px;width:100%;border:0;border-radius:999px;font:inherit;font-weight:600;font-size:15px;background:#D9A62E;color:#000;cursor:pointer}
+.pill:hover{background:#B07C1A;color:#fff}
+.pill-line{background:none;border:1px solid #000}
+.pill-line:hover{background:#000;color:#fff}
+.check{display:flex;align-items:center;gap:10px;font-weight:400;margin:0;min-height:44px}
+.check input{width:20px;height:20px;accent-color:#000;margin:0}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #000;outline-offset:3px}
+</style>
+<div style="width:100%;min-height:860px;display:flex;flex-wrap:wrap">
+  <aside style="flex:1 1 480px;background:#000;color:#fff;padding:48px 64px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;min-height:360px">
+    <a href="../../../README.md" style="font-size:30px;font-weight:600;letter-spacing:-.04em;color:#fff;text-decoration:none">romp kids</a>
+    <div>
+      <p class="eyebrow" style="color:#D9A62E;margin-bottom:20px">Welcome back</p>
+      <p style="font-size:clamp(32px,3.6vw,52px);line-height:1.05;font-weight:600;letter-spacing:-.03em;max-width:480px">Your children's sizes, saved and ready.</p>
+    </div>
+    <p style="font-size:13px;color:#BDBDBD">© Romp Kids</p>
+  </aside>
+
+  <main style="flex:1 1 480px;display:flex;align-items:center;justify-content:center;padding:48px 24px;box-sizing:border-box">
+    <section aria-labelledby="t" style="width:100%;max-width:420px">
+      <h1 id="t" style="font-size:44px;line-height:1;font-weight:600;letter-spacing:-.03em;margin-bottom:12px">Sign in</h1>
+      <p style="color:#4D4D4D;margin-bottom:36px">New here? <a href="signup.html" style="color:#000;font-weight:600;text-decoration:underline;text-underline-offset:4px">Create an account</a></p>
+
+      <form style="display:grid;gap:22px" aria-label="Sign in">
+        <div><label for="e">Email address</label><input id="e" class="field" type="email" autocomplete="email"></div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><label for="p">Password</label><a href="login.html" style="font-size:13px;padding:8px 0">Forgot password?</a></div>
+          <div style="position:relative"><input id="p" class="field" type="password" autocomplete="current-password" style="padding-right:76px"><button type="button" aria-label="Show password" style="position:absolute;right:4px;top:4px;height:44px;padding:0 12px;border:0;background:none;font:inherit;font-weight:600;font-size:13px;color:#000;cursor:pointer">Show</button></div>
+        </div>
+        <label class="check"><input type="checkbox"> Keep me signed in</label>
+        <button type="submit" class="pill">Sign in</button>
+      </form>
+
+      <p style="margin-top:32px;padding-top:24px;border-top:1px solid #E6E6E6;font-size:13px;color:#4D4D4D">By signing in you agree to our <a href="#" style="color:#000">Terms</a> and <a href="#" style="color:#000">Privacy policy</a>.</p>
+    </section>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Romp Signup Mobile</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#fff;color:#000;font-family:'Manrope',system-ui,sans-serif;font-size:15px;line-height:1.55}
+h1,p{margin:0;padding:0}
+a{color:inherit}
+label{display:block;font-weight:600;font-size:14px;margin-bottom:8px}
+.field{width:100%;min-height:52px;padding:0 14px;border:1px solid #000;border-radius:2px;background:#fff;font:inherit;color:#000;box-sizing:border-box}
+.pill{display:inline-flex;align-items:center;justify-content:center;min-height:56px;width:100%;border:0;border-radius:999px;font:inherit;font-weight:600;font-size:15px;background:#D9A62E;color:#000}
+.check{display:flex;align-items:flex-start;gap:10px;font-weight:400;margin:0;min-height:44px;padding:10px 0;box-sizing:border-box}
+.check input{width:20px;height:20px;accent-color:#000;margin:2px 0 0;flex:none}
+.hint{font-size:13px;color:#4D4D4D;margin-top:8px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #000;outline-offset:3px}
+</style>
+<div style="width:100%;max-width:480px;margin:0 auto">
+  <header style="display:flex;align-items:center;justify-content:center;padding:14px 20px;border-bottom:1px solid #E6E6E6"><a href="../../../README.md" style="font-size:26px;font-weight:600;letter-spacing:-.04em;text-decoration:none">romp kids</a></header>
+  <main style="padding:40px 20px 56px">
+    <h1 style="font-size:40px;line-height:1;font-weight:600;letter-spacing:-.03em;margin-bottom:12px">Create account</h1>
+    <p style="color:#4D4D4D;margin-bottom:32px">Already have one? <a href="login-mobile.html" style="color:#000;font-weight:600;text-decoration:underline;text-underline-offset:4px">Sign in</a></p>
+    <form style="display:grid;gap:22px" aria-label="Create account">
+      <div><label for="fn">First name</label><input id="fn" class="field" type="text" autocomplete="given-name"></div>
+      <div><label for="ln">Last name</label><input id="ln" class="field" type="text" autocomplete="family-name"></div>
+      <div><label for="e">Email address</label><input id="e" class="field" type="email" autocomplete="email"></div>
+      <div><label for="m">Mobile number</label><input id="m" class="field" type="tel" autocomplete="tel" placeholder="03XX XXXXXXX"><p class="hint">Used only for delivery updates.</p></div>
+      <div>
+        <label for="p">Password</label>
+        <div style="position:relative"><input id="p" class="field" type="password" autocomplete="new-password" aria-describedby="ph" style="padding-right:76px"><button type="button" aria-label="Show password" style="position:absolute;right:4px;top:4px;height:44px;padding:0 12px;border:0;background:none;font:inherit;font-weight:600;font-size:13px;color:#000">Show</button></div>
+        <p id="ph" class="hint">[Password rules to be confirmed]</p>
+      </div>
+      <div>
+        <label class="check"><input type="checkbox" required> <span>I agree to the <a href="signup-mobile.html" style="color:#000">Terms</a> and <a href="signup-mobile.html" style="color:#000">Privacy policy</a>.</span></label>
+        <label class="check"><input type="checkbox"> <span>Send me notes on new arrivals (optional).</span></label>
+      </div>
+      <button type="submit" class="pill">Create account</button>
+    </form>
+  </main>
+</div>
+</body>
+</html>
