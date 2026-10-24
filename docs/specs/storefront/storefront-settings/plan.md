@@ -4,7 +4,7 @@
 - **Module(s):** Storefront (new, schema `STFR`), Admin web app, storefront web (consumer only, via SCRUM-205)
 
 ## Domain model
-`Romp.Modules.Storefront.Domain/Settings/…`, no EF or ASP.NET references.
+`Romp.Modules.Storefront.Domain/StorefrontSettings/…`, no EF or ASP.NET references.
 - **`NavItem`** (one self-referencing tree, aggregate root = the draft navigation): key (unique, `^[a-z0-9-]{2,40}$`), label (1..40), parent (nullable), level (1..3, derived and checked), kind (`Link` | `Group` | `CollectionList`), target (kind + reference, validated; none for a `Group`), sort (unique among siblings), enabled. Invariants: maximum depth 3 (one constant, Q-ST-9); a `Group` has at least one enabled child; a `Link` has a target and may also have children (it then opens them and is itself reachable from the panel); any entry may be a parent; a `CollectionList` adds the enabled collections as its children and may also have manual ones; disabling an item hides its subtree; an item cannot be its own ancestor.
 - **`AgeStep`**: stable code (`^[a-z0-9-]{1,20}$`, immutable after first publish), label, sort, enabled. Launch seed `1y`..`8y`.
 - **`FooterColumn` → `FooterLink`**: title, sort; link label, target, sort, enabled.
@@ -14,7 +14,7 @@
 - **`SettingsDraft`** (the working copy, version counter) and **`PublishedSnapshot`** (immutable: version, JSON document, SHA-256 hash, published by/at, note, `IsCurrent`). Publishing validates the whole draft (`SettingsValidator`: no dead links, no duplicate keys, no empty menu, no empty facts used by published pages, size limit) and produces the document.
 - **Redirect**: old slug → page, written when a published page's slug changes.
 
-## Application layer (`Romp.Modules.Storefront.Application/Settings/<Feature>/`)
+## Application layer (`Romp.Modules.Storefront.Application/StorefrontSettings/<Subfolder>/` (the feature folder carries the spec name, `StructureSyncTests`))
 | Command / Query | Input | Output | Covers |
 |---|---|---|---|
 | `GetDraftSettingsQuery` | none | whole draft (admin) | ST-1 |

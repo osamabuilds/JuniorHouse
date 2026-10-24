@@ -4,7 +4,7 @@
 - Test-first, tagged with the IDs they cover. Backend tests run in the Linux SDK container (see the docker dotnet test workaround); CI is the authority for the integration tests. The Storefront module is created here.
 
 ## A. Module and data
-- [ ] 1. Create the `Storefront` module projects (`Domain`, `Application`, `Infrastructure`, `IModule`), register it in the host, add `Storefront` to `ModuleNames`. Test: `Romp.ArchitectureTests` pass with the module present.
+- [x] 1. Create the `Storefront` module projects (`Domain`, `Application`, `Infrastructure`, `IModule`), register it in the host, add `Storefront` to `ModuleNames`. Test: `Romp.ArchitectureTests` pass with the module present.
 - [ ] 2. Glossary check for every new table and column word (add new abbreviations to `docs/db/naming.md`). Test: the naming architecture test.
 - [ ] 3. Domain: `NavItem` tree, `AgeStep`, footer, `SettingItem`, `DeliveryRule`, `ExchangePolicy`, `Page`/`PageBlock`, `SettingsDraft`, `PublishedSnapshot`, `SettingsValidator`. Test: unit specs per invariant (depth 3, unique sibling sort, group needs a member, slug pattern and reserved list, fact must exist, size caps) (ST-4, ST-16, ST-17).
 - [ ] 4. EF configuration for every entity (explicit `ToTable`/`HasColumnName`), lookups seeded, concurrency tokens, indexes on every FK, partial unique index for the current snapshot. Test: naming test and a Testcontainers migration test (ST-16).
