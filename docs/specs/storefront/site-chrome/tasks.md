@@ -13,7 +13,7 @@
 - [x] 5. `shared/utils/resolve-href.ts`: pure `resolveHref(target)`. Test: each target kind gives the expected clean URL; unsafe values (`javascript:`) are refused (SC-3, abuse case 2).
 - [x] 6. `shared/utils/validate-settings.ts`: duplicate keys, dead internal links, group with no members, depth over 3, age without code. Test: one failing sample per rule (SC-4).
 - [x] 7. `shared/data/launch-settings.ts`: Girls, Boys, New in, Collections, Sale; Girls and Boys with member categories and sub-members as `Path` targets; ages 1Y to 8Y; footer columns; brand and WhatsApp `+923315613217`; six page summaries. Test: `validateSettings(launchSettings)` is clean (SC-3, SC-12, SC-14).
-- [ ] 8. `features/storefront/site-settings`: NgRx state, actions, reducer, selectors (`selectHeaderEntries`, `selectAges`, `selectFooter`, `selectBrand`), `SiteSettingsApi`, effects with fallback (API error to last good copy to launch set), `TransferState` hand-off. Test: reducer and selector specs; effect spec with a failing API (ST-13).
+- [x] 8. `features/storefront/site-settings`: NgRx state, actions, reducer, selectors (`selectHeaderEntries`, `selectAges`, `selectFooter`, `selectBrand`), `SiteSettingsApi`, effects with fallback (API error to last good copy to launch set), `TransferState` hand-off. Test: reducer and selector specs; effect spec with a failing API (ST-13).
 
 ## C. Dialog and shared pieces
 - [ ] 9. `layout/dialog` controller on native `<dialog>`: `showModal()`, scrim click, Esc, scroll lock, focus return. Test: opens, traps, closes on Esc and scrim, returns focus (SC-8).
