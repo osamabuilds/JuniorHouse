@@ -32,11 +32,37 @@ public interface IMenuLookupCache
 /// <summary>The header menu, built from lookup rows and the read model (NAV-1, 3, 5, 8, 9; owner decision 2026-10-25).</summary>
 public sealed record GetMenuQuery : IRequest<MenuDto>;
 
+/// <summary>One menu link on the wire. <see cref="Kind"/> is <c>new-in</c>, <c>sale</c>, <c>category</c>, <c>collection</c> or <c>age</c>.</summary>
+public sealed record MenuEntryDto(string Kind, string Code, string Label, string Path);
+
+public sealed record MenuAudienceDto(string Code, string Name, string Path, IReadOnlyList<MenuEntryDto> Entries);
+
 public sealed record MenuDto(
-    IReadOnlyList<MenuAudience> Audiences,
-    IReadOnlyList<MenuEntry> Collections,
+    IReadOnlyList<MenuAudienceDto> Audiences,
+    IReadOnlyList<MenuEntryDto> Collections,
     bool HasNewIn,
-    bool HasSale) : IPublicStorefrontResponse;
+    bool HasSale) : IPublicStorefrontResponse
+{
+    internal static MenuDto From(MenuTree tree) => new(
+        [.. tree.Audiences.Select(a => new MenuAudienceDto(a.Code, a.Name, a.Path, [.. a.Entries.Select(Entry)]))],
+        [.. tree.Collections.Select(Entry)],
+        tree.HasNewIn,
+        tree.HasSale);
+
+    private static MenuEntryDto Entry(MenuEntry e) => new(
+        e.Kind switch
+        {
+            MenuEntryKind.NewIn => "new-in",
+            MenuEntryKind.Sale => "sale",
+            MenuEntryKind.Category => "category",
+            MenuEntryKind.Collection => "collection",
+            MenuEntryKind.Age => "age",
+            _ => throw new ArgumentOutOfRangeException(nameof(e), e.Kind, "Unknown menu entry kind."),
+        },
+        e.Code,
+        e.Label,
+        e.Path);
+}
 
 public sealed class GetMenuQueryHandler(
     IStorefrontReadDbContext db,
@@ -49,7 +75,7 @@ public sealed class GetMenuQueryHandler(
         var rows = await cache.GetOrLoadAsync(LoadAsync, cancellationToken);
         var availability = await ReadAvailabilityAsync(cancellationToken);
         var tree = MenuBuilder.Build(rows.Genders, rows.Categories, rows.Collections, rows.Ages, availability, settings.HiddenGenderCodes);
-        return new MenuDto(tree.Audiences, tree.Collections, tree.HasNewIn, tree.HasSale);
+        return MenuDto.From(tree);
     }
 
     private async Task<MenuLookups> LoadAsync(CancellationToken cancellationToken)

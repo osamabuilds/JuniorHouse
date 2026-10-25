@@ -6,6 +6,7 @@ import { provideStore } from '@ngrx/store';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { providePage } from './features/storefront/page/page.providers';
+import { provideNavigation } from './features/storefront/navigation';
 import { provideSearchSuggest } from './features/storefront/search-suggest';
 import { provideSiteSettings } from './features/storefront/site-settings';
 import { provideRpImageLoader } from './shared/ui/image/image-loader';
@@ -19,6 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideStore(),
     provideEffects(),
     provideSiteSettings(),
+    provideNavigation(),
     provideSearchSuggest(),
     providePage(),
     provideRpImageLoader(),

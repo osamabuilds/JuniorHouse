@@ -1,14 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Store, provideStore } from '@ngrx/store';
+import { NavigationActions, provideNavigation } from '../../features/storefront/navigation';
+import { sampleMenu } from '../../features/storefront/navigation/testing/sample-menu';
 import { SiteSettingsActions, provideSiteSettings } from '../../features/storefront/site-settings';
 import { launchSettings } from '../../shared/data/launch-settings';
 import { polyfillDialog } from '../dialog/dialog.testing';
 import { MobileMenuComponent } from './mobile-menu.component';
 
 function render(): ComponentFixture<MobileMenuComponent> {
-  TestBed.configureTestingModule({ providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings()] });
-  TestBed.inject(Store).dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));
+  TestBed.configureTestingModule({ providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings(), provideNavigation()] });
+  const store = TestBed.inject(Store);
+  store.dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));
+  store.dispatch(NavigationActions.loadMenuSuccess({ menu: sampleMenu }));
   const f = TestBed.createComponent(MobileMenuComponent);
   f.detectChanges();
   return f;
@@ -31,9 +35,9 @@ describe('MobileMenuComponent', () => {
     const f = render();
     const el = f.nativeElement as HTMLElement;
     const summaries = [...el.querySelectorAll('summary')].map((s) => s.textContent!.trim());
-    expect(summaries).toEqual(expect.arrayContaining(['Girls', 'Boys', 'Tees and shirts']));
+    expect(summaries).toEqual(expect.arrayContaining(['Girls', 'Boys', 'Categories']));
     const hrefs = [...el.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(expect.arrayContaining(['/new-in', '/sale', '/boys/casual-shirts']));
+    expect(hrefs).toEqual(expect.arrayContaining(['/new-in', '/sale', '/boys/tees-and-shirts']));
   });
 
   it('SC-10 holds a plain GET search form at the top', () => {

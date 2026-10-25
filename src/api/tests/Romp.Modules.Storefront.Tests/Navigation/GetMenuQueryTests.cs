@@ -58,8 +58,8 @@ public sealed class GetMenuQueryTests(StorefrontPostgres postgres)
 
         Assert.Equal(["GIRLS", "BOYS"], menu.Audiences.Select(a => a.Code).ToArray());
         var girls = menu.Audiences[0].Entries;
-        Assert.Equal(["NewIn", "Sale", "Category:DRESSES", "Collection:SUMMER", "Age:KIDS"], girls.Select(Describe).ToArray());
-        Assert.Equal(["NewIn", "Category:TOPS", "Age:KIDS"], menu.Audiences[1].Entries.Select(Describe).ToArray());
+        Assert.Equal(["new-in", "sale", "category:DRESSES", "collection:SUMMER", "age:KIDS"], girls.Select(Describe).ToArray());
+        Assert.Equal(["new-in", "category:TOPS", "age:KIDS"], menu.Audiences[1].Entries.Select(Describe).ToArray());
         Assert.Equal(["/collections/summer"], menu.Collections.Select(c => c.Path).ToArray());
         Assert.True(menu.HasSale);
     }
@@ -154,7 +154,7 @@ public sealed class GetMenuQueryTests(StorefrontPostgres postgres)
     public void TheMenuResponse_IsAPublicResponse() =>
         Assert.True(typeof(Romp.Modules.Storefront.Application.Abstractions.IPublicStorefrontResponse).IsAssignableFrom(typeof(MenuDto)));
 
-    private static string Describe(MenuEntry e) => e.Kind is MenuEntryKind.NewIn or MenuEntryKind.Sale ? e.Kind.ToString() : $"{e.Kind}:{e.Code}";
+    private static string Describe(MenuEntryDto e) => e.Kind is "new-in" or "sale" ? e.Kind : $"{e.Kind}:{e.Code}";
 }
 
 /// <summary>A clock the test moves by hand.</summary>

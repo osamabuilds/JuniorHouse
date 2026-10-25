@@ -43,7 +43,7 @@
   @for (entry of entries(); track entry.key) {
     @if (entry.children.length > 0) {
       <div class="rp-mega-host" [id]="'mega-' + entry.key" [hidden]="openKey() !== entry.key">
-        <rp-mega-menu [entry]="entry" [ages]="ages()" (navigate)="openKey.set(null)" />
+        <rp-mega-menu [entry]="entry" (navigate)="openKey.set(null)" />
       </div>
     }
   }

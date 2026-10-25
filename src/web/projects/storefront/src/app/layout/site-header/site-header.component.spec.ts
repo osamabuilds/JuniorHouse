@@ -1,18 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideStore } from '@ngrx/store';
+import { NavigationActions, provideNavigation } from '../../features/storefront/navigation';
+import { sampleMenu } from '../../features/storefront/navigation/testing/sample-menu';
+import { Menu } from '../../features/storefront/navigation/models/menu.model';
 import { provideSiteSettings } from '../../features/storefront/site-settings';
 import { SiteSettingsActions } from '../../features/storefront/site-settings';
 import { launchSettings } from '../../shared/data/launch-settings';
-import { SiteSettings } from '../../shared/models/site-settings.model';
 import { SiteHeaderComponent } from './site-header.component';
 import { Store } from '@ngrx/store';
 
-function render(settings: SiteSettings = launchSettings): ComponentFixture<SiteHeaderComponent> {
+function render(menu: Menu = sampleMenu): ComponentFixture<SiteHeaderComponent> {
   TestBed.configureTestingModule({
-    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings()],
+    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings(), provideNavigation()],
   });
-  TestBed.inject(Store).dispatch(SiteSettingsActions.loadSuccess({ settings, source: 'api' }));
+  const store = TestBed.inject(Store);
+  store.dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));
+  store.dispatch(NavigationActions.loadMenuSuccess({ menu }));
   const f = TestBed.createComponent(SiteHeaderComponent);
   f.detectChanges();
   return f;
@@ -110,17 +114,19 @@ describe('SiteHeaderComponent', () => {
     expect([menu, search]).toEqual([1, 1]);
   });
 
-  it('SC-3 follows the settings: a renamed, disabled and added entry change the nav with no code change', () => {
-    const edited: SiteSettings = {
-      ...launchSettings,
-      navigation: [
-        { ...launchSettings.navigation[0], label: 'Little girls' },
-        { ...launchSettings.navigation[1], enabled: false },
-        ...launchSettings.navigation.slice(2),
-      ],
-    };
-    const f = render(edited);
-    expect(qa(f, '.rp-nav > li').map((li) => li.textContent!.trim())).toEqual(['Little girls', 'New in', 'Collections', 'Sale']);
+  it('NAV-5 follows the menu from the server: an audience, collection or sale that is gone leaves the nav with no code change', () => {
+    const f = render({ ...sampleMenu, audiences: sampleMenu.audiences.slice(0, 1), collections: [], hasSale: false });
+    expect(qa(f, '.rp-nav > li').map((li) => li.textContent!.trim())).toEqual(['Girls', 'New in']);
+  });
+
+  it('NAV-8 the age links in the panel carry the age code as a query parameter on the audience page', () => {
+    const f = render();
+    expect(q(f, '#mega-girls a[href="/girls?age=age-2y"]')).not.toBeNull();
+  });
+
+  it('NAV-3 an empty shop has an empty nav, not a made-up one', () => {
+    const f = render({ audiences: [], collections: [], hasNewIn: false, hasSale: false });
+    expect(qa(f, '.rp-nav > li')).toEqual([]);
   });
 
   it('SC-16 icon buttons have accessible names', () => {

@@ -1,7 +1,7 @@
 <ng-template #link let-item let-text="text">
   @if (href(item); as h) {
     @if (internal(h)) {
-      <a class="rp-navlink" [routerLink]="h" (click)="navigate.emit()">{{ text }}</a>
+      <a class="rp-navlink" [routerLink]="h" [queryParams]="item.query" (click)="navigate.emit()">{{ text }}</a>
     } @else {
       <a class="rp-navlink" [href]="h" rel="noopener" (click)="navigate.emit()">{{ text }}</a>
     }

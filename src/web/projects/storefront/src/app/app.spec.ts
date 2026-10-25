@@ -3,6 +3,10 @@ import { provideRouter } from '@angular/router';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideHttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { provideNavigation } from './features/storefront/navigation';
+import { NavigationApi } from './features/storefront/navigation/services/navigation-api.service';
+import { sampleMenu } from './features/storefront/navigation/testing/sample-menu';
 import { provideSearchSuggest } from './features/storefront/search-suggest';
 import { provideSiteSettings } from './features/storefront/site-settings';
 import { App } from './app';
@@ -11,7 +15,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([]), provideHttpClient(), provideStore({}), provideEffects(), provideSiteSettings(), provideSearchSuggest()],
+      providers: [provideRouter([]), provideHttpClient(), provideStore({}), provideEffects(), provideSiteSettings(), provideNavigation(), provideSearchSuggest(), { provide: NavigationApi, useValue: { getMenu: () => of(sampleMenu) } }],
     }).compileComponents();
   });
 
