@@ -57,7 +57,12 @@ public sealed class StorefrontModule : IModule
         services.TryAdd(ServiceDescriptor.Scoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>)));
         services.AddScoped<IOutboxMessageHandler<StorefrontSettingsPublishedEvent>, SettingsPublishedCacheInvalidator>();
 
-        // Published-catalog read model: fed by Catalog and Warehouse events (ADR 0018).
+        // Published-catalog read model: fed by Catalog and Warehouse events (ADR 0018), repaired by the reconcile job.
+        if (configuration.GetValue("Storefront:ReconcileEnabled", true))
+        {
+            services.AddHostedService<ReconcileWorker>();
+        }
+
         services.AddScoped<IOutboxMessageHandler<ProductPublishedEvent>, ProductPublishedConsumer>();
         services.AddScoped<IOutboxMessageHandler<ProductChangedEvent>, ProductChangedConsumer>();
         services.AddScoped<IOutboxMessageHandler<ProductUnpublishedEvent>, ProductUnpublishedConsumer>();

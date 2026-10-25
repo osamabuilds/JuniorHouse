@@ -26,6 +26,12 @@ public sealed class StorefrontOptions
 
     /// <summary>The widths each product image is resized to, in WebP and JPEG (published-catalog PCT-7).</summary>
     public int[] ImageWidths { get; set; } = [320, 640, 960, 1280];
+
+    /// <summary>Whether the background reconcile job runs (published-catalog PCT-5). On by default.</summary>
+    public bool ReconcileEnabled { get; set; } = true;
+
+    /// <summary>How often the reconcile job compares the read model with Catalog and Warehouse.</summary>
+    public TimeSpan ReconcileInterval { get; set; } = TimeSpan.FromMinutes(10);
 }
 
 public sealed class ReadModelSettings(IOptions<StorefrontOptions> options) : Application.PublishedCatalog.IReadModelSettings

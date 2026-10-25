@@ -20,7 +20,7 @@ Jira: SCRUM-208 · Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Each st
 11. [x] `ApplyAvailabilityCommand` and `AVLB_STK` holding area for events that arrive before the product. Proof: tests incl. no stock event ever received gives `NotYetAvailable` (PCT-3, 9, 11).
 12. [x] `ApplySizeChartCommand`. Proof: handler test (PCT-1).
 13. [x] Event consumers via mappers with inbox idempotency (ADR 0011). Proof: same event delivered 10 times gives one state (PCT-5).
-14. [ ] `ReconcileCommand` job (10 min): refetch missing/older, remove unknown, refresh lookup copies. Proof: lost-event test (PCT-5).
+14. [x] `ReconcileCommand` job (10 min): refetch missing/older, remove unknown, refresh lookup copies. Proof: lost-event test (PCT-5). *Built as page commands (products, charts, stock, lookup copies) walked by `ReconcileCommand`, each repair its own transaction; `ReconcileWorker` runs it every `Storefront:ReconcileInterval` (10 min, off with `Storefront:ReconcileEnabled=false`). Stock rows are never removed (Warehouse keeps them; a row with no product waits).*
 15. [ ] `RebuildStorefrontCommand` (sweep by run id), `RBLD_RUN`, endpoints `POST/GET /api/admin/storefront/rebuild`, operator CLI mode `rebuild-storefront`, auto-run on schema version mismatch. Proof: empty-model rebuild test, old rows keep serving during rebuild, 202 response (PCT-6). Permission policy is added when Sprint 8 lands; until then the route is local-only like other early endpoints.
 
 ## C. Images

@@ -15,12 +15,23 @@ internal sealed class FakeReadModelSettings : IReadModelSettings
 /// <summary>The size lookup in a known order (5-6Y before 7-8Y, ids deliberately not in that order); every other lookup is unused by the projection.</summary>
 internal sealed class FakeCatalogLookups : ICatalogLookupQueries
 {
-    public Task<IReadOnlyList<CatalogLookupItem>> ListSizesAsync(CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<CatalogLookupItem>>(
-        [
-            new CatalogLookupItem(9, "5-6Y", "5-6 Years", 10, true),
-            new CatalogLookupItem(4, "7-8Y", "7-8 Years", 20, true),
-        ]);
+    public List<CatalogLookupItem> Sizes { get; } =
+    [
+        new CatalogLookupItem(9, "5-6Y", "5-6 Years", 10, true),
+        new CatalogLookupItem(4, "7-8Y", "7-8 Years", 20, true),
+    ];
+
+    public List<CatalogLookupItem> Genders { get; } = [];
+
+    public List<CatalogLookupItem> Categories { get; } = [];
+
+    public List<CatalogLookupItem> AgeBrackets { get; } = [];
+
+    public List<CatalogLookupItem> Collections { get; } = [];
+
+    public List<CatalogLookupItem> Colours { get; } = [];
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListSizesAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<CatalogLookupItem>>(Sizes);
 
     public Task<IReadOnlyDictionary<short, ApparelCode>> GetGendersAsync(IReadOnlyCollection<short> ids, CancellationToken cancellationToken) => throw new NotSupportedException();
 
@@ -42,15 +53,15 @@ internal sealed class FakeCatalogLookups : ICatalogLookupQueries
 
     public Task<IReadOnlyDictionary<short, ApparelCode>> GetColoursAsync(IReadOnlyCollection<short> ids, CancellationToken cancellationToken) => throw new NotSupportedException();
 
-    public Task<IReadOnlyList<CatalogLookupItem>> ListGendersAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<CatalogLookupItem>> ListGendersAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<CatalogLookupItem>>(Genders);
 
-    public Task<IReadOnlyList<CatalogLookupItem>> ListCategoriesAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<CatalogLookupItem>> ListCategoriesAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<CatalogLookupItem>>(Categories);
 
-    public Task<IReadOnlyList<CatalogLookupItem>> ListAgeBracketsAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<CatalogLookupItem>> ListAgeBracketsAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<CatalogLookupItem>>(AgeBrackets);
 
-    public Task<IReadOnlyList<CatalogLookupItem>> ListCollectionsAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<CatalogLookupItem>> ListCollectionsAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<CatalogLookupItem>>(Collections);
 
-    public Task<IReadOnlyList<CatalogLookupItem>> ListColoursAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<CatalogLookupItem>> ListColoursAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<CatalogLookupItem>>(Colours);
 }
 
 internal static class Snapshots
@@ -109,11 +120,15 @@ internal sealed class FakeProducers :
         return Task.FromResult(Stock.GetValueOrDefault(variantId));
     }
 
-    public Task<IReadOnlyList<PublishedProductVersion>> ListVersionsAsync(long afterProductId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<PublishedProductVersion>> ListVersionsAsync(long afterProductId, int take, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<PublishedProductVersion>>([.. Products.Values.Where(p => p.ProductId > afterProductId).OrderBy(p => p.ProductId).Take(take).Select(p => new PublishedProductVersion(p.ProductId, p.Version))]);
 
-    public Task<IReadOnlyList<PublishedProductSnapshot>> ListSnapshotsAsync(long afterProductId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<PublishedProductSnapshot>> ListSnapshotsAsync(long afterProductId, int take, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<PublishedProductSnapshot>>([.. Products.Values.Where(p => p.ProductId > afterProductId).OrderBy(p => p.ProductId).Take(take)]);
 
-    public Task<IReadOnlyList<PublishedSizeChart>> ListChartsAsync(long afterChartId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<PublishedSizeChart>> ListChartsAsync(long afterChartId, int take, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<PublishedSizeChart>>([.. Charts.Values.Where(c => c.ChartId > afterChartId).OrderBy(c => c.ChartId).Take(take)]);
 
-    public Task<IReadOnlyList<Romp.Modules.Warehouse.Contracts.StockAvailability>> ListAvailabilityAsync(long afterVariantId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<IReadOnlyList<Romp.Modules.Warehouse.Contracts.StockAvailability>> ListAvailabilityAsync(long afterVariantId, int take, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Romp.Modules.Warehouse.Contracts.StockAvailability>>([.. Stock.Values.Where(s => s.VariantId > afterVariantId).OrderBy(s => s.VariantId).Take(take)]);
 }

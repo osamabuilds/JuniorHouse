@@ -68,6 +68,8 @@ public sealed class StfrDbContext(DbContextOptions<StfrDbContext> options) : DbC
     async Task IStorefrontDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 
+    void IStorefrontReadDbContext.ClearTracker() => ChangeTracker.Clear();
+
     async Task IStorefrontReadDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 

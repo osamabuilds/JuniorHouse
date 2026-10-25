@@ -681,6 +681,8 @@ public sealed class ModelMeta : Entity<short>, IAuditable
     /// <summary>When the lookup copies (names, codes, sort orders) on the rows were last refreshed.</summary>
     public DateTimeOffset? LookupsUpdatedAt { get; private set; }
 
+    public void MarkLookupsRefreshed(DateTimeOffset at) => LookupsUpdatedAt = at;
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; } = string.Empty;

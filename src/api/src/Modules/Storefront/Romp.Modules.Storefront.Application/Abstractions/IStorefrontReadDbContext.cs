@@ -34,4 +34,7 @@ public interface IStorefrontReadDbContext
     DbSet<ModelMeta> ModelMeta { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Forgets every tracked entity. A long job (reconcile, rebuild) calls it between items so the context does not grow with the catalogue.</summary>
+    void ClearTracker();
 }

@@ -111,7 +111,8 @@ internal sealed class StorefrontHost : IDisposable
         services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddSingleton<IExternalHostPolicy, FakeExternalHostPolicy>();
         services.AddSingleton<Romp.Modules.Storefront.Application.PublishedCatalog.IReadModelSettings, FakeReadModelSettings>();
-        services.AddSingleton<Romp.Modules.Reference.Contracts.ICatalogLookupQueries, FakeCatalogLookups>();
+        services.AddSingleton<FakeCatalogLookups>();
+        services.AddSingleton<Romp.Modules.Reference.Contracts.ICatalogLookupQueries>(sp => sp.GetRequiredService<FakeCatalogLookups>());
         services.AddSingleton<FakeProducers>();
         services.AddSingleton<Romp.Modules.Catalog.Contracts.IPublishedProductQueries>(sp => sp.GetRequiredService<FakeProducers>());
         services.AddSingleton<Romp.Modules.Catalog.Contracts.ISizeChartQueries>(sp => sp.GetRequiredService<FakeProducers>());
@@ -142,6 +143,8 @@ internal sealed class StorefrontHost : IDisposable
     public string ConnectionString { get; }
 
     public IPublishedDocumentCache Cache => _root.GetRequiredService<IPublishedDocumentCache>();
+
+    public FakeCatalogLookups Lookups => _root.GetRequiredService<FakeCatalogLookups>();
 
     public FakeProducers Producers => _root.GetRequiredService<FakeProducers>();
 
