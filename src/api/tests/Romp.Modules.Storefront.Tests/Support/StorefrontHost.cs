@@ -144,6 +144,14 @@ internal sealed class StorefrontHost : IDisposable
 
     public IPublishedDocumentCache Cache => _root.GetRequiredService<IPublishedDocumentCache>();
 
+    /// <summary>The operator verb <c>rebuild-storefront</c>, run against this host; returns its exit code and what it printed.</summary>
+    public async Task<(int ExitCode, string Output)> RunOperatorRebuildAsync()
+    {
+        var output = new StringWriter();
+        var exit = await StorefrontOperator.RebuildAsync(_root, output, default);
+        return (exit, output.ToString());
+    }
+
     public FakeCatalogLookups Lookups => _root.GetRequiredService<FakeCatalogLookups>();
 
     public FakeProducers Producers => _root.GetRequiredService<FakeProducers>();

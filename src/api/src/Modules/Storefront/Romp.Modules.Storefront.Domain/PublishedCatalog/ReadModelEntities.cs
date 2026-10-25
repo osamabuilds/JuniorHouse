@@ -656,6 +656,21 @@ public sealed class RebuildRun : Entity<long>, IAuditable
     /// <summary>Who started it: a staff name, or <c>operator-cli</c> (ADR 0016).</summary>
     public string Actor { get; private set; }
 
+    public void Complete(DateTimeOffset at, int productCount, int chartCount, int stockCount)
+    {
+        Status = RebuildStatus.Completed;
+        EndedAt = at;
+        ProductCount = productCount;
+        ChartCount = chartCount;
+        StockCount = stockCount;
+    }
+
+    public void Fail(DateTimeOffset at)
+    {
+        Status = RebuildStatus.Failed;
+        EndedAt = at;
+    }
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; } = string.Empty;
@@ -676,7 +691,12 @@ public sealed class ModelMeta : Entity<short>, IAuditable
     }
 
     /// <summary>The schema version of the read model; 0 means it has never been built.</summary>
+    /// <summary>The schema version of the read model this code builds. Raise it when a change needs every row recomputed; the host then rebuilds by itself.</summary>
+    public const int CurrentVersion = 1;
+
     public int ModelVersion { get; private set; }
+
+    public void MarkBuilt(int version) => ModelVersion = version;
 
     /// <summary>When the lookup copies (names, codes, sort orders) on the rows were last refreshed.</summary>
     public DateTimeOffset? LookupsUpdatedAt { get; private set; }

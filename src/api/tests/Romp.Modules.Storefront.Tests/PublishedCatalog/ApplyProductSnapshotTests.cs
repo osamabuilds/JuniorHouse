@@ -323,7 +323,7 @@ public sealed class ApplyProductSnapshotTests(StorefrontPostgres postgres)
 
     [Fact]
     [Trait("Spec", "PCT-6")]
-    public async Task Apply_UnchangedSnapshotInARebuild_StillStampsTheRunSoItIsNotSwept()
+    public async Task Apply_SameVersionInARebuild_IsRecomputedAndStampedWithTheRun()
     {
         using var host = await StorefrontHost.CreateAsync(postgres);
         var runId = await host.QueryAsync(async db =>
@@ -337,7 +337,7 @@ public sealed class ApplyProductSnapshotTests(StorefrontPostgres postgres)
 
         var outcome = await host.SendAsync(new ApplyProductSnapshotCommand(1, Snapshots.Product(), runId));
 
-        Assert.Equal(ProjectionOutcome.Unchanged, outcome);
+        Assert.Equal(ProjectionOutcome.Updated, outcome);
         await host.QueryAsync(async db =>
         {
             Assert.Equal(runId, (await ProductAsync(db)).RebuildRunId);

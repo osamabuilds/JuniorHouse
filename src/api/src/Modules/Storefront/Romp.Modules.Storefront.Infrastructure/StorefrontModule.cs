@@ -58,6 +58,8 @@ public sealed class StorefrontModule : IModule
         services.AddScoped<IOutboxMessageHandler<StorefrontSettingsPublishedEvent>, SettingsPublishedCacheInvalidator>();
 
         // Published-catalog read model: fed by Catalog and Warehouse events (ADR 0018), repaired by the reconcile job.
+        services.AddSingleton<PendingRebuilds>();
+        services.AddHostedService<RebuildWorker>();
         if (configuration.GetValue("Storefront:ReconcileEnabled", true))
         {
             services.AddHostedService<ReconcileWorker>();
@@ -89,6 +91,7 @@ public sealed class StorefrontModule : IModule
         if (options.EnableAdminRoutes)
         {
             endpoints.MapAdminStorefrontSettingsEndpoints();
+            endpoints.MapAdminStorefrontRebuildEndpoints();
         }
     }
 }

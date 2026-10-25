@@ -102,6 +102,12 @@ internal sealed class FakeProducers :
 
     public int Reads { get; private set; }
 
+    /// <summary>Runs before every list call, so a test can act "while the rebuild is walking".</summary>
+    public Func<Task>? BeforeList { get; set; }
+
+    /// <summary>Products that exist (GetSnapshot finds them) but are left out of the list pages, as a product published after the walk started would be.</summary>
+    public HashSet<long> HiddenFromLists { get; } = [];
+
     public Task<PublishedProductSnapshot?> GetSnapshotAsync(long productId, CancellationToken cancellationToken)
     {
         Reads++;
@@ -124,7 +130,17 @@ internal sealed class FakeProducers :
         Task.FromResult<IReadOnlyList<PublishedProductVersion>>([.. Products.Values.Where(p => p.ProductId > afterProductId).OrderBy(p => p.ProductId).Take(take).Select(p => new PublishedProductVersion(p.ProductId, p.Version))]);
 
     public Task<IReadOnlyList<PublishedProductSnapshot>> ListSnapshotsAsync(long afterProductId, int take, CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<PublishedProductSnapshot>>([.. Products.Values.Where(p => p.ProductId > afterProductId).OrderBy(p => p.ProductId).Take(take)]);
+        ListAsync(afterProductId, take);
+
+    private async Task<IReadOnlyList<PublishedProductSnapshot>> ListAsync(long afterProductId, int take)
+    {
+        if (BeforeList is not null)
+        {
+            await BeforeList();
+        }
+
+        return [.. Products.Values.Where(p => p.ProductId > afterProductId && !HiddenFromLists.Contains(p.ProductId)).OrderBy(p => p.ProductId).Take(take)];
+    }
 
     public Task<IReadOnlyList<PublishedSizeChart>> ListChartsAsync(long afterChartId, int take, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<PublishedSizeChart>>([.. Charts.Values.Where(c => c.ChartId > afterChartId).OrderBy(c => c.ChartId).Take(take)]);

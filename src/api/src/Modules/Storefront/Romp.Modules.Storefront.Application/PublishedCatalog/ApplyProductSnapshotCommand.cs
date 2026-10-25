@@ -23,7 +23,7 @@ public enum ProjectionOutcome
 /// Projects one published-product snapshot into the read model (PCT-1, 2, 4, 5). A null <paramref name="Snapshot"/> means the product is
 /// not published (any more) and removes it with every row it owns. The snapshot is the full current state, fetched by the caller (an
 /// event consumer, the reconciler or a rebuild), so applying it twice, or out of order, converges (version-wins, <see cref="VersionedSnapshot"/>).
-/// <paramref name="RebuildRunId"/> stamps the row so a rebuild can sweep the rows no run touched (PCT-6).
+/// <paramref name="RebuildRunId"/> marks a rebuild: the row is recomputed even at the same version and stamped, so the sweep can tell it was visited (PCT-6).
 /// </summary>
 public sealed record ApplyProductSnapshotCommand(long ProductId, PublishedProductSnapshot? Snapshot, long? RebuildRunId = null)
     : IRequest<ProjectionOutcome>, IStorefrontCommand;
@@ -45,13 +45,10 @@ public sealed class ApplyProductSnapshotCommandHandler(IStorefrontReadDbContext 
             return Remove(product);
         }
 
-        if (product is not null && !VersionedSnapshot.Replaces(snapshot.Version, product.ContentVersion))
+        // A rebuild recomputes the row even at the same version: the derivation, not the content, may be what changed (PCT-6).
+        var forced = request.RebuildRunId is not null && product is not null && snapshot.Version == product.ContentVersion;
+        if (product is not null && !forced && !VersionedSnapshot.Replaces(snapshot.Version, product.ContentVersion))
         {
-            if (request.RebuildRunId is not null)
-            {
-                product.MarkRebuilt(request.RebuildRunId);
-            }
-
             return ProjectionOutcome.Unchanged;
         }
 
