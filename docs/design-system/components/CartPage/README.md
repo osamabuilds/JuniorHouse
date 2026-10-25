@@ -1,0 +1,8 @@
+The bag as a full page. The bag **drawer** (`CartDrawer`) stays the quick view after Add to bag; this page is where a shopper reviews, changes quantities, applies a promo code and goes to checkout. Which of the two opens from the bag icon is a decision for the spec (open question in `Pages.md`).
+
+- **Layout.** Breadcrumb, `display-lg` "Your bag" with an item count, then lines on the left and the order summary box on the right (stacked on a phone, with a sticky bottom bar holding the total and Checkout). "You may also like" is a four-up `ProductCard` grid below.
+- **Lines.** 96px 4:5 image, name in `display-xs`, size and "Rs. x each", the saving as a word ("Save 30%"), a quantity stepper (44px targets) and Remove. A discounted line shows the struck full price above the sale price (`rp-lineprice--sale`).
+- **Summary.** Promo field, the applied-code chip, **subtotal at full price**, savings on their own red rows, delivery ("Calculated at checkout"), the **estimated total** and the "You are saving" line; the free-delivery bar; one marigold **Checkout** button. The note under it: "Checkout as a guest or sign in".
+- **Empty bag.** Centred, icon, `display-lg` "Your bag is empty", one marigold "Start shopping", a sign-in line and a "New in" row.
+
+Rules: every figure and the total are the server's (SEC-09), shown as estimates until the order is placed; quantity changes and Remove update the page without a reload and announce the result politely (`aria-live`); the page is `noindex` and blocked in `robots.txt` (SEO-05). Out of scope here: the stock-conflict message when an item sells out in the bag, and saved-for-later.

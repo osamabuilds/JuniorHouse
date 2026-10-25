@@ -1,5 +1,7 @@
 # Design references
 
+> **Status: concepts only.** The source of truth for the storefront look is [`../design-system/`](../design-system/README.md), which now has a component and page preview for every screen listed here (cart, checkout, accounts, search, wishlist, content pages, discounts and more). Where the two differ, the design system wins; these files are not to be built from and can be removed once the owner agrees.
+
 Static HTML and PNG references for storefront screens that are **designed but not built**. Each folder has a README with the screens, the rules they must respect and the open points. They are references for the specs and builds that follow; none of them replaces a spec (`CLAUDE.md`: no production code until the spec is approved).
 
 | Folder | Covers |

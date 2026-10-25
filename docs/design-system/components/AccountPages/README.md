@@ -1,0 +1,9 @@
+The signed-in area: overview, orders, order detail with tracking, addresses and Child Profiles. **Design only**: customer accounts are not specified yet. Basic Child Profiles only (create, edit, delete: FR-18).
+
+- **Layout.** Breadcrumb, `display-lg` title, then a left account menu (Overview, Orders, Addresses, Child profiles, Wishlist, Sign out) beside the content on desktop. On a phone the overview is the menu: the latest order first, then large rows.
+- **Overview.** Four panels: latest order with its status, child profiles, addresses, and your details.
+- **Orders.** A table (`rp-table`, `<th scope>`) with a status word and dot (`rp-status`: never colour alone) and a View link. **Order detail** has a four-step timeline (Placed, Packed, Shipped, Delivered; the current step in marigold), courier and tracking number, items with their sale prices, delivery address, payment, the summary with savings, and a ghost **Return or exchange** button.
+- **Addresses.** Panels with a Default status, Edit, Make default and Remove.
+- **Child profiles.** Panels with an initial avatar, name, age, date of birth (month and year) and usual size; **Add a child** opens a dialog (name, birth month and year, optional usual size). The page says only the owner can see profiles and that deleting one keeps past orders (FR-21).
+
+Rules: every endpoint that takes an order, address or profile id checks that it belongs to the caller (SEC-05), most of all for Child Profile data; child data is personal data about minors, owner-only and exportable or deletable on request (NFR-27, NFR-29); never log full profile records (SEC-25); dialogs trap focus, close on Esc and return focus; account pages are `noindex` and blocked in `robots.txt` (SEO-05). The profile fields are a proposal to check against the BRD text of FR-18. Not drawn: edit-details, delete confirmation, data export, and the empty states.

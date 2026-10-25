@@ -1,0 +1,9 @@
+Checkout on one page, **guest by default**: contact, delivery address, delivery method, payment, then Place order. A slim header (wordmark, "Secure checkout", Back to bag) replaces the full site header so nothing pulls the shopper away.
+
+- **Contact.** Mobile number first (order updates), email optional, and a line: "Have an account? Sign in. You can also check out as a guest."
+- **Delivery address.** Full name, address, city, optional postal code. **Delivery method** is an option card; time and fee are placeholders until settings supply them.
+- **Payment.** Two option cards: **Card** (open by default, with number, name, expiry and security code, and the sentence "Card details go straight to our payment provider. We never see or store them") and **Cash on delivery** (with a placeholder for any COD fee). No other method is drawn.
+- **Summary.** Beside the form on desktop, collapsed ("Show order summary", with the total) above it on a phone. It lists items with their sale prices, then the same rows as the bag (subtotal at full price, sale and promo savings in red, delivery, total) and the "You are saving" line. The text says the final total is calculated when the order is placed.
+- **Action.** One marigold **Place order** button; the label stays the same while the order is being sent, with a busy state and a disabled double-click guard.
+
+Rules: card data is entered in the payment provider's hosted fields, never in our inputs (SEC-25, never log card data); the server recalculates every price and total (SEC-09); placing an order is idempotent and stock is decremented atomically (FR-28, FR-29, NFR-08), so a retry never creates a second order; field errors sit under the field with an icon and an instruction and move focus to the first error; the page is `noindex` (SEO-05). Not drawn: card declined, out-of-stock-at-checkout, address autocomplete, and the review step.
