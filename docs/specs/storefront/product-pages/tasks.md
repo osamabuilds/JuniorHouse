@@ -23,7 +23,7 @@ Meta and JSON-LD for the page come from `seo`; until that feature lands, task 13
 12. [x] Components: `gallery`, `colour-swatches`, `size-selector`, `price`, `availability-note`, `size-chart`, `composition-care`, `sold-out-state`. Colour and size work as links without JavaScript and update in place with it. Proof: component specs and axe (PDP-4, 6, 9, 11, 16).
 13. [x] Container: breadcrumb, one `<h1>`, headings that never skip a level, main image `fetchpriority="high"` with explicit width and height, preload `Link` header for the LCP image, plain title and description. Proof: container spec; SSR HTML test that the content is in the server response (PDP-1, 10).
 14. [x] Retire `features/catalog/product` and the product part of `shared/data/mock-catalog`; keep the mock only where a spec still uses it. Proof: existing specs updated and passing.
-15. [ ] Playwright e2e at seven viewports: pick colour, pick size, sold-out size not selectable, size chart, composition and care, keyboard path, 404/410/301, LCP budget on the Docker stack. Proof: `product-pages.e2e.spec.ts` (PDP-1..13, 16).
+15. [x] Playwright e2e at seven viewports: pick colour, pick size, sold-out size not selectable, size chart, composition and care, keyboard path, 404/410/301, LCP budget on the Docker stack. Proof: `product-pages.e2e.spec.ts` (PDP-1..13, 16).
 
 ## Close
 
