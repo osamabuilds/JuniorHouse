@@ -1,0 +1,4 @@
+.rp-lhead { display: grid; gap: var(--space-3); padding-block: var(--space-6) var(--space-5); }
+.rp-filterbar { border-block: 1px solid var(--line); background: var(--surface); }
+.rp-searchbar { display: flex; gap: var(--space-3); max-width: 36rem; }
+.rp-searchbar input { flex: 1; min-width: 0; }

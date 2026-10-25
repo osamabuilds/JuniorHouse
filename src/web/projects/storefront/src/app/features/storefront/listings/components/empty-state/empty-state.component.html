@@ -1,9 +1,9 @@
 <section class="rp-empty" aria-labelledby="empty-h">
   <h2 id="empty-h" class="rp-display-md">
-    @if (filtered()) { Nothing matches those filters } @else { Nothing here just yet }
+    @if (heading(); as h) { {{ h }} } @else if (filtered()) { Nothing matches those filters } @else { Nothing here just yet }
   </h2>
   <p class="rp-lead">
-    @if (filtered()) { Try removing a filter, or start again. } @else { New pieces arrive often. Have a look at what is new, or another part of the shop. }
+    @if (message(); as m) { {{ m }} } @else if (filtered()) { Try removing a filter, or start again. } @else { New pieces arrive often. Have a look at what is new, or another part of the shop. }
   </p>
   @if (suggestions().length > 0) {
     <ul class="rp-empty__links">

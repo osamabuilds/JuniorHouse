@@ -16,6 +16,7 @@ using Romp.BuildingBlocks.Storage;
 using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Warehouse.Contracts;
 using Romp.Modules.Storefront.Infrastructure.Listings;
+using Romp.Modules.Storefront.Infrastructure.Search;
 using Romp.Modules.Storefront.Infrastructure.Navigation;
 using Romp.Modules.Storefront.Infrastructure.ProductPages;
 using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
@@ -54,6 +55,14 @@ public sealed class StorefrontModule : IModule
         services.AddSingleton<Application.Listings.IListingSettings, Listings.ListingSettings>();
         services.AddSingleton<Application.ProductPages.IProductPageMetrics, ProductPages.ProductPageMetrics>();
         services.AddSingleton<Application.Abstractions.ICatalogLookupCache, CatalogLookupCache>();
+        services.AddSingleton<Application.Search.ISearchSettings, Search.SearchSettings>();
+        services.AddSingleton<Application.Search.ISynonymCache, Search.SynonymCache>();
+        services.AddScoped<Application.Search.IProductSearchIndex, Search.ProductSearchIndex>();
+        services.AddSingleton<Application.Search.ISuggestCache, Search.SuggestCache>();
+        services.AddScoped<Application.Search.ISearchMissStore, Search.SearchMissStore>();
+        services.AddSingleton<Search.SearchMissWorker>();
+        services.AddSingleton<Application.Search.ISearchMissSink>(sp => sp.GetRequiredService<Search.SearchMissWorker>());
+        services.AddHostedService(sp => sp.GetRequiredService<Search.SearchMissWorker>());
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
@@ -97,6 +106,7 @@ public sealed class StorefrontModule : IModule
         endpoints.MapPublicStorefrontEndpoints();
         endpoints.MapPublicNavigationEndpoints();
         endpoints.MapPublicListingEndpoints();
+        endpoints.MapPublicSearchEndpoints();
         endpoints.MapPublicProductPageEndpoints();
 
         var services = endpoints.ServiceProvider;
@@ -113,6 +123,7 @@ public sealed class StorefrontModule : IModule
         {
             endpoints.MapAdminStorefrontSettingsEndpoints();
             endpoints.MapAdminStorefrontRebuildEndpoints();
+            endpoints.MapAdminSearchEndpoints();
         }
     }
 }

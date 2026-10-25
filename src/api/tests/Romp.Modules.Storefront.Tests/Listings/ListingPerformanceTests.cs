@@ -21,10 +21,10 @@ public sealed class ListingPerformanceTests(StorefrontPostgres postgres)
     ];
 
     /// <summary>Seeds one product through the real projection, then clones its rows 999 times in SQL, so the catalogue is built in a moment.</summary>
-    private static async Task<StorefrontHost> HostWithThousandProductsAsync(StorefrontPostgres postgres)
+    internal static async Task<StorefrontHost> HostWithThousandProductsAsync(StorefrontPostgres postgres, string name = "Seed")
     {
         var host = await ListingSeeder.HostWithLookupsAsync(postgres);
-        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", EightVariants, name: "Seed");
+        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", EightVariants, name: name);
 
         await using var connection = new NpgsqlConnection(host.ConnectionString);
         await connection.OpenAsync();
@@ -40,7 +40,7 @@ public sealed class ListingPerformanceTests(StorefrontPostgres postgres)
     private static async Task CloneAsync(NpgsqlConnection connection, string table, string[] shift, string[] suffix, string[]? skip = null)
     {
         var columns = new List<string>();
-        await using (var read = new NpgsqlCommand("SELECT column_name FROM information_schema.columns WHERE table_schema = 'STFR' AND table_name = @t ORDER BY ordinal_position", connection))
+        await using (var read = new NpgsqlCommand("SELECT column_name FROM information_schema.columns WHERE table_schema = 'STFR' AND table_name = @t AND is_generated = 'NEVER' ORDER BY ordinal_position", connection))
         {
             read.Parameters.AddWithValue("t", table);
             await using var reader = await read.ExecuteReaderAsync();

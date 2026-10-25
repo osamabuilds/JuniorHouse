@@ -55,3 +55,16 @@ Search analytics and "popular searches" (S18), personalised ranking, an admin sc
 - [x] **Q-SRC-2 (decided, P-3)** A synonyms / spelling-variants table exists as data from day one, with Roman Urdu and Pakistani product terms; zero-result queries are logged.
 - [ ] **Q-SRC-3 What does "SKU lookup" mean for customers?** SKUs follow `ROMP-<style>-<colour>-<size>` (Q-SKU-1), a variant code. Proposed: an exact SKU opens the product page with that colour and size pre-selected; a product code (style) opens the product. Confirm.
 - [ ] **Q-SRC-4 Suggestion contents.** Products and categories (proposed), also recent searches (needs browser storage and is a privacy decision), no.
+
+## As built (Sprint 9c)
+
+Tests that prove each criterion: [traceability.md](traceability.md). Q-SRC-3 and Q-SRC-4 were built to their proposed defaults and are still awaiting the owner. What differs from, or adds to, the text above:
+
+- **API:** `GET /api/storefront/search`, `/search/suggest`, `/search/sku` (anonymous). Matching is `to_tsquery('simple')` over the generated `SRCH_VEC` column (weights: name, then category/collection/colour, then description), with a `pg_trgm` fallback on `SRCH_TEXT` below three results, and synonym groups expanded at query time. The columns are `SRCH_TEXT` and `QRY_TEXT` (the glossary word for text is `TEXT`).
+- **Relevance and paging:** relevance is the default order; price is the only alternative sort. Matches are capped at 200 (`SearchMaxHits`) and sorted and paged in memory from the ranked ids. The response also carries the filter options of the matches.
+- **Suggestions** return categories first (up to 3, one per audience with stock), then products, and include the price. While typing, the last word also matches synonym terms that start with it.
+- **SKU lookup:** an exact SKU opens its product with colour and size pre-selected (302); a capitalised SKU first takes a 301 to the tidy form, then the 302. A style code opens the product. A sold-out variant still resolves; unpublished and archived give nothing.
+- **Zero-result log:** written after the response, failures swallowed, redacted (email, 7+ digits, URL), one row per text per day, purged after `MissRetentionDays`.
+- **Web:** `features/storefront/search` (renamed from `search-suggest`). `/search` shows results like a listing, `noindex, follow`, canonical to `/search?q=`; the empty state is a 200 with category suggestions. The header keeps the design system's search overlay (now showing real suggestions) instead of an inline ARIA combobox; without scripting it submits as a GET form.
+- **Admin:** `features/storefront/search` with Synonym groups and Zero-result searches tabs, API under `/api/admin/storefront/search`, capability policy `StorefrontSearch` (Sprint 8 permission lookups do not exist yet). A stale row version answers 409.
+- **Not built:** SRC-10 (the SSR rate limit) is deferred with the `seo` feature, since the limiter is shared with seo task 12; admin e2e and axe checks for the new admin screens.

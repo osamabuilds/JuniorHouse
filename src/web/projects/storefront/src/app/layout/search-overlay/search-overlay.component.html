@@ -20,7 +20,7 @@
     <div class="rp-wrap rp-search-ov__body">
       <p class="rp-search-ov__status t-caption" aria-live="polite">
         @if (suggestions().searched && suggestions().results.length > 0) {
-          {{ suggestions().results.length }} suggestions
+          {{ suggestions().results.length }} {{ suggestions().results.length === 1 ? 'suggestion' : 'suggestions' }}
         }
       </p>
 
@@ -38,13 +38,26 @@
       } @else if (suggestions().searched === query().trim() && suggestions().results.length > 0) {
         <section aria-labelledby="rp-suggested">
           <h2 id="rp-suggested" class="t-eyebrow">Suggestions</h2>
+          @if (categories().length > 0) {
+            <ul class="rp-chips">
+              @for (c of categories(); track c.path) {
+                <li><a class="rp-chip" [routerLink]="c.path" (click)="close()">{{ c.label }}</a></li>
+              }
+            </ul>
+          }
           <ul class="rp-suggestions">
-            @for (p of suggestions().results; track p.id; let i = $index) {
+            @for (p of products(); track p.path; let i = $index) {
               <li>
-                <a routerLink="/search" [queryParams]="{ q: p.name }" (click)="close()" (keydown)="onSuggestionKey($event, i)">
-                  <rp-image [image]="p.image" tone="oat" sizes="(min-width: 64rem) 25vw, 50vw" [decorative]="true" />
-                  <span class="t-display-xs">{{ p.name }}</span>
-                  <span class="t-caption">Rs. {{ p.price | number }}</span>
+                <a [routerLink]="p.path" (click)="close()" (keydown)="onSuggestionKey($event, i)">
+                  <div class="rp-media">
+                    @if (thumb(p); as img) {
+                      <img class="rp-tile-img" [src]="img.src" [attr.width]="img.width" [attr.height]="img.height" [alt]="img.alt" loading="lazy" decoding="async" />
+                    }
+                  </div>
+                  <span class="t-display-xs">{{ p.label }}</span>
+                  @if (p.price !== null) {
+                    <span class="t-caption">Rs. {{ p.price | number }}</span>
+                  }
                 </a>
               </li>
             }

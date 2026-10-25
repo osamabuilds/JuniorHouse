@@ -1,4 +1,7 @@
 <form class="rp-filters" method="get" [attr.action]="action()" (submit)="submit($event)">
+  @for (field of extraFields(); track field[0]) {
+    <input type="hidden" [name]="field[0]" [value]="field[1]" />
+  }
   <details class="rp-filters__panel" [open]="open()">
     <summary>Filter and sort</summary>
     <div class="rp-filters__grid">
@@ -38,7 +41,7 @@
         <label class="rp-field">
           <span class="sr-only">Sort by</span>
           <select class="rp-select" name="sort">
-            <option value="recent" [selected]="filter().sort === 'recent'">Newest</option>
+            <option value="recent" [selected]="filter().sort === 'recent'">{{ defaultSortLabel() }}</option>
             <option value="price-asc" [selected]="filter().sort === 'price-asc'">Price: low to high</option>
             <option value="price-desc" [selected]="filter().sort === 'price-desc'">Price: high to low</option>
           </select>

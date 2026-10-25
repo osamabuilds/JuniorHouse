@@ -18,7 +18,15 @@ export class FilterPanelComponent {
   /** The path of the listing: the form action. */
   readonly action = input.required<string>();
   readonly open = input(false);
+  /** Query values the form sends along with the filter (for example the search text), as hidden fields. */
+  readonly extra = input<Readonly<Record<string, string>>>({});
+  /** What the default order is called: "Newest" on a listing, "Best match" on search. */
+  readonly defaultSortLabel = input('Newest');
   readonly applied = output<ListingFilter>();
+
+  protected extraFields(): readonly [string, string][] {
+    return Object.entries(this.extra());
+  }
 
   protected has(list: readonly string[], value: string): boolean {
     return list.includes(value);

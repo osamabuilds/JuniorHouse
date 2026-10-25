@@ -32,6 +32,8 @@ internal sealed class PublishedProductConfiguration : IEntityTypeConfiguration<P
         builder.Property(p => p.AgeName).HasColumnName("AGE_NAME").HasMaxLength(100).IsRequired();
         builder.Property(p => p.PublishedAt).HasColumnName("PUBL_DTE").IsRequired();
         builder.Property(p => p.CareNote).HasColumnName("CARE_NOTE").HasMaxLength(500);
+        // Feeds SRCH_VEC (a generated column made by the migration) and the trigram index (search plan, Data).
+        builder.Property(p => p.SearchText).HasColumnName("SRCH_TEXT").HasMaxLength(1000).IsRequired().HasDefaultValue(string.Empty);
         builder.Property(p => p.MinPrice).HasColumnName("MIN_PRIC").HasColumnType("numeric(12,2)");
         builder.Property(p => p.MaxPrice).HasColumnName("MAX_PRIC").HasColumnType("numeric(12,2)");
         builder.Property(p => p.IsOnSale).HasColumnName("SALE_IND").IsRequired();

@@ -1,11 +1,10 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { SearchSuggestActions, selectSuggestions } from '../../features/storefront/search-suggest';
+import { SearchSuggestActions, SuggestionItem, selectSuggestions } from '../../features/storefront/search';
 import { selectHeaderEntries, selectPopularSearches } from '../../features/storefront/site-settings';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
-import { ImageComponent } from '../../shared/ui/image/image.component';
 import { resolveHref } from '../../shared/utils/resolve-href';
 import { RpDialog } from '../dialog/dialog.directive';
 
@@ -15,7 +14,7 @@ import { RpDialog } from '../dialog/dialog.directive';
  */
 @Component({
   selector: 'rp-search-overlay',
-  imports: [RpDialog, RouterLink, IconComponent, ImageComponent, DecimalPipe],
+  imports: [RpDialog, RouterLink, IconComponent, DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './search-overlay.component.html',
 })
@@ -34,6 +33,16 @@ export class SearchOverlayComponent {
     });
 
   protected readonly query = signal('');
+
+  protected readonly categories = computed(() => this.suggestions().results.filter((s) => s.kind === 'category'));
+  protected readonly products = computed(() => this.suggestions().results.filter((s) => s.kind === 'product'));
+
+  /** The smallest generated picture is plenty for a thumbnail. */
+  protected thumb(item: SuggestionItem): { src: string; width: number; height: number; alt: string } | null {
+    const image = item.image;
+    const source = image?.sources[0];
+    return image && source ? { src: source.jpeg ?? source.webp, width: image.width, height: image.height, alt: image.altText } : null;
+  }
 
   open(): void {
     this.dialog().open();

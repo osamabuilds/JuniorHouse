@@ -1,0 +1,65 @@
+<div class="rp-wrap">
+  <div class="rp-lhead">
+    <rp-breadcrumbs [crumbs]="crumbs()" />
+    @if (query()) {
+      <h1 class="rp-display-lg">Results for “{{ query() }}”</h1>
+      @if (page(); as p) {
+        <p class="rp-count-note" role="status">{{ p.total }} {{ p.total === 1 ? 'piece' : 'pieces' }}</p>
+      }
+    } @else {
+      <h1 class="rp-display-lg">Search</h1>
+    }
+    <form class="rp-searchbar" role="search" [attr.action]="path" method="get">
+      <label class="sr-only" for="rp-search-q">Search the shop</label>
+      <input id="rp-search-q" class="rp-input" type="search" name="q" maxlength="100" autocomplete="off" placeholder="Search by name, category, colour or code" [value]="query()" />
+      <button type="submit" class="rp-btn rp-btn--sm">Search</button>
+    </form>
+  </div>
+</div>
+
+@if (query()) {
+  @if (result(); as r) {
+    @switch (r.status) {
+      @case ('ok') {
+        @if (r.page.total > 0 || chips().length > 0) {
+          <div class="rp-filterbar">
+            <div class="rp-wrap">
+              <rp-filter-panel [options]="r.page.options" [filter]="filter()" [action]="path" [extra]="extra()" defaultSortLabel="Best match" [open]="chips().length > 0" (applied)="apply($event)" />
+            </div>
+          </div>
+        }
+
+        <div class="rp-wrap">
+          <rp-active-filters [chips]="chips()" [clearAll]="clearAll()" [path]="path" [extra]="extra()" />
+
+          @if (r.page.tiles.length === 0) {
+            <rp-empty-state
+              [filtered]="chips().length > 0"
+              [suggestions]="r.suggestions"
+              [heading]="chips().length > 0 ? null : 'Nothing found for “' + query() + '”'"
+              [message]="chips().length > 0 ? null : 'Check the spelling, try a shorter or more general word, or have a look around.'"
+            />
+          } @else {
+            <ul class="rp-grid">
+              @for (tile of r.page.tiles; track tile.path; let i = $index) {
+                <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" /></li>
+              }
+            </ul>
+            <rp-pagination [page]="r.page.page" [totalPages]="r.page.totalPages" [path]="path" [filter]="filter()" [extra]="extra()" />
+          }
+        </div>
+        <div style="height: 96px"></div>
+      }
+      @case ('redirect') {
+        <div class="rp-wrap"><p class="rp-count-note" role="status">Opening the product…</p></div>
+      }
+      @default {
+        <div class="rp-wrap rp-page">
+          <rp-not-found [kind]="r.status === 'error' ? 'error' : 'page-missing'" [links]="links()" />
+        </div>
+      }
+    }
+  } @else {
+    <div class="rp-wrap"><p class="rp-count-note" role="status">Searching…</p></div>
+  }
+}

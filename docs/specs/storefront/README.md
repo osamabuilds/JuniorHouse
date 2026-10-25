@@ -16,7 +16,7 @@ The public, server-rendered shop window (Sprint 9, "Sell: browse"): navigation, 
 | [pages-redesign](pages-redesign/spec.md) | Discount treatment, card size line, 404/410 pages and help-page layout to the PR #52 design system (cart, accounts, wishlist stay out) | FR-01, FR-02, FR-03, NFR-17, NFR-19, SEC-09, SEO-04 | Implemented (Lighthouse CI pending) |
 | [navigation](navigation/spec.md) | Audience and age-bracket mega-menu, breadcrumbs, minimal home page, brand configuration | FR-01, FEAT-CAT-01 | Implemented |
 | [listings](listings/spec.md) | New Arrivals, Sale, Category and Collection views; size, colour, price (and age) filters; sorting; pagination; empty states | FR-02, FR-03, FR-05, FEAT-CAT-02..04, 07 | Implemented |
-| [search](search/spec.md) | Keyword search, autosuggest, synonyms as data, zero-result log, safe input handling, exact SKU lookup | FR-04, FR-05, FR-06, FEAT-CAT-05, 06, NFR-02 | Approved |
+| [search](search/spec.md) | Keyword search, autosuggest, synonyms as data, zero-result log, safe input handling, exact SKU lookup | FR-04, FR-05, FR-06, FEAT-CAT-05, 06, NFR-02 | Implemented (SRC-10 rate limit deferred with seo) |
 | [product-pages](product-pages/spec.md) | Gallery, price, SKU, variants and availability, sold-out state, size chart, composition and care | FR-07, FR-08, FR-09, FEAT-PDP-01..04 | Implemented (PDP-14 in seo) |
 | [seo](seo/spec.md) | Server rendering, real status codes and redirects, meta templates, canonicals, Open Graph, structured data, sitemap, robots, edge cache headers, staging protection, Lighthouse budgets in CI | SEO-01, 03, 04, 05, 06, 08, 10, NFR-01 | Approved |
 

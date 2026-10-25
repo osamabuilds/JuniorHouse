@@ -85,6 +85,11 @@ export const routes: Routes = [
     ],
   },
   {
+    // Before 'storefront': its prefix would otherwise claim /storefront/search for the settings screens.
+    path: 'storefront/search',
+    loadChildren: () => import('@features/storefront/search/search.routes').then((m) => m.SEARCH_ROUTES),
+  },
+  {
     path: 'storefront',
     loadChildren: () => import('@features/storefront/storefront-settings/storefront-settings.routes').then((m) => m.STOREFRONT_SETTINGS_ROUTES),
   },

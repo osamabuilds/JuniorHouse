@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain.Search;
 using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 using Romp.Modules.Storefront.Application.Abstractions;
@@ -35,6 +36,12 @@ public sealed class StfrDbContext(DbContextOptions<StfrDbContext> options) : DbC
 
     public DbSet<ModelMeta> ModelMeta => Set<ModelMeta>();
 
+    public DbSet<SynonymGroup> SynonymGroups => Set<SynonymGroup>();
+
+    public DbSet<SynonymTerm> SynonymTerms => Set<SynonymTerm>();
+
+    public DbSet<SearchMiss> SearchMisses => Set<SearchMiss>();
+
     public DbSet<NavItem> NavItems => Set<NavItem>();
 
     public DbSet<AgeStep> AgeSteps => Set<AgeStep>();
@@ -56,6 +63,15 @@ public sealed class StfrDbContext(DbContextOptions<StfrDbContext> options) : DbC
     public DbSet<SettingsDraft> Drafts => Set<SettingsDraft>();
 
     public DbSet<PublishedSnapshot> Snapshots => Set<PublishedSnapshot>();
+
+    uint IStorefrontReadDbContext.RowVersionOf(SynonymGroup group) => Entry(group).Property<uint>("xmin").CurrentValue;
+
+    void IStorefrontReadDbContext.RequireRowVersion(SynonymGroup group, uint expectedRowVersion)
+    {
+        var entry = Entry(group);
+        entry.Property<uint>("xmin").OriginalValue = expectedRowVersion;
+        entry.State = EntityState.Modified;
+    }
 
     uint IStorefrontDbContext.RowVersionOf(Page page) => Entry(page).Property<uint>("xmin").CurrentValue;
 

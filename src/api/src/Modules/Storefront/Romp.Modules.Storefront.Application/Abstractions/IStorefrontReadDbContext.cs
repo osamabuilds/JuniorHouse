@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain.Search;
 
 namespace Romp.Modules.Storefront.Application.Abstractions;
 
@@ -32,6 +33,18 @@ public interface IStorefrontReadDbContext
     DbSet<RebuildRun> RebuildRuns { get; }
 
     DbSet<ModelMeta> ModelMeta { get; }
+
+    DbSet<SynonymGroup> SynonymGroups { get; }
+
+    DbSet<SynonymTerm> SynonymTerms { get; }
+
+    DbSet<SearchMiss> SearchMisses { get; }
+
+    /// <summary>The PostgreSQL row version (<c>xmin</c>) of a loaded synonym group; staff quote it back on their next save.</summary>
+    uint RowVersionOf(SynonymGroup group);
+
+    /// <summary>Makes the next save of the group conditional on the row version the client loaded, and always writes the group row.</summary>
+    void RequireRowVersion(SynonymGroup group, uint expectedRowVersion);
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 

@@ -9,7 +9,7 @@ import { providePage } from './features/storefront/page/page.providers';
 import { provideListings } from './features/storefront/listings';
 import { provideProductPages } from './features/storefront/product-pages';
 import { provideNavigation } from './features/storefront/navigation';
-import { provideSearchSuggest } from './features/storefront/search-suggest';
+import { provideSearch } from './features/storefront/search';
 import { provideSiteSettings } from './features/storefront/site-settings';
 import { provideRpImageLoader } from './shared/ui/image/image-loader';
 
@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideNavigation(),
     provideListings(),
     provideProductPages(),
-    provideSearchSuggest(),
+    provideSearch(),
     providePage(),
     provideRpImageLoader(),
   ],

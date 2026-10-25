@@ -789,6 +789,14 @@ namespace Romp.Modules.Storefront.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("RBLD_RUN_ID");
 
+                    b.Property<string>("SearchText")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasDefaultValue("")
+                        .HasColumnName("SRCH_TEXT");
+
                     b.Property<string>("StyleCode")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1330,6 +1338,177 @@ namespace Romp.Modules.Storefront.Infrastructure.Migrations
 
                             t.HasCheckConstraint("CK_PRDT_VRNT_PRIC_POS", "\"PRIC\" IS NULL OR \"PRIC\" > 0");
                         });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.Search.SearchMiss", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<int>("MissCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("MISS_CNT");
+
+                    b.Property<DateOnly>("MissDate")
+                        .HasColumnType("date")
+                        .HasColumnName("MISS_DT");
+
+                    b.Property<string>("QueryText")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("QRY_TEXT");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MissDate");
+
+                    b.HasIndex("QueryText", "MissDate")
+                        .IsUnique();
+
+                    b.ToTable("SRCH_MISS", "STFR", t =>
+                        {
+                            t.HasCheckConstraint("CK_SRCH_MISS_CNT_POS", "\"MISS_CNT\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.Search.SynonymGroup", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("NAME");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("SRCH_SYNM_GRP", "STFR");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.Search.SynonymTerm", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("GroupId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("GRP_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsPhrase")
+                        .HasColumnType("boolean")
+                        .HasColumnName("PHRS_IND");
+
+                    b.Property<string>("Term")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("TERM");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("Term")
+                        .IsUnique();
+
+                    b.ToTable("SRCH_SYNM_TERM", "STFR");
                 });
 
             modelBuilder.Entity("Romp.Modules.Storefront.Domain.StorefrontSettings.AgeStep", b =>
@@ -2870,6 +3049,16 @@ namespace Romp.Modules.Storefront.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_PRDT_VRNT_PRDT_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.Search.SynonymTerm", b =>
+                {
+                    b.HasOne("Romp.Modules.Storefront.Domain.Search.SynonymGroup", null)
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_SRCH_SYNM_TERM_GRP_ID");
                 });
 
             modelBuilder.Entity("Romp.Modules.Storefront.Domain.StorefrontSettings.ExchangeCondition", b =>

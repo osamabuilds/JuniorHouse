@@ -14,4 +14,7 @@ export class EmptyStateComponent {
   /** True when filters are active, so the message is about them rather than about the shop. */
   readonly filtered = input.required<boolean>();
   readonly suggestions = input<readonly Suggestion[]>([]);
+  /** Words that replace the default heading and message (for example "Nothing found for ..." on a search). */
+  readonly heading = input<string | null>(null);
+  readonly message = input<string | null>(null);
 }
