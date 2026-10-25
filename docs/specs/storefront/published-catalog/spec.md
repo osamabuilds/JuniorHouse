@@ -1,6 +1,6 @@
 # SCRUM-TBD: Published catalog (storefront read model)
 
-- **Status:** Implemented in Sprint 9a except the read-side query-count test (PCT-8, with listings); open items below carry their proposed default
+- **Status:** Implemented in Sprint 9a; open items below carry their proposed default
 - **Jira:** SCRUM-203 (Sprint 9 umbrella)
 - **BRD sections:** §12.6 (read model), §14.1, §5.1
 - **Requirement IDs:** NFR-01, NFR-02, FR-10 (display only), SEO-07
@@ -65,4 +65,4 @@ Tests that prove each criterion: [traceability.md](traceability.md). What differ
 - **Images.** `DerivativeWorker` makes hashed WebP and JPEG files at `Storefront:ImageWidths` through an `IImageResizer` port (SkiaSharp adapter), with a pixel cap, retry with doubling delay and an attempt cap. `DerivativeSweepWorker` deletes unreferenced files after `DerivativeCacheLifetime` (default 30 days; the spec gave no figure). `/health/ready` reports failed derivatives as Degraded, still 200 (PCT-7, PCT-10).
 - **Settings** under `Storefront:` are validated at start-up (`StorefrontOptionsValidator`); a bad value stops the host.
 - **Open, built to the proposed default.** Q-PCT-2 (three availability classes, no count) and Q-PCT-4 (Postgres tables are the read model) are still awaiting the owner's confirmation; the code follows the defaults.
-- **Not built here.** The storefront's own product and listing reads, and with them the PCT-8 query-count test (see traceability).
+- **Not built here.** The product-page read (S9b); its query-count test goes with it.

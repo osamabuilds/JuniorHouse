@@ -8,16 +8,19 @@ import { BreadcrumbsComponent, Crumb } from '../../../navigation/components/brea
 import { selectBrand, selectTopLinks } from '../../../site-settings';
 import { ListingResult } from '../../models/listing.model';
 import { ListingFilter, ListingScope, ListingScopeKind, listingKey, parseFilter, scopePath, toCanonicalQuery, toQueryString } from '../../models/listing-query';
+import { ActiveFiltersComponent, FilterChip } from '../../components/active-filters/active-filters.component';
+import { EmptyStateComponent } from '../../components/empty-state/empty-state.component';
+import { FilterPanelComponent } from '../../components/filter-panel/filter-panel.component';
+import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { ProductTileComponent } from '../../components/product-tile/product-tile.component';
 import { ListingsActions } from '../../store/listings.actions';
 import { selectListingKey, selectListingResult } from '../../store/listings.selectors';
 
-type Chip = { readonly label: string; readonly filter: ListingFilter };
 
 /** One listing: New in, Sale, an audience, a category or a collection (FR-02, FR-03, FR-05). Server-rendered, with real 404 and 301 statuses. */
 @Component({
   selector: 'rp-listing-page',
-  imports: [RouterLink, BreadcrumbsComponent, ProductTileComponent],
+  imports: [RouterLink, BreadcrumbsComponent, ProductTileComponent, FilterPanelComponent, ActiveFiltersComponent, PaginationComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './listing-page.container.html',
   styleUrl: './listing-page.container.scss',
@@ -73,33 +76,25 @@ export class ListingPageContainer {
 
   protected readonly crumbs = computed((): readonly Crumb[] => this.page()?.breadcrumbs ?? []);
 
-  protected readonly queryFor = (filter: ListingFilter, includePage = false) => toCanonicalQuery(filter, includePage);
 
   /** One chip per active filter, each a link to the same listing without it (LST-3, 6). */
-  protected readonly chips = computed((): readonly Chip[] => {
+  protected readonly chips = computed((): readonly FilterChip[] => {
     const f = this.filter();
     const r = this.result();
     const options = r?.status === 'ok' ? r.options : null;
     const label = (list: readonly { value: string; label: string }[] | undefined, v: string) => list?.find((o) => o.value === v)?.label ?? v;
-    const chips: Chip[] = [];
-    for (const s of f.sizes) chips.push({ label: `Size: ${label(options?.sizes, s)}`, filter: { ...f, sizes: f.sizes.filter((x) => x !== s), page: 1 } });
-    for (const c of f.colours) chips.push({ label: `Colour: ${label(options?.colours, c)}`, filter: { ...f, colours: f.colours.filter((x) => x !== c), page: 1 } });
-    if (f.age) chips.push({ label: `Age: ${label(options?.ages, f.age)}`, filter: { ...f, age: null, page: 1 } });
+    const chips: FilterChip[] = [];
+    for (const s of f.sizes) chips.push({ label: `Size: ${label(options?.sizes, s)}`, without: { ...f, sizes: f.sizes.filter((x) => x !== s), page: 1 } });
+    for (const c of f.colours) chips.push({ label: `Colour: ${label(options?.colours, c)}`, without: { ...f, colours: f.colours.filter((x) => x !== c), page: 1 } });
+    if (f.age) chips.push({ label: `Age: ${label(options?.ages, f.age)}`, without: { ...f, age: null, page: 1 } });
     if (f.priceMin !== null || f.priceMax !== null) {
-      chips.push({ label: `Price: ${f.priceMin ?? 0} to ${f.priceMax ?? 'any'}`, filter: { ...f, priceMin: null, priceMax: null, page: 1 } });
+      chips.push({ label: `Price: ${f.priceMin ?? 0} to ${f.priceMax ?? 'any'}`, without: { ...f, priceMin: null, priceMax: null, page: 1 } });
     }
     return chips;
   });
 
   protected readonly clearAll = computed((): ListingFilter => ({ ...this.filter(), sizes: [], colours: [], age: null, priceMin: null, priceMax: null, page: 1 }));
 
-  protected readonly pageNumbers = computed(() => {
-    const p = this.page();
-    if (!p) return [];
-    const from = Math.max(1, p.page - 2);
-    const to = Math.min(p.totalPages, from + 4);
-    return Array.from({ length: to - from + 1 }, (_, i) => from + i);
-  });
 
   constructor() {
     effect(() => {
@@ -137,20 +132,9 @@ export class ListingPageContainer {
     });
   }
 
-  /** The no-script form posts as GET; with scripting the router does the same navigation without a reload. */
-  protected apply(event: Event): void {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const data = new FormData(form);
-    const raw: Record<string, string[]> = {};
-    for (const [k, v] of data.entries()) if (typeof v === 'string' && v !== '') (raw[k] ??= []).push(v);
-    if (raw['priceMin'] || raw['priceMax']) raw['price'] = [`${raw['priceMin']?.[0] ?? ''}-${raw['priceMax']?.[0] ?? ''}`];
-    const filter = { ...parseFilter(raw), page: 1 };
+  /** The filter panel posts as GET without scripting; with scripting the router does the same navigation without a reload. */
+  protected apply(filter: ListingFilter): void {
     void this.router.navigate([this.path()], { queryParams: toCanonicalQuery(filter) });
-  }
-
-  protected has(list: readonly string[], value: string): boolean {
-    return list.includes(value);
   }
 
   private redirect(url: string): void {

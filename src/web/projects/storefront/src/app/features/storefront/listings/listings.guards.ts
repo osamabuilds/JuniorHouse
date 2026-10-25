@@ -9,9 +9,13 @@ import { siteSettingsFeature } from '../site-settings/store/site-settings.reduce
  * two never clash (the reserved slugs in the admin app also keep them apart). Whether the audience exists is the API's answer, which
  * becomes a real 404 (LST-11).
  */
+/** Single segments that are never an audience: they belong to features that are not listings. */
+const RESERVED = new Set(['search', 'cart', 'checkout', 'account', 'wishlist']);
+
 export const audienceCanMatch: CanMatchFn = (_route, segments) => {
   const store = inject(Store);
   const slug = segments[0]?.path ?? '';
+  if (RESERVED.has(slug)) return false;
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return false;
   return store.select(siteSettingsFeature.selectStatus).pipe(
     filter((status) => status === 'loaded' || status === 'failed'),

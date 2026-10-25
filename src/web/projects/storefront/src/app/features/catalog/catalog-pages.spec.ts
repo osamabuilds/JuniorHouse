@@ -3,6 +3,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { provideStore } from '@ngrx/store';
 import { of } from 'rxjs';
 import { provideNavigation } from '../storefront/navigation';
+import { provideSiteSettings } from '../storefront/site-settings';
 import { NavigationApi } from '../storefront/navigation/services/navigation-api.service';
 import { sampleHome } from '../storefront/navigation/testing/sample-home';
 import { HomePageContainer } from './home/home-page.container';
@@ -13,6 +14,7 @@ function render<T>(type: new () => T, params: Record<string, string> = {}, query
     providers: [
       provideRouter([]),
       provideStore({}),
+      provideSiteSettings(),
       provideNavigation(),
       { provide: NavigationApi, useValue: { getHome: () => of(sampleHome) } },
       {
@@ -42,5 +44,12 @@ describe('catalogue pages (design system)', () => {
     expect(el.querySelector('[role="radiogroup"][aria-label="Size"]')).not.toBeNull();
     expect(el.querySelector('.rp-size[aria-disabled="true"]')).not.toBeNull();
     expect(el.querySelectorAll('.rp-pdp details').length).toBe(3);
+  });
+
+  it('NAV-10 home writes Organization and WebSite structured data from the brand', () => {
+    render(HomePageContainer);
+    const types = [...document.head.querySelectorAll('script[data-rp="site"]')].map((s) => JSON.parse(s.textContent!)['@type']);
+    expect(types).toEqual(['Organization', 'WebSite']);
+    expect(document.title).toContain('Romp');
   });
 });

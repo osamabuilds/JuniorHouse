@@ -10,6 +10,10 @@ internal sealed record SeedVariant(string Colour, string Size, decimal Price, in
 /// <summary>Publishes products into the read model the way the projection would: snapshot, stock, then the image derivatives.</summary>
 internal static class ListingSeeder
 {
+    private static short ColourId(string colour) => colour switch { "RED" => 1, "NAVY" => 2, "GREEN" => 3, "BLUE" => 4, _ => 1 };
+
+    private static short SizeId(string size) => size switch { "5-6Y" => 9, "7-8Y" => 4, "3-4Y" => 7, "9-10Y" => 6, _ => 4 };
+
     public static async Task<StorefrontHost> HostWithLookupsAsync(StorefrontPostgres postgres)
     {
         var host = await StorefrontHost.CreateAsync(postgres);
@@ -17,6 +21,7 @@ internal static class ListingSeeder
         host.Lookups.Categories.AddRange([new(1, "DRESSES", "Dresses", 10, true), new(2, "TOPS", "Tops", 20, true), new(3, "EMPTY", "Empty things", 30, true)]);
         host.Lookups.Collections.AddRange([new(1, "SUMMER", "Summer", 10, true)]);
         host.Lookups.AgeBrackets.AddRange([new(1, "AGE_3Y", "3Y", 10, true), new(2, "KIDS", "Kids 4-8Y", 20, true)]);
+        host.Lookups.Sizes.AddRange([new(7, "3-4Y", "3-4 Years", 5, true), new(6, "9-10Y", "9-10 Years", 30, true)]);
         host.Storage.Files["images/a.jpg"] = [1, 2, 3];
         return host;
     }
@@ -28,8 +33,8 @@ internal static class ListingSeeder
         variants ??= [new SeedVariant("RED", "5-6Y", 800m, 10)];
         var published = variants.Select((v, i) => new PublishedVariant(
             id * 100 + i,
-            new PublishedCode(1, v.Colour, v.Colour),
-            new PublishedCode((short)(v.Size == "5-6Y" ? 9 : 4), v.Size, v.Size),
+            new PublishedCode(ColourId(v.Colour), v.Colour, v.Colour),
+            new PublishedCode(SizeId(v.Size), v.Size, v.Size),
             $"SKU-{id}-{i}",
             v.Price,
             v.CompareAt,

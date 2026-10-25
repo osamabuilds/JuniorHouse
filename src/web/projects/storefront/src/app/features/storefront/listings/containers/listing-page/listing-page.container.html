@@ -10,117 +10,22 @@
 
     <div class="rp-filterbar">
       <div class="rp-wrap">
-        <form class="rp-filters" method="get" [attr.action]="path()" (submit)="apply($event)">
-          <details class="rp-filters__panel" [open]="chips().length > 0">
-            <summary>Filter and sort</summary>
-            <div class="rp-filters__grid">
-              @if (r.options.sizes.length > 0) {
-                <fieldset>
-                  <legend>Size</legend>
-                  @for (o of r.options.sizes; track o.value) {
-                    <label class="rp-check"><input type="checkbox" name="size" [value]="o.value" [checked]="has(filter().sizes, o.value)" /> {{ o.label }}</label>
-                  }
-                </fieldset>
-              }
-              @if (r.options.colours.length > 0) {
-                <fieldset>
-                  <legend>Colour</legend>
-                  @for (o of r.options.colours; track o.value) {
-                    <label class="rp-check"><input type="checkbox" name="colour" [value]="o.value" [checked]="has(filter().colours, o.value)" /> {{ o.label }}</label>
-                  }
-                </fieldset>
-              }
-              @if (r.options.ages.length > 0) {
-                <fieldset>
-                  <legend>Age</legend>
-                  @for (o of r.options.ages; track o.value) {
-                    <label class="rp-check"><input type="radio" name="age" [value]="o.value" [checked]="filter().age === o.value" /> {{ o.label }}</label>
-                  }
-                </fieldset>
-              }
-              @if (r.options.priceMin !== null) {
-                <fieldset>
-                  <legend>Price (Rs.)</legend>
-                  <label class="rp-field">From <input class="rp-input" type="number" name="priceMin" inputmode="numeric" min="0" [attr.placeholder]="r.options.priceMin" [value]="filter().priceMin ?? ''" /></label>
-                  <label class="rp-field">To <input class="rp-input" type="number" name="priceMax" inputmode="numeric" min="0" [attr.placeholder]="r.options.priceMax" [value]="filter().priceMax ?? ''" /></label>
-                </fieldset>
-              }
-              <fieldset>
-                <legend>Sort</legend>
-                <label class="rp-field">
-                  <span class="sr-only">Sort by</span>
-                  <select class="rp-select" name="sort">
-                    <option value="recent" [selected]="filter().sort === 'recent'">Newest</option>
-                    <option value="price-asc" [selected]="filter().sort === 'price-asc'">Price: low to high</option>
-                    <option value="price-desc" [selected]="filter().sort === 'price-desc'">Price: high to low</option>
-                  </select>
-                </label>
-              </fieldset>
-            </div>
-            <button type="submit" class="rp-btn rp-btn--sm">Apply</button>
-          </details>
-        </form>
+        <rp-filter-panel [options]="r.options" [filter]="filter()" [action]="path()" [open]="chips().length > 0" (applied)="apply($event)" />
       </div>
     </div>
 
     <div class="rp-wrap">
-      @if (chips().length > 0) {
-        <div class="rp-active">
-          <span class="rp-count-note">Filtered by</span>
-          <ul class="rp-chips" aria-label="Active filters">
-            @for (chip of chips(); track chip.label) {
-              <li>
-                <a class="rp-chip" [routerLink]="path()" [queryParams]="queryFor(chip.filter)" [attr.aria-label]="'Remove filter ' + chip.label">{{ chip.label }} <span aria-hidden="true">×</span></a>
-              </li>
-            }
-          </ul>
-          <a class="rp-link" [routerLink]="path()" [queryParams]="queryFor(clearAll())">Clear filters</a>
-        </div>
-      }
+      <rp-active-filters [chips]="chips()" [clearAll]="clearAll()" [path]="path()" />
 
       @if (r.page.tiles.length === 0) {
-        <section class="rp-empty" aria-labelledby="empty-h">
-          <h2 id="empty-h" class="rp-display-md">
-            @if (chips().length > 0) { Nothing matches those filters } @else { Nothing here just yet }
-          </h2>
-          <p class="rp-lead">
-            @if (chips().length > 0) { Try removing a filter, or start again. } @else { New pieces arrive often. Have a look at what is new, or another part of the shop. }
-          </p>
-          @if (r.empty; as empty) {
-            <ul class="rp-empty__links">
-              @for (s of empty.suggestions; track s.path) {
-                <li><a class="rp-link" [routerLink]="s.path">{{ s.label }}</a></li>
-              }
-            </ul>
-          }
-        </section>
+        <rp-empty-state [filtered]="chips().length > 0" [suggestions]="r.empty?.suggestions ?? []" />
       } @else {
         <ul class="rp-grid">
           @for (tile of r.page.tiles; track tile.path; let i = $index) {
             <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" /></li>
           }
         </ul>
-        @if (r.page.totalPages > 1) {
-          <nav class="rp-pager" aria-label="Pagination">
-            <ul>
-              @if (r.page.page > 1) {
-                <li><a class="rp-link" rel="prev" [routerLink]="path()" [queryParams]="queryFor({ ...filter(), page: r.page.page - 1 }, true)">Previous</a></li>
-              }
-              @for (n of pageNumbers(); track n) {
-                <li>
-                  @if (n === r.page.page) {
-                    <span aria-current="page">{{ n }}</span>
-                  } @else {
-                    <a [routerLink]="path()" [queryParams]="queryFor({ ...filter(), page: n }, true)" [attr.aria-label]="'Page ' + n">{{ n }}</a>
-                  }
-                </li>
-              }
-              @if (r.page.page < r.page.totalPages) {
-                <li><a class="rp-link" rel="next" [routerLink]="path()" [queryParams]="queryFor({ ...filter(), page: r.page.page + 1 }, true)">Next</a></li>
-              }
-            </ul>
-          </nav>
-        }
+        <rp-pagination [page]="r.page.page" [totalPages]="r.page.totalPages" [path]="path()" [filter]="filter()" />
       }
     </div>
     <div style="height: 96px"></div>

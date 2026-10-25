@@ -21,18 +21,18 @@ const VIEWPORTS = [
 test.describe('chrome in the server HTML (no scripting)', () => {
   test.use({ baseURL: BASE });
 
-  test('SC-1 SC-2 SC-3a the server returns the landmarks, the five entries and the panel links', async ({ request }) => {
+  test('SC-1 SC-2 SC-3a the server returns the landmarks, the entries and the panel links, built from the lookup menu', async ({ request }) => {
+    const menu = (await (await request.get('/api/storefront/menu')).json()) as ApiMenu;
     const html = await (await request.get(PAGE)).text();
     expect(html.match(/<header\b/g)?.length).toBe(1);
     expect(html.match(/<main\b/g)?.length).toBe(1);
     expect(html.match(/<footer\b/g)?.length).toBe(1);
     expect(html).toContain('aria-label="Primary"');
-    for (const label of ['Girls', 'Boys', 'New in', 'Collections', 'Sale']) expect(html).toContain(`>${label}</`);
-    // Members and further members of Boys are present although the panel is closed.
-    expect(html).toContain('href="/boys/tees-and-shirts"');
-    expect(html).toContain('href="/boys/tees-and-shirts/polo-shirts"');
-    expect(html).toContain('href="/boys/casual-shirts"');
-    expect(html).toContain('href="/boys?age=4y"');
+    // Audience entries come from the lookups (owner decision 2026-10-25), and every link of every panel is there although the panels are closed.
+    for (const audience of menu.audiences) {
+      expect(html).toContain(`>${audience.name}</`);
+      for (const entry of audience.entries) expect(html).toContain(`href="${entry.path}"`);
+    }
   });
 
   test('SC-10 the header search is a plain GET form to /search', async ({ request }) => {
@@ -69,39 +69,47 @@ for (const vp of VIEWPORTS) {
     });
 
     if (vp.desktop) {
-      test('SC-3a SC-6 a click opens the Boys panel, Escape closes it and returns focus; hover does not open it', async ({ page }) => {
+      test('SC-3a SC-6 a click opens the first audience panel, Escape closes it and returns focus; hover does not open it', async ({ page, request }) => {
+        const audience = await firstAudience(request);
+        test.skip(!audience, 'no audience in the lookup menu yet');
         await page.goto(PAGE);
-        const boys = page.getByRole('button', { name: 'Boys' });
-        await boys.hover();
-        await expect(boys).toHaveAttribute('aria-expanded', 'false');
-        await boys.click();
-        await expect(boys).toHaveAttribute('aria-expanded', 'true');
-        await expect(page.getByRole('link', { name: 'Casual shirts' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Polo shirts' })).toBeVisible();
+        const button = page.getByRole('button', { name: audience!.name, exact: true });
+        await button.hover();
+        await expect(button).toHaveAttribute('aria-expanded', 'false');
+        await button.click();
+        await expect(button).toHaveAttribute('aria-expanded', 'true');
+        const first = audience!.entries.find((e) => e.kind === 'category') ?? audience!.entries[0];
+        await expect(page.getByRole('link', { name: first.label, exact: true }).first()).toBeVisible();
         const open = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
         expect(summary(open)).toEqual([]);
         await page.keyboard.press('Escape');
-        await expect(boys).toHaveAttribute('aria-expanded', 'false');
-        await expect(boys).toBeFocused();
+        await expect(button).toHaveAttribute('aria-expanded', 'false');
+        await expect(button).toBeFocused();
       });
 
-      test('SC-5 the Boys panel offers one link per age with the age code', async ({ page }) => {
+      test('SC-5 the panel offers an age link per age with the age code', async ({ page, request }) => {
+        const audience = await firstAudience(request);
+        const ages = audience?.entries.filter((e) => e.kind === 'age') ?? [];
+        test.skip(ages.length === 0, 'no age links in this shop');
         await page.goto(PAGE);
-        await page.getByRole('button', { name: 'Boys' }).click();
-        const ages = await page.locator('#mega-boys .rp-mega__ages a').allTextContents();
-        expect(ages.map((a) => a.trim())).toEqual(['1Y', '2Y', '3Y', '4Y', '5Y', '6Y', '7Y', '8Y']);
-        await expect(page.locator('#mega-boys .rp-mega__ages a').nth(3)).toHaveAttribute('href', '/boys?age=4y');
+        await page.getByRole('button', { name: audience!.name, exact: true }).click();
+        for (const age of ages) await expect(page.locator(`header a[href="${age.path}"]`)).toHaveCount(1);
       });
     } else {
-      test('SC-7 SC-8 the menu button opens a dialog with nested accordions; Escape closes it and returns focus', async ({ page }) => {
+      test('SC-7 SC-8 the menu button opens a dialog with nested accordions; Escape closes it and returns focus', async ({ page, request }) => {
+        const audience = await firstAudience(request);
+        test.skip(!audience, 'no audience in the lookup menu yet');
         await page.goto(PAGE);
         const opener = page.getByRole('button', { name: 'Open menu' });
         await opener.click();
         const dialog = page.getByRole('dialog', { name: 'Menu' });
         await expect(dialog).toBeVisible();
-        await dialog.getByText('Boys', { exact: true }).click();
-        await dialog.getByText('Tees and shirts', { exact: true }).click();
-        await expect(dialog.getByRole('link', { name: 'Polo shirts' })).toBeVisible();
+        await dialog.getByText(audience!.name, { exact: true }).first().click();
+        const category = audience!.entries.find((e) => e.kind === 'category');
+        if (category) {
+          await dialog.getByText('Categories', { exact: true }).first().click();
+          await expect(dialog.getByRole('link', { name: category.label, exact: true })).toBeVisible();
+        }
         const open = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
         expect(summary(open)).toEqual([]);
         await page.keyboard.press('Escape');
@@ -157,3 +165,11 @@ test.describe('chrome accessibility details', () => {
     expect(name).toBe('none');
   });
 });
+
+interface ApiMenu { audiences: { name: string; entries: { kind: string; label: string; path: string }[] }[] }
+
+/** The first audience of the lookup-built menu, or null when the shop has no listable product yet. */
+async function firstAudience(request: import('@playwright/test').APIRequestContext): Promise<ApiMenu['audiences'][number] | null> {
+  const menu = (await (await request.get(`${BASE}/api/storefront/menu`)).json()) as ApiMenu;
+  return menu.audiences[0] ?? null;
+}

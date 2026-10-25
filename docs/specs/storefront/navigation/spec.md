@@ -66,3 +66,14 @@ The header entries are **Girls, Boys, New in, Collections, Sale**. **Unisex, Bab
 - **Storefront settings:** footer, contact, delivery, exchange, announcement and content pages stay admin-managed. The age steps (SCRUM-206) no longer feed the menu, which reads the age lookup. The SCRUM-206 navigation editor no longer feeds the header; what happens to its stored data and screen is Q-NAV-7 `(new)`.
 - [x] **Q-NAV-6 (decided 2026-10-25)** menu built from lookups, as above.
 - [ ] **Q-NAV-7 (new)** Retire the admin navigation editor and its `NAV` data, or keep it for the footer only? Until answered nothing is deleted.
+
+## As built (Sprint 9a)
+
+Tests that prove each criterion: [traceability.md](traceability.md). What differs from, or adds to, the text above:
+
+- **Menu:** built from lookups as the 2026-10-25 amendment says. `GET /api/storefront/menu` returns audiences (each with `new-in`, `sale`, `category`, `collection` and `age` entries) and the shared collections, with readable entry kinds. The web turns each audience into a panel of columns (Shop, Categories, Collections, Shop by age); New in, Collections and Sale follow as shared entries. An empty shop has an empty menu.
+- **Home:** `GET /api/storefront/home` returns up to twelve New Arrivals (30 days; the newest listable products when nothing is new) and an audience tile for each audience. The home page shows them with `Organization` and `WebSite` (with `SearchAction`) structured data. The hero, story, gifts and fabric blocks are still design placeholders; the hero is not yet taken from New Arrivals (NAV-10 asks for that).
+- **Brand (NAV-11):** the brand name already comes from the admin settings (SCRUM-206), so header, footer, titles, Open Graph and the structured data follow it; there is no separate environment token.
+- **Breadcrumbs:** the visible trail and the `BreadcrumbList` are built from one list. Listings use it; the product page uses it in S9b.
+- **Unisex** is not a header entry: `Storefront:MenuHiddenGenderCodes` (default `UNISEX`).
+- **Open:** Q-NAV-7 (what becomes of the SCRUM-206 navigation editor, which no longer feeds the header). Q-NAV-2 to Q-NAV-5 were built to their proposed defaults.

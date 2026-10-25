@@ -1,0 +1,4 @@
+.rp-pager { padding-block: var(--space-7) 0; }
+ul { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+li a, li span { display: inline-flex; align-items: center; justify-content: center; min-width: var(--tap); min-height: var(--tap); padding-inline: var(--space-2); }
+[aria-current] { border-bottom: 2px solid var(--ink); }

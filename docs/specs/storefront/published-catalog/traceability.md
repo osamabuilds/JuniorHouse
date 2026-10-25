@@ -105,7 +105,7 @@ Each cell lists the test class, then its tests.
 
 ## Not yet proven
 
-- **PCT-8** is proven for the producers (Catalog snapshot queries) and the projection (`ApplyProductSnapshotTests`). The storefront's own product and listing *reads* do not exist yet, so their constant-query-count tests (tasks.md 23) land with the first read in [listings](../listings/spec.md) and again in product-pages (S9b), reusing `Support/QueryCounter`.
+- **PCT-8** is proven for the producers, the projection, the menu and the listing page (`SearchListingTests`, `ListingPerformanceTests`: four queries at 1,000 products). The product-page read adds its own test in S9b.
 - **PCT-2** (page answers 404 / 410) and **PCT-4** (no cached copy of the old price survives) are proven at the read-model level: the product leaves the model, the price is replaced. The HTTP status and cache-invalidation halves belong to product-pages and seo.
 - **PCT-11** is proven as a read-model fact (availability is derived from the last stock event). The "never presented as a reservation" wording is a page-copy rule for product-pages.
 - A Playwright spec was not written: no storefront page reads the model yet.

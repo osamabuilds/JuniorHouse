@@ -1,0 +1,13 @@
+@if (chips().length > 0) {
+  <div class="rp-active">
+    <span class="rp-count-note">Filtered by</span>
+    <ul class="rp-chips" aria-label="Active filters">
+      @for (chip of chips(); track chip.label) {
+        <li>
+          <a class="rp-chip" [routerLink]="path()" [queryParams]="query(chip.without)" [attr.aria-label]="'Remove filter ' + chip.label">{{ chip.label }} <span aria-hidden="true">×</span></a>
+        </li>
+      }
+    </ul>
+    <a class="rp-link" [routerLink]="path()" [queryParams]="query(clearAll())">Clear filters</a>
+  </div>
+}
