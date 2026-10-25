@@ -84,6 +84,17 @@ public sealed class StorefrontPostgresFixtureDefinition : ICollectionFixture<Sto
     public const string Name = "Storefront PostgreSQL";
 }
 
+internal sealed class FakeSearchSettings : Romp.Modules.Storefront.Application.Search.ISearchSettings
+{
+    public int MaxHits => 200;
+
+    public int MinFullTextHits => 3;
+
+    public double SimilarityThreshold => 0.45;
+
+    public int SuggestLimit => 8;
+}
+
 internal sealed class FakeMenuSettings : Romp.Modules.Storefront.Application.Navigation.IMenuSettings
 {
     public IReadOnlySet<string> HiddenGenderCodes { get; } = new HashSet<string> { "UNISEX" };
@@ -137,6 +148,9 @@ internal sealed class StorefrontHost : IDisposable
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddSingleton<Romp.Modules.Storefront.Application.Navigation.IMenuSettings, FakeMenuSettings>();
         services.AddSingleton<Romp.Modules.Storefront.Application.Listings.IListingSettings, FakeListingSettings>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Search.ISearchSettings, FakeSearchSettings>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Search.ISynonymCache>(_ => new Romp.Modules.Storefront.Infrastructure.Search.SynonymCache(TimeProvider.System));
+        services.AddScoped<Romp.Modules.Storefront.Application.Search.IProductSearchIndex, Romp.Modules.Storefront.Infrastructure.Search.ProductSearchIndex>();
         services.AddSingleton<FakePathQueries>();
         services.AddSingleton<Romp.Modules.Catalog.Contracts.IProductPathQueries>(sp => sp.GetRequiredService<FakePathQueries>());
         services.AddSingleton<FakeProductPageMetrics>();

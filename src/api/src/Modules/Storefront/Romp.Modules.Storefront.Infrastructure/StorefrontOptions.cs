@@ -53,6 +53,18 @@ public sealed class StorefrontOptions
     /// <summary>New In shows products published within this many days (listings LST-7, Q-LST-3 default 30).</summary>
     public int NewArrivalsDays { get; set; } = 30;
 
+    /// <summary>Most products one search considers before filters and paging (search plan, Settings).</summary>
+    public int SearchMaxHits { get; set; } = 200;
+
+    /// <summary>Below this many full-text matches a search also looks for near spellings.</summary>
+    public int SearchMinFullTextHits { get; set; } = 3;
+
+    /// <summary>Minimum trigram word-similarity (0 to 1) for a near spelling to count.</summary>
+    public double SearchSimilarityThreshold { get; set; } = 0.45;
+
+    /// <summary>Most items autosuggest returns.</summary>
+    public int SuggestLimit { get; set; } = 8;
+
     /// <summary>How often the reconcile job compares the read model with Catalog and Warehouse.</summary>
     public TimeSpan ReconcileInterval { get; set; } = TimeSpan.FromMinutes(10);
 }

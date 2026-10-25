@@ -41,6 +41,26 @@ public sealed class StorefrontOptionsValidator : IValidateOptions<StorefrontOpti
             failures.Add("Storefront:NewArrivalsDays must be between 1 and 365.");
         }
 
+        if (options.SearchMaxHits is < 1 or > 1000)
+        {
+            failures.Add("Storefront:SearchMaxHits must be between 1 and 1000.");
+        }
+
+        if (options.SearchMinFullTextHits is < 0 or > 100)
+        {
+            failures.Add("Storefront:SearchMinFullTextHits must be between 0 and 100.");
+        }
+
+        if (options.SearchSimilarityThreshold is not (> 0 and <= 1))
+        {
+            failures.Add("Storefront:SearchSimilarityThreshold must be above 0 and at most 1.");
+        }
+
+        if (options.SuggestLimit is < 1 or > 20)
+        {
+            failures.Add("Storefront:SuggestLimit must be between 1 and 20.");
+        }
+
         if (options.ImageQuality is < 1 or > 100)
         {
             failures.Add("Storefront:ImageQuality must be between 1 and 100.");
