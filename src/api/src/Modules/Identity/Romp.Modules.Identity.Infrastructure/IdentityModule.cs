@@ -2,10 +2,13 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.Modules.Identity.Application.StaffAccounts;
 using Romp.Modules.Identity.Infrastructure.Persistence;
+using Romp.Modules.Identity.Infrastructure.StaffAccounts;
 
 namespace Romp.Modules.Identity.Infrastructure;
 
@@ -26,6 +29,10 @@ public sealed class IdentityModule : IModule
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
                 sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+
+        services.AddOptions<Argon2Options>().Bind(configuration.GetSection(Argon2Options.Section)).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<Argon2Options>, Argon2OptionsValidator>();
+        services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
 
         // The module's events (none yet) go to the shared dispatcher; each feature adds its own as it lands.
         services.AddOutboxModule("IDNT");

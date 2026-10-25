@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Konscious.Security.Cryptography.Argon2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
