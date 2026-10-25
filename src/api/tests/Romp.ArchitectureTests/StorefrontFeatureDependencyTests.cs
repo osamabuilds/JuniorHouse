@@ -18,7 +18,7 @@ public sealed class StorefrontFeatureDependencyTests
     private static readonly System.Reflection.Assembly Domain = typeof(Romp.Modules.Storefront.Domain.AssemblyReference).Assembly;
     private static readonly System.Reflection.Assembly Infrastructure = typeof(Romp.Modules.Storefront.Infrastructure.StorefrontModule).Assembly;
 
-    private static readonly string[] Features = ["PublishedCatalog", "StorefrontSettings"];
+    private static readonly string[] Features = ["Navigation", "PublishedCatalog", "StorefrontSettings"];
     private static readonly string[] Layers = ["Domain", "Application", "Infrastructure"];
     private static readonly string[] OtherModules = ["Catalog", "Warehouse", "Reference", "Vendor", "Production", "Quality", "Labelling"];
     private static readonly System.Reflection.Assembly[] StorefrontAssemblies = [Domain, Application, Infrastructure];

@@ -47,6 +47,9 @@ public sealed class StorefrontOptions
     /// <summary>Whether the background reconcile job runs (published-catalog PCT-5). On by default.</summary>
     public bool ReconcileEnabled { get; set; } = true;
 
+    /// <summary>Gender lookup codes that are not header menu entries (owner, 2026-10-24: Unisex is not one). Stable lookup codes, case-insensitive.</summary>
+    public string[] MenuHiddenGenderCodes { get; set; } = ["UNISEX"];
+
     /// <summary>How often the reconcile job compares the read model with Catalog and Warehouse.</summary>
     public TimeSpan ReconcileInterval { get; set; } = TimeSpan.FromMinutes(10);
 }

@@ -84,6 +84,11 @@ public sealed class StorefrontPostgresFixtureDefinition : ICollectionFixture<Sto
     public const string Name = "Storefront PostgreSQL";
 }
 
+internal sealed class FakeMenuSettings : Romp.Modules.Storefront.Application.Navigation.IMenuSettings
+{
+    public IReadOnlySet<string> HiddenGenderCodes { get; } = new HashSet<string> { "UNISEX" };
+}
+
 internal sealed class FakeExternalHostPolicy : IExternalHostPolicy
 {
     public IReadOnlyCollection<string> AllowedHosts { get; } = ["wa.me", "instagram.com"];
@@ -130,6 +135,8 @@ internal sealed class StorefrontHost : IDisposable
         services.AddScoped<IOutboxMessageHandler<Romp.Modules.Warehouse.Contracts.StockPutawayConfirmedEvent>, StockPutawayConfirmedConsumer>();
         services.AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()));
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Navigation.IMenuSettings, FakeMenuSettings>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Navigation.IMenuLookupCache, Romp.Modules.Storefront.Infrastructure.Navigation.MenuLookupCache>();
         services.AddScoped<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries, PublishedPageSitemapSource>();
 
         var applicationAssembly = typeof(AssemblyReference).Assembly;
