@@ -137,6 +137,10 @@ internal sealed class StorefrontHost : IDisposable
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddSingleton<Romp.Modules.Storefront.Application.Navigation.IMenuSettings, FakeMenuSettings>();
         services.AddSingleton<Romp.Modules.Storefront.Application.Listings.IListingSettings, FakeListingSettings>();
+        services.AddSingleton<FakePathQueries>();
+        services.AddSingleton<Romp.Modules.Catalog.Contracts.IProductPathQueries>(sp => sp.GetRequiredService<FakePathQueries>());
+        services.AddSingleton<FakeProductPageMetrics>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.ProductPages.IProductPageMetrics>(sp => sp.GetRequiredService<FakeProductPageMetrics>());
         services.AddSingleton<Romp.Modules.Storefront.Application.Abstractions.ICatalogLookupCache, Romp.Modules.Storefront.Infrastructure.CatalogLookupCache>();
         services.AddScoped<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries, PublishedPageSitemapSource>();
 
@@ -171,6 +175,10 @@ internal sealed class StorefrontHost : IDisposable
     public FakeCatalogLookups Lookups => _root.GetRequiredService<FakeCatalogLookups>();
 
     public FakeProducers Producers => _root.GetRequiredService<FakeProducers>();
+
+    public FakePathQueries Paths => _root.GetRequiredService<FakePathQueries>();
+
+    public FakeProductPageMetrics PageMetrics => _root.GetRequiredService<FakeProductPageMetrics>();
 
     /// <summary>Delivers an event the way the dispatcher does: a scope, the outbox row id in the message context, then every handler of that event type.</summary>
     public async Task DeliverAsync<TEvent>(long outboxMessageId, TEvent domainEvent)
@@ -239,4 +247,20 @@ internal sealed class StorefrontHost : IDisposable
 internal sealed class FakeListingSettings : Romp.Modules.Storefront.Application.Listings.IListingSettings
 {
     public int NewArrivalsDays => 30;
+}
+
+/// <summary>Catalog's path contract, answering what a test says; an unknown path is NotFound.</summary>
+internal sealed class FakePathQueries : Romp.Modules.Catalog.Contracts.IProductPathQueries
+{
+    public Dictionary<string, Romp.Modules.Catalog.Contracts.PathResolutionResult> Answers { get; } = [];
+
+    public Task<Romp.Modules.Catalog.Contracts.PathResolutionResult> ResolveAsync(string path, CancellationToken cancellationToken) =>
+        Task.FromResult(Answers.GetValueOrDefault(path) ?? new(Romp.Modules.Catalog.Contracts.PathOutcome.NotFound, null, null));
+}
+
+internal sealed class FakeProductPageMetrics : Romp.Modules.Storefront.Application.ProductPages.IProductPageMetrics
+{
+    public int NotProjected { get; private set; }
+
+    public void NotProjectedYet() => NotProjected++;
 }
