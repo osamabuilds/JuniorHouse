@@ -13,8 +13,8 @@ Meta and JSON-LD for the page come from `seo`; until that feature lands, task 13
 5. [x] Size chart lines for (category, gender) with the Unisex fallback; none gives an empty chart and a flag. Proof: tests for exact, fallback and absent (PDP-6, 7).
 6. [x] Composition and care lines in order. Proof: test (PDP-8).
 7. [x] Product with no in-stock variant: found (200 contract), `IsAvailable = false`, no purchase state. Proof: test; availability word list never says reserved (PDP-16, 17).
-8. [ ] Endpoint `GET /api/storefront/products/by-path?path=&colour=&size=` with the `Storefront.Public` policy; the four outcomes in one JSON shape with the target path from Catalog only; 400 on a missing or over-long path. Proof: HTTP integration tests (CI): traversal and encoded paths, 201-char path, markup, no stack trace, no exact quantity in the JSON (PDP-13, 17).
-9. [ ] Query-count and speed test: a product with 8 variants and 10 images costs the same number of queries as one with 1, under 200 ms. Proof: integration test; closes published-catalog task 23 (PCT-8).
+8. [x] Endpoint `GET /api/storefront/products/by-path?path=&colour=&size=` with the `Storefront.Public` policy; the four outcomes in one JSON shape with the target path from Catalog only; 400 on a missing or over-long path. Proof: HTTP integration tests (CI): traversal and encoded paths, 201-char path, markup, no stack trace, no exact quantity in the JSON (PDP-13, 17).
+9. [x] Query-count and speed test: a product with 8 variants and 10 images costs the same number of queries as one with 1, under 200 ms. Proof: integration test; closes published-catalog task 23 (PCT-8).
 
 ## Web (`features/storefront/product-pages`, CONVENTIONS.md §1)
 
