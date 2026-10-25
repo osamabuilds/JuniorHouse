@@ -66,7 +66,7 @@ public sealed record ProductChangedEvent(long ProductId, string Path, string? Pr
 }
 
 /// <summary>A size chart was created or edited; products of its category and gender show the new chart.</summary>
-public sealed record SizeChartChangedEvent(long ChartId, short CategoryId, short GenderId) : CatalogEvent
+public sealed record SizeChartChangedEvent(long ChartId, short CategoryId, short GenderId, long Version = 0) : CatalogEvent
 {
     public override string AggregateType => "SizeChart";
 

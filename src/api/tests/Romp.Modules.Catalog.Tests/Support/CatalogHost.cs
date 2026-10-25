@@ -223,6 +223,7 @@ internal sealed class CatalogHost : IDisposable
         services.AddScoped<IChartGate, ChartGate>();
         services.AddScoped<ProductAssembler>();
         services.AddScoped<IPublishedProductQueries, PublishedProductQueries>();
+        services.AddScoped<ISizeChartQueries, SizeChartQueries>();
         services.AddScoped<LabelledVariantWriter>();
         services.AddScoped<ProductImageMapper>();
         services.AddScoped<CompositionCareReader>();

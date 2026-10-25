@@ -23,6 +23,8 @@ namespace Romp.Modules.Catalog.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence("CHRT_VER_SEQ", "CTLG");
+
             modelBuilder.Entity("Romp.BuildingBlocks.Persistence.Inbox.InboxMessage", b =>
                 {
                     b.Property<long>("MessageId")
@@ -776,6 +778,12 @@ namespace Romp.Modules.Catalog.Infrastructure.Migrations
                     b.Property<short>("CategoryId")
                         .HasColumnType("smallint")
                         .HasColumnName("CATG_ID");
+
+                    b.Property<long>("ContentVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("CNTT_VER")
+                        .HasDefaultValueSql("nextval('\"CTLG\".\"CHRT_VER_SEQ\"')");
 
                     b.Property<short>("GenderId")
                         .HasColumnType("smallint")

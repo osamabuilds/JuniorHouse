@@ -61,6 +61,9 @@ public interface ICatalogDbContext
     /// </summary>
     Task AcquireSlugLockAsync(CancellationToken cancellationToken);
 
+    /// <summary>The next value of the sequence every size chart's content version comes from (PCT-5): never repeats, even after a delete.</summary>
+    Task<long> NextChartVersionAsync(CancellationToken cancellationToken);
+
     /// <summary>The concurrency token of a size chart row (CHT-2).</summary>
     uint VersionOf(SizeChart chart);
 

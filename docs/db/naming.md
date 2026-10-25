@@ -310,4 +310,5 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | available | AVLB | | rebuild | RBLD |
 | derivative (resized image) | DRV | | ready | RDY |
 | miss (a search with no results) | MISS | | swatch | SWCH |
+| model (as in read model) | MODL | | | |
 | query | QRY | | synonym | SYNM |

@@ -16,6 +16,11 @@ internal sealed class SizeChartConfiguration : IEntityTypeConfiguration<SizeChar
         builder.Property(c => c.GenderId).HasColumnName("GNDR_ID").IsRequired();
         builder.Property(c => c.Name).HasColumnName("NAME").HasMaxLength(100).IsRequired();
 
+        // PCT-5: one sequence for every chart, so a version never repeats (a deleted and re-created chart still goes up). A new row takes
+        // its first value from the default; edits stamp the next one (ICatalogDbContext.NextChartVersionAsync).
+        builder.Property(c => c.ContentVersion).HasColumnName("CNTT_VER").IsRequired()
+            .HasDefaultValueSql("nextval('\"CTLG\".\"CHRT_VER_SEQ\"')");
+
         // Q-CHT-5: one chart per category and gender; Unisex is the fallback.
         builder.HasIndex(c => new { c.CategoryId, c.GenderId }).IsUnique();
         builder.HasIndex(c => c.GenderId);

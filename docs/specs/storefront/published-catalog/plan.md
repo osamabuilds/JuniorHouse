@@ -53,7 +53,7 @@ Schema `STFR`; keys are producer ids (not identity); every table has `INSR_DTE/I
 | `CHRT_MAIN`, `CHRT_LINE` | size charts per (category, gender) | as Catalog, plus `VER` |
 | `AVLB_STK` | availability by variant id before its product row exists (events can arrive first) | `VRNT_ID`, `QTY`, `VER` |
 | `RBLD_RUN` | rebuild runs | `ID`, `STS`, `STRT_DTE`, `END_DTE`, counts, `ACTR` |
-| `LKP_VER` | schema version of the read model and last lookup refresh | single row |
+| `MODL_META` | metadata of the read model itself: its schema version (a rebuild runs when it differs from the code's) and when the lookup copies were last refreshed | single row |
 | `INBX` | consumed events | standard |
 
 Migration `AddStorefrontReadModel`; raw SQL (quoted identifiers) enables `pg_trgm` and creates the trigram index; a seed migration inserts the `DRV_STS_LKP` rows.

@@ -52,7 +52,7 @@ Reference has no events: the lookup copies on product rows are refreshed by the 
 
 All rows are projections, so the audit columns `INSR_*`/`UPDT_*` and `xmin` (concurrency token, per naming.md) exist, but the keys are the producers' ids (not identity) and the writer is the projection only. Denormalised on purpose (CLAUDE.md allows it in read models; reason recorded here): names, codes, prices and availability are copied onto product and variant rows so a listing is one indexed query. No partitioning: ≈ hundreds of products, thousands of variants, tens of thousands of images; the only growing table is `SRCH_MISS`, one row per distinct query per day, purged after 180 days.
 
-Glossary words to add in the implementing PR (checked against the glossary 2026-10-25): `AVLB` (available), `DRV` (derivative), `SYNM` (synonym), `MISS` (a zero-result query), `RBLD` (rebuild), `QRY` (query), `RDY` (ready), `SWCH` (swatch). Already in the glossary and reused: `STFR` schema, `SRCH`, `HASH`, `VER` (version, so no `VRSN`), `VSBL`, `RCNL` (reconciliation, so no `RECN`), `PRDT`, `VRNT`, `IMG`, `CMPS`, `CARE`, `CHRT`, `COLN`, `CATG`, `GNDR`, `AGE`, `SKU`, `PRIC`, `CMPR`.
+Glossary words to add in the implementing PR (checked against the glossary 2026-10-25): `AVLB` (available), `DRV` (derivative), `SYNM` (synonym), `MISS` (a zero-result query), `RBLD` (rebuild), `QRY` (query), `RDY` (ready), `SWCH` (swatch), `MODL` (model, as in the `MODL_META` table). Already in the glossary and reused: `STFR` schema, `SRCH`, `HASH`, `VER` (version, so no `VRSN`), `VSBL`, `RCNL` (reconciliation, so no `RECN`), `PRDT`, `VRNT`, `IMG`, `CMPS`, `CARE`, `CHRT`, `COLN`, `CATG`, `GNDR`, `AGE`, `SKU`, `PRIC`, `CMPR`.
 
 ## API (host `Romp.Api`, route group `/api/storefront`)
 

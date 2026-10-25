@@ -154,6 +154,12 @@ public sealed class SizeChart : AggregateRoot<long>, IAuditable
 
     public IReadOnlyCollection<SizeChartLine> Lines => _lines.AsReadOnly();
 
+    /// <summary>
+    /// The storefront's "highest version wins" key (PCT-5). A new chart takes the next value of the database sequence from its column
+    /// default; every edit stamps the next one, so it never repeats, even for a chart deleted and created again. Not the concurrency token.
+    /// </summary>
+    public long ContentVersion { get; private set; }
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; } = string.Empty;
@@ -170,7 +176,18 @@ public sealed class SizeChart : AggregateRoot<long>, IAuditable
     }
 
     /// <summary>Writes the change event; called by the handler once the chart has an id (CHT-2).</summary>
-    public void NoteChanged() => Raise(new SizeChartChangedEvent(Id, CategoryId, GenderId));
+    public void NoteChanged() => Raise(new SizeChartChangedEvent(Id, CategoryId, GenderId, ContentVersion));
+
+    /// <summary>Takes the next version from the sequence for an edit (PCT-5); it must be higher than the current one.</summary>
+    public void Stamp(long version)
+    {
+        if (version <= ContentVersion)
+        {
+            throw new DomainException("A chart's version can only go up.");
+        }
+
+        ContentVersion = version;
+    }
 
     private void SetLines(IEnumerable<SizeChartLine> lines)
     {
