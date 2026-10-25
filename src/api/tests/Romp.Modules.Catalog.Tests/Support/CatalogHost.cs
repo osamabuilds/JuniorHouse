@@ -112,6 +112,21 @@ internal sealed class FakeLookups : ICatalogLookupQueries
     public Task<IReadOnlyDictionary<string, short>> GetCategoryIdsBySegmentAsync(IReadOnlyCollection<string> segments, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyDictionary<string, short>>(Categories.Values.Where(c => segments.Contains(c.Code.ToLowerInvariant())).ToDictionary(c => c.Code.ToLowerInvariant(), c => c.Id));
 
+    public Task<IReadOnlyList<CatalogLookupItem>> ListGendersAsync(CancellationToken cancellationToken) => Items(Genders);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListCategoriesAsync(CancellationToken cancellationToken) => Items(Categories);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListAgeBracketsAsync(CancellationToken cancellationToken) => Items(AgeBrackets);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListCollectionsAsync(CancellationToken cancellationToken) => Items(Collections);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListSizesAsync(CancellationToken cancellationToken) => Items(Sizes);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListColoursAsync(CancellationToken cancellationToken) => Items(Colours);
+
+    private static Task<IReadOnlyList<CatalogLookupItem>> Items(Dictionary<short, ApparelCode> source) =>
+        Task.FromResult<IReadOnlyList<CatalogLookupItem>>(source.Values.OrderBy(c => c.Id).Select(c => new CatalogLookupItem(c.Id, c.Code, c.Name, c.Id, true)).ToList());
+
     private static Task<IReadOnlyDictionary<short, ApparelCode>> Pick(Dictionary<short, ApparelCode> source, IReadOnlyCollection<short> ids) =>
         Task.FromResult<IReadOnlyDictionary<short, ApparelCode>>(source.Where(p => ids.Contains(p.Key)).ToDictionary(p => p.Key, p => p.Value));
 }

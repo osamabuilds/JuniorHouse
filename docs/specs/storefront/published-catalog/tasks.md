@@ -10,7 +10,7 @@ Jira: SCRUM-208 · Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Each st
 4. [x] `Catalog.Contracts`: `IPublishedProductQueries` (`GetSnapshotAsync`, `ListVersionsAsync`, `ListSnapshotsAsync`) and `PublishedProductSnapshot`; implementation in Catalog.Application, set-based (no N+1). Proof: query tests incl. unpublished returns null, paging by id, query-count test (PCT-1, 2, 8).
 5. [x] `Catalog.Contracts`: `ISizeChartQueries` (`ListChartsAsync`, `GetChartAsync` with Unisex fallback). Proof: query tests (PCT-1).
 6. [x] `Warehouse.Contracts`: `IStockAvailabilityQueries`; `StockLevelChangedEvent` and `StockPutawayConfirmedEvent` gain additive `Version` (ledger sequence). Proof: Warehouse query and event tests (PCT-3, 5).
-7. [ ] `Reference.Contracts`: `ICatalogLookupQueries` list methods (genders, categories, age brackets, collections, sizes, colours; swatch if present). Proof: query tests; ordering by `SORT_SEQ`.
+7. [x] `Reference.Contracts`: `ICatalogLookupQueries` list methods (genders, categories, age brackets, collections, sizes, colours; swatch if present). Proof: query tests; ordering by `SORT_SEQ`.
 
 ## B. Read model
 

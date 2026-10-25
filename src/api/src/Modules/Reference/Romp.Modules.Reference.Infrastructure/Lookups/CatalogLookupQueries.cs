@@ -30,6 +30,25 @@ public sealed class CatalogLookupQueries(ReferenceDbContext dbContext) : ICatalo
     public Task<IReadOnlyDictionary<short, ApparelCode>> GetColoursAsync(IReadOnlyCollection<short> ids, CancellationToken cancellationToken) =>
         Codes<ColourLookup>(ids, cancellationToken);
 
+    public Task<IReadOnlyList<CatalogLookupItem>> ListGendersAsync(CancellationToken cancellationToken) => Items<GenderLookup>(cancellationToken);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListCategoriesAsync(CancellationToken cancellationToken) => Items<CategoryLookup>(cancellationToken);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListAgeBracketsAsync(CancellationToken cancellationToken) => Items<AgeBracketLookup>(cancellationToken);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListCollectionsAsync(CancellationToken cancellationToken) => Items<CollectionLookup>(cancellationToken);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListSizesAsync(CancellationToken cancellationToken) => Items<SizeLookup>(cancellationToken);
+
+    public Task<IReadOnlyList<CatalogLookupItem>> ListColoursAsync(CancellationToken cancellationToken) => Items<ColourLookup>(cancellationToken);
+
+    private async Task<IReadOnlyList<CatalogLookupItem>> Items<TLookup>(CancellationToken cancellationToken)
+        where TLookup : Lookup =>
+        await dbContext.Set<TLookup>().AsNoTracking()
+            .OrderByDescending(l => l.IsActive).ThenBy(l => l.SortSeq).ThenBy(l => l.Id)
+            .Select(l => new CatalogLookupItem(l.Id, l.Code, l.Name, l.SortSeq, l.IsActive))
+            .ToListAsync(cancellationToken);
+
     public Task<IReadOnlyDictionary<string, short>> GetGenderIdsBySegmentAsync(IReadOnlyCollection<string> segments, CancellationToken cancellationToken) =>
         IdsBySegment<GenderLookup>(segments, cancellationToken);
 
