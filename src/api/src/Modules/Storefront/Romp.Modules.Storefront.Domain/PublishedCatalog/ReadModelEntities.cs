@@ -587,6 +587,20 @@ public sealed class StockRow : Entity<long>, IAuditable
         StockVersion = stockVersion;
     }
 
+    /// <summary>Takes a newer stock report for this variant; false (nothing changed) when its version is not higher than the one held (PCT-5).</summary>
+    public bool Apply(string skuCode, int quantity, long stockVersion)
+    {
+        if (!VersionedSnapshot.Replaces(stockVersion, StockVersion))
+        {
+            return false;
+        }
+
+        SkuCode = skuCode;
+        Quantity = quantity;
+        StockVersion = stockVersion;
+        return true;
+    }
+
     public string SkuCode { get; private set; }
 
     public int Quantity { get; private set; }
