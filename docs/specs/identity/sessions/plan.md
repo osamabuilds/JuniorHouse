@@ -28,7 +28,7 @@ Module plan table, `/api/auth/*`. Cookies: `__Secure-romp-acs` (path `/api`), `_
 `SecurityEventRaised` log events only (see [observability](../../platform/observability/spec.md) AC-9); no integration events.
 
 ## Data
-`SESS_MAIN`, `SESS_RVK_RSN_LKP`, `LGIN_PEND`, `LGIN_ATMP`, `LGIN_OTCM_LKP` (module plan). Throttle state is read from `LGIN_ATMP` with one indexed query. Daily purge of rows older than 90 days.
+`SESS_MAIN`, `SESS_RVKD_RSN_LKP`, `LGIN_PEND`, `LGIN_ATMP`, `LGIN_OTCM_LKP` (module plan). Throttle state is read from `LGIN_ATMP` with one indexed query. Daily purge of rows older than 90 days.
 
 ## NFR / security design
 - **Session fixation (SEC-04):** sign-in never reuses an id; a presented session is revoked first.

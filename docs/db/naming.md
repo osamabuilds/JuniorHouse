@@ -84,7 +84,8 @@ Note: there is no `_AT` suffix in this convention — every timestamp column, au
 | Warehouse | `WHSE` |
 | Orders | `ORDR` |
 | Payments | `PAYM` |
-| Customers & Identity | `CUST` / `IDNT` |
+| Customers (storefront accounts) | `CUST` |
+| Identity (staff accounts, sessions, roles, audit trail) | `IDNT` |
 | Storefront (settings and read model) | `STFR` |
 | Logistics | `LOGS` |
 | Returns | `RTRN` |
@@ -322,3 +323,26 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 |---|---|---|---|---|
 | group | GRP | | phrase | PHRS |
 | vector (full-text search vector) | VEC | | | |
+
+### Added in Sprint 8 (SCRUM-202, Identity)
+
+`HASH`, `ADDR`, `CHNG`, `PEND`, `STEP`, `MODL`, `LAST`, `USR`, `OTCM`, `ATMP`, `EXPY`, `CNT`, `NAME`, `DTE`, `IND`, `TYP`, `KEY`, `ACTR`, `MSG` and `COLM` ("column", Sprint 9) already existed and keep their abbreviation. `IDNT` is the schema name for "identity". "Revoked" is `RVKD` everywhere (including `SESS_RVKD_RSN_LKP`), never `RVK`. `GlossaryTests` fails if a word gets two abbreviations or an abbreviation is used for two words.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| absolute | ABS | | must | MUST |
+| access | ACSS | | occurred | OCCR |
+| agent (user agent) | AGNT | | operation | OPRN |
+| all | ALL | | password | PWD |
+| audit | AUDT | | permission | PERM |
+| client | CLNT | | previous | PREV |
+| correlation | CORR | | recovery | RCVR |
+| display | DISP | | refresh | RFSH |
+| encrypted | ENC | | revoked | RVKD |
+| enrolled | ENRL | | role | ROLE |
+| entity | ENTY | | secret | SECR |
+| failed | FAIL | | session | SESS |
+| identity | IDNT | | source | SRC |
+| IP address | IP | | temporary | TEMP |
+| login | LGIN | | token | TOKN |
+| multi-factor authentication | MFA | | used | USED |

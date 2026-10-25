@@ -39,18 +39,18 @@ Transactional tables carry `ID bigint identity`, the four audit columns and `xmi
 | `USR_ROLE_MAP` | User to role | `USR_ID`, `ROLE_ID` |
 | `USR_RCVR_CODE` | MFA recovery codes | `USR_ID`, `CODE_HASH`, `USED_DTE` |
 | `SESS_MAIN` | Session | `USR_ID`, `ACSS_TOKN_HASH`, `ACSS_EXPY_DTE`, `RFSH_TOKN_HASH`, `PREV_RFSH_TOKN_HASH`, `RFSH_EXPY_DTE`, `ABS_EXPY_DTE`, `RVKD_DTE`, `RVKD_RSN_ID`, `CLNT_IP_ADDR`, `USR_AGNT` (truncated) |
-| `SESS_RVK_RSN_LKP` | SIGN_OUT, SIGN_OUT_ALL, ADMIN, REUSE, PWD_CHNG, DEACT, MFA_RESET, EXPIRED | lookup |
+| `SESS_RVKD_RSN_LKP` | SIGN_OUT, SIGN_OUT_ALL, ADMIN, REUSE, PWD_CHNG, DEACT, MFA_RESET, EXPIRED | lookup |
 | `LGIN_PEND` | Step-1-passed, awaiting MFA (5 minutes) | `USR_ID`, `TOKN_HASH`, `EXPY_DTE`, `FAIL_CNT` |
 | `LGIN_ATMP` | Every sign-in or MFA attempt (NFR-15); throttle state is derived from it | `ATMP_NAME` (as typed, <= 40, sanitised), `CLNT_IP_ADDR`, `OTCM_ID`, `ATMP_DTE`, nullable `USR_ID` |
 | `LGIN_OTCM_LKP` | OK, BAD_CRED, INACTIVE, TEMP_EXPD, MFA_BAD, MFA_OK, THROTTLED, REFRESH_REUSE | lookup |
 | `AUDT_ENTY` | One audited entity change | `SRC_MSG_ID`, `MODL_NAME`, `ENTY_TYP_NAME`, `ENTY_KEY`, `OPRN_ID`, `ACTR_NAME`, `OCCR_DTE`, `CORR_ID`; partitioned monthly on `OCCR_DTE` |
 | `AUDT_OPRN_LKP` | INSERT, UPDATE, DELETE | lookup |
-| `AUDT_CHNG` | Changed column names of an entry (one row per column, so no list in a column) | `AUDT_ENTY_ID`, `OCCR_DTE`, `COL_NAME` |
+| `AUDT_CHNG` | Changed column names of an entry (one row per column, so no list in a column) | `AUDT_ENTY_ID`, `OCCR_DTE`, `COLM_NAME` |
 | `OUTB_MSG`, `INBX` | Standard module outbox and inbox | existing pattern |
 
 Indexes: unique `USR_MAIN(USR_NAME)`, `SESS_MAIN(ACSS_TOKN_HASH)`, `SESS_MAIN(RFSH_TOKN_HASH)`, `SESS_MAIN(PREV_RFSH_TOKN_HASH)`; `LGIN_ATMP(ATMP_NAME, CLNT_IP_ADDR, ATMP_DTE)` for the throttle query; `AUDT_ENTY(ACTR_NAME, OCCR_DTE)`, `(MODL_NAME, ENTY_TYP_NAME, ENTY_KEY)`, unique `(SRC_MSG_ID, ENTY_TYP_NAME, ENTY_KEY, OCCR_DTE)`; every FK column indexed. A trigger on `AUDT_ENTY` and `AUDT_CHNG` rejects `UPDATE` and `DELETE`. Session and attempt rows older than 90 days are purged by a daily job (audit rows never).
 
-**New glossary words** (added to `docs/db/naming.md` in the same change as the first migration): access ACSS, address (exists), agent AGNT, all ALL, audit AUDT, change (exists), client CLNT, column COL, correlation CORR, enrolled ENRL, entity ENTY, failed FAIL, hash HASH, login LGIN, module MODL, multi-factor authentication MFA, occurred OCCR, operation OPRN, password PWD, pending (exists), permission PERM, recovery RCVR, refresh RFSH, revoked RVKD, role ROLE, secret SECR, session SESS, source SRC, step STEP, temporary TEMP, token TOKN, absolute ABS, encrypted ENC, must MUST, user (exists), IP address IP. Words already in the glossary keep their abbreviation (`NAME`, `DTE`, `IND`, `CNT`, `OTCM`, `ATMP`, `EXPY`, `LAST` is new).
+**New glossary words** (added to `docs/db/naming.md` in the same change as the first migration): access ACSS, address (exists), agent AGNT, all ALL, audit AUDT, change (exists), client CLNT, (column is COLM, Sprint 9), correlation CORR, enrolled ENRL, entity ENTY, failed FAIL, hash HASH, login LGIN, module MODL, multi-factor authentication MFA, occurred OCCR, operation OPRN, password PWD, pending (exists), permission PERM, recovery RCVR, refresh RFSH, revoked RVKD, role ROLE, secret SECR, session SESS, source SRC, step STEP, temporary TEMP, token TOKN, absolute ABS, encrypted ENC, must MUST, user (exists), IP address IP. Words already in the glossary keep their abbreviation (`NAME`, `DTE`, `IND`, `CNT`, `OTCM`, `ATMP`, `EXPY`, `LAST` is new).
 
 ## Endpoints (all through `MapSecuredGroup`; anonymous routes are on the explicit list of roles AC-10)
 

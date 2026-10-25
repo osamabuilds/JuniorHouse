@@ -14,8 +14,8 @@
 | `ListRolesQuery` | none | roles with permission codes (two queries, no N+1) | AC-6 |
 
 ## Cross-module surface (BuildingBlocks.Web)
-- `Permissions` static class: one `const string` per permission code (`CatalogWrite = "catalog.write"`, ...). A test proves the constants and the seeded `PERM_LKP` rows are the same set (AC-1).
-- `RequirePermission(code)` endpoint extension adds an authorization requirement; `MapSecuredGroup(prefix, permission)` replaces the policy argument. Reads are declared on the group; mutating routes add `.RequirePermission(<area>.write)` (the group default is the read permission).
+- `Permissions` static class: one `PermissionCode` per permission code (`CatalogWrite = new("catalog.write")`, ...). **As built (G4):** a `PermissionCode` struct, not a `const string`, because `MapSecuredGroup(prefix, string policy)` already exists and two string overloads cannot coexist; the type also stops a policy name being passed where a permission is expected. `Permissions.All` lists them. A test proves the constants and the seeded `PERM_LKP` rows are the same set (AC-1).
+- `RequirePermission(code)` endpoint extension adds an authorization requirement and `PermissionMetadata` (the matrix reads the last entry as the route's effective permission; a group's read and a route's write both apply, so a role holding a write code must also hold its read code, pinned by `PermissionCodesTests`); `MapSecuredGroup(prefix, permission)` replaces the policy argument. Reads are declared on the group; mutating routes add `.RequirePermission(<area>.write)` (the group default is the read permission).
 - `IdentityPermissionHandler` (in `Identity.Infrastructure`) evaluates the requirement per request using the principal's user id and `GetEffectivePermissionsQuery`, and honours session scope.
 - The four old policy names and `Policies.cs` are deleted once the migration below is done.
 
