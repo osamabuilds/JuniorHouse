@@ -36,6 +36,11 @@ public sealed class StorefrontOptionsValidator : IValidateOptions<StorefrontOpti
             failures.Add($"Storefront:MaxImagePixels must be between 1 and {MaxPixelCap}.");
         }
 
+        if (options.NewArrivalsDays is < 1 or > 365)
+        {
+            failures.Add("Storefront:NewArrivalsDays must be between 1 and 365.");
+        }
+
         if (options.ImageQuality is < 1 or > 100)
         {
             failures.Add("Storefront:ImageQuality must be between 1 and 100.");

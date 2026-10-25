@@ -136,7 +136,8 @@ internal sealed class StorefrontHost : IDisposable
         services.AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()));
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddSingleton<Romp.Modules.Storefront.Application.Navigation.IMenuSettings, FakeMenuSettings>();
-        services.AddSingleton<Romp.Modules.Storefront.Application.Navigation.IMenuLookupCache, Romp.Modules.Storefront.Infrastructure.Navigation.MenuLookupCache>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Listings.IListingSettings, FakeListingSettings>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Abstractions.ICatalogLookupCache, Romp.Modules.Storefront.Infrastructure.CatalogLookupCache>();
         services.AddScoped<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries, PublishedPageSitemapSource>();
 
         var applicationAssembly = typeof(AssemblyReference).Assembly;
@@ -233,4 +234,9 @@ internal sealed class StorefrontHost : IDisposable
         using var connection = new NpgsqlConnection(ConnectionString);
         NpgsqlConnection.ClearPool(connection);
     }
+}
+
+internal sealed class FakeListingSettings : Romp.Modules.Storefront.Application.Listings.IListingSettings
+{
+    public int NewArrivalsDays => 30;
 }

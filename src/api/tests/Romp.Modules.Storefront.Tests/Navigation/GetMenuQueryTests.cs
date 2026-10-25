@@ -1,9 +1,11 @@
 using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Reference.Contracts;
+using Romp.Modules.Storefront.Application.Abstractions;
 using Romp.Modules.Storefront.Application.Navigation;
+using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Application.PublishedCatalog;
 using Romp.Modules.Storefront.Domain.Navigation;
-using Romp.Modules.Storefront.Infrastructure.Navigation;
+using Romp.Modules.Storefront.Infrastructure;
 using Romp.Modules.Storefront.Tests.Support;
 using Romp.Modules.Warehouse.Contracts;
 
@@ -93,12 +95,12 @@ public sealed class GetMenuQueryTests(StorefrontPostgres postgres)
     public async Task TheLookupCache_ReloadsAfterSixtySeconds_SoANewLookupRowAppears()
     {
         var clock = new SteppingClock();
-        var cache = new MenuLookupCache(clock);
+        var cache = new CatalogLookupCache(clock);
         var calls = 0;
-        Task<MenuLookups> Load(CancellationToken _)
+        Task<CatalogLookups> Load(CancellationToken _)
         {
             calls++;
-            return Task.FromResult(new MenuLookups([], [], [], []));
+            return Task.FromResult(new CatalogLookups([], [], [], []));
         }
 
         await cache.GetOrLoadAsync(Load, default);
@@ -113,13 +115,13 @@ public sealed class GetMenuQueryTests(StorefrontPostgres postgres)
     [Trait("Spec", "NAV-1")]
     public async Task TheLookupCache_IsSingleFlight_UnderConcurrentCallers()
     {
-        var cache = new MenuLookupCache(TimeProvider.System);
+        var cache = new CatalogLookupCache(TimeProvider.System);
         var calls = 0;
-        async Task<MenuLookups> Load(CancellationToken token)
+        async Task<CatalogLookups> Load(CancellationToken token)
         {
             Interlocked.Increment(ref calls);
             await Task.Delay(100, token);
-            return new MenuLookups([], [], [], []);
+            return new CatalogLookups([], [], [], []);
         }
 
         await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => cache.GetOrLoadAsync(Load, default)));
@@ -134,7 +136,7 @@ public sealed class GetMenuQueryTests(StorefrontPostgres postgres)
         using var host = await HostAsync(postgres);
         var counter = new QueryCounter();
         await using var context = StorefrontPostgres.NewContext(host.ConnectionString, counter);
-        var handler = new GetMenuQueryHandler(context, host.Lookups, new MenuLookupCache(TimeProvider.System), new FakeMenuSettings());
+        var handler = new GetMenuQueryHandler(context, host.Lookups, new CatalogLookupCache(TimeProvider.System), new FakeMenuSettings());
 
         await ListableAsync(host, 1, "GIRLS", "DRESSES");
         await handler.Handle(new GetMenuQuery(), default);

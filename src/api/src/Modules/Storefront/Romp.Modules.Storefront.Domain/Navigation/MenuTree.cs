@@ -1,7 +1,5 @@
 namespace Romp.Modules.Storefront.Domain.Navigation;
 
-/// <summary>A lookup row as the menu needs it (Reference's code, display name and order).</summary>
-public sealed record MenuLookup(string Code, string Name, short SortSeq, bool IsActive);
 
 public enum MenuEntryKind
 {
@@ -49,13 +47,13 @@ public sealed class MenuAvailability
 public static class MenuBuilder
 {
     /// <summary>The URL segment for a lookup code: lower case, <c>_</c> as <c>-</c> (the same rule as a product path).</summary>
-    public static string SegmentOf(string lookupCode) => lookupCode.Trim().ToLowerInvariant().Replace('_', '-');
+    public static string SegmentOf(string lookupCode) => CodeSegment.Of(lookupCode);
 
     public static MenuTree Build(
-        IEnumerable<MenuLookup> genders,
-        IEnumerable<MenuLookup> categories,
-        IEnumerable<MenuLookup> collections,
-        IEnumerable<MenuLookup> ages,
+        IEnumerable<LookupRow> genders,
+        IEnumerable<LookupRow> categories,
+        IEnumerable<LookupRow> collections,
+        IEnumerable<LookupRow> ages,
         MenuAvailability availability,
         IReadOnlySet<string> hiddenGenderCodes)
     {
@@ -99,10 +97,10 @@ public static class MenuBuilder
         return new MenuTree(audiences, shared, audiences.Count > 0, availability.SaleGenders.Count > 0);
     }
 
-    private static MenuEntry CollectionEntry(MenuLookup c) =>
+    private static MenuEntry CollectionEntry(LookupRow c) =>
         new(MenuEntryKind.Collection, c.Code, c.Name, "/collections/" + SegmentOf(c.Code));
 
     /// <summary>Active rows only, in display order (a retired row is never offered), ties broken by code so the order is stable.</summary>
-    private static List<MenuLookup> Ordered(IEnumerable<MenuLookup> rows) =>
+    private static List<LookupRow> Ordered(IEnumerable<LookupRow> rows) =>
         rows.Where(r => r.IsActive).OrderBy(r => r.SortSeq).ThenBy(r => r.Code, StringComparer.Ordinal).ToList();
 }

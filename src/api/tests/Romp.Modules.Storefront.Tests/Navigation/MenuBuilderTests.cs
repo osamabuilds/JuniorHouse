@@ -1,3 +1,4 @@
+using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Domain.Navigation;
 
 namespace Romp.Modules.Storefront.Tests.Navigation;
@@ -5,19 +6,19 @@ namespace Romp.Modules.Storefront.Tests.Navigation;
 /// <summary>Navigation task 1: the menu is built from lookup rows and shows only what has listable products (NAV-1, 3, 5, 8, 9).</summary>
 public sealed class MenuBuilderTests
 {
-    private static readonly MenuLookup[] Genders =
+    private static readonly LookupRow[] Genders =
     [
         new("GIRLS", "Girls", 10, true), new("BOYS", "Boys", 20, true), new("UNISEX", "Unisex", 30, true),
     ];
 
-    private static readonly MenuLookup[] Categories =
+    private static readonly LookupRow[] Categories =
     [
         new("DRESSES", "Dresses", 20, true), new("TEES_SHIRTS", "Tees and shirts", 10, true), new("OLD", "Old", 5, false),
     ];
 
-    private static readonly MenuLookup[] Collections = [new("SUMMER", "Summer", 10, true)];
+    private static readonly LookupRow[] Collections = [new("SUMMER", "Summer", 10, true)];
 
-    private static readonly MenuLookup[] Ages = [new("AGE_1Y", "1Y", 10, true), new("AGE_2Y", "2Y", 20, true)];
+    private static readonly LookupRow[] Ages = [new("AGE_1Y", "1Y", 10, true), new("AGE_2Y", "2Y", 20, true)];
 
     private static readonly HashSet<string> Hidden = ["UNISEX"];
 
@@ -30,7 +31,7 @@ public sealed class MenuBuilderTests
         SaleGenders = new HashSet<string> { "GIRLS" },
     };
 
-    private static MenuTree Build(MenuAvailability availability, IEnumerable<MenuLookup>? categories = null) =>
+    private static MenuTree Build(MenuAvailability availability, IEnumerable<LookupRow>? categories = null) =>
         MenuBuilder.Build(Genders, categories ?? Categories, Collections, Ages, availability, Hidden);
 
     [Fact]
@@ -89,7 +90,7 @@ public sealed class MenuBuilderTests
     [Trait("Spec", "NAV-5")]
     public void ANewLookupRow_AppearsWithNoCodeChange()
     {
-        var withNew = Categories.Append(new MenuLookup("SWIMWEAR", "Swimwear", 1, true));
+        var withNew = Categories.Append(new LookupRow("SWIMWEAR", "Swimwear", 1, true));
         var availability = new MenuAvailability
         {
             Genders = new HashSet<string> { "GIRLS" },
@@ -105,7 +106,7 @@ public sealed class MenuBuilderTests
     [Trait("Spec", "NAV-9")]
     public void ARenamedAge_KeepsItsUrl_BecauseTheParameterIsTheCode()
     {
-        var renamed = new[] { new MenuLookup("AGE_2Y", "Two years", 20, true) };
+        var renamed = new[] { new LookupRow("AGE_2Y", "Two years", 20, true) };
         var tree = MenuBuilder.Build(Genders, Categories, Collections, renamed, Girls(), Hidden);
 
         var age = tree.Audiences.Single().Entries.Single(e => e.Kind == MenuEntryKind.Age);

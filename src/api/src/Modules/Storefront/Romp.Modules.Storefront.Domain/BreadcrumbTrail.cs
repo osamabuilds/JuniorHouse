@@ -1,4 +1,4 @@
-namespace Romp.Modules.Storefront.Domain.Navigation;
+namespace Romp.Modules.Storefront.Domain;
 
 /// <summary>One step of a breadcrumb trail. The current page has no <see cref="Path"/>: it is shown but not linked (NAV-4).</summary>
 public sealed record Crumb(string Label, string? Path);
@@ -17,10 +17,10 @@ public static class BreadcrumbTrail
         var steps = new List<(string Label, string Path)> { (HomeLabel, "/") };
         if (audience is not null)
         {
-            steps.Add((audience.Name, "/" + MenuBuilder.SegmentOf(audience.Code)));
+            steps.Add((audience.Name, "/" + CodeSegment.Of(audience.Code)));
             if (category is not null)
             {
-                steps.Add((category.Name, $"/{MenuBuilder.SegmentOf(audience.Code)}/{MenuBuilder.SegmentOf(category.Code)}"));
+                steps.Add((category.Name, $"/{CodeSegment.Of(audience.Code)}/{CodeSegment.Of(category.Code)}"));
             }
         }
 

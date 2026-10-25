@@ -16,6 +16,12 @@ public static class NavigationEndpoints
     {
         var group = endpoints.MapSecuredGroup(StorefrontSettingsEndpoints.PublicPrefix, Policies.Public).WithTags("Storefront");
 
+        group.MapGet("/home", async (HttpContext http, ISender sender, CancellationToken cancellationToken) =>
+        {
+            http.Response.Headers[HeaderNames.CacheControl] = "public, max-age=60";
+            return Results.Ok(await sender.Send(new GetHomeQuery(), cancellationToken));
+        });
+
         group.MapGet("/menu", async (HttpContext http, ISender sender, CancellationToken cancellationToken) =>
         {
             http.Response.Headers[HeaderNames.CacheControl] = "public, max-age=60";

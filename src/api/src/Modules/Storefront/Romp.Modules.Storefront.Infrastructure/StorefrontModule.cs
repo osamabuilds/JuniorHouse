@@ -15,6 +15,7 @@ using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.BuildingBlocks.Storage;
 using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Warehouse.Contracts;
+using Romp.Modules.Storefront.Infrastructure.Listings;
 using Romp.Modules.Storefront.Infrastructure.Navigation;
 using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
 using Romp.Modules.Storefront.Application.Abstractions;
@@ -49,7 +50,8 @@ public sealed class StorefrontModule : IModule
         services.AddSingleton<IExternalHostPolicy, ExternalHostPolicy>();
         services.AddSingleton<Application.PublishedCatalog.IReadModelSettings, ReadModelSettings>();
         services.AddSingleton<Application.Navigation.IMenuSettings, Navigation.MenuSettings>();
-        services.AddSingleton<Application.Navigation.IMenuLookupCache, Navigation.MenuLookupCache>();
+        services.AddSingleton<Application.Listings.IListingSettings, Listings.ListingSettings>();
+        services.AddSingleton<Application.Abstractions.ICatalogLookupCache, CatalogLookupCache>();
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
@@ -92,6 +94,7 @@ public sealed class StorefrontModule : IModule
     {
         endpoints.MapPublicStorefrontEndpoints();
         endpoints.MapPublicNavigationEndpoints();
+        endpoints.MapPublicListingEndpoints();
 
         var services = endpoints.ServiceProvider;
         var options = services.GetRequiredService<IOptions<StorefrontOptions>>().Value;

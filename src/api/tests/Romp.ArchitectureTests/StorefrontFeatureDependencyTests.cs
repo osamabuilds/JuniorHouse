@@ -18,10 +18,13 @@ public sealed class StorefrontFeatureDependencyTests
     private static readonly System.Reflection.Assembly Domain = typeof(Romp.Modules.Storefront.Domain.AssemblyReference).Assembly;
     private static readonly System.Reflection.Assembly Infrastructure = typeof(Romp.Modules.Storefront.Infrastructure.StorefrontModule).Assembly;
 
-    private static readonly string[] Features = ["Navigation", "PublishedCatalog", "StorefrontSettings"];
+    private static readonly string[] Features = ["Listings", "Navigation", "PublishedCatalog", "StorefrontSettings"];
     private static readonly string[] Layers = ["Domain", "Application", "Infrastructure"];
     private static readonly string[] OtherModules = ["Catalog", "Warehouse", "Reference", "Vendor", "Production", "Quality", "Labelling"];
     private static readonly System.Reflection.Assembly[] StorefrontAssemblies = [Domain, Application, Infrastructure];
+
+    /// <summary>The one allowed Application dependency: the home page (Navigation) shows listing tiles. Listings never know Navigation.</summary>
+    private static readonly Dictionary<string, string[]> AllowedApplication = new() { ["Navigation"] = ["Listings"] };
 
     public static TheoryData<string> AllFeatures => new(Features);
 
@@ -29,7 +32,8 @@ public sealed class StorefrontFeatureDependencyTests
     [MemberData(nameof(AllFeatures))]
     public void ApplicationFeatures_DependOnNoOtherFeature(string feature)
     {
-        var forbidden = Features.Where(f => f != feature).Select(f => $"{App}.{f}").ToArray();
+        var allowed = AllowedApplication.GetValueOrDefault(feature, []);
+        var forbidden = Features.Where(f => f != feature && !allowed.Contains(f)).Select(f => $"{App}.{f}").ToArray();
 
         var result = Types.InAssembly(Application)
             .That().ResideInNamespace($"{App}.{feature}")
