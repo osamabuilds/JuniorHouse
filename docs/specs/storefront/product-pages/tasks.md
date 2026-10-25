@@ -18,7 +18,7 @@ Meta and JSON-LD for the page come from `seo`; until that feature lands, task 13
 
 ## Web (`features/storefront/product-pages`, CONVENTIONS.md §1)
 
-10. [ ] Skeleton: models, `product-pages-api.service`, NgRx store (`selectedColour`, `selectedSize`, outcome), providers, barrel. Proof: store and service specs.
+10. [x] Skeleton: models, `product-pages-api.service`, NgRx store (`selectedColour`, `selectedSize`, outcome), providers, barrel. Proof: store and service specs.
 11. [ ] Route: replace the mock `productMatcher` and the mock container with the three-segment route and a resolver; `Moved` sends 301, `Gone` 410, `NotFound` 404 through `RESPONSE_INIT`; `Location` comes from the API. Proof: resolver and route specs, SSR status test (PDP-13).
 12. [ ] Components: `gallery`, `colour-swatches`, `size-selector`, `price`, `availability-note`, `size-chart`, `composition-care`, `sold-out-state`. Colour and size work as links without JavaScript and update in place with it. Proof: component specs and axe (PDP-4, 6, 9, 11, 16).
 13. [ ] Container: breadcrumb, one `<h1>`, headings that never skip a level, main image `fetchpriority="high"` with explicit width and height, preload `Link` header for the LCP image, plain title and description. Proof: container spec; SSR HTML test that the content is in the server response (PDP-1, 10).
