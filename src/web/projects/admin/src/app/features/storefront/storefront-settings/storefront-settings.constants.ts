@@ -9,6 +9,7 @@ export const STOREFRONT_LINKS: readonly SectionLink[] = [
   { label: 'Settings', path: '/storefront/contact' },
   { label: 'Delivery and exchange', path: '/storefront/delivery' },
   { label: 'Pages', path: '/storefront/pages' },
+  { label: 'Search', path: '/storefront/search' },
   { label: 'Publish', path: '/storefront/publish' },
 ];
 

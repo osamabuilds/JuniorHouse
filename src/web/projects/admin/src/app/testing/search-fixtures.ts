@@ -1,0 +1,38 @@
+import { Provider, Type } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { Action, Store, provideStore } from '@ngrx/store';
+import { MissRow, SynonymGroup } from '@features/storefront/search/models';
+import { searchAdminReducer } from '@features/storefront/search/store/search.reducer';
+import { SEARCH_FEATURE_KEY } from '@features/storefront/search/store/search.state';
+
+export const synonymGroup = (over: Partial<SynonymGroup> = {}): SynonymGroup => ({
+  id: 1,
+  name: 'dress',
+  isActive: true,
+  terms: ['dress', 'frock', 'gown'],
+  rowVersion: 11,
+  ...over,
+});
+
+export const missRow = (over: Partial<MissRow> = {}): MissRow => ({ text: 'ghagra', day: '2026-10-25', count: 5, ...over });
+
+/** A real search-admin store with the actions it receives recorded, for container specs. */
+export function createSearchContainer<T>(component: Type<T>, providers: Provider[] = []) {
+  TestBed.configureTestingModule({
+    providers: [provideRouter([]), provideStore({ [SEARCH_FEATURE_KEY]: searchAdminReducer }), ...providers],
+  });
+  const store = TestBed.inject(Store);
+  const dispatched: Action[] = [];
+  const original = store.dispatch.bind(store);
+  store.dispatch = ((action: Action) => {
+    dispatched.push(action);
+    return original(action as never);
+  }) as typeof store.dispatch;
+
+  const fixture: ComponentFixture<T> = TestBed.createComponent(component);
+  fixture.detectChanges();
+  const root = fixture.nativeElement as HTMLElement;
+  const last = (type: string) => [...dispatched].reverse().find((a) => a.type === type);
+  return { fixture, root, store, dispatched, last, instance: fixture.componentInstance };
+}

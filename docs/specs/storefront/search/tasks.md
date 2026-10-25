@@ -26,7 +26,7 @@ The read model has the unique `SKU_NORM` index but not yet the full-text or trig
 12. [ ] Header search `<form role="search" method="get" action="/search">` with a labelled `<input type="search">`, enhanced to an ARIA combobox (`aria-expanded`, `aria-controls`, `aria-activedescendant`, arrows, Enter, Escape). Works with scripting off. Proof: component spec, axe, keyboard test (SRC-9).
 13. [ ] `/search?q=` route and container: results like a listing under `Results for “…”`, `noindex, follow`, canonical to `/search?q=`, empty state with category suggestions and a 200; exact SKU hit redirects 302 to the product path with `?colour=&size=`; the echo is the normalised text. Proof: container spec, SSR HTML test (SRC-2, 3, 4, 11).
 14. [ ] *(Deferred with `seo`: the limiter is shared with seo task 12.)* SSR server: rate limit for `/search` and `/api/suggest` (30 and 120 per minute per client, configurable), 429 with a plain message, keyed on the proxy-supplied client address only. Proof: server spec with a spoofed header from a non-proxy socket (SRC-10).
-15. [ ] Admin app screen (last, may slip): "Search" page with Synonym groups and Zero-result searches tabs, labelled inputs, semantic tables. Proof: component specs.
+15. [x] Admin app screen (last, may slip): "Search" page with Synonym groups and Zero-result searches tabs, labelled inputs, semantic tables. Proof: component specs.
 
 ## Close
 
