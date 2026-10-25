@@ -29,8 +29,9 @@ public sealed class SynonymExpansion
     /// <summary>
     /// The alternatives for each position of the query: a list of alternative term lists. Each inner list holds tokens (single words) that
     /// are OR-ed; the outer list is AND-ed. A multi-word synonym contributes its words as one alternative only when every word of it is a token.
+    /// With <paramref name="lastWordIsPartial"/> (autosuggest) the last word also matches synonym terms that start with it.
     /// </summary>
-    public IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> Expand(SearchQuery query)
+    public IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> Expand(SearchQuery query, bool lastWordIsPartial = false)
     {
         ArgumentNullException.ThrowIfNull(query);
         var result = new List<IReadOnlyList<IReadOnlyList<string>>>();
@@ -43,6 +44,11 @@ public sealed class SynonymExpansion
             {
                 length = 1;
                 group = groupOfTerm.GetValueOrDefault(tokens[i]);
+                if (group is null && lastWordIsPartial && i == tokens.Count - 1)
+                {
+                    // Still typing: "kurt" should find what "kurta" finds.
+                    group = PartialGroup(tokens[i]);
+                }
             }
 
             var alternatives = new List<IReadOnlyList<string>> { tokens.Skip(i).Take(length).ToArray() };
@@ -63,6 +69,16 @@ public sealed class SynonymExpansion
         }
 
         return result;
+    }
+
+    private string[]? PartialGroup(string prefix)
+    {
+        var terms = groupOfTerm
+            .Where(entry => !entry.Key.Contains(' ', StringComparison.Ordinal) && entry.Key.StartsWith(prefix, StringComparison.Ordinal))
+            .SelectMany(entry => entry.Value)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return terms.Length == 0 ? null : terms;
     }
 
     private bool TryPhrase(IReadOnlyList<string> tokens, int start, out int length, out string[]? group)

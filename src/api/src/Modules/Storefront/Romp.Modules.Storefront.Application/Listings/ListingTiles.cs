@@ -89,7 +89,7 @@ internal static class ListingTiles
     }
 
     /// <summary>The main image of each product with the derivative files that exist: two queries however many products.</summary>
-    private static async Task<Dictionary<long, ListingImageDto>> ImagesAsync(IStorefrontReadDbContext db, List<long> productIds, CancellationToken cancellationToken)
+    internal static async Task<Dictionary<long, ListingImageDto>> ImagesAsync(IStorefrontReadDbContext db, List<long> productIds, CancellationToken cancellationToken)
     {
         if (productIds.Count == 0)
         {

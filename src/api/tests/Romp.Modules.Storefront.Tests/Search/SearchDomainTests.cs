@@ -145,6 +145,17 @@ public sealed class SearchDomainTests
     }
 
     [Fact]
+    [Trait("Spec", "SRC-12")]
+    public void Expand_PartialLastWord_MatchesTermsThatStartWithIt()
+    {
+        var partial = TsQueryText.From(Synonyms().Expand(SearchQuery.Parse("fro"), lastWordIsPartial: true));
+        var whole = TsQueryText.From(Synonyms().Expand(SearchQuery.Parse("fro")));
+
+        Assert.Equal("(fro:* | frock:* | dress:* | gown:*)", partial);
+        Assert.Equal("fro:*", whole);
+    }
+
+    [Fact]
     [Trait("Spec", "SRC-3")]
     public void TsQuery_ForHostileInput_HoldsNoOperatorFromTheVisitor()
     {

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Romp.Modules.Storefront.Application.Search;
@@ -85,4 +86,27 @@ public sealed class SearchSettings(IOptions<StorefrontOptions> options) : ISearc
     public double SimilarityThreshold => options.Value.SearchSimilarityThreshold;
 
     public int SuggestLimit => options.Value.SuggestLimit;
+}
+
+/// <summary>Autosuggest answers for 60 seconds per normalised prefix, at most 1,000 prefixes (an entry counts 1 against the limit).</summary>
+public sealed class SuggestCache : Application.Search.ISuggestCache, IDisposable
+{
+    private static readonly TimeSpan Lifetime = TimeSpan.FromSeconds(60);
+
+    private readonly MemoryCache _cache = new(new MemoryCacheOptions { SizeLimit = 1000 });
+
+    public async Task<Application.Search.SuggestResultDto> GetOrAddAsync(
+        string normalisedPrefix, Func<CancellationToken, Task<Application.Search.SuggestResultDto>> create, CancellationToken cancellationToken)
+    {
+        if (_cache.TryGetValue(normalisedPrefix, out Application.Search.SuggestResultDto? hit) && hit is not null)
+        {
+            return hit;
+        }
+
+        var made = await create(cancellationToken);
+        _cache.Set(normalisedPrefix, made, new MemoryCacheEntryOptions { Size = 1, AbsoluteExpirationRelativeToNow = Lifetime });
+        return made;
+    }
+
+    public void Dispose() => _cache.Dispose();
 }

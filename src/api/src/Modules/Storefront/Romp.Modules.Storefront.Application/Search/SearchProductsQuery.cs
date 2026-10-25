@@ -59,7 +59,7 @@ public sealed class SearchProductsQueryHandler(
             return empty;
         }
 
-        var expansion = await synonyms.GetOrLoadAsync(LoadSynonymsAsync, cancellationToken);
+        var expansion = await synonyms.GetOrLoadAsync(ct => SynonymLoader.LoadAsync(db, ct), cancellationToken);
         var tsQuery = TsQueryText.From(expansion.Expand(query));
         if (tsQuery is null)
         {
@@ -117,17 +117,6 @@ public sealed class SearchProductsQueryHandler(
         return new SearchProductsResult(
             SearchOutcome.Found,
             new SearchResultDto(query.Text, tiles, total, filter.Page, filter.PageSize, totalPages, tiles.Count == 0 ? 0 : tiles.Max(t => t.SavingPercent), options));
-    }
-
-    private async Task<SynonymExpansion> LoadSynonymsAsync(CancellationToken cancellationToken)
-    {
-        var terms = await (
-            from t in db.SynonymTerms.AsNoTracking()
-            join g in db.SynonymGroups.AsNoTracking() on t.GroupId equals g.Id
-            where g.IsActive
-            select new { t.GroupId, t.Term }).ToListAsync(cancellationToken);
-
-        return new SynonymExpansion(terms.GroupBy(t => t.GroupId).Select(g => (IReadOnlyCollection<string>)g.Select(t => t.Term).ToList()));
     }
 
     private static SearchResultDto EmptyPage(string query, ListingFilter filter) =>

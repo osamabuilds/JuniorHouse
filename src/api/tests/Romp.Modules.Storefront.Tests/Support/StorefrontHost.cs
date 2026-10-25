@@ -150,6 +150,7 @@ internal sealed class StorefrontHost : IDisposable
         services.AddSingleton<Romp.Modules.Storefront.Application.Listings.IListingSettings, FakeListingSettings>();
         services.AddSingleton<Romp.Modules.Storefront.Application.Search.ISearchSettings, FakeSearchSettings>();
         services.AddSingleton<Romp.Modules.Storefront.Application.Search.ISynonymCache>(_ => new Romp.Modules.Storefront.Infrastructure.Search.SynonymCache(TimeProvider.System));
+        services.AddSingleton<Romp.Modules.Storefront.Application.Search.ISuggestCache, Romp.Modules.Storefront.Infrastructure.Search.SuggestCache>();
         services.AddScoped<Romp.Modules.Storefront.Application.Search.IProductSearchIndex, Romp.Modules.Storefront.Infrastructure.Search.ProductSearchIndex>();
         services.AddSingleton<FakePathQueries>();
         services.AddSingleton<Romp.Modules.Catalog.Contracts.IProductPathQueries>(sp => sp.GetRequiredService<FakePathQueries>());

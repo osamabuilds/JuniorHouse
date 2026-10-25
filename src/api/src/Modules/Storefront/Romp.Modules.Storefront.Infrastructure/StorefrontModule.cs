@@ -57,6 +57,7 @@ public sealed class StorefrontModule : IModule
         services.AddSingleton<Application.Search.ISearchSettings, Search.SearchSettings>();
         services.AddSingleton<Application.Search.ISynonymCache, Search.SynonymCache>();
         services.AddScoped<Application.Search.IProductSearchIndex, Search.ProductSearchIndex>();
+        services.AddSingleton<Application.Search.ISuggestCache, Search.SuggestCache>();
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
