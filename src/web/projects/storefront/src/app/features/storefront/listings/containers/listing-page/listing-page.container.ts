@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, RESPONSE_INIT, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
 import { SeoService } from '../../../../../shared/seo/seo.service';
@@ -20,7 +21,7 @@ import { selectListingKey, selectListingResult } from '../../store/listings.sele
 /** One listing: New in, Sale, an audience, a category or a collection (FR-02, FR-03, FR-05). Server-rendered, with real 404 and 301 statuses. */
 @Component({
   selector: 'rp-listing-page',
-  imports: [RouterLink, BreadcrumbsComponent, ProductTileComponent, FilterPanelComponent, ActiveFiltersComponent, PaginationComponent, EmptyStateComponent],
+  imports: [NotFoundComponent, BreadcrumbsComponent, ProductTileComponent, FilterPanelComponent, ActiveFiltersComponent, PaginationComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './listing-page.container.html',
   styleUrl: './listing-page.container.scss',

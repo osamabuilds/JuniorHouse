@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, RESPONSE_INIT, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
 import { SeoService } from '../../../../../shared/seo/seo.service';
@@ -29,7 +30,7 @@ const META_DESCRIPTION_LENGTH = 155;
 @Component({
   selector: 'rp-product-page',
   imports: [
-    RouterLink,
+    NotFoundComponent,
     BreadcrumbsComponent,
     ProductGalleryComponent,
     ProductPriceComponent,

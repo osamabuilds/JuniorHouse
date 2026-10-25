@@ -73,6 +73,14 @@ describe('PageContainer', () => {
     expect((seo.set.mock.calls.at(-1)![0] as { noindex?: boolean }).noindex).toBe(true);
   });
 
+  it('PR-10 an unknown page shows the decorative 404 and the way home; PR-12 nothing here is indexable', () => {
+    const { el, seo } = render({ slug: 'nope' });
+
+    expect(el.querySelector('.rp-notfound__code')!.getAttribute('aria-hidden')).toBe('true');
+    expect(el.querySelector('a[href="/"]')!.textContent).toContain('Back to home');
+    expect((seo.set.mock.calls.at(-1)![0] as { noindex?: boolean }).noindex).toBe(true);
+  });
+
   it('ST-8 a draft page returns 404 and an archived page returns 410', () => {
     expect(render({ slug: 'privacy' }).init.status).toBe(404);
     TestBed.resetTestingModule();

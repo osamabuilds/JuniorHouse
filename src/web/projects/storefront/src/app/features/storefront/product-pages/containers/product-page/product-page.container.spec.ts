@@ -239,6 +239,22 @@ describe('ProductPageContainer', () => {
     expect(new Headers(init.headers).get('Location')).toBe('/girls/dresses/new-name?colour=navy');
   });
 
+  it('PR-11 a removed product says it has left the collection, with no 404 code, and still answers 410', () => {
+    const init: ResponseInit = {};
+    const { el } = render({ status: 'gone' }, {}, init);
+
+    expect(init.status).toBe(410);
+    expect(el.querySelector('h1')!.textContent).toContain('This piece has left the collection');
+    expect(el.querySelector('.rp-notfound__code')).toBeNull();
+  });
+
+  it('PR-10 a missing product shows the decorative 404 and the way home', () => {
+    const { el } = render({ status: 'notFound' });
+
+    expect(el.querySelector('.rp-notfound__code')!.getAttribute('aria-hidden')).toBe('true');
+    expect(el.querySelector('a[href="/"]')!.textContent).toContain('Back to home');
+  });
+
   it('a failed call answers 503, never a cached 404', () => {
     const init: ResponseInit = {};
     render({ status: 'error' }, {}, init);

@@ -31,19 +31,7 @@
     <div style="height: 96px"></div>
   } @else {
     <div class="rp-wrap rp-page">
-      <section class="rp-notfound">
-        <h1 class="t-display-lg">
-          @if (r.status === 'error') { Something went wrong } @else { We could not find that page }
-        </h1>
-        <p class="t-body-lg">
-          @if (r.status === 'error') { Please try again in a moment. } @else { It may have moved, or the address may be mistyped. }
-        </p>
-        <ul class="rp-notfound__links">
-          @for (l of links(); track l.href) {
-            <li><a class="rp-link" [routerLink]="l.href">{{ l.label }}</a></li>
-          }
-        </ul>
-      </section>
+      <rp-not-found [kind]="r.status === 'error' ? 'error' : 'page-missing'" [links]="links()" />
     </div>
   }
 } @else {

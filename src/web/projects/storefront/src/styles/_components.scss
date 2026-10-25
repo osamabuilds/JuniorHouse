@@ -390,3 +390,7 @@
 .rp-media picture { display: contents; }
 .rp-tile-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .rp-split--list { list-style: none; margin: 0; padding: 0; }
+
+/* Not found / removed / failed (NotFoundPage) */
+.rp-notfound { display: grid; gap: var(--space-5); justify-items: center; text-align: center; max-width: 40rem; margin-inline: auto; padding-block: var(--space-16); }
+.rp-notfound__code { margin: 0; font: 600 clamp(96px, 20vw, 220px)/0.85 var(--font-display); letter-spacing: -0.05em; }

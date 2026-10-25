@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
+import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { SeoService } from '../../../../../shared/seo/seo.service';
 import { selectBrand, selectFacts, selectTopLinks } from '../../../site-settings';
 import { PageResult } from '../../services/page-api.service';
@@ -15,7 +16,7 @@ const STATUS: Record<PageResult['status'], number> = { ok: 200, notFound: 404, g
 /** Shows one content page by slug, with the real HTTP status for pages that are missing, removed or failed. */
 @Component({
   selector: 'rp-page',
-  imports: [RouterLink, PageBlockComponent],
+  imports: [RouterLink, NotFoundComponent, PageBlockComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './page.container.html',
   styleUrl: './page.container.scss',
