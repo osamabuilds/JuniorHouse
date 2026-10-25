@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Identity.Domain.Roles;
+using Romp.Modules.Identity.Domain.StaffAccounts;
 
 namespace Romp.Modules.Identity.Infrastructure.Persistence;
 
@@ -16,6 +17,8 @@ public sealed class IdntDbContext(DbContextOptions<IdntDbContext> options) : DbC
     public DbSet<PermissionLookup> Permissions => Set<PermissionLookup>();
 
     public DbSet<RoleGrant> RolePermissions => Set<RoleGrant>();
+
+    public DbSet<StaffUser> Staff => Set<StaffUser>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

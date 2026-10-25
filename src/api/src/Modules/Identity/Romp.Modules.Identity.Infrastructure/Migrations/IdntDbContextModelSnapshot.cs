@@ -510,6 +510,157 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.PasswordHistoryEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("PWD_HASH");
+
+                    b.Property<DateTimeOffset>("RetiredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("RETD_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("USR_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("USR_PWD_HIST", "IDNT");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("DISP_NAME");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("boolean")
+                        .HasColumnName("MUST_CHNG_PWD_IND");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("PWD_HASH");
+
+                    b.Property<DateTimeOffset?>("TemporaryPasswordExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("TEMP_PWD_EXPY_DTE");
+
+                    b.Property<DateTimeOffset?>("TemporaryPasswordUsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("TEMP_PWD_USED_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("USR_NAME");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
+                    b.ToTable("USR_MAIN", "IDNT", t =>
+                        {
+                            t.HasCheckConstraint("CK_USR_MAIN_USR_NAME", "\"USR_NAME\" ~ '^[a-z0-9._-]{3,40}$'");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.StaffUserRole", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("USR_ID");
+
+                    b.Property<short>("RoleId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ROLE_ID");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("USR_ROLE_MAP", "IDNT");
+                });
+
             modelBuilder.Entity("Romp.Modules.Identity.Domain.Roles.RoleGrant", b =>
                 {
                     b.HasOne("Romp.Modules.Identity.Domain.Roles.PermissionLookup", "Permission")
@@ -527,6 +678,40 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.PasswordHistoryEntry", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
+                        .WithMany("PasswordHistory")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_USR_PWD_HIST_USR_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.StaffUserRole", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Domain.Roles.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_USR_ROLE_MAP_ROLE_ID");
+
+                    b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
+                        .WithMany("Roles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_USR_ROLE_MAP_USR_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", b =>
+                {
+                    b.Navigation("PasswordHistory");
+
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }

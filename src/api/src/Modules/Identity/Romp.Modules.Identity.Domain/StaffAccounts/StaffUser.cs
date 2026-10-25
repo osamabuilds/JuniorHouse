@@ -27,7 +27,7 @@ public sealed class StaffUserRole
 }
 
 /// <summary>IDNT.USR_PWD_HIST: a hash the account used before, kept so it cannot be reused at once.</summary>
-public sealed class PasswordHistoryEntry : Entity<long>
+public sealed class PasswordHistoryEntry : Entity<long>, IAuditable
 {
     private PasswordHistoryEntry()
     {
@@ -45,6 +45,14 @@ public sealed class PasswordHistoryEntry : Entity<long>
     public string PasswordHash { get; private set; }
 
     public DateTimeOffset RetiredAt { get; private set; }
+
+    public DateTimeOffset InsrDte { get; set; }
+
+    public string InsrBy { get; set; } = string.Empty;
+
+    public DateTimeOffset? UpdtDte { get; set; }
+
+    public string? UpdtBy { get; set; }
 }
 
 /// <summary>
