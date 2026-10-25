@@ -1,6 +1,6 @@
 # SCRUM-TBD: Published catalog (storefront read model)
 
-- **Status:** Approved (owner, 2026-10-16; open items below carry their proposed default)
+- **Status:** Implemented in Sprint 9a except the read-side query-count test (PCT-8, with listings); open items below carry their proposed default
 - **Jira:** SCRUM-203 (Sprint 9 umbrella)
 - **BRD sections:** §12.6 (read model), §14.1, §5.1
 - **Requirement IDs:** NFR-01, NFR-02, FR-10 (display only), SEO-07
@@ -51,3 +51,18 @@ Any write to Catalog or Warehouse; reservation of stock (S12); reviews; the Merc
 - [ ] **Q-PCT-2 How exact is availability on a public page?** Proposed default: in stock / low stock (threshold from configuration, default 5) / sold out; the exact quantity is never published.
 - [x] **Q-PCT-3 (decided, P-1)** A few seconds of staleness is acceptable; 5 s is the target, not a promise.
 - [ ] **Q-PCT-4 Redis or Postgres for the read model.** Proposed default: Postgres tables are the read model (searchable, rebuildable); Redis only caches rendered fragments and counts.
+
+## As built (Sprint 9a)
+
+Tests that prove each criterion: [traceability.md](traceability.md). What differs from, or adds to, the text above:
+
+- **Version counters.** Catalog bumps `PRDT_MAIN.CNTT_VER` in the same transaction as every change that emits an event; size charts take their version from a sequence. Warehouse keeps a per-variant counter (`VRNT_REF.STCK_VER`), not the ledger row id, because ledger ids commit out of order. All events gain an additive `Version`.
+- **Availability joins variants by SKU**, as Catalog and Warehouse variant ids differ. Stock that arrives before its product waits in a holding area (`AVLB_STK`) and is applied when the product does (PCT-9).
+- **Quantity is stored, never published** (PCT-3, Q-PCT-2 default). The read model keeps `AvailableQuantity` to classify; public responses implement `IPublicStorefrontResponse`, and `PublicResponseTests` refuses a quantity-like property or a read-model entity on any of them.
+- **Lookups and swatches.** No colour swatch (Reference has no column). Derivative format and status, and rebuild status, are lookup tables. The category parent is not exposed in lookup lists.
+- **Search columns moved.** `pg_trgm`, the search vector and the trigram columns belong to the search feature's migration (S9b).
+- **Repair.** `ReconcileWorker` (10 min, `Storefront:ReconcileInterval`) re-reads missing or older products, charts and stock, removes unknown products and refreshes lookup copies. Stock rows are never removed. A rebuild (`POST /api/admin/storefront/rebuild`, 202 with a status address, or the operator verb) restores the model from the contracts alone and runs by itself when the model version changes (PCT-6).
+- **Images.** `DerivativeWorker` makes hashed WebP and JPEG files at `Storefront:ImageWidths` through an `IImageResizer` port (SkiaSharp adapter), with a pixel cap, retry with doubling delay and an attempt cap. `DerivativeSweepWorker` deletes unreferenced files after `DerivativeCacheLifetime` (default 30 days; the spec gave no figure). `/health/ready` reports failed derivatives as Degraded, still 200 (PCT-7, PCT-10).
+- **Settings** under `Storefront:` are validated at start-up (`StorefrontOptionsValidator`); a bad value stops the host.
+- **Open, built to the proposed default.** Q-PCT-2 (three availability classes, no count) and Q-PCT-4 (Postgres tables are the read model) are still awaiting the owner's confirmation; the code follows the defaults.
+- **Not built here.** The storefront's own product and listing reads, and with them the PCT-8 query-count test (see traceability).
