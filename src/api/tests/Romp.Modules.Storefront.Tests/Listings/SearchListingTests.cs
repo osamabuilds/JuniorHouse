@@ -21,6 +21,36 @@ public sealed class SearchListingTests(StorefrontPostgres postgres)
     private static string[] Names(ListingPageDto page) => [.. page.Tiles.Select(t => t.Name)];
 
     [Fact]
+    [Trait("Spec", "PR-8")]
+    public async Task ATile_ListsEverySize_InOrder_AndASizeIsSoldOutOnlyWhenEveryColourIsOut()
+    {
+        using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
+        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES",
+        [
+            new("RED", "9-10Y", 800m, 4), new("RED", "5-6Y", 800m, 0), new("NAVY", "5-6Y", 800m, 0),
+            new("RED", "3-4Y", 800m, 2), new("NAVY", "3-4Y", 800m, 0),
+        ]);
+
+        // A size filter narrows which products show, never which sizes a card lists.
+        var tile = Assert.Single((await PageAsync(host, ListingScope.Audience("girls"), Filter(size: "3-4y"))).Tiles);
+
+        Assert.Equal([("3-4Y", false), ("5-6Y", true), ("9-10Y", false)], tile.Sizes.Select(x => (x.Code, x.SoldOut)).ToArray());
+        Assert.Equal("3-4Y", tile.Sizes[0].Name);
+    }
+
+    [Fact]
+    [Trait("Spec", "PR-2")]
+    public async Task ATile_WithoutADiscount_HasNoSavingAmount()
+    {
+        using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
+        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 5)], name: "Full price");
+
+        var tile = Assert.Single((await PageAsync(host, ListingScope.Audience("girls"))).Tiles);
+
+        Assert.Equal((0, 0m), (tile.SavingPercent, tile.SavingAmount));
+    }
+
+    [Fact]
     [Trait("Spec", "LST-9")]
     public async Task AnAudience_ListsItsListableProducts_AndACategoryOnlyItsOwn()
     {
@@ -152,6 +182,7 @@ public sealed class SearchListingTests(StorefrontPostgres postgres)
 
         var tile = Assert.Single(page.Tiles);
         Assert.Equal(("On sale", 800m, 1000m, 20), (tile.Name, tile.Price, tile.CompareAtPrice, tile.SavingPercent));
+        Assert.Equal(200m, tile.SavingAmount);
         Assert.Equal(20, page.MaxSavingPercent);
         Assert.Equal(["Home", "Girls", "Sale"], page.Breadcrumbs.Select(b => b.Label).ToArray());
     }
@@ -245,7 +276,7 @@ public sealed class SearchListingTests(StorefrontPostgres postgres)
 
         Assert.Equal(13, page.Value!.Tiles.Count);
         Assert.Equal(forOne, counter.Count);
-        Assert.Equal(4, counter.Count);
+        Assert.Equal(5, counter.Count);
     }
 
     [Fact]

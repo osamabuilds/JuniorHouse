@@ -65,7 +65,9 @@ public sealed class SearchListingQueryHandler(
         };
 
         var page = await ordered.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync(cancellationToken);
-        var images = await ImagesAsync(page.Select(x => x.Id).ToList(), cancellationToken);
+        var pageIds = page.Select(x => x.Id).ToList();
+        var images = await ImagesAsync(pageIds, cancellationToken);
+        var sizes = await SizesAsync(pageIds, cancellationToken);
 
         var tiles = page.Select(x => new ListingTileDto(
             x.Path,
@@ -73,8 +75,10 @@ public sealed class SearchListingQueryHandler(
             x.From,
             x.CompareAt,
             x.CompareAt is > 0 && x.From is { } now && x.CompareAt > now ? (int)Math.Round((x.CompareAt.Value - now) / x.CompareAt.Value * 100m) : 0,
+            x.CompareAt is > 0 && x.From is { } was && x.CompareAt > was ? x.CompareAt.Value - was : 0m,
             x.Colours,
             x.SoldOut,
+            sizes.GetValueOrDefault(x.Id) ?? [],
             images.GetValueOrDefault(x.Id))).ToList();
 
         var maxSaving = tiles.Count == 0 ? 0 : tiles.Max(t => t.SavingPercent);
@@ -107,6 +111,26 @@ public sealed class SearchListingQueryHandler(
     }
 
     /// <summary>The main image of each product with the derivative files that exist: two queries however many products.</summary>
+    /// <summary>Every size of each product on the page, in size order, in one query. A size is sold out when no sellable variant of it has stock.</summary>
+    private async Task<Dictionary<long, IReadOnlyList<ListingTileSizeDto>>> SizesAsync(List<long> productIds, CancellationToken cancellationToken)
+    {
+        if (productIds.Count == 0)
+        {
+            return [];
+        }
+
+        var variants = await db.Variants.AsNoTracking()
+            .Where(v => productIds.Contains(v.ProductId) && v.IsSellable)
+            .Select(v => new { v.ProductId, v.SizeCode, v.SizeName, v.SizeSeq, InStock = v.AvailableQuantity == null || v.AvailableQuantity > 0 })
+            .ToListAsync(cancellationToken);
+
+        return variants.GroupBy(v => v.ProductId).ToDictionary(
+            g => g.Key,
+            g => (IReadOnlyList<ListingTileSizeDto>)[.. g.GroupBy(v => new { v.SizeCode, v.SizeName, v.SizeSeq })
+                .OrderBy(s => s.Key.SizeSeq).ThenBy(s => s.Key.SizeCode, StringComparer.Ordinal)
+                .Select(s => new ListingTileSizeDto(s.Key.SizeCode, s.Key.SizeName, !s.Any(v => v.InStock)))]);
+    }
+
     private async Task<Dictionary<long, ListingImageDto>> ImagesAsync(List<long> productIds, CancellationToken cancellationToken)
     {
         if (productIds.Count == 0)

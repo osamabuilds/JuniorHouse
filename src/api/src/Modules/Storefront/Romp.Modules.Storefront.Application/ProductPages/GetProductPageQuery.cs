@@ -109,7 +109,7 @@ public sealed class GetProductPageQueryHandler(
             product.CategoryName,
             product.AgeName,
             crumbs,
-            price is null ? null : new ProductPriceDto(price.Price, price.CompareAtPrice, Saving(price), price.IsFrom),
+            price is null ? null : new ProductPriceDto(price.Price, price.CompareAtPrice, Saving(price), price.IsFrom, SavingAmount(price)),
             selection is null ? string.Empty : CodeSegment.Of(selection.ColourCode),
             selection?.SizeCode is { } chosen ? CodeSegment.Of(chosen) : null,
             selectedVariant?.SkuCode,
@@ -130,6 +130,9 @@ public sealed class GetProductPageQueryHandler(
 
     private static int Saving(DisplayedPrice price) =>
         price.CompareAtPrice is > 0 and var was && was > price.Price ? (int)Math.Round((was - price.Price) / was * 100m) : 0;
+
+    private static decimal SavingAmount(DisplayedPrice price) =>
+        price.CompareAtPrice is > 0 and var was && was > price.Price ? was - price.Price : 0m;
 
     private static ProductImageDto ImageDto(ImageRow image, List<DerivativeRow> files) =>
         new(image.AltText, image.Width, image.Height,

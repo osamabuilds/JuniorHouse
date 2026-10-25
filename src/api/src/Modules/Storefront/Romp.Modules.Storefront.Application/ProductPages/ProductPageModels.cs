@@ -17,8 +17,8 @@ public sealed record ColourOptionDto(string Code, string Name, bool InStock);
 /// </summary>
 public sealed record SizeOptionDto(string Code, string Name, string Availability, bool Selectable);
 
-/// <summary>The price line. <c>IsFrom</c> marks "From PKR x" before a size is chosen (PDP-15); <c>CompareAtPrice</c> is set only when above the price (PDP-9).</summary>
-public sealed record ProductPriceDto(decimal Price, decimal? CompareAtPrice, int SavingPercent, bool IsFrom);
+/// <summary>The price line. <c>IsFrom</c> marks "From PKR x" before a size is chosen (PDP-15); <c>CompareAtPrice</c> is set only when above the price (PDP-9); <c>SavingAmount</c> is the server difference in PKR (SEC-09), zero when there is no discount.</summary>
+public sealed record ProductPriceDto(decimal Price, decimal? CompareAtPrice, int SavingPercent, bool IsFrom, decimal SavingAmount);
 
 public sealed record CompositionLineDto(string Name, decimal Percent);
 

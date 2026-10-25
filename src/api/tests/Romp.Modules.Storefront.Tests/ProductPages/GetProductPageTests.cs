@@ -59,7 +59,7 @@ public sealed class GetProductPageTests(StorefrontPostgres postgres)
         Assert.Equal(("Floral dress", Path, "A dress."), (page.Name, page.Path, page.Description));
         Assert.Equal(["Home", "Girls", "Dresses", "Floral dress"], page.Breadcrumbs.Select(b => b.Label).ToArray());
         Assert.Null(page.Breadcrumbs[^1].Path);
-        Assert.Equal(new ProductPriceDto(1000m, null, 0, true), page.Price);
+        Assert.Equal(new ProductPriceDto(1000m, null, 0, true, 0m), page.Price);
         Assert.Equal(["5-6y", "7-8y"], page.Sizes.Select(s => s.Code).ToArray());
         Assert.Null(page.Sku);
         var image = Assert.Single(page.Images);
@@ -81,7 +81,7 @@ public sealed class GetProductPageTests(StorefrontPostgres postgres)
         var page = await PageAsync(host, "red", "7-8y");
 
         Assert.Equal(("SKU-2", "7-8y"), (page.Sku, page.SelectedSize));
-        Assert.Equal(new ProductPriceDto(1200m, 1500m, 20, false), page.Price);
+        Assert.Equal(new ProductPriceDto(1200m, 1500m, 20, false, 300m), page.Price);
         Assert.Equal(["7-8Y"], page.SizeChart!.Rows.Where(r => r.Selected).Select(r => r.SizeCode).ToArray());
     }
 

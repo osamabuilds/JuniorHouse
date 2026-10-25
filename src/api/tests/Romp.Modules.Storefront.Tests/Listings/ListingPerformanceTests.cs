@@ -108,8 +108,8 @@ public sealed class ListingPerformanceTests(StorefrontPostgres postgres)
             Assert.True(best < TimeSpan.FromMilliseconds(200), $"A page took {best.TotalMilliseconds:F0} ms for {filter.ToCanonicalQuery()}.");
         }
 
-        // Count, page, images, derivatives: the same four queries for every case, however many products and variants.
-        Assert.All(counts, c => Assert.Equal(4, c));
+        // Count, page, images, derivatives, sizes: the same five queries for every case, however many products and variants.
+        Assert.All(counts, c => Assert.Equal(5, c));
     }
 
     [Fact]

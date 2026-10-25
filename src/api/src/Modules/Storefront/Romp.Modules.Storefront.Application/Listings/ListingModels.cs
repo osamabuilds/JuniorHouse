@@ -18,7 +18,8 @@ public sealed record ListingImageDto(string AltText, int Width, int Height, IRea
 
 /// <summary>
 /// One product tile (LST-12). The price is the lowest among the variants that match the filter; the compare-at price is the one of that
-/// variant. There is no stock count: only whether some sizes are sold out (PCT-3).
+/// variant; <c>SavingAmount</c> is the server difference in PKR (SEC-09). There is no stock count: only whether some sizes are sold out (PCT-3)
+/// and, per size, whether it is sold out.
 /// </summary>
 public sealed record ListingTileDto(
     string Path,
@@ -26,9 +27,14 @@ public sealed record ListingTileDto(
     decimal? Price,
     decimal? CompareAtPrice,
     int SavingPercent,
+    decimal SavingAmount,
     int ColourCount,
     bool HasSoldOutSizes,
+    IReadOnlyList<ListingTileSizeDto> Sizes,
     ListingImageDto? Image);
+
+/// <summary>A size the product comes in. <c>SoldOut</c> is true when no colour of that size can be bought; it is never hidden, so a shopper sees the whole range.</summary>
+public sealed record ListingTileSizeDto(string Code, string Name, bool SoldOut);
 
 public sealed record BreadcrumbDto(string Label, string? Path);
 
