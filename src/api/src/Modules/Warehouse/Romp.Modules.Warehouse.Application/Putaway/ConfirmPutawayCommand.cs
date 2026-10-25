@@ -87,7 +87,7 @@ public sealed class ConfirmPutawayCommandHandler(
 
         item.Record(request.Quantity);
 
-        await posting.PostAsync(
+        var posted = await posting.PostAsync(
             [new StockPost(variantId, item.GradeId, bin.Id, request.Quantity, MovementKinds.Putaway, item.Id)],
             request.ActingPerson.Trim(),
             cancellationToken);
@@ -98,7 +98,7 @@ public sealed class ConfirmPutawayCommandHandler(
         // StockPutawayConfirmedEvent (§9.10.3): this is the moment the quantity becomes available (FR-SC-08). Same transaction as the stock.
         var onHand = await variants.GetOnHandAsync(variantId, cancellationToken);
         var tracked = await dbContext.VariantRefs.FirstAsync(v => v.Id == variantId, cancellationToken);
-        tracked.PublishPutaway(Grades.CodeOf(item.GradeId), request.Quantity, onHand);
+        tracked.PublishPutaway(Grades.CodeOf(item.GradeId), request.Quantity, onHand, posted[0].StockVersion);
 
         await dbContext.SaveChangesAsync(cancellationToken);
 

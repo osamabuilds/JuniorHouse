@@ -182,6 +182,12 @@ public sealed class VariantRef : AggregateRoot<long>, IAuditable
 
     public bool GtinRetired { get; private set; }
 
+    /// <summary>
+    /// Goes up by one with every stock posting that touches this variant (PCT-5). Written only by the posting SQL, which takes the row
+    /// lock that serialises postings of one variant; never set by the entity, so a stale tracked copy cannot overwrite it.
+    /// </summary>
+    public long StockVersion { get; private set; }
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; } = string.Empty;
@@ -211,16 +217,16 @@ public sealed class VariantRef : AggregateRoot<long>, IAuditable
     }
 
     /// <summary>Raises <see cref="StockLevelChangedEvent"/> with the new totals. Available equals on-hand until reservations exist (LED-5).</summary>
-    public void PublishLevel(int onHandAccepted, int onHandConcession, string reasonCode)
+    public void PublishLevel(int onHandAccepted, int onHandConcession, string reasonCode, long stockVersion)
     {
         var onHand = onHandAccepted + onHandConcession;
         Raise(new StockLevelChangedEvent(
-            VariantId, StyleId, ColourId, SizeId, SkuCode, Gtin, onHand, onHand, onHandAccepted, onHandConcession, reasonCode));
+            VariantId, StyleId, ColourId, SizeId, SkuCode, Gtin, onHand, onHand, onHandAccepted, onHandConcession, reasonCode, stockVersion));
     }
 
     /// <summary>Raises <see cref="StockPutawayConfirmedEvent"/> (FR-SC-08): this quantity of this grade is now shelved and available.</summary>
-    public void PublishPutaway(string gradeCode, int quantity, int availableAfter) =>
-        Raise(new StockPutawayConfirmedEvent(VariantId, StyleId, ColourId, SizeId, SkuCode, Gtin, gradeCode, quantity, availableAfter));
+    public void PublishPutaway(string gradeCode, int quantity, int availableAfter, long stockVersion) =>
+        Raise(new StockPutawayConfirmedEvent(VariantId, StyleId, ColourId, SizeId, SkuCode, Gtin, gradeCode, quantity, availableAfter, stockVersion));
 }
 
 /// <summary>Fixed messages other code and tests can rely on (problem details never carry anything else about a refusal).</summary>

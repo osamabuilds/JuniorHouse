@@ -66,14 +66,33 @@ public sealed class StockDomainTests
     {
         var variant = new VariantRef(7, 3, 2, 4, "ROMP-RMP-RED-2-3Y", "0200000000017");
 
-        variant.PublishLevel(onHandAccepted: 10, onHandConcession: 2, MovementKinds.CodeOf(MovementKinds.Putaway));
+        variant.PublishLevel(onHandAccepted: 10, onHandConcession: 2, MovementKinds.CodeOf(MovementKinds.Putaway), stockVersion: 5);
 
         var raised = Assert.IsType<StockLevelChangedEvent>(Assert.Single(variant.DomainEvents));
+        Assert.Equal(5, raised.Version);
         Assert.Equal(12, raised.OnHand);
         Assert.Equal(12, raised.Available);
         Assert.Equal(10, raised.OnHandAccepted);
         Assert.Equal(2, raised.OnHandConcession);
         Assert.Equal("PUTAWAY", raised.ReasonCode);
         Assert.Equal(7, raised.VariantId);
+    }
+
+    [Fact]
+    [Trait("Spec", "PCT-5")]
+    public void PublishingAPutaway_CarriesTheSameStockVersionAsTheLevelEvent()
+    {
+        var variant = new VariantRef(7, 3, 2, 4, "ROMP-RMP-RED-2-3Y", "0200000000017");
+
+        variant.PublishLevel(10, 0, MovementKinds.CodeOf(MovementKinds.Putaway), stockVersion: 5);
+        variant.PublishPutaway(Grades.CodeOf(Grades.Accepted), 10, 10, stockVersion: 5);
+
+        var versions = variant.DomainEvents.Select(e => e switch
+        {
+            StockLevelChangedEvent l => l.Version,
+            StockPutawayConfirmedEvent p => p.Version,
+            _ => -1L,
+        });
+        Assert.Equal([5L, 5L], versions);
     }
 }

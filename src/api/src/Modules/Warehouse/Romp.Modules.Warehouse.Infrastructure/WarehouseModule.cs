@@ -61,6 +61,7 @@ public sealed class WarehouseModule : IModule
         services.AddScoped<ICountNumberAllocator, CountNumberAllocator>();
         services.AddScoped<AlertEvaluator>();
         services.AddScoped<IStockVariantReader, StockVariantReader>();
+        services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockAvailabilityQueries, Romp.Modules.Warehouse.Application.StockLedger.StockAvailabilityQueries>();
         services.AddScoped<IBinStockQuery, BinStockQuery>(); // bins declares the port, the ledger answers it
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);

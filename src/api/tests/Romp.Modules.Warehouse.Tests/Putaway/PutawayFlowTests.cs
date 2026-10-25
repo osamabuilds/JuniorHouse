@@ -162,6 +162,12 @@ public sealed class PutawayFlowTests(WarehousePostgres postgres)
         Assert.NotEqual(default, stored.InsrDte);
         Assert.Equal(1, db.Set<OutboxMessage>().Where(m => m.EventType == "StockPutawayConfirmedEvent").AsEnumerable().Count(m => m.Payload.Contains(variant.Sku, StringComparison.Ordinal)));
         Assert.Equal(1, db.Set<OutboxMessage>().Where(m => m.EventType == "StockLevelChangedEvent").AsEnumerable().Count(m => m.Payload.Contains(variant.Sku, StringComparison.Ordinal)));
+
+        // PCT-5: both events carry the variant's stock version after this posting (the first one, so 1).
+        var both = db.Set<OutboxMessage>().Where(m => m.EventType == "StockPutawayConfirmedEvent" || m.EventType == "StockLevelChangedEvent")
+            .AsEnumerable().Where(m => m.Payload.Contains(variant.Sku, StringComparison.Ordinal)).ToList();
+        Assert.Equal(2, both.Count);
+        Assert.All(both, m => Assert.Contains("\"Version\": 1", m.Payload, StringComparison.Ordinal));
     }
 
     [Fact]

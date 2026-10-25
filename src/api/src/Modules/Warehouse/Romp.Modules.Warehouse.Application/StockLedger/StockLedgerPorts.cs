@@ -2,8 +2,11 @@ using Romp.Modules.Warehouse.Domain.StockLedger;
 
 namespace Romp.Modules.Warehouse.Application.StockLedger;
 
-/// <summary>What changed for one post: the balance of that variant, grade and bin before and after.</summary>
-public sealed record PostedMovement(StockPost Post, int BalanceBefore, int BalanceAfter);
+/// <summary>
+/// What changed for one post: the balance of that variant, grade and bin before and after, and the variant's stock version after this
+/// posting (the same for every post of one variant in one call).
+/// </summary>
+public sealed record PostedMovement(StockPost Post, int BalanceBefore, int BalanceAfter, long StockVersion);
 
 /// <summary>
 /// The only way stock changes (ADR 0012). Runs inside the caller's transaction: for each post it atomically changes the bin balance
