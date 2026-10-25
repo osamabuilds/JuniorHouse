@@ -255,7 +255,7 @@ public sealed class Product : AggregateRoot<long>, IAuditable
         PublishedAt = now;
         PublishedBy = person;
         ContentVersion++;
-        Raise(new ProductPublishedEvent(Id, StyleId, path));
+        Raise(new ProductPublishedEvent(Id, StyleId, path, ContentVersion));
     }
 
     /// <summary>Takes the product off sale without deleting anything (PRD-3). Only a Published product can be unpublished.</summary>
@@ -268,7 +268,7 @@ public sealed class Product : AggregateRoot<long>, IAuditable
 
         Status = ProductStatus.Unpublished;
         ContentVersion++;
-        Raise(new ProductUnpublishedEvent(Id, StyleId, path));
+        Raise(new ProductUnpublishedEvent(Id, StyleId, path, ContentVersion));
     }
 
     /// <summary>Retires the product for good (PRD-6). Allowed from any state; archiving twice changes nothing.</summary>
@@ -282,11 +282,11 @@ public sealed class Product : AggregateRoot<long>, IAuditable
         var wasPublished = Status == ProductStatus.Published;
         Status = ProductStatus.Archived;
         ContentVersion++; // one bump even when a second (Unpublished) event follows
-        Raise(new ProductArchivedEvent(Id, StyleId, path));
+        Raise(new ProductArchivedEvent(Id, StyleId, path, ContentVersion));
         if (wasPublished)
         {
             // The sale stops at the same moment; consumers that only watch "unpublished" see it too.
-            Raise(new ProductUnpublishedEvent(Id, StyleId, path));
+            Raise(new ProductUnpublishedEvent(Id, StyleId, path, ContentVersion));
         }
     }
 
@@ -299,7 +299,7 @@ public sealed class Product : AggregateRoot<long>, IAuditable
         }
 
         ContentVersion++;
-        Raise(new ProductChangedEvent(Id, path, previousPath));
+        Raise(new ProductChangedEvent(Id, path, previousPath, ContentVersion));
         return true;
     }
 
