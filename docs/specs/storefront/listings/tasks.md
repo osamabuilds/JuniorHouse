@@ -1,6 +1,6 @@
 # Tasks: listings (Sprint 9a)
 
-Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Depends on published-catalog tasks 8-13. Defaults followed: Q-LST-2 (Sale = in-stock with compare-at above price), Q-SEO-2 (paginated pages self-canonical). Tests carry `[Trait("Spec", "LST-n")]`.
+Jira: SCRUM-210 · Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Depends on published-catalog tasks 8-13. Defaults followed: Q-LST-2 (Sale = in-stock with compare-at above price), Q-SEO-2 (paginated pages self-canonical). Tests carry `[Trait("Spec", "LST-n")]`.
 
 1. [ ] Domain: `ListingScope`, `ListingFilter` (parse, clamp, allow-lists, value cap 20), `ToCanonicalQuery()` in fixed key order. Proof: domain unit tests incl. hostile input (LST-11, 16).
 2. [ ] Same-variant match rule as a pure predicate plus the SQL form. Proof: tests with size+colour+price on different variants of one product (LST-1, 2).

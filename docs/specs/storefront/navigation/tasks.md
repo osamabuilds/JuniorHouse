@@ -1,6 +1,6 @@
 # Tasks: navigation (Sprint 9a)
 
-Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Depends on published-catalog tasks 7-13.
+Jira: SCRUM-209 · Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Depends on published-catalog tasks 7-13.
 
 **Scope note.** The header, mega-menu, mobile menu and footer already exist, are data-driven from the admin-managed storefront settings (SCRUM-206) and follow the 2026-10-24 references. This feature adds only what is still missing: which entries are shown (only those with listable products), the home page from the read model, breadcrumbs and the brand configuration. It does not replace the settings-driven menu; see the open question below.
 

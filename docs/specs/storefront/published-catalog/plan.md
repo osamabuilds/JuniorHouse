@@ -41,19 +41,19 @@ Public read endpoints are in the other feature plans. Ownership check (SEC-05): 
 | none | Storefront | n/a | Storefront publishes no events in S9 |
 
 ## Data
-Schema `STFR`; keys are producer ids (not identity); every table has `INSR_DTE/INSR_BY` and `UPDT_DTE/UPDT_BY`, `RWVR` concurrency token, `RBLD_ID` (last run that touched the row).
+Schema `STFR`; keys are producer ids (not identity); every table has `INSR_DTE/INSR_BY` and `UPDT_DTE/UPDT_BY`, `xmin` concurrency token, `RBLD_ID` (last run that touched the row).
 
 | Table | Purpose | Key columns |
 |---|---|---|
-| `PRDT_MAIN` | the product | `ID` (Catalog product id), `VRSN`, `PATH` varchar(200) unique, `NAME`, `DSCR`, `GNDR_CODE`, `CATG_CODE`, `AGE_CODE`, `CODE` (style code), `PUBL_DTE`, `MIN_PRIC`, `MAX_PRIC` numeric(12,2), `SALE_IND`, `MAX_DISC_PCT` numeric(5,2), `IN_STK_IND`, `LSTB_IND` (listable), `IMG_RDY_IND`, `CARE_NOTE`, `SRCH_VEC` tsvector (generated), `SRCH_TXT`; indexes on (`GNDR_CODE`,`CATG_CODE`,`PUBL_DTE` desc), (`LSTB_IND`,`PUBL_DTE`), (`MIN_PRIC`), GIN on `SRCH_VEC`, GIN trigram on `SRCH_TXT` |
-| `PRDT_VRNT` | variant | `ID` (Labelling variant id), `PRDT_ID`, `CLR_CODE`, `CLR_NAME`, `SWCH_VAL` null, `SIZE_CODE`, `SIZE_NAME`, `SIZE_SEQ`, `SKU_CODE`, `SKU_NORM` (lower, trimmed) unique, `PRIC`, `CMPR_PRIC`, `SELL_IND`, `AVLB_QTY` (internal), `AVLB_VRSN`; indexes (`PRDT_ID`), (`SIZE_CODE`,`CLR_CODE`) where `AVLB_QTY` > 0 |
+| `PRDT_MAIN` | the product | `ID` (Catalog product id), `VER`, `PATH` varchar(200) unique, `NAME`, `DSCR`, `GNDR_CODE`, `CATG_CODE`, `AGE_CODE`, `CODE` (style code), `PUBL_DTE`, `MIN_PRIC`, `MAX_PRIC` numeric(12,2), `SALE_IND`, `MAX_DISC_PCT` numeric(5,2), `IN_STK_IND`, `LSTB_IND` (listable), `IMG_RDY_IND`, `CARE_NOTE`, `SRCH_VEC` tsvector (generated), `SRCH_TXT`; indexes on (`GNDR_CODE`,`CATG_CODE`,`PUBL_DTE` desc), (`LSTB_IND`,`PUBL_DTE`), (`MIN_PRIC`), GIN on `SRCH_VEC`, GIN trigram on `SRCH_TXT` |
+| `PRDT_VRNT` | variant | `ID` (Labelling variant id), `PRDT_ID`, `CLR_CODE`, `CLR_NAME`, `SWCH_VAL` null, `SIZE_CODE`, `SIZE_NAME`, `SIZE_SEQ`, `SKU_CODE`, `SKU_NORM` (lower, trimmed) unique, `PRIC`, `CMPR_PRIC`, `SELL_IND`, `AVLB_QTY` (internal), `AVLB_VER`; indexes (`PRDT_ID`), (`SIZE_CODE`,`CLR_CODE`) where `AVLB_QTY` > 0 |
 | `PRDT_IMG` | product/colour images | `ID`, `PRDT_ID`, `CLR_CODE` null, `SRC_KEY`, `HASH`, `WDTH`, `HGHT`, `ALT`, `SORT_SEQ`, `PRMR_IND` |
 | `IMG_DRV` | derivatives (also the job queue) | `ID`, `IMG_ID`, `WDTH`, `FMT` (`WEBP`/`JPG`), `FILE_KEY`, `STS_ID` (lookup `DRV_STS_LKP`: Pending, Done, Failed), `ATMP_QTY`, `NEXT_ATMP_DTE`, `ERR_CODE`; unique (`IMG_ID`,`WDTH`,`FMT`); index on (`STS_ID`,`NEXT_ATMP_DTE`) |
 | `PRDT_CMPS`, `PRDT_CARE`, `PRDT_COLN_MAP` | composition rows, care instruction rows (name, symbol code), collection codes | child rows of `PRDT_MAIN` |
-| `CHRT_MAIN`, `CHRT_LINE` | size charts per (category, gender) | as Catalog, plus `VRSN` |
-| `AVLB_STK` | availability by variant id before its product row exists (events can arrive first) | `VRNT_ID`, `QTY`, `VRSN` |
+| `CHRT_MAIN`, `CHRT_LINE` | size charts per (category, gender) | as Catalog, plus `VER` |
+| `AVLB_STK` | availability by variant id before its product row exists (events can arrive first) | `VRNT_ID`, `QTY`, `VER` |
 | `RBLD_RUN` | rebuild runs | `ID`, `STS`, `STRT_DTE`, `END_DTE`, counts, `ACTR` |
-| `LKP_VRSN` | schema version of the read model and last lookup refresh | single row |
+| `LKP_VER` | schema version of the read model and last lookup refresh | single row |
 | `INBX` | consumed events | standard |
 
 Migration `AddStorefrontReadModel`; raw SQL (quoted identifiers) enables `pg_trgm` and creates the trigram index; a seed migration inserts the `DRV_STS_LKP` rows.
@@ -76,7 +76,7 @@ Rebuild-by-sweep is chosen over truncate-and-reload because the old rows keep se
 | Output encoding | Stored text is plain; encoded at render (SSR); file paths built only from hash + width + format |
 | Outbound calls | None; storage via `IFileStorage` |
 | Resource limits | Page size 200 for rebuild, worker concurrency 2, pixel cap, derivative count capped by `ImageWidths` × 2, attempt cap with backoff |
-| Concurrency | Version-wins `INSERT … ON CONFLICT DO UPDATE … WHERE excluded.VRSN > PRDT_MAIN.VRSN`; availability likewise; rebuild stamps `RBLD_ID` |
+| Concurrency | Version-wins `INSERT … ON CONFLICT DO UPDATE … WHERE excluded.VER > PRDT_MAIN.VER`; availability likewise; rebuild stamps `RBLD_ID` |
 | Idempotency | Inbox plus version rule; the same event 10 times gives one state; worker claim by `SKIP LOCKED` |
 | Audit | Rebuild runs recorded with actor; derived data not audited |
 | Data protection | No personal data; prices decimal; exact stock quantity stored but never returned by any public endpoint (test) |

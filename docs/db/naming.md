@@ -85,6 +85,7 @@ Note: there is no `_AT` suffix in this convention — every timestamp column, au
 | Orders | `ORDR` |
 | Payments | `PAYM` |
 | Customers & Identity | `CUST` / `IDNT` |
+| Storefront (settings and read model) | `STFR` |
 | Logistics | `LOGS` |
 | Returns | `RTRN` |
 | Notifications | `NTFY` |
@@ -299,3 +300,14 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | link | LINK | | | |
 | meta | META | | | |
 | navigation | NAV | | | |
+
+### Added in Sprint 9a (SCRUM-208, storefront read model)
+
+`SRCH`, `HASH`, `VSBL`, `PRDT`, `VRNT`, `IMG`, `CMPS`, `CARE`, `CHRT`, `COLN`, `CATG`, `GNDR`, `AGE`, `SKU`, `PRIC`, `CMPR` and `STCK` already existed. "Version" is `VER` and "reconciliation/reconcile" is `RCNL`, so the read model uses `VER` and `RCNL_*`. The concurrency token is `xmin` (section 2), not a column of ours. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| available | AVLB | | rebuild | RBLD |
+| derivative (resized image) | DRV | | ready | RDY |
+| miss (a search with no results) | MISS | | swatch | SWCH |
+| query | QRY | | synonym | SYNM |
