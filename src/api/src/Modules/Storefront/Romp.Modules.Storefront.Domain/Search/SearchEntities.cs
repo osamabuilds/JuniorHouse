@@ -17,6 +17,12 @@ public sealed class SynonymGroup : Entity<long>, IAuditable
 
     public bool IsActive { get; private set; }
 
+    public void Rename(string name, bool isActive)
+    {
+        Name = (name ?? string.Empty).Trim();
+        IsActive = isActive;
+    }
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; } = string.Empty;

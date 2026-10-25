@@ -123,6 +123,7 @@ public sealed class StorefrontModule : IModule
         {
             endpoints.MapAdminStorefrontSettingsEndpoints();
             endpoints.MapAdminStorefrontRebuildEndpoints();
+            endpoints.MapAdminSearchEndpoints();
         }
     }
 }

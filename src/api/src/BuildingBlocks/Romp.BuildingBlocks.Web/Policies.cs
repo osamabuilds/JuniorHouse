@@ -18,6 +18,9 @@ public static class Policies
     /// <summary>Storefront settings and content pages (Sprint 9, ADR 0020). Capability-shaped: Admin-equivalent until roles exist (S8, SEC-08).</summary>
     public const string StorefrontSettings = "StorefrontSettings";
 
+    /// <summary>Search synonyms and the zero-result log (Sprint 9, search SRC-12, 13). Capability-shaped: Admin-equivalent until roles exist (S8, SEC-08).</summary>
+    public const string StorefrontSearch = "StorefrontSearch";
+
     /// <summary>Deliberately open to anonymous callers: the public storefront reads (published settings and pages). Naming it keeps ADR 0011 true: every group states who may call it.</summary>
     public const string Public = "Public";
 }

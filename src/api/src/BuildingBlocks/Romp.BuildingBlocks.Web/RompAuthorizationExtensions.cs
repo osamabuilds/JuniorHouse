@@ -33,6 +33,7 @@ public static class RompAuthorizationExtensions
             .AddPolicy(Policies.Inventory, policy => policy.RequireAuthenticatedUser().RequireRole("Inventory", "Admin"))
             .AddPolicy(Policies.Catalogue, policy => policy.RequireAuthenticatedUser().RequireRole("Catalogue", "Admin"))
             .AddPolicy(Policies.StorefrontSettings, policy => policy.RequireAuthenticatedUser().RequireRole("StorefrontSettings", "Admin"))
+            .AddPolicy(Policies.StorefrontSearch, policy => policy.RequireAuthenticatedUser().RequireRole("StorefrontSearch", "Admin"))
             .AddPolicy(Policies.Public, policy => policy.RequireAssertion(_ => true));
         return services;
     }

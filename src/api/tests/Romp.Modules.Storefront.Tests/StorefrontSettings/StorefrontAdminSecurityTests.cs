@@ -91,6 +91,25 @@ public sealed class StorefrontAdminSecurityTests
     }
 
     [Fact]
+    [Trait("Spec", "SRC-12")]
+    [Trait("Spec", "SEC-08")]
+    public async Task EverySearchAdminRoute_HasTheStorefrontSearchPolicy_Is401WithoutAUser_And403WithoutTheRole()
+    {
+        await using var app = await StartAsync();
+
+        var routes = Routes(app, Romp.Modules.Storefront.Infrastructure.Search.SearchAdminEndpoints.Prefix);
+
+        Assert.Equal(5, routes.Count);
+        Assert.All(routes, r => Assert.Contains(r.Endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(), a => a.Policy == Policies.StorefrontSearch));
+        foreach (var (method, path, _) in routes)
+        {
+            Assert.True(HttpStatusCode.Unauthorized == await SendAsync(app, method, path, null), $"{method} {path} without a user");
+            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "Staff"), $"{method} {path} as plain staff");
+            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "StorefrontSettings"), $"{method} {path} with another capability role");
+        }
+    }
+
+    [Fact]
     [Trait("Spec", "ST-11")]
     [Trait("Spec", "SEC-08")]
     public async Task EveryAdminRoute_Is401WithoutAUser_And403ForAStaffUserWithoutTheRole()
@@ -113,7 +132,7 @@ public sealed class StorefrontAdminSecurityTests
 
         var routes = Routes(app, StorefrontSettingsEndpoints.PublicPrefix);
 
-        Assert.Equal(8, routes.Count);
+        Assert.Equal(11, routes.Count); // settings and pages, menu, home, listings (3), search (3), product page
         Assert.All(routes, r => Assert.Equal("GET", r.Method));
         Assert.All(routes, r => Assert.Contains(r.Endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(), a => a.Policy == Policies.Public));
         var policy = await app.Services.GetRequiredService<IAuthorizationPolicyProvider>().GetPolicyAsync(Policies.Public);
@@ -128,7 +147,7 @@ public sealed class StorefrontAdminSecurityTests
         await using var app = await StartAsync(enableAdminRoutes: false);
 
         Assert.Empty(Routes(app, StorefrontSettingsEndpoints.AdminPrefix));
-        Assert.Equal(8, Routes(app, StorefrontSettingsEndpoints.PublicPrefix).Count);
+        Assert.Equal(11, Routes(app, StorefrontSettingsEndpoints.PublicPrefix).Count);
         Assert.Equal(HttpStatusCode.NotFound, await SendAsync(app, "GET", $"{StorefrontSettingsEndpoints.AdminPrefix}/draft", "Admin"));
     }
 

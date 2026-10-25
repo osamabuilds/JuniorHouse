@@ -75,3 +75,35 @@ public static class SearchEndpoints
     private static string? Query(HttpContext http, string key) =>
         http.Request.Query.TryGetValue(key, out var v) && v.Count > 0 ? v[0] : null;
 }
+
+/// <summary>Staff routes for the synonym groups and the zero-result log. Switched on with the other storefront admin routes.</summary>
+public static class SearchAdminEndpoints
+{
+    public const string Prefix = "/api/admin/storefront/search";
+
+    public static void MapAdminSearchEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        var group = endpoints.MapSecuredGroup(Prefix, Policies.StorefrontSearch).WithTags("Storefront search")
+            .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(16 * 1024));
+
+        group.MapGet("/synonyms", async (ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = Romp.BuildingBlocks.Application.Paging.PageRequest.DefaultPageSize) =>
+            Results.Ok(await sender.Send(new ListSynonymGroupsQuery(page, pageSize), cancellationToken)));
+
+        group.MapPost("/synonyms", async (CreateSynonymGroupCommand body, ISender sender, CancellationToken cancellationToken) =>
+        {
+            var created = await sender.Send(body, cancellationToken);
+            return Results.Created($"{Prefix}/synonyms/{created.Id}", created);
+        });
+
+        group.MapPut("/synonyms/{id:long}", async (long id, UpdateSynonymGroupRequest body, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new UpdateSynonymGroupCommand(id, body.RowVersion, body.Name, body.IsActive, body.Terms), cancellationToken)));
+
+        group.MapDelete("/synonyms/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
+            await sender.Send(new DeleteSynonymGroupCommand(id), cancellationToken) ? Results.NoContent() : Results.NotFound());
+
+        group.MapGet("/misses", async (ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = Romp.BuildingBlocks.Application.Paging.PageRequest.DefaultPageSize) =>
+            Results.Ok(await sender.Send(new ListMissesQuery(page, pageSize), cancellationToken)));
+    }
+}
+
+public sealed record UpdateSynonymGroupRequest(uint RowVersion, string Name, bool IsActive, IReadOnlyList<string> Terms);

@@ -64,6 +64,15 @@ public sealed class StfrDbContext(DbContextOptions<StfrDbContext> options) : DbC
 
     public DbSet<PublishedSnapshot> Snapshots => Set<PublishedSnapshot>();
 
+    uint IStorefrontReadDbContext.RowVersionOf(SynonymGroup group) => Entry(group).Property<uint>("xmin").CurrentValue;
+
+    void IStorefrontReadDbContext.RequireRowVersion(SynonymGroup group, uint expectedRowVersion)
+    {
+        var entry = Entry(group);
+        entry.Property<uint>("xmin").OriginalValue = expectedRowVersion;
+        entry.State = EntityState.Modified;
+    }
+
     uint IStorefrontDbContext.RowVersionOf(Page page) => Entry(page).Property<uint>("xmin").CurrentValue;
 
     void IStorefrontDbContext.RequireRowVersion(Page page, uint expectedRowVersion)
