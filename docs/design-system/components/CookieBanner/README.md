@@ -1,0 +1,3 @@
+A consent banner, sticky at the bottom of the viewport on first visit, so it never covers the header or the checkout button once answered. **Manage**, **Reject optional** and **Accept all** are equal in size and reach; only Accept all is marigold (the screen's single action).
+
+Rules: essential cookies work without consent and nothing optional loads before a choice; the choice is stored and can be changed from the footer; the banner is a labelled region (not a modal) so the page stays usable, and never traps focus. The wording is a placeholder: whether the shop needs a banner, and its text, are legal decisions for the owner.

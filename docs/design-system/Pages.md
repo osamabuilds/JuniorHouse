@@ -25,11 +25,15 @@ Breadcrumb, `ProductDetail` (two-column `Gallery` and sticky buy panel on deskto
 
 ## Bag and checkout (later)
 
-The bag is the `CartDrawer`. Checkout is one page, guest by default: mobile number, address, delivery, payment (Cash on delivery, Card), review. Not part of this story.
+The bag is the `CartDrawer`; the full cart is `CartPage` (`CartEmpty` when empty). Checkout is one page, guest by default: `CheckoutPage` (mobile number, address, delivery, payment: Cash on delivery, Card, review) then `OrderConfirmation`. **Open question:** does the bag icon open the drawer only, or also link to the cart page? The cart, checkout and accounts are not yet specified (cart is Sprint 11; FR-39 vs SEC-02 is undecided), so these are design proposals, not approved scope.
 
-## Other
+## Discounts
 
-Our story (reuses `EditorialBand` and full-bleed images), size guide, delivery and exchange (plain text pages in `body` with `display-md` headings).
+`Offers` defines the whole treatment: brick `−NN%` badge, bold sale price with the old price struck, "Save Rs. X", bag savings rows, free-delivery progress, sale banner, promo-code states. One `--sale` colour (proposed, aliases `danger-text`); marigold stays for the one main action. All figures are server-calculated (SEC-09), never colour alone, no fake countdowns.
+
+## Other pages
+
+`SearchPage`, `NotFoundPage` (404 and 410), `WishlistPage`, `CollectionsPage`, `AuthScreens` (sign in, sign up, forgot and reset password), `AccountPages`, `ReturnRequest`, `ContentPage` (delivery, exchanges, size guide, legal; content comes from settings), `ContactPage`, `StoryPage`, `CookieBanner`. Facts such as fees, windows and contact details are placeholders until the business supplies them.
 
 ## Admin (`src/web/projects/admin`)
 

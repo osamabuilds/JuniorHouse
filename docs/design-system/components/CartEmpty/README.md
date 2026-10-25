@@ -1,0 +1,1 @@
+The empty bag page. See `CartPage` for the full bag. One clear next step ("Start shopping", marigold), a sign-in line for shoppers who expect a saved bag, and a "New in" row so the page is never a dead end.
