@@ -21,14 +21,20 @@
   </div>
 }
 @if (callout(); as c) {
-  <aside class="rp-callout"><p class="t-body-lg">{{ c.text }}</p></aside>
+  <p class="rp-callout">{{ c.text }}</p>
 }
 @if (fact(); as f) {
-  <section class="rp-fact">
+  @if (f.kind === 'link' || f.kind === 'text') {
+    <dl>
+      <div class="rp-fact">
+        <dt>{{ f.label }}</dt>
+        <dd>@if (f.kind === 'link') { <a class="rp-link" [href]="f.href">{{ f.text }}</a> } @else { {{ f.text }} }</dd>
+      </div>
+    </dl>
+  } @else {
+  <section>
     @if (f.label) { <h2 class="t-display-sm">{{ f.label }}</h2> }
     @switch (f.kind) {
-      @case ('link') { <p class="t-body-lg"><a class="rp-link" [href]="f.href">{{ f.text }}</a></p> }
-      @case ('text') { <p class="t-body-lg">{{ f.text }}</p> }
       @case ('list') { <ul class="t-body-lg">@for (item of f.items; track $index) { <li>{{ item }}</li> }</ul> }
       @case ('delivery') {
         <div class="rp-tablewrap">
@@ -52,4 +58,5 @@
       }
     }
   </section>
+  }
 }

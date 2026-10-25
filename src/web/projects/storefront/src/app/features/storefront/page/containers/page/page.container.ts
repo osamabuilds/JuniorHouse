@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
 import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { SeoService } from '../../../../../shared/seo/seo.service';
-import { selectBrand, selectFacts, selectTopLinks } from '../../../site-settings';
+import { selectBrand, selectFacts, selectHelpPages, selectTopLinks } from '../../../site-settings';
 import { PageResult } from '../../services/page-api.service';
 import { PageActions } from '../../store/page.actions';
 import { selectPageResults } from '../../store/page.selectors';
@@ -31,6 +31,7 @@ export class PageContainer {
   protected readonly slug = toSignal(this.route.paramMap.pipe(map((p) => p.get('slug'))), { initialValue: this.route.snapshot.paramMap?.get('slug') ?? null });
   protected readonly facts = this.store.selectSignal(selectFacts);
   protected readonly links = this.store.selectSignal(selectTopLinks);
+  protected readonly helpPages = this.store.selectSignal(selectHelpPages);
   private readonly brand = this.store.selectSignal(selectBrand);
   private readonly results = this.store.selectSignal(selectPageResults);
 

@@ -43,6 +43,18 @@ describe('PageContainer', () => {
     expect(el.querySelector('table')).toBeNull();
   });
 
+  it('PR-13 a content page has the Help eyebrow, a Help menu beside the article with the current page marked, and a prose article', () => {
+    const { el } = render({ slug: 'delivery' });
+    const menu = el.querySelector('nav.rp-sidenav[aria-label="Help"]')!;
+
+    expect(el.querySelector('.rp-eyebrow')!.textContent).toContain('Help');
+    expect(menu.querySelector('a[aria-current="page"]')!.getAttribute('href')).toBe('/delivery');
+    expect(menu.querySelector('a[href="/exchanges"]')).not.toBeNull();
+    expect(menu.querySelector('a[href="/privacy"]')).toBeNull();
+    expect(el.querySelector('article.rp-prose')).not.toBeNull();
+    expect(el.querySelectorAll('main, h1').length).toBe(1);
+  });
+
   it('SC-13 headings never skip a level', () => {
     const { el } = render({ slug: 'size-guide' });
     const levels = [...el.querySelectorAll('h1,h2,h3')].map((h) => Number(h.tagName[1]));

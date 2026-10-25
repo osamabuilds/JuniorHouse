@@ -1,18 +1,30 @@
 @if (result(); as r) {
   <div class="rp-wrap rp-page">
     @if (r.status === 'ok') {
-      <article>
-        <nav aria-label="Breadcrumb" class="rp-crumbs">
-          <ol>
-            <li><a routerLink="/">Home</a></li>
-            <li><span aria-current="page">{{ r.page.title }}</span></li>
-          </ol>
-        </nav>
+      <nav aria-label="Breadcrumb" class="rp-crumbs">
+        <ol>
+          <li><a routerLink="/">Home</a></li>
+          <li><span aria-current="page">{{ r.page.title }}</span></li>
+        </ol>
+      </nav>
+      <header class="rp-lhead">
+        <p class="rp-eyebrow">Help</p>
         <h1 class="t-display-lg">{{ r.page.title }}</h1>
-        @for (block of r.page.blocks; track $index) {
-          <rp-page-block [block]="block" [facts]="facts()" />
-        }
-      </article>
+      </header>
+      <div class="rp-account">
+        <nav class="rp-sidenav" aria-label="Help">
+          <ul>
+            @for (p of helpPages(); track p.href) {
+              <li><a [routerLink]="p.href" [attr.aria-current]="p.href === '/' + r.page.slug ? 'page' : null">{{ p.label }}</a></li>
+            }
+          </ul>
+        </nav>
+        <article class="rp-prose">
+          @for (block of r.page.blocks; track $index) {
+            <rp-page-block [block]="block" [facts]="facts()" />
+          }
+        </article>
+      </div>
     } @else {
       <rp-not-found [kind]="r.status === 'error' ? 'error' : r.status === 'gone' ? 'page-gone' : 'page-missing'" [links]="links()" />
     }
