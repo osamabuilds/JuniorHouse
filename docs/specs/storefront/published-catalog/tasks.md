@@ -25,7 +25,7 @@ Jira: SCRUM-208 · Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Each st
 
 ## C. Images
 
-16. [ ] Pin SkiaSharp in `Directory.Packages.props` (licence noted); `IImageResizer` port with fake. Proof: build with warnings as errors.
+16. [x] Pin SkiaSharp in `Directory.Packages.props` (licence noted); `IImageResizer` port with fake. Proof: build with warnings as errors. *Pinned SkiaSharp and SkiaSharp.NativeAssets.Linux.NoDependencies 3.119.2 (MIT). Beyond the task: `SkiaImageResizer` (the real adapter) is built and tested here, with `Probe` (header read, pixel cap) and `Resize`; task 17 wires it into the worker. Note for 17: `IFileStorage.SaveAsync` generates its own key, so writing a derivative under its hashed name needs a named-write method on the storage port.*
 17. [ ] `ProcessDerivativeJob`: `SKIP LOCKED` claim, decode caps (`MaxImagePixels`), metadata stripped, WebP + JPEG at configured widths, temp key then rename, retry with backoff, then `IMG_RDY_IND`. Proof: worker tests with fake resizer and storage; one real-resizer test in the Linux container (PCT-7).
 18. [ ] Changed image gets new hashed names; `SweepDerivativesJob` removes unreferenced files after the cache lifetime. Proof: tests (PCT-10).
 19. [ ] Readiness check reports failed-derivative count without failing. Proof: health test.
