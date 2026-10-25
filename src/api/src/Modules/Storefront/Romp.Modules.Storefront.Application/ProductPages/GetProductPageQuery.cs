@@ -87,11 +87,11 @@ public sealed class GetProductPageQueryHandler(
         var chart = await ChartAsync(product, selection?.SizeCode, cancellationToken);
 
         var colours = facts.GroupBy(f => f.Row.ColourCode).Select(g =>
-            new ColourOptionDto(g.Key, g.First().Row.ColourName, g.Any(f => f.Fact.Availability.IsPurchasable()))).ToList();
+            new ColourOptionDto(CodeSegment.Of(g.Key), g.First().Row.ColourName, g.Any(f => f.Fact.Availability.IsPurchasable()))).ToList();
         var sizes = selection is null
             ? []
             : facts.Where(f => f.Row.ColourId == selection.ColourId).Select(f => new SizeOptionDto(
-                f.Row.SizeCode, f.Row.SizeName, f.Fact.Availability.ToString(), f.Fact.Availability.IsPurchasable())).ToList();
+                CodeSegment.Of(f.Row.SizeCode), f.Row.SizeName, f.Fact.Availability.ToString(), f.Fact.Availability.IsPurchasable())).ToList();
         var price = selection is null ? null : ProductPricing.For(factList, selection);
         var selectedVariant = selection?.SizeCode is null
             ? null
@@ -110,8 +110,8 @@ public sealed class GetProductPageQueryHandler(
             product.AgeName,
             crumbs,
             price is null ? null : new ProductPriceDto(price.Price, price.CompareAtPrice, Saving(price), price.IsFrom),
-            selection?.ColourCode ?? string.Empty,
-            selection?.SizeCode,
+            selection is null ? string.Empty : CodeSegment.Of(selection.ColourCode),
+            selection?.SizeCode is { } chosen ? CodeSegment.Of(chosen) : null,
             selectedVariant?.SkuCode,
             colours,
             sizes,

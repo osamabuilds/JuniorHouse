@@ -69,7 +69,8 @@ public static class ProductSelection
         return new PageSelection(chosen.ColourId, chosen.ColourCode, sized?.SizeCode);
     }
 
-    private static bool Same(string a, string b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
+    /// <summary>Codes match in their URL form (lower case, underscore as hyphen), as the listing filters do, so DARK_BLUE is <c>dark-blue</c> in a link.</summary>
+    private static bool Same(string a, string b) => string.Equals(CodeSegment.Of(a), CodeSegment.Of(b), StringComparison.Ordinal);
 }
 
 /// <summary>The price line: the amount, the struck-through compare-at when it is above it, and whether it is a "From" price (PDP-9, 15).</summary>

@@ -92,6 +92,17 @@ public sealed class ProductPageRulesTests
     }
 
     [Fact]
+    [Trait("Spec", "PDP-2")]
+    public void ACodeWithAnUnderscore_IsMatchedByItsUrlForm()
+    {
+        var variants = new[] { V(1, "DARK_BLUE", "XS_S", AvailabilityClass.InStock) };
+
+        var selection = ProductSelection.Resolve(variants, "dark-blue", "xs-s");
+
+        Assert.Equal(new PageSelection(1, "DARK_BLUE", "XS_S"), selection);
+    }
+
+    [Fact]
     [Trait("Spec", "PDP-3")]
     public void AProductWithoutVariants_HasNoSelection() => Assert.Null(ProductSelection.Resolve([], "navy", "2y"));
 
