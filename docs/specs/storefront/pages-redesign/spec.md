@@ -1,6 +1,6 @@
 # SCRUM-xxx: Storefront pages and discounts to the design system (PR #52)
 
-- **Status:** Approved (owner, 2026-10-25, recommended answers to all open questions)
+- **Status:** Implemented (2026-10-25); Lighthouse CI budget run (PR-18) pending
 - **Jira:** SCRUM-xxx (to be created under SCRUM-203)
 - **BRD sections:** §4.1 FEAT-CAT-01..04, FEAT-PDP-01..04, §14
 - **Requirement IDs:** FR-01 (presentation), FR-02, FR-03, FR-07 (presentation), NFR-17, NFR-19, SEC-09, SEO-01, SEO-03, SEO-04, SEO-06
@@ -68,3 +68,17 @@ Server-rendered HTML contains the badge, prices and size line (SEO-01); discount
 - [x] **Q-PR-6 Cookie banner.** Resolved: deferred until a legal decision.
 - [x] **Q-PR-7 Sale filter chips.** Resolved: skipped.
 - [ ] **Q-PR-8 Jira key.** Which SCRUM key should this carry? (placeholder SCRUM-xxx until given, as in chrome-redesign)
+
+## As built (2026-10-25)
+Differences from the text above, recorded so the spec describes what exists:
+- **Money (PR-2).** Added `SavingAmount` (server-computed decimal) to `ListingTileDto` and `ProductPriceDto`; the browser shows it and never subtracts. Added `Sizes` (code, name, sold-out) to `ListingTileDto`, loaded by one extra query per page (five queries per listing page now, still constant).
+- **Existing discount markup.** The badge text, "Now/Was" text and struck price already existed; they now use `rp-tag--sale`, `rp-price--sale`, `rp-save` (card) and `rp-price--lg`, `rp-off`, "You save Rs. X" (product page). The old "Some sizes sold out" tag on cards is gone: the struck sizes in the size line say the same.
+- **`.sr-only` was missing.** No stylesheet defined it, so the "Now/Was/sold out" text was visible. It is now defined and pinned by a test (PR-7).
+- **PR-4** is implemented for a sold-out product (`isAvailable` false): the product page shows its plain price. Listings never list such a product (LST-15).
+- **PR-13 accordions.** Not built: the settings content model has no accordion block (heading, paragraph, list, table, callout, fact). It needs a new block type in storefront-settings and the admin editor, a separate feature. Facts that are text or links are now `<dl>` rows; list and delivery facts keep a heading.
+- **Help menu** lists every published page in the order the settings give; draft pages are never linked.
+- **404 button.** "Back to home" uses the standard ink button, not marigold (the live button variants are primary, ghost and light).
+- **Not-found layout** is one shared component, `rp-not-found`, used by the page, listing and product containers.
+- **PR-18 (Lighthouse budgets)** is enforced in CI and was not run locally.
+- **Stale design-system files** (handoff SCSS, font entries in `tokens.json`, `bundle.css` header) were not touched; they are for the design-system maintainer (Q-PR-1).
+- Playwright: 12 tests (4 pages at 390, 768, 1280) passed against the rebuilt Docker stack with the real API; backend 424 and web 251 unit tests pass.
