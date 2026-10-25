@@ -90,6 +90,12 @@ public sealed class Product : AggregateRoot<long>, IAuditable
 
     public string? PublishedBy { get; private set; }
 
+    /// <summary>
+    /// Goes up by exactly one, in the same save, with every change that raises a product event. The storefront read model keeps the
+    /// highest version it has seen, so a duplicate or out-of-order event can never overwrite newer data (PCT-5). Not the concurrency token.
+    /// </summary>
+    public long ContentVersion { get; private set; } = 1;
+
     public IReadOnlyCollection<PlannedVariant> Variants => _variants.AsReadOnly();
 
     public IReadOnlyCollection<ProductCollectionLink> Collections => _collections.AsReadOnly();
@@ -248,7 +254,8 @@ public sealed class Product : AggregateRoot<long>, IAuditable
         Status = ProductStatus.Published;
         PublishedAt = now;
         PublishedBy = person;
-        Raise(new ProductPublishedEvent(Id, StyleId, path));
+        ContentVersion++;
+        Raise(new ProductPublishedEvent(Id, StyleId, path, ContentVersion));
     }
 
     /// <summary>Takes the product off sale without deleting anything (PRD-3). Only a Published product can be unpublished.</summary>
@@ -260,7 +267,8 @@ public sealed class Product : AggregateRoot<long>, IAuditable
         }
 
         Status = ProductStatus.Unpublished;
-        Raise(new ProductUnpublishedEvent(Id, StyleId, path));
+        ContentVersion++;
+        Raise(new ProductUnpublishedEvent(Id, StyleId, path, ContentVersion));
     }
 
     /// <summary>Retires the product for good (PRD-6). Allowed from any state; archiving twice changes nothing.</summary>
@@ -273,11 +281,12 @@ public sealed class Product : AggregateRoot<long>, IAuditable
 
         var wasPublished = Status == ProductStatus.Published;
         Status = ProductStatus.Archived;
-        Raise(new ProductArchivedEvent(Id, StyleId, path));
+        ContentVersion++; // one bump even when a second (Unpublished) event follows
+        Raise(new ProductArchivedEvent(Id, StyleId, path, ContentVersion));
         if (wasPublished)
         {
             // The sale stops at the same moment; consumers that only watch "unpublished" see it too.
-            Raise(new ProductUnpublishedEvent(Id, StyleId, path));
+            Raise(new ProductUnpublishedEvent(Id, StyleId, path, ContentVersion));
         }
     }
 
@@ -289,7 +298,8 @@ public sealed class Product : AggregateRoot<long>, IAuditable
             return false;
         }
 
-        Raise(new ProductChangedEvent(Id, path, previousPath));
+        ContentVersion++;
+        Raise(new ProductChangedEvent(Id, path, previousPath, ContentVersion));
         return true;
     }
 

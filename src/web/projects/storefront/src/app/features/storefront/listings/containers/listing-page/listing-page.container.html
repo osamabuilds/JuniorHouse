@@ -1,0 +1,51 @@
+@if (result(); as r) {
+  @if (r.status === 'ok') {
+    <div class="rp-wrap">
+      <div class="rp-lhead">
+        <rp-breadcrumbs [crumbs]="crumbs()" />
+        <h1 class="rp-display-lg">{{ r.page.title }}</h1>
+        <p class="rp-count-note">{{ r.page.total }} {{ r.page.total === 1 ? 'piece' : 'pieces' }}</p>
+      </div>
+    </div>
+
+    <div class="rp-filterbar">
+      <div class="rp-wrap">
+        <rp-filter-panel [options]="r.options" [filter]="filter()" [action]="path()" [open]="chips().length > 0" (applied)="apply($event)" />
+      </div>
+    </div>
+
+    <div class="rp-wrap">
+      <rp-active-filters [chips]="chips()" [clearAll]="clearAll()" [path]="path()" />
+
+      @if (r.page.tiles.length === 0) {
+        <rp-empty-state [filtered]="chips().length > 0" [suggestions]="r.empty?.suggestions ?? []" />
+      } @else {
+        <ul class="rp-grid">
+          @for (tile of r.page.tiles; track tile.path; let i = $index) {
+            <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" /></li>
+          }
+        </ul>
+        <rp-pagination [page]="r.page.page" [totalPages]="r.page.totalPages" [path]="path()" [filter]="filter()" />
+      }
+    </div>
+    <div style="height: 96px"></div>
+  } @else {
+    <div class="rp-wrap rp-page">
+      <section class="rp-notfound">
+        <h1 class="t-display-lg">
+          @if (r.status === 'error') { Something went wrong } @else { We could not find that page }
+        </h1>
+        <p class="t-body-lg">
+          @if (r.status === 'error') { Please try again in a moment. } @else { It may have moved, or the address may be mistyped. }
+        </p>
+        <ul class="rp-notfound__links">
+          @for (l of links(); track l.href) {
+            <li><a class="rp-link" [routerLink]="l.href">{{ l.label }}</a></li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+} @else {
+  <div class="rp-wrap"><p class="rp-count-note" role="status">Loading…</p></div>
+}

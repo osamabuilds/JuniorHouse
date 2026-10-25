@@ -7,6 +7,12 @@ namespace Romp.Modules.Storefront.Application.Abstractions;
 /// <summary>Marks a MediatR command as belonging to Storefront so its transaction behaviour (which alone knows the DbContext) applies to it.</summary>
 public interface IStorefrontCommand;
 
+/// <summary>
+/// Marks a DTO that an anonymous visitor can receive. <c>PublicResponseTests</c> walks every type that carries the marker and refuses an exact
+/// stock quantity (published-catalog PCT-3, Q-PCT-2): shoppers see an <c>AvailabilityClass</c>, never a count.
+/// </summary>
+public interface IPublicStorefrontResponse;
+
 /// <summary>Application's own port onto the <c>STFR</c> store, so handlers never depend on Infrastructure (ADR 0002).</summary>
 public interface IStorefrontDbContext
 {

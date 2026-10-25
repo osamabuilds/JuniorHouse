@@ -1,0 +1,50 @@
+<form class="rp-filters" method="get" [attr.action]="action()" (submit)="submit($event)">
+  <details class="rp-filters__panel" [open]="open()">
+    <summary>Filter and sort</summary>
+    <div class="rp-filters__grid">
+      @if (options().sizes.length > 0) {
+        <fieldset>
+          <legend>Size</legend>
+          @for (o of options().sizes; track o.value) {
+            <label class="rp-check"><input type="checkbox" name="size" [value]="o.value" [checked]="has(filter().sizes, o.value)" /> {{ o.label }}</label>
+          }
+        </fieldset>
+      }
+      @if (options().colours.length > 0) {
+        <fieldset>
+          <legend>Colour</legend>
+          @for (o of options().colours; track o.value) {
+            <label class="rp-check"><input type="checkbox" name="colour" [value]="o.value" [checked]="has(filter().colours, o.value)" /> {{ o.label }}</label>
+          }
+        </fieldset>
+      }
+      @if (options().ages.length > 0) {
+        <fieldset>
+          <legend>Age</legend>
+          @for (o of options().ages; track o.value) {
+            <label class="rp-check"><input type="radio" name="age" [value]="o.value" [checked]="filter().age === o.value" /> {{ o.label }}</label>
+          }
+        </fieldset>
+      }
+      @if (options().priceMin !== null) {
+        <fieldset>
+          <legend>Price (Rs.)</legend>
+          <label class="rp-field">From <input class="rp-input" type="number" name="priceMin" inputmode="numeric" min="0" [attr.placeholder]="options().priceMin" [value]="filter().priceMin ?? ''" /></label>
+          <label class="rp-field">To <input class="rp-input" type="number" name="priceMax" inputmode="numeric" min="0" [attr.placeholder]="options().priceMax" [value]="filter().priceMax ?? ''" /></label>
+        </fieldset>
+      }
+      <fieldset>
+        <legend>Sort</legend>
+        <label class="rp-field">
+          <span class="sr-only">Sort by</span>
+          <select class="rp-select" name="sort">
+            <option value="recent" [selected]="filter().sort === 'recent'">Newest</option>
+            <option value="price-asc" [selected]="filter().sort === 'price-asc'">Price: low to high</option>
+            <option value="price-desc" [selected]="filter().sort === 'price-desc'">Price: high to low</option>
+          </select>
+        </label>
+      </fieldset>
+    </div>
+    <button type="submit" class="rp-btn rp-btn--sm">Apply</button>
+  </details>
+</form>

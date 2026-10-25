@@ -1,0 +1,21 @@
+@if (totalPages() > 1) {
+  <nav class="rp-pager" aria-label="Pagination">
+    <ul>
+      @if (page() > 1) {
+        <li><a class="rp-link" rel="prev" [routerLink]="path()" [queryParams]="query(page() - 1)">Previous</a></li>
+      }
+      @for (n of numbers(); track n) {
+        <li>
+          @if (n === page()) {
+            <span aria-current="page">{{ n }}</span>
+          } @else {
+            <a [routerLink]="path()" [queryParams]="query(n)" [attr.aria-label]="'Page ' + n">{{ n }}</a>
+          }
+        </li>
+      }
+      @if (page() < totalPages()) {
+        <li><a class="rp-link" rel="next" [routerLink]="path()" [queryParams]="query(page() + 1)">Next</a></li>
+      }
+    </ul>
+  </nav>
+}

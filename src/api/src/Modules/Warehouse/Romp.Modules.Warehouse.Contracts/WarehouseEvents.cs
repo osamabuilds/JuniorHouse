@@ -4,7 +4,8 @@ namespace Romp.Modules.Warehouse.Contracts;
 
 /// <summary>
 /// The shared envelope of every Warehouse event (ADR 0004, ADR 0012). Payloads carry ids, SKU, GTIN and quantities only: no notes,
-/// staff names or personal data. Schema changes within a version are additive (ADR 0011).
+/// staff names or personal data. Schema changes within a version are additive (ADR 0011). The two stock events carry the variant's stock
+/// version (0 when the sender predates it).
 /// </summary>
 public abstract record WarehouseEvent : IOutboxEvent
 {
@@ -31,7 +32,8 @@ public sealed record StockPutawayConfirmedEvent(
     string Gtin,
     string GradeCode,
     int Quantity,
-    int AvailableAfter) : WarehouseEvent
+    int AvailableAfter,
+    long Version = 0) : WarehouseEvent
 {
     public override string AggregateType => "Variant";
 
@@ -52,7 +54,8 @@ public sealed record StockLevelChangedEvent(
     int Available,
     int OnHandAccepted,
     int OnHandConcession,
-    string ReasonCode) : WarehouseEvent
+    string ReasonCode,
+    long Version = 0) : WarehouseEvent
 {
     public override string AggregateType => "Variant";
 

@@ -15,6 +15,8 @@ export interface SeoInput {
   readonly siteName: string;
   readonly crumbs: readonly Crumb[];
   readonly noindex?: boolean;
+  /** Extra JSON-LD objects for the page (for example Organization and WebSite on the home page). Each is a plain, serialisable object. */
+  readonly structured?: readonly object[];
 }
 
 /** Per-page head tags: title, description, canonical, Open Graph, Twitter and BreadcrumbList (SEO-03, 04, 08). */
@@ -42,8 +44,24 @@ export class SeoService {
     else this.meta.removeTag('name="robots"');
     this.canonical(url);
     this.breadcrumbs(input.crumbs);
+    this.structured(input.structured ?? []);
   }
 
+
+  /** The site-wide structured data: Organization, and WebSite with a SearchAction (SEO-03). Built from the brand name, never a constant. */
+  siteData(brandName: string): readonly object[] {
+    const url = this.absolute('/');
+    return [
+      { '@context': 'https://schema.org', '@type': 'Organization', name: brandName, url },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: brandName,
+        url,
+        potentialAction: { '@type': 'SearchAction', target: `${this.absolute('/search')}?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
+      },
+    ];
+  }
   private absolute(path: string): string {
     return `${this.site.replace(/\/$/, '')}${path === '/' ? '' : path}` || this.site;
   }
@@ -62,6 +80,17 @@ export class SeoService {
     link.setAttribute('href', url);
   }
 
+
+  private structured(objects: readonly object[]): void {
+    this.doc.head.querySelectorAll('script[type="application/ld+json"][data-rp="site"]').forEach((n) => n.remove());
+    for (const object of objects) {
+      const script = this.doc.createElement('script');
+      script.setAttribute('type', 'application/ld+json');
+      script.setAttribute('data-rp', 'site');
+      script.textContent = JSON.stringify(object).replace(/</g, '\u003c');
+      this.doc.head.appendChild(script);
+    }
+  }
   private breadcrumbs(crumbs: readonly Crumb[]): void {
     this.doc.head.querySelectorAll('script[type="application/ld+json"][data-rp="breadcrumbs"]').forEach((n) => n.remove());
     if (crumbs.length === 0) return;

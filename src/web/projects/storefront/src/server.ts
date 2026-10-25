@@ -36,6 +36,28 @@ app.get('/api/storefront/{*splat}', async (req, res) => {
   }
 });
 
+
+/**
+ * Product picture files (hashed names, never change for the same bytes) come from the API's file store. Behind nginx in production the
+ * same `/media` location serves them statically; here the SSR server forwards the one validated name.
+ */
+app.get('/media/:name', async (req, res) => {
+  const name = req.params.name;
+  if (!/^[0-9a-f]{32}-[0-9]{1,4}\.(webp|jpg)$/.test(name)) {
+    res.status(404).end();
+    return;
+  }
+  try {
+    const upstream = await fetch(new URL(`/media/${name}`, apiBaseUrl), { redirect: 'manual' });
+    res.status(upstream.status);
+    const type = upstream.headers.get('content-type');
+    if (type) res.setHeader('content-type', type);
+    if (upstream.ok) res.setHeader('cache-control', 'public, max-age=31536000, immutable');
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).end();
+  }
+});
 /**
  * Serve static files from /browser
  */

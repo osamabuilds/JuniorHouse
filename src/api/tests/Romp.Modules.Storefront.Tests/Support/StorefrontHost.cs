@@ -15,6 +15,7 @@ using Romp.Modules.Storefront.Application.Abstractions;
 using Romp.Modules.Storefront.Application.StorefrontSettings;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
+using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
 using Romp.Modules.Storefront.Infrastructure.StorefrontSettings;
 using Testcontainers.PostgreSql;
 
@@ -54,7 +55,7 @@ public sealed class StorefrontPostgres : IAsyncLifetime
     }
 
     private string ConnectionStringFor(string database) =>
-        new NpgsqlConnectionStringBuilder(_postgres.GetConnectionString()) { Database = database, Pooling = true }.ConnectionString;
+        new NpgsqlConnectionStringBuilder(_postgres.GetConnectionString()) { Database = database, Pooling = true, MaxPoolSize = 5 }.ConnectionString;
 
     internal static StfrDbContext NewContext(string connectionString, QueryCounter? counter = null)
     {
@@ -83,6 +84,11 @@ public sealed class StorefrontPostgresFixtureDefinition : ICollectionFixture<Sto
     public const string Name = "Storefront PostgreSQL";
 }
 
+internal sealed class FakeMenuSettings : Romp.Modules.Storefront.Application.Navigation.IMenuSettings
+{
+    public IReadOnlySet<string> HiddenGenderCodes { get; } = new HashSet<string> { "UNISEX" };
+}
+
 internal sealed class FakeExternalHostPolicy : IExternalHostPolicy
 {
     public IReadOnlyCollection<string> AllowedHosts { get; } = ["wa.me", "instagram.com"];
@@ -107,9 +113,31 @@ internal sealed class StorefrontHost : IDisposable
             .UseNpgsql(connectionString, npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "STFR"))
             .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>(), sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
+        services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddSingleton<IExternalHostPolicy, FakeExternalHostPolicy>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.PublishedCatalog.IReadModelSettings, FakeReadModelSettings>();
+        services.AddSingleton<InMemoryFileStorage>();
+        services.AddSingleton<Romp.BuildingBlocks.Storage.IFileStorage>(sp => sp.GetRequiredService<InMemoryFileStorage>());
+        services.AddSingleton<FakeImageResizer>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.PublishedCatalog.IImageResizer>(sp => sp.GetRequiredService<FakeImageResizer>());
+        services.AddSingleton<FakeCatalogLookups>();
+        services.AddSingleton<Romp.Modules.Reference.Contracts.ICatalogLookupQueries>(sp => sp.GetRequiredService<FakeCatalogLookups>());
+        services.AddSingleton<FakeProducers>();
+        services.AddSingleton<Romp.Modules.Catalog.Contracts.IPublishedProductQueries>(sp => sp.GetRequiredService<FakeProducers>());
+        services.AddSingleton<Romp.Modules.Catalog.Contracts.ISizeChartQueries>(sp => sp.GetRequiredService<FakeProducers>());
+        services.AddSingleton<Romp.Modules.Warehouse.Contracts.IStockAvailabilityQueries>(sp => sp.GetRequiredService<FakeProducers>());
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.ProductPublishedEvent>, ProductPublishedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.ProductChangedEvent>, ProductChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.ProductUnpublishedEvent>, ProductUnpublishedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.ProductArchivedEvent>, ProductArchivedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.SizeChartChangedEvent>, SizeChartChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Warehouse.Contracts.StockLevelChangedEvent>, StockLevelChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Warehouse.Contracts.StockPutawayConfirmedEvent>, StockPutawayConfirmedConsumer>();
         services.AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()));
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Navigation.IMenuSettings, FakeMenuSettings>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Listings.IListingSettings, FakeListingSettings>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.Abstractions.ICatalogLookupCache, Romp.Modules.Storefront.Infrastructure.CatalogLookupCache>();
         services.AddScoped<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries, PublishedPageSitemapSource>();
 
         var applicationAssembly = typeof(AssemblyReference).Assembly;
@@ -127,6 +155,36 @@ internal sealed class StorefrontHost : IDisposable
     public string ConnectionString { get; }
 
     public IPublishedDocumentCache Cache => _root.GetRequiredService<IPublishedDocumentCache>();
+
+    /// <summary>The operator verb <c>rebuild-storefront</c>, run against this host; returns its exit code and what it printed.</summary>
+    public async Task<(int ExitCode, string Output)> RunOperatorRebuildAsync()
+    {
+        var output = new StringWriter();
+        var exit = await StorefrontOperator.RebuildAsync(_root, output, default);
+        return (exit, output.ToString());
+    }
+
+    public InMemoryFileStorage Storage => _root.GetRequiredService<InMemoryFileStorage>();
+
+    public FakeImageResizer Resizer => _root.GetRequiredService<FakeImageResizer>();
+
+    public FakeCatalogLookups Lookups => _root.GetRequiredService<FakeCatalogLookups>();
+
+    public FakeProducers Producers => _root.GetRequiredService<FakeProducers>();
+
+    /// <summary>Delivers an event the way the dispatcher does: a scope, the outbox row id in the message context, then every handler of that event type.</summary>
+    public async Task DeliverAsync<TEvent>(long outboxMessageId, TEvent domainEvent)
+        where TEvent : class
+    {
+        await using var scope = _root.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<OutboxMessageContext>();
+        context.MessageId = outboxMessageId;
+        context.Schema = "STFR";
+        foreach (var handler in scope.ServiceProvider.GetServices<IOutboxMessageHandler<TEvent>>())
+        {
+            await handler.HandleAsync(domainEvent, default);
+        }
+    }
 
     public static async Task<StorefrontHost> CreateAsync(StorefrontPostgres postgres) => new(await postgres.NewDatabaseAsync());
 
@@ -168,5 +226,17 @@ internal sealed class StorefrontHost : IDisposable
         }
     }
 
-    public void Dispose() => _root.Dispose();
+    public void Dispose()
+    {
+        _root.Dispose();
+
+        // One database per test: close its idle pooled connections so a long run never reaches the server's connection limit.
+        using var connection = new NpgsqlConnection(ConnectionString);
+        NpgsqlConnection.ClearPool(connection);
+    }
+}
+
+internal sealed class FakeListingSettings : Romp.Modules.Storefront.Application.Listings.IListingSettings
+{
+    public int NewArrivalsDays => 30;
 }

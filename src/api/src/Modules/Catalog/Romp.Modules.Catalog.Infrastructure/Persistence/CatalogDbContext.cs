@@ -59,12 +59,16 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 
     public void Touch(SizeChart chart) => Entry(chart).Property(c => c.Name).IsModified = true;
 
+    public Task<long> NextChartVersionAsync(CancellationToken cancellationToken) =>
+        Database.SqlQuery<long>($"SELECT nextval('\"CTLG\".\"CHRT_VER_SEQ\"') AS \"Value\"").SingleAsync(cancellationToken);
+
     public Task AcquireSlugLockAsync(CancellationToken cancellationToken) =>
         Database.ExecuteSqlAsync($"SELECT pg_advisory_xact_lock({SlugLockKey})", cancellationToken);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("CTLG");
+        modelBuilder.HasSequence<long>("CHRT_VER_SEQ", "CTLG");
         modelBuilder.HasOutboxTable("CTLG");
         modelBuilder.HasInboxTable("CTLG");
 

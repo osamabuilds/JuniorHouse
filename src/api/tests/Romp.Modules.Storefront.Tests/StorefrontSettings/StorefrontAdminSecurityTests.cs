@@ -113,7 +113,7 @@ public sealed class StorefrontAdminSecurityTests
 
         var routes = Routes(app, StorefrontSettingsEndpoints.PublicPrefix);
 
-        Assert.Equal(2, routes.Count);
+        Assert.Equal(7, routes.Count);
         Assert.All(routes, r => Assert.Equal("GET", r.Method));
         Assert.All(routes, r => Assert.Contains(r.Endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(), a => a.Policy == Policies.Public));
         var policy = await app.Services.GetRequiredService<IAuthorizationPolicyProvider>().GetPolicyAsync(Policies.Public);
@@ -128,7 +128,7 @@ public sealed class StorefrontAdminSecurityTests
         await using var app = await StartAsync(enableAdminRoutes: false);
 
         Assert.Empty(Routes(app, StorefrontSettingsEndpoints.AdminPrefix));
-        Assert.Equal(2, Routes(app, StorefrontSettingsEndpoints.PublicPrefix).Count);
+        Assert.Equal(7, Routes(app, StorefrontSettingsEndpoints.PublicPrefix).Count);
         Assert.Equal(HttpStatusCode.NotFound, await SendAsync(app, "GET", $"{StorefrontSettingsEndpoints.AdminPrefix}/draft", "Admin"));
     }
 

@@ -22,6 +22,10 @@ internal sealed class VariantRefConfiguration : IEntityTypeConfiguration<Variant
         builder.Property(v => v.Gtin).HasColumnName("GTIN").HasMaxLength(13).IsFixedLength().IsRequired();
         builder.Property(v => v.GtinRetired).HasColumnName("GTIN_RETD_IND").IsRequired();
 
+        // PCT-5: bumped only by the posting SQL (one per variant per posting); EF never writes it.
+        builder.Property(v => v.StockVersion).HasColumnName("STCK_VER").IsRequired().HasDefaultValue(0L)
+            .Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+
         // One reference per Labelling variant, found by the number printed on the tag (the scan lookup, NFR-SC-01).
         builder.HasIndex(v => v.VariantId).IsUnique();
         builder.HasIndex(v => v.Gtin);

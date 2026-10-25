@@ -3,7 +3,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter } from 'rxjs';
-import { selectAges, selectBrand, selectHeaderEntries } from '../../features/storefront/site-settings';
+import { selectMenuEntries } from '../../features/storefront/navigation';
+import { selectBrand } from '../../features/storefront/site-settings';
 import { NavItem } from '../../shared/models/site-settings.model';
 import { resolveHref } from '../../shared/utils/resolve-href';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
@@ -26,8 +27,7 @@ export class SiteHeaderComponent {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
 
-  protected readonly entries = this.store.selectSignal(selectHeaderEntries);
-  protected readonly ages = this.store.selectSignal(selectAges);
+  protected readonly entries = this.store.selectSignal(selectMenuEntries);
   protected readonly brand = this.store.selectSignal(selectBrand);
 
   /** The key of the entry whose panel is open, or null. */

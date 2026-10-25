@@ -41,6 +41,16 @@ public sealed class StockPosting(WhseDbContext dbContext, TimeProvider timeProvi
         RETURNING "QTY" - {3} AS "Bef", "QTY" AS "Aft";
         """;
 
+    // PCT-5: one increment per variant per posting. The UPDATE takes the variant row's lock until the transaction ends, so postings of
+    // one variant are serialised and their versions are in commit order (a ledger row id is not: ids are handed out at insert time).
+    private const string VersionSql =
+        """
+        UPDATE "WHSE"."VRNT_REF"
+        SET "STCK_VER" = "STCK_VER" + 1, "UPDT_DTE" = {1}, "UPDT_BY" = {2}
+        WHERE "ID" = {0}
+        RETURNING "STCK_VER" AS "Value";
+        """;
+
     public async Task<IReadOnlyList<PostedMovement>> PostAsync(IReadOnlyList<StockPost> posts, string actingPerson, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(posts);
@@ -52,6 +62,14 @@ public sealed class StockPosting(WhseDbContext dbContext, TimeProvider timeProvi
         var now = timeProvider.GetUtcNow();
         var by = currentActor.UserName;
         var posted = new List<PostedMovement>(posts.Count);
+
+        // Variants first, in id order, then bins: every posting takes its locks in the same order, so none can deadlock another.
+        var versions = new Dictionary<long, long>();
+        foreach (var variantId in posts.Select(p => p.VariantRefId).Distinct().Order())
+        {
+            var next = await dbContext.Database.SqlQueryRaw<long>(VersionSql, variantId, now, by).ToListAsync(cancellationToken);
+            versions[variantId] = next.Count == 1 ? next[0] : throw new DomainException($"Variant {variantId} is not known to the warehouse.");
+        }
 
         // A fixed order means two postings that touch the same bins always lock rows in the same order (no deadlock).
         foreach (var post in posts.OrderBy(p => p.VariantRefId).ThenBy(p => p.GradeId).ThenBy(p => p.BinId))
@@ -70,7 +88,7 @@ public sealed class StockPosting(WhseDbContext dbContext, TimeProvider timeProvi
             var change = rows[0];
             dbContext.Movements.Add(new StockMovement(
                 post.VariantRefId, post.GradeId, post.BinId, post.KindId, post.SourceId, post.QuantityChange, change.Bef, change.Aft, actingPerson));
-            posted.Add(new PostedMovement(post, change.Bef, change.Aft));
+            posted.Add(new PostedMovement(post, change.Bef, change.Aft, versions[post.VariantRefId]));
         }
 
         foreach (var group in posts.GroupBy(p => p.VariantRefId))
@@ -85,7 +103,8 @@ public sealed class StockPosting(WhseDbContext dbContext, TimeProvider timeProvi
             variant.PublishLevel(
                 totals.Where(t => t.Grade == Grades.Accepted).Sum(t => t.Total),
                 totals.Where(t => t.Grade == Grades.Concession).Sum(t => t.Total),
-                MovementKinds.CodeOf(group.First().KindId));
+                MovementKinds.CodeOf(group.First().KindId),
+                versions[group.Key]);
         }
 
         return posted;

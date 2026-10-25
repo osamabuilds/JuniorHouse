@@ -1493,6 +1493,12 @@ namespace Romp.Modules.Warehouse.Infrastructure.Migrations
                         .HasColumnType("character varying(120)")
                         .HasColumnName("SKU_CODE");
 
+                    b.Property<long>("StockVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L)
+                        .HasColumnName("STCK_VER");
+
                     b.Property<long>("StyleId")
                         .HasColumnType("bigint")
                         .HasColumnName("STYL_ID");

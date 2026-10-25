@@ -167,6 +167,7 @@ public sealed class UpdateSizeChartCommandHandler(ICatalogDbContext dbContext, I
         await SizeChartRules.EnsureKnownAsync(lookups, chart.CategoryId, chart.GenderId, request.Lines.Select(l => l.SizeId).ToList(), cancellationToken);
 
         chart.Update(request.Name, request.Lines.Select(SizeChartRules.ToLine));
+        chart.Stamp(await dbContext.NextChartVersionAsync(cancellationToken));
         dbContext.Touch(chart);
         chart.NoteChanged();
         await dbContext.SaveChangesAsync(cancellationToken);

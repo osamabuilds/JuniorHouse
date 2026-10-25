@@ -106,6 +106,13 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+// Operator verb (ADR 0016): `dotnet Romp.Api.dll rebuild-storefront` rebuilds the storefront read model inline on the server and exits.
+// It needs server access; the hosted services (outbox dispatcher, workers) are not started, so nothing else runs alongside it.
+if (args.Contains(Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildVerb))
+{
+    return await Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildAsync(app.Services, Console.Out, CancellationToken.None);
+}
+
 // ADR 0011 deployment gate: outside Development/Testing the host refuses to start without a real authentication scheme.
 await SecurityGate.VerifyAsync(app.Services, app.Environment);
 
@@ -169,5 +176,6 @@ foreach (var module in modules)
 }
 
 await app.RunAsync();
+return 0;
 
 public partial class Program;

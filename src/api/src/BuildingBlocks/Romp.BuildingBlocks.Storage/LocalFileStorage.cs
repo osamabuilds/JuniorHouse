@@ -9,6 +9,9 @@ namespace Romp.BuildingBlocks.Storage;
 /// </summary>
 public sealed class LocalFileStorage(FileStorageOptions options) : IFileStorage
 {
+    private static readonly System.Text.RegularExpressions.Regex BareName =
+        new("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
     public async Task<string> SaveAsync(byte[] content, CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(options.RootPath);
@@ -27,6 +30,42 @@ public sealed class LocalFileStorage(FileStorageOptions options) : IFileStorage
         }
 
         return File.ReadAllBytesAsync(Path.Combine(options.RootPath, storageKey), cancellationToken);
+    }
+
+    public async Task SaveNamedAsync(string storageKey, byte[] content, CancellationToken cancellationToken)
+    {
+        if (!BareName.IsMatch(storageKey) || storageKey.Contains("..", StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Storage key is not a valid bare file name.", nameof(storageKey));
+        }
+
+        Directory.CreateDirectory(options.RootPath);
+        var temporary = Path.Combine(options.RootPath, $"{storageKey}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            await File.WriteAllBytesAsync(temporary, content, cancellationToken);
+            File.Move(temporary, Path.Combine(options.RootPath, storageKey), overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporary))
+            {
+                File.Delete(temporary);
+            }
+        }
+    }
+
+    public Task<IReadOnlyList<StoredFile>> ListAsync(CancellationToken cancellationToken)
+    {
+        if (!Directory.Exists(options.RootPath))
+        {
+            return Task.FromResult<IReadOnlyList<StoredFile>>([]);
+        }
+
+        IReadOnlyList<StoredFile> files = new DirectoryInfo(options.RootPath).EnumerateFiles()
+            .Select(f => new StoredFile(f.Name, new DateTimeOffset(f.LastWriteTimeUtc, TimeSpan.Zero)))
+            .ToList();
+        return Task.FromResult(files);
     }
 
     public Task DeleteAsync(string storageKey, CancellationToken cancellationToken)

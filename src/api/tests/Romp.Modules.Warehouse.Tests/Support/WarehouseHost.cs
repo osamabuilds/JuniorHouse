@@ -138,6 +138,7 @@ internal sealed class WarehouseHost : IDisposable
         services.AddScoped<Romp.Modules.Warehouse.Application.CycleCounts.ICountNumberAllocator, Romp.Modules.Warehouse.Infrastructure.CycleCounts.CountNumberAllocator>();
         services.AddScoped<Romp.Modules.Warehouse.Application.Adjustments.IAdjustmentPoster, Romp.Modules.Warehouse.Application.Adjustments.AdjustmentPoster>();
         services.AddScoped<IStockVariantReader, StockVariantReader>();
+        services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockAvailabilityQueries, Romp.Modules.Warehouse.Application.StockLedger.StockAvailabilityQueries>();
         PoStyles = new FakePoStyleLookup();
         services.AddSingleton<Romp.Modules.Warehouse.Application.Putaway.IPoStyleLookup>(PoStyles);
         services.AddScoped<Romp.Modules.Warehouse.Application.Putaway.IPutawayRowLocks, PutawayRowLocks>();

@@ -43,7 +43,7 @@ Weekly rhythm (spec-driven, see `CLAUDE.md`): **Monday** spec + plan, approved b
 | **S18** | Measure & harden | Reports, funnel analytics, Merchant Center feed, a load test to 500 users / 3× sale traffic, a WCAG audit, security alerts. | FR-58, NFR-04, NFR-19, NFR-35, SEO-09, SEC-26 |
 | **S19** | Launch readiness (buffer) | Production with DB HA and Cloudflare DDoS protection, a backup restore drill, the incident runbook, Search Console, the compliance check, UAT, spill-over. | SEC-19, SEC-20, SEC-27, NFR-07, NFR-16, SEO-11 |
 
-**Status:** S1 to S7 are implemented. S7 (Publish) shipped with the products, product-media, size-charts, composition-care and urls features under `docs/specs/catalog/`; the storefront that shows published products starts in S9.
+**Status:** S1 to S7 are implemented. S8 is parked until the domain is decided; S9 (storefront browse) runs first, split into S9a (read model, navigation, listings) and S9b (product pages, search, SEO). S7 (Publish) shipped with the products, product-media, size-charts, composition-care and urls features under `docs/specs/catalog/`; the storefront that shows published products starts in S9.
 
 ## After launch (backlog, not scheduled)
 Loyalty, referral, abandoned cart, birthday rewards (FR-49..52). BNPL, gift cards, gift wrap. Reviews, live chat, shareable registry. POS PWA (§9.12).

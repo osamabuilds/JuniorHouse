@@ -12,6 +12,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.BuildingBlocks.Storage;
+using Romp.Modules.Catalog.Contracts;
+using Romp.Modules.Warehouse.Contracts;
+using Romp.Modules.Storefront.Infrastructure.Listings;
+using Romp.Modules.Storefront.Infrastructure.Navigation;
+using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
 using Romp.Modules.Storefront.Application.Abstractions;
 using Romp.Modules.Storefront.Contracts;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
@@ -37,9 +43,15 @@ public sealed class StorefrontModule : IModule
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
                 sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
+        services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
 
-        services.Configure<StorefrontOptions>(configuration.GetSection("Storefront"));
+        services.AddOptions<StorefrontOptions>().Bind(configuration.GetSection("Storefront")).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<StorefrontOptions>, StorefrontOptionsValidator>();
         services.AddSingleton<IExternalHostPolicy, ExternalHostPolicy>();
+        services.AddSingleton<Application.PublishedCatalog.IReadModelSettings, ReadModelSettings>();
+        services.AddSingleton<Application.Navigation.IMenuSettings, Navigation.MenuSettings>();
+        services.AddSingleton<Application.Listings.IListingSettings, Listings.ListingSettings>();
+        services.AddSingleton<Application.Abstractions.ICatalogLookupCache, CatalogLookupCache>();
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
@@ -51,11 +63,38 @@ public sealed class StorefrontModule : IModule
         services.AddOutboxModule("STFR", typeof(StorefrontSettingsPublishedEvent));
         services.TryAdd(ServiceDescriptor.Scoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>)));
         services.AddScoped<IOutboxMessageHandler<StorefrontSettingsPublishedEvent>, SettingsPublishedCacheInvalidator>();
+
+        // Published-catalog read model: fed by Catalog and Warehouse events (ADR 0018), repaired by the reconcile job.
+        services.AddSingleton<PendingRebuilds>();
+        services.AddHostedService<RebuildWorker>();
+        services.AddHealthChecks().AddCheck<DerivativeHealthCheck>(DerivativeHealthCheck.Name, tags: ["ready"]);
+        services.AddFileStorage(configuration);
+        services.AddSingleton<Application.PublishedCatalog.IImageResizer, SkiaImageResizer>();
+        if (configuration.GetValue("Storefront:ImageWorkerEnabled", true))
+        {
+            services.AddHostedService<DerivativeWorker>();
+            services.AddHostedService<DerivativeSweepWorker>();
+        }
+
+        if (configuration.GetValue("Storefront:ReconcileEnabled", true))
+        {
+            services.AddHostedService<ReconcileWorker>();
+        }
+
+        services.AddScoped<IOutboxMessageHandler<ProductPublishedEvent>, ProductPublishedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<ProductChangedEvent>, ProductChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<ProductUnpublishedEvent>, ProductUnpublishedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<ProductArchivedEvent>, ProductArchivedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<SizeChartChangedEvent>, SizeChartChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<StockLevelChangedEvent>, StockLevelChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<StockPutawayConfirmedEvent>, StockPutawayConfirmedConsumer>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapPublicStorefrontEndpoints();
+        endpoints.MapPublicNavigationEndpoints();
+        endpoints.MapPublicListingEndpoints();
 
         var services = endpoints.ServiceProvider;
         var options = services.GetRequiredService<IOptions<StorefrontOptions>>().Value;
@@ -70,6 +109,7 @@ public sealed class StorefrontModule : IModule
         if (options.EnableAdminRoutes)
         {
             endpoints.MapAdminStorefrontSettingsEndpoints();
+            endpoints.MapAdminStorefrontRebuildEndpoints();
         }
     }
 }

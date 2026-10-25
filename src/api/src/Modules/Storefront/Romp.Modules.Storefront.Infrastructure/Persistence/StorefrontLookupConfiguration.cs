@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 
 namespace Romp.Modules.Storefront.Infrastructure.Persistence;
@@ -45,6 +47,21 @@ internal static class StorefrontLookupConfiguration
             (BlockType.Table, "TABLE", "Table", "Rows and columns of plain text"),
             (BlockType.Callout, "CALLOUT", "Callout", "A highlighted plain-text note"),
             (BlockType.Fact, "FACT", "Fact", "A value taken from the settings"));
+
+        // Read model (published-catalog, Sprint 9a). The ids are the enum values in the Domain.
+        Configure<DerivativeStatusLookup, DerivativeStatus>(modelBuilder, "DRV_STS_LKP",
+            (DerivativeStatus.Pending, "PENDING", "Pending", "Waiting for the image worker"),
+            (DerivativeStatus.Done, "DONE", "Done", "The file exists"),
+            (DerivativeStatus.Failed, "FAILED", "Failed", "Gave up after the allowed attempts"));
+
+        Configure<DerivativeFormatLookup, DerivativeFormat>(modelBuilder, "DRV_FMT_LKP",
+            (DerivativeFormat.Webp, "WEBP", "WebP", "The format browsers prefer"),
+            (DerivativeFormat.Jpeg, "JPG", "JPEG", "The fallback format"));
+
+        Configure<RebuildStatusLookup, RebuildStatus>(modelBuilder, "RBLD_STS_LKP",
+            (RebuildStatus.Running, "RUNNING", "Running", "Reading the Catalog and Warehouse contracts"),
+            (RebuildStatus.Completed, "COMPLETED", "Completed", "Every row was written and the old ones swept"),
+            (RebuildStatus.Failed, "FAILED", "Failed", "Stopped; the previous rows keep serving"));
 
         Configure<FactLookup, short>(modelBuilder, "FACT_LKP",
             SettingsFacts.Keys.Select((key, i) => ((short)(i + 1), key, key, (string?)"Quoted by fact blocks; empty facts block publishing")).ToArray());

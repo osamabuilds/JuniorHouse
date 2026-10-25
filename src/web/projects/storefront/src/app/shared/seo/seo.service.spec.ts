@@ -54,4 +54,23 @@ describe('SeoService', () => {
     expect(doc.head.querySelectorAll('script').length).toBe(1);
     expect(doc.head.querySelector('script')!.textContent).not.toContain('</script');
   });
+
+  it('NAV-10 writes Organization and WebSite JSON-LD with a search action, from the brand name', () => {
+    const { seo, doc } = setup();
+    seo.set({ title: 'Home', description: 'd', path: '/', siteName: 'Romp', crumbs: [], structured: seo.siteData('Romp') });
+    const types = [...doc.head.querySelectorAll('script[data-rp="site"]')].map((s) => JSON.parse(s.textContent!));
+    expect(types.map((t) => t['@type'])).toEqual(['Organization', 'WebSite']);
+    expect(types[1].potentialAction.target).toBe('https://shop.example/search?q={search_term_string}');
+    expect(types[0].name).toBe('Romp');
+  });
+
+  it('NAV-11 a different brand changes every structured name and leaves nothing of the old one', () => {
+    const { seo, doc } = setup();
+    seo.set({ title: 'Home', description: 'd', path: '/', siteName: 'Romp', crumbs: [], structured: seo.siteData('Romp') });
+    seo.set({ title: 'Home', description: 'd', path: '/', siteName: 'Tiny Co', crumbs: [], structured: seo.siteData('Tiny Co') });
+    const text = [...doc.head.querySelectorAll('script[data-rp="site"]')].map((s) => s.textContent).join('');
+    expect(text).toContain('Tiny Co');
+    expect(text).not.toContain('Romp');
+    expect(doc.head.querySelectorAll('script[data-rp="site"]').length).toBe(2);
+  });
 });

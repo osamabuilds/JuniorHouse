@@ -19,6 +19,8 @@ export interface NavItem {
   readonly children: readonly NavItem[];
   /** The mega-menu adds a "Shop by age" column of the configured ages (links carry the age code). */
   readonly showAges?: boolean;
+  /** Query parameters added to the link, for example the age filter. Values are lookup codes. */
+  readonly query?: Readonly<Record<string, string>>;
 }
 
 export interface AgeStep {

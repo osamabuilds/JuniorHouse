@@ -8,8 +8,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Romp.Modules.Storefront.Domain\Romp.Modules.Storefront.Domain.csproj" />
     <ProjectReference Include="..\Romp.Modules.Storefront.Contracts\Romp.Modules.Storefront.Contracts.csproj" />
+    <ProjectReference Include="..\..\Catalog\Romp.Modules.Catalog.Contracts\Romp.Modules.Catalog.Contracts.csproj" />
+    <ProjectReference Include="..\..\Warehouse\Romp.Modules.Warehouse.Contracts\Romp.Modules.Warehouse.Contracts.csproj" />
+    <ProjectReference Include="..\..\Reference\Romp.Modules.Reference.Contracts\Romp.Modules.Reference.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Storage\Romp.BuildingBlocks.Storage.csproj" />
   </ItemGroup>
 
 </Project>

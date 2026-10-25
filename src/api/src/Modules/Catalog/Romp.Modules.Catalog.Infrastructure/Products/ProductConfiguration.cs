@@ -29,6 +29,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.CareNote).HasColumnName("CARE_NOTE").HasMaxLength(500);
         builder.Property(p => p.PublishedAt).HasColumnName("PUBL_DTE");
         builder.Property(p => p.PublishedBy).HasColumnName("PUBL_BY").HasMaxLength(100);
+        builder.Property(p => p.ContentVersion).HasColumnName("CNTT_VER").IsRequired().HasDefaultValue(1L);
 
         // PRD-1: one product per style. The database decides a concurrent create; the handler's check only gives a friendly message.
         builder.HasIndex(p => p.StyleId).IsUnique();

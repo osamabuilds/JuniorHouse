@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { NavigationActions } from './features/storefront/navigation';
 import { SiteSettingsActions } from './features/storefront/site-settings';
 import { AnnouncementBarComponent } from './layout/announcement-bar/announcement-bar.component';
 import { MobileMenuComponent } from './layout/mobile-menu/mobile-menu.component';
@@ -17,6 +18,8 @@ import { SiteHeaderComponent } from './layout/site-header/site-header.component'
 })
 export class App {
   constructor() {
-    inject(Store).dispatch(SiteSettingsActions.load());
+    const store = inject(Store);
+    store.dispatch(SiteSettingsActions.load());
+    store.dispatch(NavigationActions.loadMenu());
   }
 }
