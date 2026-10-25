@@ -41,6 +41,7 @@ public sealed class StorefrontModule : IModule
 
         services.Configure<StorefrontOptions>(configuration.GetSection("Storefront"));
         services.AddSingleton<IExternalHostPolicy, ExternalHostPolicy>();
+        services.AddSingleton<Application.PublishedCatalog.IReadModelSettings, ReadModelSettings>();
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();

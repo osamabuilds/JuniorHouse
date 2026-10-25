@@ -92,6 +92,42 @@ public sealed class PublishedProduct : Entity<long>, IAuditable
     /// <summary>The last rebuild run that touched this row (a rebuild sweeps rows other runs left behind, PCT-6).</summary>
     public long? RebuildRunId { get; private set; }
 
+    /// <summary>Replaces the product's own content with a newer snapshot's. Callers check <see cref="VersionedSnapshot.Replaces"/> first.</summary>
+    public void Replace(
+        long contentVersion, string path, string name, string description, string styleCode,
+        string genderCode, string genderName, string categoryCode, string categoryName, string ageCode, string ageName,
+        DateTimeOffset publishedAt, string? careNote)
+    {
+        ContentVersion = contentVersion;
+        Path = path;
+        Name = name;
+        Description = description;
+        StyleCode = styleCode;
+        GenderCode = genderCode;
+        GenderName = genderName;
+        CategoryCode = categoryCode;
+        CategoryName = categoryName;
+        AgeCode = ageCode;
+        AgeName = ageName;
+        PublishedAt = publishedAt;
+        CareNote = careNote;
+    }
+
+    /// <summary>Stores the values derived from the variants and images (price range, sale, availability, listability, image readiness).</summary>
+    public void SetDerived(PriceSummary? price, ProductVisibilityResult visibility, bool imageReady)
+    {
+        ArgumentNullException.ThrowIfNull(visibility);
+        MinPrice = price?.MinPrice;
+        MaxPrice = price?.MaxPrice;
+        IsOnSale = price?.OnSale ?? false;
+        MaxDiscountPercent = price?.MaxDiscountPercent ?? 0m;
+        IsAvailable = visibility.IsInStock;
+        IsListable = visibility.IsListable;
+        ImageReady = imageReady;
+    }
+
+    public void MarkRebuilt(long? runId) => RebuildRunId = runId;
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; } = string.Empty;
@@ -175,6 +211,38 @@ public sealed class VariantRow : Entity<long>, IAuditable
 
     public string? UpdtBy { get; set; }
 
+    /// <summary>Takes the catalogue facts of a newer snapshot; the stock facts (quantity, stock version) are Warehouse's and stay.</summary>
+    public void Replace(
+        short colourId, string colourCode, string colourName, short sizeId, string sizeCode, string sizeName, short sizeSeq,
+        string? skuCode, decimal? price, decimal? compareAtPrice, bool isSellable)
+    {
+        ColourId = colourId;
+        ColourCode = colourCode;
+        ColourName = colourName;
+        SizeId = sizeId;
+        SizeCode = sizeCode;
+        SizeName = sizeName;
+        SizeSeq = sizeSeq;
+        SkuCode = skuCode;
+        SkuNormalised = NormaliseSku(skuCode);
+        Price = price;
+        CompareAtPrice = compareAtPrice;
+        IsSellable = isSellable;
+    }
+
+    /// <summary>Applies Warehouse's stock for this SKU when its version is higher than the one held (PCT-5).</summary>
+    public bool ApplyStock(int quantity, long stockVersion)
+    {
+        if (!VersionedSnapshot.Replaces(stockVersion, StockVersion == 0 ? null : StockVersion))
+        {
+            return false;
+        }
+
+        AvailableQuantity = quantity;
+        StockVersion = stockVersion;
+        return true;
+    }
+
     public static string? NormaliseSku(string? sku) => string.IsNullOrWhiteSpace(sku) ? null : sku.Trim().ToLowerInvariant();
 }
 
@@ -191,6 +259,23 @@ public sealed class ImageRow : Entity<long>, IAuditable
     {
         Id = id;
         ProductId = productId;
+        ColourId = colourId;
+        FileKey = fileKey;
+        Width = width;
+        Height = height;
+        AltText = altText;
+        SortSeq = sortSeq;
+        IsMain = isMain;
+    }
+
+    /// <summary>Takes a newer snapshot's facts. A different original (<c>FileKey</c>) drops the stored content hash; the caller re-queues the derivatives.</summary>
+    public void Replace(short? colourId, string fileKey, int width, int height, string altText, int sortSeq, bool isMain)
+    {
+        if (!string.Equals(FileKey, fileKey, StringComparison.Ordinal))
+        {
+            ContentHash = null;
+        }
+
         ColourId = colourId;
         FileKey = fileKey;
         Width = width;

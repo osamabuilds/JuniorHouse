@@ -20,6 +20,19 @@ public sealed class StorefrontOptions
     /// unless real authentication is registered (<see cref="StorefrontAdminRoutesGuard"/>).
     /// </summary>
     public bool EnableAdminRoutes { get; set; } = true;
+
+    /// <summary>At or below this many units a variant reads "only a few left" (published-catalog PCT-3).</summary>
+    public int LowStockThreshold { get; set; } = 5;
+
+    /// <summary>The widths each product image is resized to, in WebP and JPEG (published-catalog PCT-7).</summary>
+    public int[] ImageWidths { get; set; } = [320, 640, 960, 1280];
+}
+
+public sealed class ReadModelSettings(IOptions<StorefrontOptions> options) : Application.PublishedCatalog.IReadModelSettings
+{
+    public int LowStockThreshold => options.Value.LowStockThreshold;
+
+    public IReadOnlyList<int> ImageWidths => options.Value.ImageWidths;
 }
 
 public sealed class ExternalHostPolicy(IOptions<StorefrontOptions> options) : IExternalHostPolicy

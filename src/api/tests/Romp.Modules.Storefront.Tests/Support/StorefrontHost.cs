@@ -109,6 +109,8 @@ internal sealed class StorefrontHost : IDisposable
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddSingleton<IExternalHostPolicy, FakeExternalHostPolicy>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.PublishedCatalog.IReadModelSettings, FakeReadModelSettings>();
+        services.AddSingleton<Romp.Modules.Reference.Contracts.ICatalogLookupQueries, FakeCatalogLookups>();
         services.AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()));
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries, PublishedPageSitemapSource>();
