@@ -59,3 +59,15 @@ Add to cart and live stock check at add (S11, FR-10 proper); Notify Me (FR-11, n
 - [ ] **Q-PDP-3 Care icon artwork (Catalog Q-CMP-2).** The ISO 3758 symbols' licence was left to S9. Proposed: text always shown, with icons from a licensed or self-drawn set only after the owner confirms the source; until then the symbol is a text label.
 - [ ] **Q-PDP-4 Size chart unit.** Centimetres only (Catalog Q-CHT-3); highlight the chosen size. Confirm no inches toggle.
 - [x] **Q-PDP-5 (decided, D-5)** The cross-sell rail and the provenance badge are backlog, not Sprint 9.
+
+## As built (Sprint 9b)
+
+Tests that prove each criterion: [traceability.md](traceability.md). The open questions were built to their proposed defaults and are still awaiting the owner. What differs from, or adds to, the text above:
+
+- **API:** `GET /api/storefront/products/by-path?path=` answers 200 for every outcome (`Found`, `Moved`, `Gone`, `NotFound`) so the storefront server can choose the real status; a `NotFound` answer is `no-store`; a path over 200 characters is a 400. A product page costs 7 to 8 queries, not 5 (selection, variants, images, size chart, composition and care, availability), and the count is fixed whatever the number of variants.
+- **Selection:** colour and size are plain links (`?colour=&size=`), not radio groups, so they work without JavaScript and update in place with it. The selection lives in the URL and the server's answer, not in store fields. The colour is shown by name because the reference data has no swatch. A sold-out size is not a link and says so in words.
+- **Codes in the URL** are the lower-case, hyphenated form of the lookup code (`1-2y`, `wht`); matching uses `CodeSegment.Of`, as in listings.
+- **Gallery:** one scroll-snap strip on a phone and a two-column grid from 64rem; no thumbnails. The first picture is eager with `fetchpriority="high"`.
+- **Status codes:** the route matches any three-segment address and the container sets 200, 301, 404, 410 or 503 on the server response.
+- **Layout fix found by the e2e run:** the product grids needed `minmax(0, 1fr)` columns, otherwise the gallery strip stretched the page to twice the width at 320px.
+- **Not built here:** Product JSON-LD with `Offer.availability` (PDP-14 moves to `seo`). The old mock product page, the product card and the product part of the mock catalogue are removed; this closes published-catalog task 23.

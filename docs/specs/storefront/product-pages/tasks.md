@@ -27,4 +27,4 @@ Meta and JSON-LD for the page come from `seo`; until that feature lands, task 13
 
 ## Close
 
-16. [ ] Traceability file (`PDP-n` to tests), spec "As built" section, README status.
+16. [x] Traceability file (`PDP-n` to tests), spec "As built" section, README status.
