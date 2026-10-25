@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
+using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Labelling.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure.Persistence;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
@@ -41,6 +42,7 @@ public sealed partial class NamingConventionTests
             { "SKU", BuildModel<SkuDbContext>(options => new SkuDbContext(options)) },
             { "WHSE", BuildModel<WhseDbContext>(options => new WhseDbContext(options)) },
             { "STFR", BuildModel<StfrDbContext>(options => new StfrDbContext(options)) },
+            { "IDNT", BuildModel<IdntDbContext>(options => new IdntDbContext(options)) },
         };
 
         return data;

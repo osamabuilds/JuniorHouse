@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -25,6 +26,7 @@ public static class RompAuthorizationExtensions
         {
             authentication.AddScheme<AuthenticationSchemeOptions, DevelopmentStaffHandler>(DevelopmentScheme, _ => { });
             services.Configure<AuthenticationOptions>(options => options.DefaultScheme = DevelopmentScheme);
+            services.AddSingleton<IAuthorizationHandler, DevelopmentPermissionHandler>();
         }
 
         services.AddAuthorizationBuilder()
