@@ -10,6 +10,7 @@ A direct-to-consumer kidswear platform for Pakistan: the storefront (with Fit Fi
 | Hierarchy rules (module/feature, same names in specs, API, web, tests) | [`docs/CONSTITUTION.md`](docs/CONSTITUTION.md), enforced by `StructureSyncTests` |
 | Feature specs, plans, tasks | `docs/specs/<module>/<feature>/` (index: [`docs/specs/README.md`](docs/specs/README.md)); the Jira key goes in the spec header, not the folder name |
 | Architecture decisions | `docs/adr/` (these override the BRD where they conflict) |
+| Design (UI, tokens, components, pages) | [`docs/design-system/`](docs/design-system/README.md), the **single source of truth** for **storefront** UI design (the admin keeps its current look and is out of scope, even though the folder has `Admin*` components). Read its `README.md` and `Implementation.md` first. |
 | Backlog | Jira project `SCRUM`, osamabuss048.atlassian.net |
 
 Requirement IDs come from the BRD and must be used unchanged everywhere: `FR-xx`, `FR-SC-xx`, `NFR-xx`, `NFR-FT-xx`, `NFR-SC-xx`, `SEC-xx`, `SEO-xx`, test cases `TC-<AREA>-xx`, features `FEAT-<AREA>-xx`. Each Jira task carries its ID as a label.
@@ -80,6 +81,8 @@ Full rules and the abbreviation glossary are in [`docs/db/naming.md`](docs/db/na
 - Design for growth: no schema change should be needed for new categories, sizes, colours, couriers or statuses. Add a lookup row instead. Tables expected to grow large (orders, stock ledger, notifications, audit) note their partitioning key in the plan (BRD §12.6).
 
 ## Frontend: semantic HTML & SEO (mandatory, no compromise)
+
+**Design source of truth (storefront only; do not restyle the admin app):** build every storefront screen from `docs/design-system/` (`tokens.json`, `components/<Name>/README.md` + `preview.html`, `components/bundle.css`, `Pages.md`, drop-in SCSS in `handoff/`). Use its tokens, `rp-` class names and component structure; do not invent colours, type, spacing or components. If a screen needs something the design system lacks, raise it rather than improvising. The old `docs/design/` concept files were removed and must not be used.
 
 The goal is for Romp to rank as high as possible. Google decides the actual position, so no code can guarantee #1. What the code **must** guarantee is that nothing technical ever limits ranking. Every item below is required on every public page, and a PR that misses one is not done.
 
