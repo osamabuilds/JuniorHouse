@@ -6,8 +6,10 @@ const tile = (n: number) => ({
   price: 800,
   compareAtPrice: null,
   savingPercent: 0,
+  savingAmount: 0,
   colourCount: 1,
   hasSoldOutSizes: false,
+  sizes: [],
   image: { altText: `Dress ${n}`, width: 800, height: 1000, sources: [{ width: 320, webp: '/media/a-320.webp', jpeg: '/media/a-320.jpg' }] },
 });
 

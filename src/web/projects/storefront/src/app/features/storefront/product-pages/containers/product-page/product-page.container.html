@@ -13,7 +13,7 @@
             <h1>{{ p.name }}</h1>
           </header>
 
-          <rp-product-price [price]="p.price" />
+          <rp-product-price [price]="price()" />
           @if (p.sku) {
             <p class="pdp-sku">SKU: <span>{{ p.sku }}</span></p>
           }

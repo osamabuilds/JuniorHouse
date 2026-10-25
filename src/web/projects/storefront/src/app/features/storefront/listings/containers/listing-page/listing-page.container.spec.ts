@@ -15,8 +15,10 @@ const tile = (n: number, extra: Partial<ListingTile> = {}): ListingTile => ({
   price: 800,
   compareAtPrice: null,
   savingPercent: 0,
+  savingAmount: 0,
   colourCount: 1,
   hasSoldOutSizes: false,
+  sizes: [],
   image: { altText: `Dress ${n}`, width: 800, height: 1000, sources: [{ width: 320, webp: '/media/h-320.webp', jpeg: '/media/h-320.jpg' }, { width: 640, webp: '/media/h-640.webp', jpeg: '/media/h-640.jpg' }] },
   ...extra,
 });

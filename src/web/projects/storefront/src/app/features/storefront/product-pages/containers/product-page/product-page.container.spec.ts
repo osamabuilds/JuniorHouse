@@ -22,7 +22,7 @@ const basePage: ProductPage = {
     { label: 'Dresses', path: '/girls/dresses' },
     { label: 'Floral Summer Dress', path: null },
   ],
-  price: { price: 1299, compareAtPrice: 1599, savingPercent: 19, isFrom: false },
+  price: { price: 1299, compareAtPrice: 1599, savingPercent: 19, savingAmount: 300, isFrom: false },
   selectedColour: 'red',
   selectedSize: '5-6y',
   sku: 'SKU-1',
@@ -119,11 +119,22 @@ describe('ProductPageContainer', () => {
 
     expect(price.querySelector('s')!.textContent).toContain('1,599');
     expect(price.querySelector('s .sr-only')!.textContent).toContain('Was');
-    expect(price.textContent).toContain('Save 19%');
+    expect(price.textContent).toContain('−19%');
+    expect(el.querySelector('.rp-save')!.textContent).toContain('You save Rs. 300');
+  });
+
+  it('PR-4 a sold-out product keeps its sold-out state and shows no discount badge, strike or saving', () => {
+    const { el } = render(found({ isAvailable: false, selectedSize: null, sku: null }));
+
+    expect(el.querySelector('rp-sold-out-state')).not.toBeNull();
+    expect(el.querySelector('.rp-off')).toBeNull();
+    expect(el.querySelector('.rp-price s')).toBeNull();
+    expect(el.querySelector('.rp-save')).toBeNull();
+    expect(el.querySelector('.rp-price')!.textContent).toContain('1,299');
   });
 
   it('PDP-15 shows "From" before a size is chosen', () => {
-    const { el } = render(found({ price: { price: 1000, compareAtPrice: null, savingPercent: 0, isFrom: true }, selectedSize: null, sku: null }));
+    const { el } = render(found({ price: { price: 1000, compareAtPrice: null, savingPercent: 0, savingAmount: 0, isFrom: true }, selectedSize: null, sku: null }));
 
     expect(el.querySelector('.rp-price')!.textContent).toContain('From');
     expect(el.querySelector('.pdp-sku')).toBeNull();

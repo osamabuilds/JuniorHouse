@@ -21,9 +21,7 @@
       }
     }
     @if (onSale()) {
-      <span class="rp-tag">-{{ tile().savingPercent }}%</span>
-    } @else if (tile().hasSoldOutSizes) {
-      <span class="rp-tag rp-tag--low">Some sizes sold out</span>
+      <span class="rp-tag rp-tag--sale">−{{ tile().savingPercent }}%</span>
     }
   </div>
   <div class="rp-card__body">
@@ -40,6 +38,22 @@
           Rs. {{ tile().price | number }}
         }
       </span>
+    }
+    @if (onSale()) {
+      <p class="rp-save">Save Rs. {{ tile().savingAmount | number }}</p>
+    }
+    @if (tile().sizes.length > 0) {
+      <ul class="rp-avail" aria-label="Sizes">
+        @for (size of tile().sizes; track size.code) {
+          <li>
+            @if (size.soldOut) {
+              <s>{{ size.name }}</s><span class="sr-only"> sold out</span>
+            } @else {
+              {{ size.name }}
+            }
+          </li>
+        }
+      </ul>
     }
   </div>
 </article>

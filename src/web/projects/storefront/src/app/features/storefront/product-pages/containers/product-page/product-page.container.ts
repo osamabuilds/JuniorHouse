@@ -71,6 +71,15 @@ export class ProductPageContainer {
     return r?.status === 'found' ? r.page : null;
   });
 
+  /** The price line. A sold-out product shows its price without the discount treatment (PR-4); the figures are the server ones. */
+  protected readonly price = computed(() => {
+    const p = this.page();
+    if (!p?.price) {
+      return null;
+    }
+    return p.isAvailable ? p.price : { ...p.price, compareAtPrice: null, savingPercent: 0, savingAmount: 0 };
+  });
+
   /** The size the visitor chose, as the server confirmed it. */
   protected readonly chosenSize = computed(() => {
     const p = this.page();

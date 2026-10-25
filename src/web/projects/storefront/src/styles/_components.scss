@@ -172,6 +172,7 @@
   .rp-card:hover .rp-slide--alt, .rp-card:focus-within .rp-slide--alt, .rp-card.is-alt .rp-slide--alt { opacity: 1; }
   .rp-pagedots { display: none; }
 }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .rp-tag { position: absolute; top: var(--space-3); left: var(--space-3); z-index: 3; font: 500 10px/14px var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; padding: 3px 8px; background: color-mix(in srgb, var(--surface-raised) 92%, transparent); color: var(--ink); border-radius: var(--radius-sm); }
 .rp-tag--low { color: var(--accent-deep); }
 .rp-wish { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 4; width: var(--tap); height: var(--tap); border: 0; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--surface-raised) 78%, transparent); color: var(--ink-on-light); display: grid; place-items: center; cursor: pointer; transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out); }
@@ -188,7 +189,15 @@
 .rp-card__meta { font: 400 13px/20px var(--font-sans); color: var(--ink-muted); }
 .rp-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); white-space: nowrap; font: 500 15px/22px var(--font-sans); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
 .rp-price s { font-weight: 400; color: var(--ink-muted); }
-.rp-price--sale { color: var(--accent-deep); }
+.rp-price--sale { color: var(--sale); font-weight: 600; }
+.rp-price--sale s { color: var(--ink-muted); font-weight: 400; text-decoration-thickness: 1px; }
+.rp-price--lg { font-size: clamp(24px, 2.6vw, 30px); line-height: 1.2; }
+.rp-price--lg s { font-size: 0.7em; }
+.rp-tag--sale { background: var(--sale); color: var(--on-accent); font: 600 13px/18px var(--font-sans); letter-spacing: 0.04em; text-transform: none; padding: 5px 12px; }
+.rp-off { display: inline-flex; align-items: center; height: 28px; padding: 0 var(--space-3); background: var(--sale); color: var(--on-accent); border-radius: var(--radius-sm); font: 600 13px/16px var(--font-sans); letter-spacing: 0.04em; }
+.rp-save { font: 500 14px/20px var(--font-sans); color: var(--sale); margin: 0; }
+.rp-avail { display: flex; flex-wrap: wrap; gap: 2px 10px; padding: 6px 0 0; margin: 0; list-style: none; font: 400 12px/18px var(--font-sans); color: var(--ink); font-variant-numeric: tabular-nums; }
+.rp-avail s { color: var(--ink-muted); text-decoration-thickness: 1px; }
 .rp-dots { display: flex; gap: 6px; padding-top: 6px; }
 .rp-dots i { width: 12px; height: 12px; border-radius: var(--radius-pill); border: 1px solid var(--line-strong); background: var(--c, var(--tone-oat)); }
 
