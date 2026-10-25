@@ -18,6 +18,8 @@ internal sealed class FakeReadModelSettings : IReadModelSettings
     public int MaxDerivativeAttempts => 3;
 
     public TimeSpan DerivativeRetryDelay => TimeSpan.FromMinutes(1);
+
+    public TimeSpan DerivativeCacheLifetime => TimeSpan.FromDays(30);
 }
 
 /// <summary>The size lookup in a known order (5-6Y before 7-8Y, ids deliberately not in that order); every other lookup is unused by the projection.</summary>

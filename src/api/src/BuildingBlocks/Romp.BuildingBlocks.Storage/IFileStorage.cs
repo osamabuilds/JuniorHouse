@@ -8,6 +8,9 @@ namespace Romp.BuildingBlocks.Storage;
 /// (dev/Docker Compose); an S3-compatible one is a later, drop-in replacement behind this same
 /// interface - module code never talks to a concrete storage SDK directly.
 /// </summary>
+/// <summary>A stored file's key and when it was last written.</summary>
+public sealed record StoredFile(string Key, DateTimeOffset ModifiedAt);
+
 public interface IFileStorage
 {
     Task<string> SaveAsync(byte[] content, CancellationToken cancellationToken);
@@ -26,6 +29,13 @@ public interface IFileStorage
     /// implementations still refuse anything but a bare file name. The write is atomic (a temporary key, then a rename) and replaces an
     /// existing file, so a retry after a crash is harmless. Default: not supported, so older storages fail loudly rather than mis-store.
     /// </summary>
+    /// <summary>
+    /// Lists the stored files with their last-write time (Sprint 9a, the derivative sweep). Default: none, so a storage that cannot list
+    /// simply never sweeps.
+    /// </summary>
+    Task<IReadOnlyList<StoredFile>> ListAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<StoredFile>>([]);
+
     Task SaveNamedAsync(string storageKey, byte[] content, CancellationToken cancellationToken) =>
         throw new NotSupportedException("This storage cannot write under a caller-named key.");
 }

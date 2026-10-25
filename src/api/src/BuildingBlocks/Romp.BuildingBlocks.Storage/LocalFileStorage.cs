@@ -55,6 +55,19 @@ public sealed class LocalFileStorage(FileStorageOptions options) : IFileStorage
         }
     }
 
+    public Task<IReadOnlyList<StoredFile>> ListAsync(CancellationToken cancellationToken)
+    {
+        if (!Directory.Exists(options.RootPath))
+        {
+            return Task.FromResult<IReadOnlyList<StoredFile>>([]);
+        }
+
+        IReadOnlyList<StoredFile> files = new DirectoryInfo(options.RootPath).EnumerateFiles()
+            .Select(f => new StoredFile(f.Name, new DateTimeOffset(f.LastWriteTimeUtc, TimeSpan.Zero)))
+            .ToList();
+        return Task.FromResult(files);
+    }
+
     public Task DeleteAsync(string storageKey, CancellationToken cancellationToken)
     {
         if (storageKey.Contains('/') || storageKey.Contains('\\') || storageKey.Contains(".."))

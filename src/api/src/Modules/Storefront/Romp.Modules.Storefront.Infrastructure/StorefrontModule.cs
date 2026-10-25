@@ -66,6 +66,7 @@ public sealed class StorefrontModule : IModule
         if (configuration.GetValue("Storefront:ImageWorkerEnabled", true))
         {
             services.AddHostedService<DerivativeWorker>();
+            services.AddHostedService<DerivativeSweepWorker>();
         }
 
         if (configuration.GetValue("Storefront:ReconcileEnabled", true))

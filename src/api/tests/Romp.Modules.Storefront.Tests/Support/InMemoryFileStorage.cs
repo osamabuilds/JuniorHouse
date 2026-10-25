@@ -7,6 +7,12 @@ internal sealed class InMemoryFileStorage : IFileStorage
 {
     public Dictionary<string, byte[]> Files { get; } = [];
 
+    /// <summary>Last-write time per key; a key without an entry reads as just written.</summary>
+    public Dictionary<string, DateTimeOffset> Modified { get; } = [];
+
+    public Task<IReadOnlyList<StoredFile>> ListAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<StoredFile>>(Files.Keys.Select(k => new StoredFile(k, Modified.GetValueOrDefault(k, DateTimeOffset.UtcNow))).ToList());
+
     /// <summary>When set, the next writes throw this.</summary>
     public IOException? WriteFailure { get; set; }
 
@@ -28,6 +34,7 @@ internal sealed class InMemoryFileStorage : IFileStorage
         }
 
         Files[storageKey] = content;
+        Modified[storageKey] = DateTimeOffset.UtcNow;
         return Task.CompletedTask;
     }
 

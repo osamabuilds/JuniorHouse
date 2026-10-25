@@ -39,6 +39,12 @@ public sealed class StorefrontOptions
     /// <summary>Wait after the first failed attempt; doubled for each further one.</summary>
     public TimeSpan DerivativeRetryDelay { get; set; } = TimeSpan.FromMinutes(1);
 
+    /// <summary>How long an unreferenced derivative file is kept before the sweep removes it.</summary>
+    public TimeSpan DerivativeCacheLifetime { get; set; } = TimeSpan.FromDays(30);
+
+    /// <summary>How often the sweep looks for unreferenced derivative files.</summary>
+    public TimeSpan DerivativeSweepInterval { get; set; } = TimeSpan.FromDays(1);
+
     /// <summary>Whether the background image worker runs. On by default.</summary>
     public bool ImageWorkerEnabled { get; set; } = true;
 
@@ -65,6 +71,8 @@ public sealed class ReadModelSettings(IOptions<StorefrontOptions> options) : App
     public int MaxDerivativeAttempts => options.Value.MaxDerivativeAttempts;
 
     public TimeSpan DerivativeRetryDelay => options.Value.DerivativeRetryDelay;
+
+    public TimeSpan DerivativeCacheLifetime => options.Value.DerivativeCacheLifetime;
 }
 
 public sealed class ExternalHostPolicy(IOptions<StorefrontOptions> options) : IExternalHostPolicy

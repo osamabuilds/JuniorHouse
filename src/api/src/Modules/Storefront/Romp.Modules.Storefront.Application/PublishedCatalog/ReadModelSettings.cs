@@ -24,6 +24,9 @@ public interface IReadModelSettings
 
     /// <summary>Wait after the first failed attempt; doubled for each further one.</summary>
     TimeSpan DerivativeRetryDelay { get; }
+
+    /// <summary>How long a derivative file nothing references any more is kept (pages and CDNs may still hold its URL) before the sweep removes it.</summary>
+    TimeSpan DerivativeCacheLifetime { get; }
 }
 
 /// <summary>
