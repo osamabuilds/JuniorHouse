@@ -484,6 +484,16 @@ public sealed class SizeChartRow : Entity<long>, IAuditable
         Name = name;
     }
 
+    public void Replace(long contentVersion, string categoryCode, string categoryName, string genderCode, string genderName, string name)
+    {
+        ContentVersion = contentVersion;
+        CategoryCode = categoryCode;
+        CategoryName = categoryName;
+        GenderCode = genderCode;
+        GenderName = genderName;
+        Name = name;
+    }
+
     public long ContentVersion { get; private set; }
 
     public string CategoryCode { get; private set; }
