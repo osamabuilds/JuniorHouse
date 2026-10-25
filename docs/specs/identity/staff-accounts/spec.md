@@ -55,4 +55,4 @@ Until now every request runs as an anonymous development user. The back office n
 ## Open questions
 - [x] ~~Owner bootstrap inputs~~ Decided: login name `osama`, display name "Osama Shafique".
 - [x] ~~Temporary password lifetime~~ Decided: 48 hours, single-use, regenerable by an administrator (AC-4, AC-6).
-- [ ] Source of the common-password list (a small embedded top-10,000 list is assumed; licence to be checked at implementation).
+- [x] Source of the common-password list: SecLists `Pwdb_top-100000` (MIT), entries of 12+ characters, 1,400 lines, embedded in the Domain assembly.
