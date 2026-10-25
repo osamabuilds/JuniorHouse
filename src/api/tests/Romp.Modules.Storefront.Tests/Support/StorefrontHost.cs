@@ -93,6 +93,8 @@ internal sealed class FakeSearchSettings : Romp.Modules.Storefront.Application.S
     public double SimilarityThreshold => 0.45;
 
     public int SuggestLimit => 8;
+
+    public int MissRetentionDays => 180;
 }
 
 internal sealed class FakeMenuSettings : Romp.Modules.Storefront.Application.Navigation.IMenuSettings
@@ -151,6 +153,8 @@ internal sealed class StorefrontHost : IDisposable
         services.AddSingleton<Romp.Modules.Storefront.Application.Search.ISearchSettings, FakeSearchSettings>();
         services.AddSingleton<Romp.Modules.Storefront.Application.Search.ISynonymCache>(_ => new Romp.Modules.Storefront.Infrastructure.Search.SynonymCache(TimeProvider.System));
         services.AddSingleton<Romp.Modules.Storefront.Application.Search.ISuggestCache, Romp.Modules.Storefront.Infrastructure.Search.SuggestCache>();
+        services.AddScoped<Romp.Modules.Storefront.Application.Search.ISearchMissStore, Romp.Modules.Storefront.Infrastructure.Search.SearchMissStore>();
+        services.AddSingleton<Romp.Modules.Storefront.Infrastructure.Search.SearchMissWorker>();
         services.AddScoped<Romp.Modules.Storefront.Application.Search.IProductSearchIndex, Romp.Modules.Storefront.Infrastructure.Search.ProductSearchIndex>();
         services.AddSingleton<FakePathQueries>();
         services.AddSingleton<Romp.Modules.Catalog.Contracts.IProductPathQueries>(sp => sp.GetRequiredService<FakePathQueries>());
@@ -172,6 +176,8 @@ internal sealed class StorefrontHost : IDisposable
     }
 
     public string ConnectionString { get; }
+
+    public IServiceProvider Services => _root;
 
     public IPublishedDocumentCache Cache => _root.GetRequiredService<IPublishedDocumentCache>();
 

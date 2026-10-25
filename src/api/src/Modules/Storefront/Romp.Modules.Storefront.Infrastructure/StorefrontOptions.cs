@@ -65,6 +65,9 @@ public sealed class StorefrontOptions
     /// <summary>Most items autosuggest returns.</summary>
     public int SuggestLimit { get; set; } = 8;
 
+    /// <summary>Zero-result search counts are kept this many days (search SRC-13).</summary>
+    public int MissRetentionDays { get; set; } = 180;
+
     /// <summary>How often the reconcile job compares the read model with Catalog and Warehouse.</summary>
     public TimeSpan ReconcileInterval { get; set; } = TimeSpan.FromMinutes(10);
 }

@@ -86,6 +86,8 @@ public sealed class SearchSettings(IOptions<StorefrontOptions> options) : ISearc
     public double SimilarityThreshold => options.Value.SearchSimilarityThreshold;
 
     public int SuggestLimit => options.Value.SuggestLimit;
+
+    public int MissRetentionDays => options.Value.MissRetentionDays;
 }
 
 /// <summary>Autosuggest answers for 60 seconds per normalised prefix, at most 1,000 prefixes (an entry counts 1 against the limit).</summary>

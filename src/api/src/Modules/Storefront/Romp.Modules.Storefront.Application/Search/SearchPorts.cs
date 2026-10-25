@@ -16,6 +16,9 @@ public interface ISearchSettings
 
     /// <summary>Most items autosuggest returns.</summary>
     int SuggestLimit { get; }
+
+    /// <summary>Zero-result search counts older than this many days are deleted (SRC-13).</summary>
+    int MissRetentionDays { get; }
 }
 
 /// <summary>A product the index found, with how well it matched (higher is better).</summary>

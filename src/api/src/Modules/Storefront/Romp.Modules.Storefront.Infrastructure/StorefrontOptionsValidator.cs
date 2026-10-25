@@ -61,6 +61,11 @@ public sealed class StorefrontOptionsValidator : IValidateOptions<StorefrontOpti
             failures.Add("Storefront:SuggestLimit must be between 1 and 20.");
         }
 
+        if (options.MissRetentionDays is < 1 or > 3650)
+        {
+            failures.Add("Storefront:MissRetentionDays must be between 1 and 3650.");
+        }
+
         if (options.ImageQuality is < 1 or > 100)
         {
             failures.Add("Storefront:ImageQuality must be between 1 and 100.");
