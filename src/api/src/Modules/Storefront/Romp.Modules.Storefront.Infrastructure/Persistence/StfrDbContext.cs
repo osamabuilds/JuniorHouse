@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 using Romp.Modules.Storefront.Application.Abstractions;
 

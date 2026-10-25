@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Romp.Modules.Storefront.Application.PublishedCatalog;
-using Romp.Modules.Storefront.Infrastructure.StorefrontSettings;
 
 namespace Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
 

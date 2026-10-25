@@ -760,10 +760,10 @@ public enum RebuildStatus : short
 }
 
 /// <summary>STFR.DRV_STS_LKP</summary>
-public sealed class DerivativeStatusLookup : Romp.Modules.Storefront.Domain.StorefrontSettings.StorefrontLookup<DerivativeStatus>;
+public sealed class DerivativeStatusLookup : StorefrontLookup<DerivativeStatus>;
 
 /// <summary>STFR.DRV_FMT_LKP</summary>
-public sealed class DerivativeFormatLookup : Romp.Modules.Storefront.Domain.StorefrontSettings.StorefrontLookup<DerivativeFormat>;
+public sealed class DerivativeFormatLookup : StorefrontLookup<DerivativeFormat>;
 
 /// <summary>STFR.RBLD_STS_LKP</summary>
-public sealed class RebuildStatusLookup : Romp.Modules.Storefront.Domain.StorefrontSettings.StorefrontLookup<RebuildStatus>;
+public sealed class RebuildStatusLookup : StorefrontLookup<RebuildStatus>;

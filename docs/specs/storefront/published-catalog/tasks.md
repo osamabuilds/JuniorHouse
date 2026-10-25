@@ -32,8 +32,8 @@ Jira: SCRUM-208 · Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Each st
 
 ## D. Hardening and close
 
-20. [ ] Settings section `Storefront:` validated at start-up (`ImageWidths`, quality, `LowStockThreshold`, `ReconcileInterval`, etc.). Proof: options validation tests.
-21. [ ] `StorefrontFeatureDependencyTests`; add Storefront to `ModuleNames` if not already there; check no cross-module table reads. Proof: architecture tests.
+20. [x] Settings section `Storefront:` validated at start-up (`ImageWidths`, quality, `LowStockThreshold`, `ReconcileInterval`, etc.). Proof: options validation tests. *Built: `StorefrontOptionsValidator` + `ValidateOnStart`; widths 1 to 8 distinct values of 16 to 4096 px, quality 1 to 100, pixel cap up to 200M, attempts 1 to 20, job and retry intervals bounded. `StorefrontOptions`, `ReadModelSettings` and `StorefrontLookup<T>` moved to the module root, as both features use them.*
+21. [x] `StorefrontFeatureDependencyTests`; add Storefront to `ModuleNames` if not already there; check no cross-module table reads. Proof: architecture tests. *Built: `StorefrontFeatureDependencyTests` (features independent in Domain, Application and Infrastructure; pure Domain; no other module internals or tables; nothing else reads `STFR`). Also added the missing `chrome-redesign` README card, which fixes the old `StructureSyncTests` failure.*
 22. [ ] Public endpoints never return exact stock quantity. Proof: serialisation test over all storefront DTOs (PCT-3).
 23. [ ] Constant query count on product and listing reads. Proof: query-count test (PCT-8).
 24. [ ] End to end: publish a product in Catalog, see it in the read model within 5 s. Proof: `published-catalog.e2e.spec.ts` / integration test (PCT-1).

@@ -43,7 +43,8 @@ public sealed class StorefrontModule : IModule
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
 
-        services.Configure<StorefrontOptions>(configuration.GetSection("Storefront"));
+        services.AddOptions<StorefrontOptions>().Bind(configuration.GetSection("Storefront")).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<StorefrontOptions>, StorefrontOptionsValidator>();
         services.AddSingleton<IExternalHostPolicy, ExternalHostPolicy>();
         services.AddSingleton<Application.PublishedCatalog.IReadModelSettings, ReadModelSettings>();
         services.AddMemoryCache();

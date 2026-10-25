@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 
 namespace Romp.Modules.Storefront.Infrastructure.Persistence;
