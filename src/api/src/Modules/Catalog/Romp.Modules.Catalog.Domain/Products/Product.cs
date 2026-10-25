@@ -90,6 +90,12 @@ public sealed class Product : AggregateRoot<long>, IAuditable
 
     public string? PublishedBy { get; private set; }
 
+    /// <summary>
+    /// Goes up by exactly one, in the same save, with every change that raises a product event. The storefront read model keeps the
+    /// highest version it has seen, so a duplicate or out-of-order event can never overwrite newer data (PCT-5). Not the concurrency token.
+    /// </summary>
+    public long ContentVersion { get; private set; } = 1;
+
     public IReadOnlyCollection<PlannedVariant> Variants => _variants.AsReadOnly();
 
     public IReadOnlyCollection<ProductCollectionLink> Collections => _collections.AsReadOnly();
@@ -248,6 +254,7 @@ public sealed class Product : AggregateRoot<long>, IAuditable
         Status = ProductStatus.Published;
         PublishedAt = now;
         PublishedBy = person;
+        ContentVersion++;
         Raise(new ProductPublishedEvent(Id, StyleId, path));
     }
 
@@ -260,6 +267,7 @@ public sealed class Product : AggregateRoot<long>, IAuditable
         }
 
         Status = ProductStatus.Unpublished;
+        ContentVersion++;
         Raise(new ProductUnpublishedEvent(Id, StyleId, path));
     }
 
@@ -273,6 +281,7 @@ public sealed class Product : AggregateRoot<long>, IAuditable
 
         var wasPublished = Status == ProductStatus.Published;
         Status = ProductStatus.Archived;
+        ContentVersion++; // one bump even when a second (Unpublished) event follows
         Raise(new ProductArchivedEvent(Id, StyleId, path));
         if (wasPublished)
         {
@@ -289,6 +298,7 @@ public sealed class Product : AggregateRoot<long>, IAuditable
             return false;
         }
 
+        ContentVersion++;
         Raise(new ProductChangedEvent(Id, path, previousPath));
         return true;
     }

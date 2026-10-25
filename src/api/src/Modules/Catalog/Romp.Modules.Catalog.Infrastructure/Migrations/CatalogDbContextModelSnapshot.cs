@@ -545,6 +545,12 @@ namespace Romp.Modules.Catalog.Infrastructure.Migrations
                         .HasColumnType("smallint")
                         .HasColumnName("CATG_ID");
 
+                    b.Property<long>("ContentVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L)
+                        .HasColumnName("CNTT_VER");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(2000)
