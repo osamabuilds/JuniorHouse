@@ -61,6 +61,7 @@ public sealed class StorefrontModule : IModule
         // Published-catalog read model: fed by Catalog and Warehouse events (ADR 0018), repaired by the reconcile job.
         services.AddSingleton<PendingRebuilds>();
         services.AddHostedService<RebuildWorker>();
+        services.AddHealthChecks().AddCheck<DerivativeHealthCheck>(DerivativeHealthCheck.Name, tags: ["ready"]);
         services.AddFileStorage(configuration);
         services.AddSingleton<Application.PublishedCatalog.IImageResizer, SkiaImageResizer>();
         if (configuration.GetValue("Storefront:ImageWorkerEnabled", true))

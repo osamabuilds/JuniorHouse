@@ -55,7 +55,7 @@ public sealed class StorefrontPostgres : IAsyncLifetime
     }
 
     private string ConnectionStringFor(string database) =>
-        new NpgsqlConnectionStringBuilder(_postgres.GetConnectionString()) { Database = database, Pooling = true }.ConnectionString;
+        new NpgsqlConnectionStringBuilder(_postgres.GetConnectionString()) { Database = database, Pooling = true, MaxPoolSize = 5 }.ConnectionString;
 
     internal static StfrDbContext NewContext(string connectionString, QueryCounter? counter = null)
     {
@@ -218,5 +218,12 @@ internal sealed class StorefrontHost : IDisposable
         }
     }
 
-    public void Dispose() => _root.Dispose();
+    public void Dispose()
+    {
+        _root.Dispose();
+
+        // One database per test: close its idle pooled connections so a long run never reaches the server's connection limit.
+        using var connection = new NpgsqlConnection(ConnectionString);
+        NpgsqlConnection.ClearPool(connection);
+    }
 }
