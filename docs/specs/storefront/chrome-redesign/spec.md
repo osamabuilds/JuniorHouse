@@ -4,7 +4,7 @@
 - **Jira:** SCRUM-xxx (to be created under SCRUM-203)
 - **BRD sections:** §4.1 FEAT-CAT-01, §14
 - **Requirement IDs:** FR-01 (presentation), NFR-17, NFR-19, SEO-01
-- **Design source:** `docs/design/shared/` (header, footer), `docs/design/navigation-menu/`. Amends [site-chrome](../site-chrome/spec.md); it does not replace it.
+- **Design source:** `docs/design-system/` (`SiteHeader`, `MegaMenu`, `SiteFooter`). The earlier concept files in `docs/design/` were removed; they remain in git history. Amends [site-chrome](../site-chrome/spec.md); it does not replace it.
 - **Branch:** `SCRUM-xxx-chrome-redesign`, cut from `main`.
 
 ## Problem & intent
