@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -38,6 +39,26 @@ internal sealed class RecordingSessionRevoker : IUserSessionRevoker
     }
 }
 
+/// <summary>Counts the SQL reader commands a context runs, to prove a list is a constant number of queries (no N+1, CONVENTIONS section 4).</summary>
+internal sealed class CommandCounter : DbCommandInterceptor
+{
+    private int _count;
+
+    public int Count => _count;
+
+    public void Reset() => _count = 0;
+
+    public override ValueTask<InterceptionResult<System.Data.Common.DbDataReader>> ReaderExecutingAsync(
+        System.Data.Common.DbCommand command,
+        CommandEventData eventData,
+        InterceptionResult<System.Data.Common.DbDataReader> result,
+        CancellationToken cancellationToken = default)
+    {
+        Interlocked.Increment(ref _count);
+        return base.ReaderExecutingAsync(command, eventData, result, cancellationToken);
+    }
+}
+
 internal sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
 {
     public DateTimeOffset Now { get; set; } = now;
@@ -57,7 +78,7 @@ internal sealed class IdentityHost : IDisposable
 
     private readonly ServiceProvider _root;
 
-    public IdentityHost(IdentityPostgres postgres)
+    public IdentityHost(IdentityPostgres postgres, CommandCounter? counter = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -77,9 +98,16 @@ internal sealed class IdentityHost : IDisposable
         services.AddSingleton<ICommonPasswords, EmbeddedCommonPasswords>();
         services.AddSingleton<PasswordPolicy>();
 
-        services.AddDbContext<IdntDbContext>((sp, options) => options
-            .UseNpgsql(postgres.ConnectionString, npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "IDNT"))
-            .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>(), sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+        services.AddDbContext<IdntDbContext>((sp, options) =>
+        {
+            options
+                .UseNpgsql(postgres.ConnectionString, npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "IDNT"))
+                .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>(), sp.GetRequiredService<OutboxSaveChangesInterceptor>());
+            if (counter is not null)
+            {
+                options.AddInterceptors(counter);
+            }
+        });
         services.AddScoped<IIdentityDbContext>(sp => sp.GetRequiredService<IdntDbContext>());
         services.AddSingleton(NullLoggerFactory.Instance);
 
