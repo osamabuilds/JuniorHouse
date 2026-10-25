@@ -1,14 +1,20 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { provideStore } from '@ngrx/store';
 import { of } from 'rxjs';
+import { provideNavigation } from '../storefront/navigation';
+import { NavigationApi } from '../storefront/navigation/services/navigation-api.service';
+import { sampleHome } from '../storefront/navigation/testing/sample-home';
 import { HomePageContainer } from './home/home-page.container';
-import { ListingPageContainer } from './listing/listing-page.container';
 import { ProductPageContainer } from './product/product-page.container';
 
 function render<T>(type: new () => T, params: Record<string, string> = {}, query: Record<string, string> = {}): HTMLElement {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
+      provideStore({}),
+      provideNavigation(),
+      { provide: NavigationApi, useValue: { getHome: () => of(sampleHome) } },
       {
         provide: ActivatedRoute,
         useValue: { paramMap: of(convertToParamMap(params)), queryParamMap: of(convertToParamMap(query)), snapshot: {} },
@@ -21,28 +27,12 @@ function render<T>(type: new () => T, params: Record<string, string> = {}, query
 }
 
 describe('catalogue pages (design system)', () => {
-  it('home has one h1, the eight-card new in grid and the section headings in order', () => {
+  it('NAV-10 home has one h1, the new in tiles from the API, an audience tile each and the section headings', () => {
     const el = render(HomePageContainer);
     expect(el.querySelectorAll('h1').length).toBe(1);
-    expect(el.querySelectorAll('.rp-grid > li').length).toBe(8);
+    expect(el.querySelectorAll('.rp-grid > li').length).toBe(3);
     expect([...el.querySelectorAll('h2')].map((h) => h.textContent!.trim())).toContain('New in');
-    expect(el.querySelectorAll('a.rp-tile').length).toBe(2);
-  });
-
-  it('listing shows the category as the single h1 with breadcrumb and filtered pieces', () => {
-    const el = render(ListingPageContainer, { category: 'girls' });
-    expect(el.querySelectorAll('h1').length).toBe(1);
-    expect(el.querySelector('h1')!.textContent).toContain('Girls');
-    expect(el.querySelector('nav[aria-label="Breadcrumb"] [aria-current="page"]')!.textContent).toContain('Girls');
-    expect(el.querySelectorAll('.rp-card').length).toBeGreaterThan(0);
-  });
-
-  it('listing applies the age filter from the query string', () => {
-    const all = render(ListingPageContainer, { category: 'girls' }).querySelectorAll('.rp-card').length;
-    TestBed.resetTestingModule();
-    const el = render(ListingPageContainer, { category: 'girls' }, { age: '9-12' });
-    expect(el.querySelectorAll('.rp-card').length).toBeLessThan(all);
-    expect(el.querySelector('.rp-active')).not.toBeNull();
+    expect([...el.querySelectorAll('a.rp-tile')].map((a) => a.getAttribute('href'))).toEqual(['/girls', '/boys']);
   });
 
   it('product page has one h1, a labelled size radiogroup and keeps sold-out sizes disabled', () => {

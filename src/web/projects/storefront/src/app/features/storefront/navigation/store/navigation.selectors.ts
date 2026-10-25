@@ -7,3 +7,5 @@ export { selectMenu };
 
 /** The header, mega-menu and mobile menu entries, built from the menu the server returned. */
 export const selectMenuEntries = createSelector(selectMenu, (menu) => toNavItems(menu));
+
+export const selectHome = navigationFeature.selectHome;

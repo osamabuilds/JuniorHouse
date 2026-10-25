@@ -1,0 +1,45 @@
+<article class="rp-card">
+  <div class="rp-media">
+    @if (tile().image; as image) {
+      @if (image.sources.length > 0) {
+        <picture>
+          <source type="image/webp" [attr.srcset]="webpSet()" [attr.sizes]="sizes" />
+          @if (jpegSet()) {
+            <source type="image/jpeg" [attr.srcset]="jpegSet()" [attr.sizes]="sizes" />
+          }
+          <img
+            class="rp-tile-img"
+            [src]="fallbackSrc()"
+            [attr.width]="image.width"
+            [attr.height]="image.height"
+            [alt]="image.altText"
+            [attr.loading]="eager() ? 'eager' : 'lazy'"
+            [attr.fetchpriority]="priority() ? 'high' : null"
+            decoding="async"
+          />
+        </picture>
+      }
+    }
+    @if (onSale()) {
+      <span class="rp-tag">-{{ tile().savingPercent }}%</span>
+    } @else if (tile().hasSoldOutSizes) {
+      <span class="rp-tag rp-tag--low">Some sizes sold out</span>
+    }
+  </div>
+  <div class="rp-card__body">
+    <h3 class="rp-card__name"><a [routerLink]="tile().path">{{ tile().name }}</a></h3>
+    @if (colours(); as c) {
+      <p class="rp-card__meta">{{ c }}</p>
+    }
+    @if (tile().price !== null) {
+      <span class="rp-price" [class.rp-price--sale]="onSale()">
+        @if (onSale()) {
+          <span class="sr-only">Now </span>Rs. {{ tile().price | number }}
+          <s><span class="sr-only">Was </span>Rs. {{ tile().compareAtPrice | number }}</s>
+        } @else {
+          Rs. {{ tile().price | number }}
+        }
+      </span>
+    }
+  </div>
+</article>
