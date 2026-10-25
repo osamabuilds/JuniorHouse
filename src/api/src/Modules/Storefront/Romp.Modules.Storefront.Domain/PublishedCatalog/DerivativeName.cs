@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace Romp.Modules.Storefront.Domain.PublishedCatalog;
 
 /// <summary>The formats a resized image is written in (P-5): WebP, with a JPEG fallback.</summary>
-public enum DerivativeFormat
+public enum DerivativeFormat : short
 {
     Webp = 1,
     Jpeg = 2,

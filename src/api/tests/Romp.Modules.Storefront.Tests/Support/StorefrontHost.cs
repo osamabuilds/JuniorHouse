@@ -107,6 +107,7 @@ internal sealed class StorefrontHost : IDisposable
             .UseNpgsql(connectionString, npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "STFR"))
             .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>(), sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
+        services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddSingleton<IExternalHostPolicy, FakeExternalHostPolicy>();
         services.AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()));
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();

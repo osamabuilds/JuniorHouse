@@ -37,6 +37,7 @@ public sealed class StorefrontModule : IModule
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
                 sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
+        services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
 
         services.Configure<StorefrontOptions>(configuration.GetSection("Storefront"));
         services.AddSingleton<IExternalHostPolicy, ExternalHostPolicy>();

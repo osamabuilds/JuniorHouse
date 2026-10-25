@@ -15,7 +15,7 @@ Jira: SCRUM-208 · Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Each st
 ## B. Read model
 
 8. [x] Domain (`Storefront.Domain/PublishedCatalog`): `VersionedSnapshot`, `AvailabilityClass`, `ProductVisibility`, `PriceSummary`, `DerivativeName`. Proof: domain unit tests (PCT-3, 5, 9, 10).
-9. [ ] Infrastructure: `IStorefrontReadDbContext`, EF configurations for every `STFR` table (explicit `ToTable`/`HasColumnName`), migration `AddStorefrontReadModel` (quoted raw SQL for `pg_trgm` and indexes), seed `DRV_STS_LKP`. Proof: naming test; migration test on Testcontainers.
+9. [x] Infrastructure: `IStorefrontReadDbContext`, EF configurations for every `STFR` table (explicit `ToTable`/`HasColumnName`), migration `AddPublishedCatalogReadModel`, seeds for `DRV_STS_LKP`, `DRV_FMT_LKP`, `RBLD_STS_LKP` and the `MODL_META` row. Proof: naming test; migration test on Testcontainers (`ReadModelMigrationTests`). *The `pg_trgm` extension and the search vector and trigram columns moved to the search feature's migration (S9b).*
 10. [ ] `ApplyProductSnapshotCommand` with the version-wins upsert and removal on null snapshot. Proof: Testcontainers tests for duplicate, out-of-order and removal (PCT-1, 2, 4, 5).
 11. [ ] `ApplyAvailabilityCommand` and `AVLB_STK` holding area for events that arrive before the product. Proof: tests incl. no stock event ever received gives `NotYetAvailable` (PCT-3, 9, 11).
 12. [ ] `ApplySizeChartCommand`. Proof: handler test (PCT-1).

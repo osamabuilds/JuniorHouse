@@ -310,5 +310,6 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | available | AVLB | | rebuild | RBLD |
 | derivative (resized image) | DRV | | ready | RDY |
 | miss (a search with no results) | MISS | | swatch | SWCH |
-| model (as in read model) | MODL | | | |
+| model (as in read model) | MODL | | discount | DISC |
+| sellable (can be bought) | SELL | | end (as in end date) | END |
 | query | QRY | | synonym | SYNM |
