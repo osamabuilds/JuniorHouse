@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.BuildingBlocks.Storage;
 using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Warehouse.Contracts;
 using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
@@ -60,6 +61,13 @@ public sealed class StorefrontModule : IModule
         // Published-catalog read model: fed by Catalog and Warehouse events (ADR 0018), repaired by the reconcile job.
         services.AddSingleton<PendingRebuilds>();
         services.AddHostedService<RebuildWorker>();
+        services.AddFileStorage(configuration);
+        services.AddSingleton<Application.PublishedCatalog.IImageResizer, SkiaImageResizer>();
+        if (configuration.GetValue("Storefront:ImageWorkerEnabled", true))
+        {
+            services.AddHostedService<DerivativeWorker>();
+        }
+
         if (configuration.GetValue("Storefront:ReconcileEnabled", true))
         {
             services.AddHostedService<ReconcileWorker>();

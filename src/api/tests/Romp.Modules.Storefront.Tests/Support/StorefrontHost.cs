@@ -111,6 +111,10 @@ internal sealed class StorefrontHost : IDisposable
         services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddSingleton<IExternalHostPolicy, FakeExternalHostPolicy>();
         services.AddSingleton<Romp.Modules.Storefront.Application.PublishedCatalog.IReadModelSettings, FakeReadModelSettings>();
+        services.AddSingleton<InMemoryFileStorage>();
+        services.AddSingleton<Romp.BuildingBlocks.Storage.IFileStorage>(sp => sp.GetRequiredService<InMemoryFileStorage>());
+        services.AddSingleton<FakeImageResizer>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.PublishedCatalog.IImageResizer>(sp => sp.GetRequiredService<FakeImageResizer>());
         services.AddSingleton<FakeCatalogLookups>();
         services.AddSingleton<Romp.Modules.Reference.Contracts.ICatalogLookupQueries>(sp => sp.GetRequiredService<FakeCatalogLookups>());
         services.AddSingleton<FakeProducers>();
@@ -151,6 +155,10 @@ internal sealed class StorefrontHost : IDisposable
         var exit = await StorefrontOperator.RebuildAsync(_root, output, default);
         return (exit, output.ToString());
     }
+
+    public InMemoryFileStorage Storage => _root.GetRequiredService<InMemoryFileStorage>();
+
+    public FakeImageResizer Resizer => _root.GetRequiredService<FakeImageResizer>();
 
     public FakeCatalogLookups Lookups => _root.GetRequiredService<FakeCatalogLookups>();
 

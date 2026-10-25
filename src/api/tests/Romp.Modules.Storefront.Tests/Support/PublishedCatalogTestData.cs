@@ -10,6 +10,14 @@ internal sealed class FakeReadModelSettings : IReadModelSettings
     public int LowStockThreshold => 5;
 
     public IReadOnlyList<int> ImageWidths { get; } = [320, 640];
+
+    public long MaxImagePixels => 40_000_000;
+
+    public int ImageQuality => 80;
+
+    public int MaxDerivativeAttempts => 3;
+
+    public TimeSpan DerivativeRetryDelay => TimeSpan.FromMinutes(1);
 }
 
 /// <summary>The size lookup in a known order (5-6Y before 7-8Y, ids deliberately not in that order); every other lookup is unused by the projection.</summary>

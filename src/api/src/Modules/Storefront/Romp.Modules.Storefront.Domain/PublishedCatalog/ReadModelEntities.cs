@@ -285,6 +285,9 @@ public sealed class ImageRow : Entity<long>, IAuditable
         IsMain = isMain;
     }
 
+    /// <summary>Records the hash of the original's bytes, read by the image worker; the derivative names are built from it.</summary>
+    public void SetContentHash(string hash) => ContentHash = hash;
+
     public long ProductId { get; private set; }
 
     public short? ColourId { get; private set; }
@@ -327,6 +330,34 @@ public sealed class DerivativeRow : Entity<long>, IAuditable
         Width = width;
         Format = format;
         Status = DerivativeStatus.Pending;
+    }
+
+    /// <summary>The file was written: the row is done and keeps its generated name.</summary>
+    public void MarkDone(string fileKey)
+    {
+        FileKey = fileKey;
+        Status = DerivativeStatus.Done;
+        NextAttemptAt = null;
+        ErrorCode = null;
+    }
+
+    /// <summary>
+    /// An attempt failed. A <paramref name="permanent"/> failure (the original is not a usable image) or the last allowed attempt marks
+    /// the row failed; otherwise it stays pending and is due again after <paramref name="retryDelay"/> doubled for each earlier attempt.
+    /// </summary>
+    public void RecordFailure(string errorCode, bool permanent, DateTimeOffset now, int maxAttempts, TimeSpan retryDelay)
+    {
+        AttemptCount++;
+        ErrorCode = errorCode;
+        if (permanent || AttemptCount >= maxAttempts)
+        {
+            Status = DerivativeStatus.Failed;
+            NextAttemptAt = null;
+            return;
+        }
+
+        Status = DerivativeStatus.Pending;
+        NextAttemptAt = now + (retryDelay * Math.Pow(2, AttemptCount - 1));
     }
 
     public long ImageId { get; private set; }

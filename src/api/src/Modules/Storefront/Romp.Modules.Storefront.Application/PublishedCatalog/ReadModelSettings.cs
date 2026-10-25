@@ -12,6 +12,18 @@ public interface IReadModelSettings
 
     /// <summary>The widths every image is resized to, once per format (<see cref="ReadModelProjector.Formats"/>).</summary>
     IReadOnlyList<int> ImageWidths { get; }
+
+    /// <summary>An original with more pixels than this (width × height) is refused before it is decoded (PCT-7).</summary>
+    long MaxImagePixels { get; }
+
+    /// <summary>Encoder quality, 1 to 100, for every derivative.</summary>
+    int ImageQuality { get; }
+
+    /// <summary>Attempts a derivative gets before it is marked failed.</summary>
+    int MaxDerivativeAttempts { get; }
+
+    /// <summary>Wait after the first failed attempt; doubled for each further one.</summary>
+    TimeSpan DerivativeRetryDelay { get; }
 }
 
 /// <summary>

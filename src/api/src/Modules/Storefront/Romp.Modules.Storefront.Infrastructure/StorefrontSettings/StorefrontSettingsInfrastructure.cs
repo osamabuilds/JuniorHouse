@@ -27,6 +27,24 @@ public sealed class StorefrontOptions
     /// <summary>The widths each product image is resized to, in WebP and JPEG (published-catalog PCT-7).</summary>
     public int[] ImageWidths { get; set; } = [320, 640, 960, 1280];
 
+    /// <summary>Largest original, in pixels (width × height), the image worker will decode.</summary>
+    public long MaxImagePixels { get; set; } = 40_000_000;
+
+    /// <summary>Encoder quality (1 to 100) of every derivative.</summary>
+    public int ImageQuality { get; set; } = 80;
+
+    /// <summary>Attempts a derivative gets before it is marked failed.</summary>
+    public int MaxDerivativeAttempts { get; set; } = 5;
+
+    /// <summary>Wait after the first failed attempt; doubled for each further one.</summary>
+    public TimeSpan DerivativeRetryDelay { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>Whether the background image worker runs. On by default.</summary>
+    public bool ImageWorkerEnabled { get; set; } = true;
+
+    /// <summary>How long the image worker sleeps when no derivative is waiting.</summary>
+    public TimeSpan ImageWorkerPollInterval { get; set; } = TimeSpan.FromSeconds(5);
+
     /// <summary>Whether the background reconcile job runs (published-catalog PCT-5). On by default.</summary>
     public bool ReconcileEnabled { get; set; } = true;
 
@@ -39,6 +57,14 @@ public sealed class ReadModelSettings(IOptions<StorefrontOptions> options) : App
     public int LowStockThreshold => options.Value.LowStockThreshold;
 
     public IReadOnlyList<int> ImageWidths => options.Value.ImageWidths;
+
+    public long MaxImagePixels => options.Value.MaxImagePixels;
+
+    public int ImageQuality => options.Value.ImageQuality;
+
+    public int MaxDerivativeAttempts => options.Value.MaxDerivativeAttempts;
+
+    public TimeSpan DerivativeRetryDelay => options.Value.DerivativeRetryDelay;
 }
 
 public sealed class ExternalHostPolicy(IOptions<StorefrontOptions> options) : IExternalHostPolicy

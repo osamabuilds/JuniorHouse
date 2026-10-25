@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\Reference\Romp.Modules.Reference.Contracts\Romp.Modules.Reference.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Storage\Romp.BuildingBlocks.Storage.csproj" />
   </ItemGroup>
 
 </Project>
