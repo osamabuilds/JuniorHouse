@@ -131,4 +131,43 @@ public sealed class StorefrontPublicEndpointsTests(ProductionApiFixture api)
     {
         Assert.Equal(HttpStatusCode.NotFound, (await GetAsync("/media/" + Uri.EscapeDataString(name))).Status);
     }
+
+    private const string Products = "/api/storefront/products/by-path";
+
+    [Theory]
+    [Trait("Spec", "PDP-13")]
+    [InlineData("")]
+    [InlineData("?path=")]
+    [InlineData("?path=%20")]
+    public async Task AMissingPath_Is400(string query) =>
+        Assert.Equal(HttpStatusCode.BadRequest, (await GetAsync(Products + query)).Status);
+
+    [Fact]
+    [Trait("Spec", "PDP-13")]
+    public async Task APathOverTwoHundredCharacters_Is400() =>
+        Assert.Equal(HttpStatusCode.BadRequest, (await GetAsync($"{Products}?path=/{new string('a', 200)}")).Status);
+
+    [Theory]
+    [Trait("Spec", "PDP-13")]
+    [InlineData("/girls/dresses/nothing-here")]
+    [InlineData("/girls/dresses/../../etc/passwd")]
+    [InlineData("%2Fgirls%2F..%2F..%2Fetc%2Fpasswd")]
+    [InlineData("/<script>alert(1)</script>")]
+    [InlineData("/a/b?x=1")]
+    [InlineData("C:%5Cwindows%5Cwin.ini")]
+    public async Task AnUnknownOrHostilePath_AnswersNotFound_WithNoEchoNoStackTraceAndNoCaching(string path)
+    {
+        var response = await api.Client.GetAsync($"{Products}?path={path}&colour=<b>&size={new string('x', 500)}");
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = JsonDocument.Parse(body).RootElement;
+        Assert.Equal("NotFound", json.GetProperty("outcome").GetString());
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("path").ValueKind);
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("page").ValueKind);
+        Assert.Contains("no-store", response.Headers.CacheControl?.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain("script", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("   at ", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("quantity", body, StringComparison.OrdinalIgnoreCase);
+    }
 }

@@ -16,7 +16,7 @@ The public, server-rendered shop window (Sprint 9, "Sell: browse"): navigation, 
 | [navigation](navigation/spec.md) | Audience and age-bracket mega-menu, breadcrumbs, minimal home page, brand configuration | FR-01, FEAT-CAT-01 | Implemented |
 | [listings](listings/spec.md) | New Arrivals, Sale, Category and Collection views; size, colour, price (and age) filters; sorting; pagination; empty states | FR-02, FR-03, FR-05, FEAT-CAT-02..04, 07 | Implemented |
 | [search](search/spec.md) | Keyword search, autosuggest, synonyms as data, zero-result log, safe input handling, exact SKU lookup | FR-04, FR-05, FR-06, FEAT-CAT-05, 06, NFR-02 | Approved |
-| [product-pages](product-pages/spec.md) | Gallery, price, SKU, variants and availability, sold-out state, size chart, composition and care | FR-07, FR-08, FR-09, FEAT-PDP-01..04 | Approved |
+| [product-pages](product-pages/spec.md) | Gallery, price, SKU, variants and availability, sold-out state, size chart, composition and care | FR-07, FR-08, FR-09, FEAT-PDP-01..04 | Implemented (PDP-14 in seo) |
 | [seo](seo/spec.md) | Server rendering, real status codes and redirects, meta templates, canonicals, Open Graph, structured data, sitemap, robots, edge cache headers, staging protection, Lighthouse budgets in CI | SEO-01, 03, 04, 05, 06, 08, 10, NFR-01 | Approved |
 
 Order of work: published-catalog → navigation and listings → product-pages → search → seo (the SEO pieces are built into each page as it is written; `seo` owns the shared machinery and the CI gate, starts first as a thin layer and closes last). **Code starts after Sprint 8 is merged to `main`; S9 branches from `main`.**

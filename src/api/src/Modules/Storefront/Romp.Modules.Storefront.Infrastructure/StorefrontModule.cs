@@ -17,6 +17,7 @@ using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Warehouse.Contracts;
 using Romp.Modules.Storefront.Infrastructure.Listings;
 using Romp.Modules.Storefront.Infrastructure.Navigation;
+using Romp.Modules.Storefront.Infrastructure.ProductPages;
 using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
 using Romp.Modules.Storefront.Application.Abstractions;
 using Romp.Modules.Storefront.Contracts;
@@ -51,6 +52,7 @@ public sealed class StorefrontModule : IModule
         services.AddSingleton<Application.PublishedCatalog.IReadModelSettings, ReadModelSettings>();
         services.AddSingleton<Application.Navigation.IMenuSettings, Navigation.MenuSettings>();
         services.AddSingleton<Application.Listings.IListingSettings, Listings.ListingSettings>();
+        services.AddSingleton<Application.ProductPages.IProductPageMetrics, ProductPages.ProductPageMetrics>();
         services.AddSingleton<Application.Abstractions.ICatalogLookupCache, CatalogLookupCache>();
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
@@ -95,6 +97,7 @@ public sealed class StorefrontModule : IModule
         endpoints.MapPublicStorefrontEndpoints();
         endpoints.MapPublicNavigationEndpoints();
         endpoints.MapPublicListingEndpoints();
+        endpoints.MapPublicProductPageEndpoints();
 
         var services = endpoints.ServiceProvider;
         var options = services.GetRequiredService<IOptions<StorefrontOptions>>().Value;

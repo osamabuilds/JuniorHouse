@@ -7,6 +7,7 @@ import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { providePage } from './features/storefront/page/page.providers';
 import { provideListings } from './features/storefront/listings';
+import { provideProductPages } from './features/storefront/product-pages';
 import { provideNavigation } from './features/storefront/navigation';
 import { provideSearchSuggest } from './features/storefront/search-suggest';
 import { provideSiteSettings } from './features/storefront/site-settings';
@@ -23,6 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideSiteSettings(),
     provideNavigation(),
     provideListings(),
+    provideProductPages(),
     provideSearchSuggest(),
     providePage(),
     provideRpImageLoader(),

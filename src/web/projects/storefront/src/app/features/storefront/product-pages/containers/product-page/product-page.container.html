@@ -1,0 +1,67 @@
+@if (result(); as r) {
+  @if (r.status === 'found') {
+    @let p = r.page;
+    <div class="rp-wrap">
+      <div class="pdp-crumbs"><rp-breadcrumbs [crumbs]="p.breadcrumbs" /></div>
+
+      <article class="rp-pdp">
+        <rp-product-gallery [images]="p.images" />
+
+        <div class="rp-buy">
+          <header class="pdp-head">
+            <p class="rp-eyebrow">{{ p.audienceName }}@if (p.ageName) { · {{ p.ageName }} }</p>
+            <h1>{{ p.name }}</h1>
+          </header>
+
+          <rp-product-price [price]="p.price" />
+          @if (p.sku) {
+            <p class="pdp-sku">SKU: <span>{{ p.sku }}</span></p>
+          }
+          @if (p.description) {
+            <p class="pdp-description">{{ p.description }}</p>
+          }
+
+          @if (!p.isAvailable) {
+            <rp-sold-out-state />
+          }
+          @if (p.colours.length > 1) {
+            <rp-colour-options [path]="p.path" [colours]="p.colours" [selected]="p.selectedColour" />
+          }
+          @if (p.sizes.length > 0) {
+            <rp-size-options [path]="p.path" [sizes]="p.sizes" [colour]="p.selectedColour" [selected]="p.selectedSize" />
+          }
+          <rp-availability-note [size]="chosenSize()" [isAvailable]="p.isAvailable" />
+
+          <rp-size-chart [chart]="p.sizeChart" />
+          <rp-composition-care [composition]="p.composition" [care]="p.care" [note]="p.careNote" />
+        </div>
+      </article>
+    </div>
+  } @else if (r.status !== 'moved') {
+    <div class="rp-wrap rp-page">
+      <section class="rp-notfound">
+        <h1 class="t-display-lg">
+          @switch (r.status) {
+            @case ('error') { Something went wrong }
+            @case ('gone') { This piece is no longer available }
+            @default { We could not find that page }
+          }
+        </h1>
+        <p class="t-body-lg">
+          @switch (r.status) {
+            @case ('error') { Please try again in a moment. }
+            @case ('gone') { It has been retired from the shop. Have a look at what is new in. }
+            @default { It may have moved, or the address may be mistyped. }
+          }
+        </p>
+        <ul class="rp-notfound__links">
+          @for (l of links(); track l.href) {
+            <li><a class="rp-link" [routerLink]="l.href">{{ l.label }}</a></li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+} @else {
+  <div class="rp-wrap"><p class="pdp-loading" role="status">Loading…</p></div>
+}
