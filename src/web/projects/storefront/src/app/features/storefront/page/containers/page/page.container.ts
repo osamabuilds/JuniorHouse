@@ -3,8 +3,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
+import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { SeoService } from '../../../../../shared/seo/seo.service';
-import { selectBrand, selectFacts, selectTopLinks } from '../../../site-settings';
+import { selectBrand, selectFacts, selectHelpPages, selectTopLinks } from '../../../site-settings';
 import { PageResult } from '../../services/page-api.service';
 import { PageActions } from '../../store/page.actions';
 import { selectPageResults } from '../../store/page.selectors';
@@ -15,7 +16,7 @@ const STATUS: Record<PageResult['status'], number> = { ok: 200, notFound: 404, g
 /** Shows one content page by slug, with the real HTTP status for pages that are missing, removed or failed. */
 @Component({
   selector: 'rp-page',
-  imports: [RouterLink, PageBlockComponent],
+  imports: [RouterLink, NotFoundComponent, PageBlockComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './page.container.html',
   styleUrl: './page.container.scss',
@@ -30,6 +31,7 @@ export class PageContainer {
   protected readonly slug = toSignal(this.route.paramMap.pipe(map((p) => p.get('slug'))), { initialValue: this.route.snapshot.paramMap?.get('slug') ?? null });
   protected readonly facts = this.store.selectSignal(selectFacts);
   protected readonly links = this.store.selectSignal(selectTopLinks);
+  protected readonly helpPages = this.store.selectSignal(selectHelpPages);
   private readonly brand = this.store.selectSignal(selectBrand);
   private readonly results = this.store.selectSignal(selectPageResults);
 

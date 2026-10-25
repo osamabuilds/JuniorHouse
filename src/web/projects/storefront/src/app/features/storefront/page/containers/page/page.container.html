@@ -1,32 +1,32 @@
 @if (result(); as r) {
   <div class="rp-wrap rp-page">
     @if (r.status === 'ok') {
-      <article>
-        <nav aria-label="Breadcrumb" class="rp-crumbs">
-          <ol>
-            <li><a routerLink="/">Home</a></li>
-            <li><span aria-current="page">{{ r.page.title }}</span></li>
-          </ol>
-        </nav>
+      <nav aria-label="Breadcrumb" class="rp-crumbs">
+        <ol>
+          <li><a routerLink="/">Home</a></li>
+          <li><span aria-current="page">{{ r.page.title }}</span></li>
+        </ol>
+      </nav>
+      <header class="rp-lhead">
+        <p class="rp-eyebrow">Help</p>
         <h1 class="t-display-lg">{{ r.page.title }}</h1>
-        @for (block of r.page.blocks; track $index) {
-          <rp-page-block [block]="block" [facts]="facts()" />
-        }
-      </article>
-    } @else {
-      <section class="rp-notfound">
-        <h1 class="t-display-lg">
-          @if (r.status === 'error') { Something went wrong } @else { We could not find that page }
-        </h1>
-        <p class="t-body-lg">
-          @if (r.status === 'error') { Please try again in a moment. } @else if (r.status === 'gone') { This page has been removed. } @else { It may have moved, or the address may be mistyped. }
-        </p>
-        <ul class="rp-notfound__links">
-          @for (l of links(); track l.href) {
-            <li><a class="rp-link" [routerLink]="l.href">{{ l.label }}</a></li>
+      </header>
+      <div class="rp-account">
+        <nav class="rp-sidenav" aria-label="Help">
+          <ul>
+            @for (p of helpPages(); track p.href) {
+              <li><a [routerLink]="p.href" [attr.aria-current]="p.href === '/' + r.page.slug ? 'page' : null">{{ p.label }}</a></li>
+            }
+          </ul>
+        </nav>
+        <article class="rp-prose">
+          @for (block of r.page.blocks; track $index) {
+            <rp-page-block [block]="block" [facts]="facts()" />
           }
-        </ul>
-      </section>
+        </article>
+      </div>
+    } @else {
+      <rp-not-found [kind]="r.status === 'error' ? 'error' : r.status === 'gone' ? 'page-gone' : 'page-missing'" [links]="links()" />
     }
   </div>
 }

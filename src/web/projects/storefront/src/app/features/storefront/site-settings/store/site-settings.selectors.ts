@@ -61,3 +61,8 @@ export const selectTopLinks = createSelector(selectHeaderEntries, (entries) =>
     return href ? [{ label: e.label, href }] : [];
   }),
 );
+
+/** The help menu on a content page: every published page, in the order the settings list them. */
+export const selectHelpPages = createSelector(selectSettings, (s) =>
+  s.pages.filter((p) => p.status === 'published').map((p) => ({ label: p.title, href: `/${p.slug}` })),
+);

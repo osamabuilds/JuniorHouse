@@ -44,4 +44,9 @@ describe('storefront styles', () => {
     const css = readFileSync(join(process.cwd(), 'node_modules/@fontsource-variable/manrope/index.css'), 'utf8');
     expect(css).toContain('font-display: swap');
   });
+
+  it('PR-7 defines .sr-only so Now/Was and sold-out text is hidden visually but still announced', () => {
+    const css = readFileSync(join(SRC, 'styles/_components.scss'), 'utf8');
+    expect(css).toMatch(/\.sr-only\s*\{[^}]*position:\s*absolute[^}]*clip/);
+  });
 });

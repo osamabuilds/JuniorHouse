@@ -5,5 +5,3 @@
 .rp-crumbs li + li::before { content: '/'; margin-right: var(--space-2); }
 .rp-crumbs a { display: inline-flex; align-items: center; min-height: var(--tap); color: inherit; }
 h1 { margin: 0; }
-.rp-notfound p { margin: var(--space-4) 0 0; }
-.rp-notfound__links { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-4); }

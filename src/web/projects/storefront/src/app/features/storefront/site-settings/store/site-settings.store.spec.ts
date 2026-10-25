@@ -9,7 +9,7 @@ import { SiteSettingsApi } from '../services/site-settings-api.service';
 import { SiteSettingsActions } from './site-settings.actions';
 import { SiteSettingsEffects } from './site-settings.effects';
 import { initialSiteSettingsState, siteSettingsReducer } from './site-settings.reducer';
-import { selectAges, selectFooter, selectHeaderEntries } from './site-settings.selectors';
+import { selectAges, selectFooter, selectHeaderEntries, selectHelpPages } from './site-settings.selectors';
 import { SETTINGS_API_URL } from '../site-settings.providers';
 
 const state = (settings: SiteSettings = launchSettings) => ({ siteSettings: { ...initialSiteSettingsState, settings } });
@@ -56,6 +56,13 @@ describe('siteSettings selectors', () => {
     const labels = selectFooter(state(edited) as never).flatMap((c) => c.links.map((l) => l.label));
     expect(labels).not.toContain('Delivery');
     expect(labels).toContain('Exchanges');
+  });
+
+  it('PR-13 the help menu lists the published pages in order and leaves out drafts', () => {
+    const links = selectHelpPages(state() as never);
+    expect(links.map((l) => l.label)).toContain('Delivery');
+    expect(links.find((l) => l.label === 'Delivery')?.href).toBe('/delivery');
+    expect(links.map((l) => l.label)).not.toContain('Privacy');
   });
 
   it('SC-11 footer links carry resolved hrefs, including the WhatsApp link', () => {

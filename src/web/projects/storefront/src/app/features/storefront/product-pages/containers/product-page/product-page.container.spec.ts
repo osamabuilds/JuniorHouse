@@ -22,7 +22,7 @@ const basePage: ProductPage = {
     { label: 'Dresses', path: '/girls/dresses' },
     { label: 'Floral Summer Dress', path: null },
   ],
-  price: { price: 1299, compareAtPrice: 1599, savingPercent: 19, isFrom: false },
+  price: { price: 1299, compareAtPrice: 1599, savingPercent: 19, savingAmount: 300, isFrom: false },
   selectedColour: 'red',
   selectedSize: '5-6y',
   sku: 'SKU-1',
@@ -119,11 +119,22 @@ describe('ProductPageContainer', () => {
 
     expect(price.querySelector('s')!.textContent).toContain('1,599');
     expect(price.querySelector('s .sr-only')!.textContent).toContain('Was');
-    expect(price.textContent).toContain('Save 19%');
+    expect(price.textContent).toContain('−19%');
+    expect(el.querySelector('.rp-save')!.textContent).toContain('You save Rs. 300');
+  });
+
+  it('PR-4 a sold-out product keeps its sold-out state and shows no discount badge, strike or saving', () => {
+    const { el } = render(found({ isAvailable: false, selectedSize: null, sku: null }));
+
+    expect(el.querySelector('rp-sold-out-state')).not.toBeNull();
+    expect(el.querySelector('.rp-off')).toBeNull();
+    expect(el.querySelector('.rp-price s')).toBeNull();
+    expect(el.querySelector('.rp-save')).toBeNull();
+    expect(el.querySelector('.rp-price')!.textContent).toContain('1,299');
   });
 
   it('PDP-15 shows "From" before a size is chosen', () => {
-    const { el } = render(found({ price: { price: 1000, compareAtPrice: null, savingPercent: 0, isFrom: true }, selectedSize: null, sku: null }));
+    const { el } = render(found({ price: { price: 1000, compareAtPrice: null, savingPercent: 0, savingAmount: 0, isFrom: true }, selectedSize: null, sku: null }));
 
     expect(el.querySelector('.rp-price')!.textContent).toContain('From');
     expect(el.querySelector('.pdp-sku')).toBeNull();
@@ -226,6 +237,22 @@ describe('ProductPageContainer', () => {
 
     expect(init.status).toBe(301);
     expect(new Headers(init.headers).get('Location')).toBe('/girls/dresses/new-name?colour=navy');
+  });
+
+  it('PR-11 a removed product says it has left the collection, with no 404 code, and still answers 410', () => {
+    const init: ResponseInit = {};
+    const { el } = render({ status: 'gone' }, {}, init);
+
+    expect(init.status).toBe(410);
+    expect(el.querySelector('h1')!.textContent).toContain('This piece has left the collection');
+    expect(el.querySelector('.rp-notfound__code')).toBeNull();
+  });
+
+  it('PR-10 a missing product shows the decorative 404 and the way home', () => {
+    const { el } = render({ status: 'notFound' });
+
+    expect(el.querySelector('.rp-notfound__code')!.getAttribute('aria-hidden')).toBe('true');
+    expect(el.querySelector('a[href="/"]')!.textContent).toContain('Back to home');
   });
 
   it('a failed call answers 503, never a cached 404', () => {

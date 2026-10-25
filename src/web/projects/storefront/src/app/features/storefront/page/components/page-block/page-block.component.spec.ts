@@ -32,7 +32,7 @@ describe('PageBlockComponent', () => {
     const list = render({ type: 'list', ordered: true, items: ['One', evil] });
     expect(list.querySelectorAll('ol > li').length).toBe(2);
     expect(list.querySelector('img')).toBeNull();
-    expect(render({ type: 'callout', text: 'Note' }).querySelector('aside')!.textContent).toContain('Note');
+    expect(render({ type: 'callout', text: 'Note' }).querySelector('p.rp-callout')!.textContent).toContain('Note');
   });
 
   it('a table block is a real table with column headers', () => {
@@ -46,6 +46,14 @@ describe('PageBlockComponent', () => {
     expect(render({ type: 'fact', key: 'contact.whatsapp', label: 'WhatsApp' }, facts).querySelector('a')!.getAttribute('href')).toBe('https://wa.me/923315613217');
     expect(render({ type: 'fact', key: 'contact.email', label: 'Email' }, facts).querySelector('a')!.getAttribute('href')).toBe('mailto:hello@example.com');
     expect(render({ type: 'fact', key: 'contact.hours', label: 'Hours' }, facts).textContent).toContain('Monday to Saturday');
+  });
+
+  it('PR-13 a text or link fact is a definition list row; a callout is a paragraph', () => {
+    const fact = render({ type: 'fact', key: 'contact.hours', label: 'Hours' }, facts);
+    expect(fact.querySelector('dl > div.rp-fact > dt')!.textContent).toBe('Hours');
+    expect(fact.querySelector('dl > div.rp-fact > dd')!.textContent).toContain('Monday to Saturday');
+    expect(render({ type: 'fact', key: 'contact.whatsapp', label: 'WhatsApp' }, facts).querySelector('dd a')).not.toBeNull();
+    expect(render({ type: 'callout', text: 'Note' }).querySelector('p.rp-callout')!.textContent).toBe('Note');
   });
 
   it('SC-14 exchange and delivery facts come from the settings', () => {

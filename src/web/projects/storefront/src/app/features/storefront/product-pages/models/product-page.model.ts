@@ -32,6 +32,8 @@ export interface ProductPrice {
   readonly price: number;
   readonly compareAtPrice: number | null;
   readonly savingPercent: number;
+  /** The server difference in PKR (SEC-09); 0 when there is no discount. */
+  readonly savingAmount: number;
   /** True before a size is chosen when sizes differ in price: shown as "From". */
   readonly isFrom: boolean;
 }

@@ -13,14 +13,24 @@ export interface ListingImage {
   readonly sources: readonly ListingImageSource[];
 }
 
+/** A size the product comes in; sold out when no colour of it can be bought. */
+export interface ListingTileSize {
+  readonly code: string;
+  readonly name: string;
+  readonly soldOut: boolean;
+}
+
 export interface ListingTile {
   readonly path: string;
   readonly name: string;
   readonly price: number | null;
   readonly compareAtPrice: number | null;
   readonly savingPercent: number;
+  /** The server difference in PKR between the compare-at price and the price; 0 when there is no discount (SEC-09). */
+  readonly savingAmount: number;
   readonly colourCount: number;
   readonly hasSoldOutSizes: boolean;
+  readonly sizes: readonly ListingTileSize[];
   readonly image: ListingImage | null;
 }
 

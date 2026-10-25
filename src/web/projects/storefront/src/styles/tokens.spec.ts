@@ -71,3 +71,14 @@ describe('storefront colour tokens (black and white)', () => {
     expect(t('accent-deep')).not.toBe(t('ink'));
   });
 });
+
+describe('storefront discount colour', () => {
+  it.each(LIGHT)('PR-6 --sale on %s and white on --sale meet 4.5:1', (surface) => {
+    expect(ratio(t('sale'), t(surface))).toBeGreaterThanOrEqual(4.5);
+    expect(ratio('#ffffff', t('sale'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('PR-6 --sale is the only red: it equals the danger text colour it aliases', () => {
+    expect(t('sale')).toBe(t('danger-text'));
+  });
+});

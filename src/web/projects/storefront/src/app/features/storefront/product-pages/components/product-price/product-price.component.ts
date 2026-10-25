@@ -12,7 +12,7 @@ import { ProductPrice } from '../../models/product-page.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (price(); as p) {
-      <p class="rp-price price" [class.rp-price--sale]="p.compareAtPrice !== null">
+      <p class="rp-price rp-price--lg" [class.rp-price--sale]="p.compareAtPrice !== null">
         @if (p.isFrom) {
           <span class="price__from">From</span>
         }
@@ -23,16 +23,19 @@ import { ProductPrice } from '../../models/product-page.model';
         @if (p.compareAtPrice !== null) {
           <s><span class="sr-only">Was </span>Rs. {{ p.compareAtPrice | number }}</s>
           @if (p.savingPercent > 0) {
-            <span class="price__saving">Save {{ p.savingPercent }}%</span>
+            <span class="rp-off">−{{ p.savingPercent }}%</span>
           }
         }
       </p>
+      @if (p.compareAtPrice !== null && p.savingAmount > 0) {
+        <p class="rp-save">You save Rs. {{ p.savingAmount | number }}</p>
+      }
     }
   `,
   styles: `
-    .price { margin: 0; font-size: 18px; }
     .price__from { color: var(--ink-muted); font-weight: 400; }
-    .price__saving { font: 500 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; }
+    :host { display: grid; gap: var(--space-1); }
+    .rp-price, .rp-save { margin: 0; }
   `,
 })
 export class ProductPriceComponent {

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, RESPONSE_INIT, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
 import { SeoService } from '../../../../../shared/seo/seo.service';
@@ -29,7 +30,7 @@ const META_DESCRIPTION_LENGTH = 155;
 @Component({
   selector: 'rp-product-page',
   imports: [
-    RouterLink,
+    NotFoundComponent,
     BreadcrumbsComponent,
     ProductGalleryComponent,
     ProductPriceComponent,
@@ -69,6 +70,15 @@ export class ProductPageContainer {
   protected readonly page = computed(() => {
     const r = this.result();
     return r?.status === 'found' ? r.page : null;
+  });
+
+  /** The price line. A sold-out product shows its price without the discount treatment (PR-4); the figures are the server ones. */
+  protected readonly price = computed(() => {
+    const p = this.page();
+    if (!p?.price) {
+      return null;
+    }
+    return p.isAvailable ? p.price : { ...p.price, compareAtPrice: null, savingPercent: 0, savingAmount: 0 };
   });
 
   /** The size the visitor chose, as the server confirmed it. */

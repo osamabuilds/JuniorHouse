@@ -43,6 +43,18 @@ describe('PageContainer', () => {
     expect(el.querySelector('table')).toBeNull();
   });
 
+  it('PR-13 a content page has the Help eyebrow, a Help menu beside the article with the current page marked, and a prose article', () => {
+    const { el } = render({ slug: 'delivery' });
+    const menu = el.querySelector('nav.rp-sidenav[aria-label="Help"]')!;
+
+    expect(el.querySelector('.rp-eyebrow')!.textContent).toContain('Help');
+    expect(menu.querySelector('a[aria-current="page"]')!.getAttribute('href')).toBe('/delivery');
+    expect(menu.querySelector('a[href="/exchanges"]')).not.toBeNull();
+    expect(menu.querySelector('a[href="/privacy"]')).toBeNull();
+    expect(el.querySelector('article.rp-prose')).not.toBeNull();
+    expect(el.querySelectorAll('main, h1').length).toBe(1);
+  });
+
   it('SC-13 headings never skip a level', () => {
     const { el } = render({ slug: 'size-guide' });
     const levels = [...el.querySelectorAll('h1,h2,h3')].map((h) => Number(h.tagName[1]));
@@ -70,6 +82,14 @@ describe('PageContainer', () => {
     expect(init.status).toBe(404);
     expect(el.querySelector('h1')!.textContent).toContain('could not find');
     expect(el.querySelectorAll('a[href="/new-in"]').length).toBeGreaterThan(0);
+    expect((seo.set.mock.calls.at(-1)![0] as { noindex?: boolean }).noindex).toBe(true);
+  });
+
+  it('PR-10 an unknown page shows the decorative 404 and the way home; PR-12 nothing here is indexable', () => {
+    const { el, seo } = render({ slug: 'nope' });
+
+    expect(el.querySelector('.rp-notfound__code')!.getAttribute('aria-hidden')).toBe('true');
+    expect(el.querySelector('a[href="/"]')!.textContent).toContain('Back to home');
     expect((seo.set.mock.calls.at(-1)![0] as { noindex?: boolean }).noindex).toBe(true);
   });
 
