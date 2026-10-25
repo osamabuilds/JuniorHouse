@@ -15,6 +15,7 @@ using Romp.Modules.Storefront.Application.Abstractions;
 using Romp.Modules.Storefront.Application.StorefrontSettings;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
+using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
 using Romp.Modules.Storefront.Infrastructure.StorefrontSettings;
 using Testcontainers.PostgreSql;
 
@@ -111,6 +112,17 @@ internal sealed class StorefrontHost : IDisposable
         services.AddSingleton<IExternalHostPolicy, FakeExternalHostPolicy>();
         services.AddSingleton<Romp.Modules.Storefront.Application.PublishedCatalog.IReadModelSettings, FakeReadModelSettings>();
         services.AddSingleton<Romp.Modules.Reference.Contracts.ICatalogLookupQueries, FakeCatalogLookups>();
+        services.AddSingleton<FakeProducers>();
+        services.AddSingleton<Romp.Modules.Catalog.Contracts.IPublishedProductQueries>(sp => sp.GetRequiredService<FakeProducers>());
+        services.AddSingleton<Romp.Modules.Catalog.Contracts.ISizeChartQueries>(sp => sp.GetRequiredService<FakeProducers>());
+        services.AddSingleton<Romp.Modules.Warehouse.Contracts.IStockAvailabilityQueries>(sp => sp.GetRequiredService<FakeProducers>());
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.ProductPublishedEvent>, ProductPublishedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.ProductChangedEvent>, ProductChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.ProductUnpublishedEvent>, ProductUnpublishedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.ProductArchivedEvent>, ProductArchivedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Catalog.Contracts.SizeChartChangedEvent>, SizeChartChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Warehouse.Contracts.StockLevelChangedEvent>, StockLevelChangedConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Warehouse.Contracts.StockPutawayConfirmedEvent>, StockPutawayConfirmedConsumer>();
         services.AddSingleton<IMemoryCache>(new MemoryCache(new MemoryCacheOptions()));
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries, PublishedPageSitemapSource>();
@@ -130,6 +142,22 @@ internal sealed class StorefrontHost : IDisposable
     public string ConnectionString { get; }
 
     public IPublishedDocumentCache Cache => _root.GetRequiredService<IPublishedDocumentCache>();
+
+    public FakeProducers Producers => _root.GetRequiredService<FakeProducers>();
+
+    /// <summary>Delivers an event the way the dispatcher does: a scope, the outbox row id in the message context, then every handler of that event type.</summary>
+    public async Task DeliverAsync<TEvent>(long outboxMessageId, TEvent domainEvent)
+        where TEvent : class
+    {
+        await using var scope = _root.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<OutboxMessageContext>();
+        context.MessageId = outboxMessageId;
+        context.Schema = "STFR";
+        foreach (var handler in scope.ServiceProvider.GetServices<IOutboxMessageHandler<TEvent>>())
+        {
+            await handler.HandleAsync(domainEvent, default);
+        }
+    }
 
     public static async Task<StorefrontHost> CreateAsync(StorefrontPostgres postgres) => new(await postgres.NewDatabaseAsync());
 

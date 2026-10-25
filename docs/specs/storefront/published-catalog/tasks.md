@@ -19,7 +19,7 @@ Jira: SCRUM-208 · Plan: [plan.md](plan.md) · Spec: [spec.md](spec.md). Each st
 10. [x] `ApplyProductSnapshotCommand` with the version-wins upsert and removal on null snapshot. Proof: Testcontainers tests for duplicate, out-of-order and removal (PCT-1, 2, 4, 5). *Built as an EF load-compare-write under the transaction behaviour (the row `xmin` token turns a concurrent writer into a retry), not raw `ON CONFLICT`; the size order comes from `ICatalogLookupQueries.ListSizesAsync`, since the snapshot carries none; `LowStockThreshold` and `ImageWidths` are `Storefront:` options behind `IReadModelSettings`.*
 11. [x] `ApplyAvailabilityCommand` and `AVLB_STK` holding area for events that arrive before the product. Proof: tests incl. no stock event ever received gives `NotYetAvailable` (PCT-3, 9, 11).
 12. [x] `ApplySizeChartCommand`. Proof: handler test (PCT-1).
-13. [ ] Event consumers via mappers with inbox idempotency (ADR 0011). Proof: same event delivered 10 times gives one state (PCT-5).
+13. [x] Event consumers via mappers with inbox idempotency (ADR 0011). Proof: same event delivered 10 times gives one state (PCT-5).
 14. [ ] `ReconcileCommand` job (10 min): refetch missing/older, remove unknown, refresh lookup copies. Proof: lost-event test (PCT-5).
 15. [ ] `RebuildStorefrontCommand` (sweep by run id), `RBLD_RUN`, endpoints `POST/GET /api/admin/storefront/rebuild`, operator CLI mode `rebuild-storefront`, auto-run on schema version mismatch. Proof: empty-model rebuild test, old rows keep serving during rebuild, 202 response (PCT-6). Permission policy is added when Sprint 8 lands; until then the route is local-only like other early endpoints.
 

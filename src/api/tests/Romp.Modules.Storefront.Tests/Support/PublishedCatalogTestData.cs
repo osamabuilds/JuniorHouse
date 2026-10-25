@@ -76,3 +76,44 @@ internal static class Snapshots
             [new PublishedCompositionLine(new PublishedCode(1, "COTTON", "Cotton"), 100m)],
             [new PublishedCareInstruction(new PublishedCode(1, "WASH30", "Wash at 30"), "wash-30")]);
 }
+
+/// <summary>The three producer contracts the sync commands read, held in memory with call counters (a redelivered event must not read twice).</summary>
+internal sealed class FakeProducers :
+    Romp.Modules.Catalog.Contracts.IPublishedProductQueries,
+    Romp.Modules.Catalog.Contracts.ISizeChartQueries,
+    Romp.Modules.Warehouse.Contracts.IStockAvailabilityQueries
+{
+    public Dictionary<long, PublishedProductSnapshot> Products { get; } = [];
+
+    public Dictionary<(short Category, short Gender), PublishedSizeChart> Charts { get; } = [];
+
+    public Dictionary<long, Romp.Modules.Warehouse.Contracts.StockAvailability> Stock { get; } = [];
+
+    public int Reads { get; private set; }
+
+    public Task<PublishedProductSnapshot?> GetSnapshotAsync(long productId, CancellationToken cancellationToken)
+    {
+        Reads++;
+        return Task.FromResult(Products.GetValueOrDefault(productId));
+    }
+
+    public Task<PublishedSizeChart?> GetChartAsync(short categoryId, short genderId, CancellationToken cancellationToken)
+    {
+        Reads++;
+        return Task.FromResult(Charts.GetValueOrDefault((categoryId, genderId)));
+    }
+
+    public Task<Romp.Modules.Warehouse.Contracts.StockAvailability?> GetAsync(long variantId, CancellationToken cancellationToken)
+    {
+        Reads++;
+        return Task.FromResult(Stock.GetValueOrDefault(variantId));
+    }
+
+    public Task<IReadOnlyList<PublishedProductVersion>> ListVersionsAsync(long afterProductId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+    public Task<IReadOnlyList<PublishedProductSnapshot>> ListSnapshotsAsync(long afterProductId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+    public Task<IReadOnlyList<PublishedSizeChart>> ListChartsAsync(long afterChartId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+    public Task<IReadOnlyList<Romp.Modules.Warehouse.Contracts.StockAvailability>> ListAvailabilityAsync(long afterVariantId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+}
