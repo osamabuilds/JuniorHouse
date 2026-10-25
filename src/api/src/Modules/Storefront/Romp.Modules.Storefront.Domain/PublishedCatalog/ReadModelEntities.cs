@@ -71,6 +71,9 @@ public sealed class PublishedProduct : Entity<long>, IAuditable
 
     public string? CareNote { get; private set; }
 
+    /// <summary>Words the product can be found by besides name and description (<see cref="Search.SearchText"/>); the search reads it (SRC-8).</summary>
+    public string SearchText { get; private set; } = string.Empty;
+
     /// <summary>Lowest price a shopper can pay (see <see cref="PriceSummary"/>); null when nothing is priced.</summary>
     public decimal? MinPrice { get; private set; }
 
@@ -127,6 +130,8 @@ public sealed class PublishedProduct : Entity<long>, IAuditable
     }
 
     public void MarkRebuilt(long? runId) => RebuildRunId = runId;
+
+    public void SetSearchText(string text) => SearchText = text ?? string.Empty;
 
     public DateTimeOffset InsrDte { get; set; }
 

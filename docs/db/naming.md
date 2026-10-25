@@ -313,3 +313,12 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | model (as in read model) | MODL | | discount | DISC |
 | sellable (can be bought) | SELL | | end (as in end date) | END |
 | query | QRY | | synonym | SYNM |
+
+### Added in Sprint 9c (search)
+
+`SRCH`, `SYNM`, `MISS`, `QRY`, `TEXT`, `TERM`, `IND` and `ACT` already existed (text is `TEXT`, so the columns are `SRCH_TEXT` and `QRY_TEXT`). Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| group | GRP | | phrase | PHRS |
+| vector (full-text search vector) | VEC | | | |

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain.Search;
 using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
 using Romp.Modules.Storefront.Application.Abstractions;
@@ -34,6 +35,12 @@ public sealed class StfrDbContext(DbContextOptions<StfrDbContext> options) : DbC
     public DbSet<RebuildRun> RebuildRuns => Set<RebuildRun>();
 
     public DbSet<ModelMeta> ModelMeta => Set<ModelMeta>();
+
+    public DbSet<SynonymGroup> SynonymGroups => Set<SynonymGroup>();
+
+    public DbSet<SynonymTerm> SynonymTerms => Set<SynonymTerm>();
+
+    public DbSet<SearchMiss> SearchMisses => Set<SearchMiss>();
 
     public DbSet<NavItem> NavItems => Set<NavItem>();
 

@@ -4,6 +4,7 @@ using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Reference.Contracts;
 using Romp.Modules.Storefront.Application.Abstractions;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain.Search;
 
 namespace Romp.Modules.Storefront.Application.PublishedCatalog;
 
@@ -77,6 +78,10 @@ public sealed class ApplyProductSnapshotCommandHandler(IStorefrontReadDbContext 
         var variants = await SyncVariantsAsync(snapshot, cancellationToken);
         var images = await SyncImagesAsync(snapshot, cancellationToken);
         await ReplaceChildrenAsync(snapshot, cancellationToken);
+
+        product.SetSearchText(SearchText.Build(
+            snapshot.Name, snapshot.StyleCode, snapshot.Gender.Name, snapshot.Category.Name, snapshot.AgeBracket.Name,
+            snapshot.Collections.Select(c => c.Name), snapshot.Variants.Select(v => v.Colour.Name)));
 
         ReadModelProjector.Recompute(product, variants, images.Images, images.Derivatives, settings);
         return created ? ProjectionOutcome.Created : ProjectionOutcome.Updated;

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain.Search;
 
 namespace Romp.Modules.Storefront.Application.Abstractions;
 
@@ -32,6 +33,10 @@ public interface IStorefrontReadDbContext
     DbSet<RebuildRun> RebuildRuns { get; }
 
     DbSet<ModelMeta> ModelMeta { get; }
+
+    DbSet<SynonymGroup> SynonymGroups { get; }
+
+    DbSet<SynonymTerm> SynonymTerms { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 

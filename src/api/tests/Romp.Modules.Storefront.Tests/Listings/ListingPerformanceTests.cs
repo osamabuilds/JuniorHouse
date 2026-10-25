@@ -40,7 +40,7 @@ public sealed class ListingPerformanceTests(StorefrontPostgres postgres)
     private static async Task CloneAsync(NpgsqlConnection connection, string table, string[] shift, string[] suffix, string[]? skip = null)
     {
         var columns = new List<string>();
-        await using (var read = new NpgsqlCommand("SELECT column_name FROM information_schema.columns WHERE table_schema = 'STFR' AND table_name = @t ORDER BY ordinal_position", connection))
+        await using (var read = new NpgsqlCommand("SELECT column_name FROM information_schema.columns WHERE table_schema = 'STFR' AND table_name = @t AND is_generated = 'NEVER' ORDER BY ordinal_position", connection))
         {
             read.Parameters.AddWithValue("t", table);
             await using var reader = await read.ExecuteReaderAsync();

@@ -5,4 +5,4 @@
 Keyword search with autosuggest, safe input handling and exact SKU lookup.
 
 ## Specification
-- [spec.md](spec.md) (Approved) · [plan.md](plan.md) · module context: [../README.md](../README.md)
+- [spec.md](spec.md) (Approved) · [plan.md](plan.md) · [tasks.md](tasks.md) · module context: [../README.md](../README.md)
