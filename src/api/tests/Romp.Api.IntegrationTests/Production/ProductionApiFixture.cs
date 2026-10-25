@@ -24,6 +24,8 @@ public sealed class ProductionApiFixture : IAsyncLifetime
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine").Build();
     private WebApplicationFactory<Program>? _factory;
 
+    public WebApplicationFactory<Program> Factory => _factory!;
+
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public HttpClient Client { get; private set; } = null!;

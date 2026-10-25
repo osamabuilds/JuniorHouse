@@ -64,7 +64,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(Romp.Modules.Quality.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Labelling.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Warehouse.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Storefront.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Storefront.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Identity.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
@@ -42,6 +43,9 @@ public sealed class IdentityModule : IModule
         services.AddSingleton<PasswordPolicy>();
 
         services.AddScoped<IIdentityDbContext>(sp => sp.GetRequiredService<IdntDbContext>());
+
+        // Replaced by the sessions feature, which owns session rows. Until then there is nothing to end.
+        services.TryAddSingleton<IUserSessionRevoker, NoSessionsYetRevoker>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(IdentityTransactionBehavior<,>));
 
@@ -51,5 +55,6 @@ public sealed class IdentityModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapStaffEndpoints();
     }
 }
