@@ -22,6 +22,8 @@ public sealed class DeactivateStaffCommandHandler(IIdentityDbContext dbContext, 
 {
     public async Task Handle(DeactivateStaffCommand request, CancellationToken cancellationToken)
     {
+        // Lock first, then read: a second deactivation waits here and then sees the first one's result (AC-9 under concurrency).
+        await dbContext.LockOwnersAsync(cancellationToken);
         var user = await StaffLookups.GetAsync(dbContext, request.UserId, cancellationToken);
 
         user.Deactivate(await StaffLookups.OwnerGuardForAsync(dbContext, user, cancellationToken));

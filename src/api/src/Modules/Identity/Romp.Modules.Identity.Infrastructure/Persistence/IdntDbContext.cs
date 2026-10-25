@@ -24,6 +24,19 @@ public sealed class IdntDbContext(DbContextOptions<IdntDbContext> options) : DbC
     async Task IIdentityDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 
+    /// <summary>Arbitrary constant naming the "Owner set" lock; advisory locks are per database, so it only has to be unique among Romp's.</summary>
+    private const long OwnerLockKey = 0x524F4D50_4F574E52; // "ROMPOWNR"
+
+    async Task IIdentityDbContext.LockOwnersAsync(CancellationToken cancellationToken)
+    {
+        if (Database.CurrentTransaction is null)
+        {
+            throw new InvalidOperationException("The Owner lock is held until the transaction ends, so it needs one.");
+        }
+
+        await Database.ExecuteSqlAsync($"SELECT pg_advisory_xact_lock({OwnerLockKey})", cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("IDNT");

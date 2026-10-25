@@ -15,4 +15,10 @@ public interface IIdentityDbContext
     DbSet<Role> Roles { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Serialises every change that could remove an active Owner (AC-9): blocks until no other transaction holds the Owner lock, then
+    /// holds it until this transaction ends. Call it before reading who the Owners are, inside the command's transaction.
+    /// </summary>
+    Task LockOwnersAsync(CancellationToken cancellationToken);
 }
