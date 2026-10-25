@@ -1,3 +1,5 @@
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,7 +8,9 @@ using Microsoft.Extensions.Options;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.Modules.Identity.Application.Abstractions;
 using Romp.Modules.Identity.Application.StaffAccounts;
+using Romp.Modules.Identity.Domain.StaffAccounts;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.StaffAccounts;
 
@@ -33,6 +37,13 @@ public sealed class IdentityModule : IModule
         services.AddOptions<Argon2Options>().Bind(configuration.GetSection(Argon2Options.Section)).ValidateOnStart();
         services.AddSingleton<IValidateOptions<Argon2Options>, Argon2OptionsValidator>();
         services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
+        services.AddSingleton<ITemporaryPasswordGenerator, TemporaryPasswordGenerator>();
+        services.AddSingleton<ICommonPasswords, EmbeddedCommonPasswords>();
+        services.AddSingleton<PasswordPolicy>();
+
+        services.AddScoped<IIdentityDbContext>(sp => sp.GetRequiredService<IdntDbContext>());
+        services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(IdentityTransactionBehavior<,>));
 
         // The module's events (none yet) go to the shared dispatcher; each feature adds its own as it lands.
         services.AddOutboxModule("IDNT");
