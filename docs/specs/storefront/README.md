@@ -2,7 +2,7 @@
 
 The public, server-rendered shop window (Sprint 9, "Sell: browse"): navigation, listing pages, search, the product page and the SEO baseline. It shows what Catalog published and what Warehouse has on the shelf; it changes neither. Nothing here needs a customer account (accounts start in S10, cart in S11).
 
-**Status:** Specs approved (owner, 2026-10-16); plans awaiting approval · **Schema:** `STFR` (read model only) · **Code:** `src/api/src/Modules/Storefront/` and `src/web/projects/storefront/` · **Web:** `features/storefront/` · **Jira:** SCRUM-203 (sources SCRUM-21..27, 148, 150..153, 155, 157) · **Rules:** [constitution](../../CONSTITUTION.md), [CLAUDE.md](../../../CLAUDE.md) frontend and SEO sections · **Module plan:** [plan.md](plan.md) · **ADR:** [0018](../../adr/0018-storefront-module-read-model-and-edge.md)
+**Status:** Specs approved (owner, 2026-10-16); plans approved (2026-10-25); S9a tasks written · **Schema:** `STFR` (read model only) · **Code:** `src/api/src/Modules/Storefront/` and `src/web/projects/storefront/` · **Web:** `features/storefront/` · **Jira:** SCRUM-203 (sources SCRUM-21..27, 148, 150..153, 155, 157) · **Rules:** [constitution](../../CONSTITUTION.md), [CLAUDE.md](../../../CLAUDE.md) frontend and SEO sections · **Module plan:** [plan.md](plan.md) · **ADR:** [0018](../../adr/0018-storefront-module-read-model-and-edge.md)
 
 ## Features
 
@@ -20,6 +20,11 @@ The public, server-rendered shop window (Sprint 9, "Sell: browse"): navigation, 
 | [seo](seo/spec.md) | Server rendering, real status codes and redirects, meta templates, canonicals, Open Graph, structured data, sitemap, robots, edge cache headers, staging protection, Lighthouse budgets in CI | SEO-01, 03, 04, 05, 06, 08, 10, NFR-01 | Approved |
 
 Order of work: published-catalog → navigation and listings → product-pages → search → seo (the SEO pieces are built into each page as it is written; `seo` owns the shared machinery and the CI gate, starts first as a thin layer and closes last). **Code starts after Sprint 8 is merged to `main`; S9 branches from `main`.**
+
+## Sprint 9 split (owner, 2026-10-25)
+
+- **S9a:** [published-catalog](published-catalog/tasks.md), [navigation](navigation/tasks.md), [listings](listings/tasks.md). Ends with real published products in menus and listings, replacing the mock catalogue.
+- **S9b:** product-pages, search, seo (tasks written when S9a closes).
 
 ## Scope of Sprint 9
 
@@ -43,14 +48,14 @@ Order of work: published-catalog → navigation and listings → product-pages �
 | D-4 | **Staging (Q-SF-5).** Sprint 9 acceptance is correct output on staging; Search Console submission is S19. Staging must sit behind Cloudflare Access or basic auth (`noindex` alone does not stop access to unreleased products). A test configuration renders robots, sitemap and canonicals for the production host so CI can assert them. |
 | D-5 | **Backlog (Q-SF-6).** Cross-sell rail and provenance badge stay out of Sprint 9. |
 | D-6 | **Home page (Q-SF-7).** Minimal: hero from New Arrivals, audience tiles, structured data and meta. Design direction: black and white base, premium, fashion-forward. The earlier marigold-gold mockup is not the reference. |
-| D-7 | **Delivery (Q-SF-1).** Jira umbrella SCRUM-203. Sprint 7 and Sprint 8 are merged to `main` first (after green Linux CI) and S9 starts from `main`. Specs and plans can be written now; code starts after Sprint 8. |
+| D-7 | **Delivery (Q-SF-1).** Jira umbrella SCRUM-203. ~~Sprint 7 and Sprint 8 are merged first.~~ **Revised 2026-10-25:** Sprint 8 is parked (domain not decided), so S9 starts from `main` now and runs without login like S1-S7. Staff-permission policies on the synonym, miss-log and rebuild endpoints, the staging deploy, the Cloudflare Access check and Lighthouse against staging follow when S8 lands; CI runs Lighthouse against a local build until then. |
 
 ## Open questions still carrying their proposed default
 
 The owner's answers covered the module-level questions. The per-feature questions below were not answered; each spec lists them, and the plans follow the **proposed default** until you say otherwise. Two of them could change behaviour in a visible way, so please look at these first:
 
-- [ ] **Q-SEO-2 Pagination canonical.** SEO-06 literally points paginated pages at page 1. Proposed default (a): filter and sort variants canonical to the base listing, each paginated page canonical to itself. The canonical rule is one function behind one setting, so switching to the literal reading is a one-line change.
-- [ ] **Q-LST-2 What "Sale" means.** Proposed default: every in-stock product with a variant whose compare-at price is above its price.
+- [x] **Q-SEO-2 (default confirmed 2026-10-25) Pagination canonical.** SEO-06 literally points paginated pages at page 1. Proposed default (a): filter and sort variants canonical to the base listing, each paginated page canonical to itself. The canonical rule is one function behind one setting, so switching to the literal reading is a one-line change.
+- [x] **Q-LST-2 (default confirmed 2026-10-25) What "Sale" means.** Proposed default: every in-stock product with a variant whose compare-at price is above its price.
 
 All others (Q-NAV-2..5, Q-LST-3..7, Q-SRC-1..4, Q-PDP-1..4, Q-SEO-3..7, Q-PCT-1..4) are in their specs with a proposal; Q-SF-2/3 above resolved several of them (marked in each spec).
 

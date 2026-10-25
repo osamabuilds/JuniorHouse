@@ -1,6 +1,6 @@
 # 0018 — Storefront module, rebuildable read model, search, images and the edge
 
-- Status: Proposed (decisions P-1..P-5, B-1, D-1..D-7 approved by the owner 2026-10-16; the technology choices marked **(choice)** below await approval with the plan)
+- Status: Accepted (decisions P-1..P-5, B-1, D-1..D-7 approved by the owner 2026-10-16; the plan and the technology choices marked **(choice)** approved 2026-10-25)
 - Date: 2026-10-16
 
 ## Context
