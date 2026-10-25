@@ -68,4 +68,12 @@ describe('RpDialog', () => {
     b.ctl.close();
     expect(document.body.classList.contains('rp-no-scroll')).toBe(false);
   });
+
+  it('SC-8 releases the scroll lock when it is destroyed while open', () => {
+    const { fixture, ctl } = setup();
+    ctl.open();
+    expect(document.body.classList.contains('rp-no-scroll')).toBe(true);
+    fixture.destroy();
+    expect(document.body.classList.contains('rp-no-scroll')).toBe(false);
+  });
 });
