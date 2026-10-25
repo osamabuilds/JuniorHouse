@@ -11,8 +11,8 @@ namespace Romp.Modules.Storefront.Application.Search;
 /// <summary>Autosuggest: up to <see cref="ISearchSettings.SuggestLimit"/> products and categories for the text typed so far (SRC-1, 7, 14).</summary>
 public sealed record SuggestQuery(string? Text) : IRequest<SuggestResultDto>;
 
-/// <summary><c>Kind</c> is <c>product</c> or <c>category</c>. <c>Image</c> is set for products with a picture ready.</summary>
-public sealed record SuggestionItemDto(string Kind, string Label, string Path, ListingImageDto? Image);
+/// <summary><c>Kind</c> is <c>product</c> or <c>category</c>. <c>Image</c> and <c>Price</c> (the lowest price, PKR) are set for products only.</summary>
+public sealed record SuggestionItemDto(string Kind, string Label, string Path, ListingImageDto? Image, decimal? Price = null);
 
 public sealed record SuggestResultDto(string Query, IReadOnlyList<SuggestionItemDto> Items) : IPublicStorefrontResponse;
 
@@ -62,10 +62,10 @@ public sealed class SuggestQueryHandler(
             }
 
             var ids = hits.Select(h => h.ProductId).ToList();
-            var products = (await db.Products.AsNoTracking().Where(p => p.IsListable && ids.Contains(p.Id)).Select(p => new { p.Id, p.Name, p.Path }).ToListAsync(cancellationToken))
+            var products = (await db.Products.AsNoTracking().Where(p => p.IsListable && ids.Contains(p.Id)).Select(p => new { p.Id, p.Name, p.Path, p.MinPrice }).ToListAsync(cancellationToken))
                 .ToDictionary(p => p.Id);
             var images = await ListingTiles.ImagesAsync(db, ids, cancellationToken);
-            items.AddRange(ids.Where(products.ContainsKey).Select(id => new SuggestionItemDto("product", products[id].Name, products[id].Path, images.GetValueOrDefault(id))));
+            items.AddRange(ids.Where(products.ContainsKey).Select(id => new SuggestionItemDto("product", products[id].Name, products[id].Path, images.GetValueOrDefault(id), products[id].MinPrice)));
         }
 
         return new SuggestResultDto(query.Text, items);

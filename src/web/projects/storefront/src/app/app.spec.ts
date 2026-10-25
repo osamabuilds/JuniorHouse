@@ -7,7 +7,7 @@ import { of } from 'rxjs';
 import { provideNavigation } from './features/storefront/navigation';
 import { NavigationApi } from './features/storefront/navigation/services/navigation-api.service';
 import { sampleMenu } from './features/storefront/navigation/testing/sample-menu';
-import { provideSearchSuggest } from './features/storefront/search-suggest';
+import { provideSearch } from './features/storefront/search';
 import { provideSiteSettings } from './features/storefront/site-settings';
 import { App } from './app';
 
@@ -15,7 +15,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([]), provideHttpClient(), provideStore({}), provideEffects(), provideSiteSettings(), provideNavigation(), provideSearchSuggest(), { provide: NavigationApi, useValue: { getMenu: () => of(sampleMenu) } }],
+      providers: [provideRouter([]), provideHttpClient(), provideStore({}), provideEffects(), provideSiteSettings(), provideNavigation(), provideSearch(), { provide: NavigationApi, useValue: { getMenu: () => of(sampleMenu) } }],
     }).compileComponents();
   });
 

@@ -24,6 +24,7 @@ public sealed class SuggestTests(StorefrontPostgres postgres)
         var item = Assert.Single(result.Items);
         Assert.Equal(("product", "Denim dungaree", "/girls/tops/p-1"), (item.Kind, item.Label, item.Path));
         Assert.NotNull(item.Image);
+        Assert.Equal(800m, item.Price);
     }
 
     [Fact]

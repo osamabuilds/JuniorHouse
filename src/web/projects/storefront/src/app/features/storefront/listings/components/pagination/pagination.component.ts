@@ -15,6 +15,8 @@ export class PaginationComponent {
   readonly totalPages = input.required<number>();
   readonly path = input.required<string>();
   readonly filter = input.required<ListingFilter>();
+  /** Query values every link keeps besides the filter (for example the search text). */
+  readonly extra = input<Readonly<Record<string, string>>>({});
 
   protected readonly numbers = computed(() => {
     const from = Math.max(1, this.page() - 2);
@@ -23,6 +25,6 @@ export class PaginationComponent {
   });
 
   protected query(page: number): Record<string, string | string[]> {
-    return toCanonicalQuery({ ...this.filter(), page }, true);
+    return { ...this.extra(), ...toCanonicalQuery({ ...this.filter(), page }, true) };
   }
 }

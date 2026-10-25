@@ -3,24 +3,25 @@ import { provideRouter } from '@angular/router';
 import { provideEffects } from '@ngrx/effects';
 import { Store, provideStore } from '@ngrx/store';
 import { Observable, of } from 'rxjs';
-import { SearchSuggestService } from '../../features/storefront/search-suggest/services/search-suggest.service';
-import { SearchSuggestEffects } from '../../features/storefront/search-suggest/store/search-suggest.effects';
-import { searchSuggestFeature } from '../../features/storefront/search-suggest/store/search-suggest.reducer';
+import { SuggestResult } from '../../features/storefront/search';
+import { SearchApi } from '../../features/storefront/search/services/search-api.service';
+import { SearchSuggestEffects } from '../../features/storefront/search/store/search-suggest.effects';
+import { searchSuggestFeature } from '../../features/storefront/search/store/search-suggest.reducer';
+import { fakeSuggest } from '../../features/storefront/search/testing';
 import { SiteSettingsActions, provideSiteSettings } from '../../features/storefront/site-settings';
 import { launchSettings } from '../../shared/data/launch-settings';
-import { mockProducts } from '../../shared/data/mock-products';
 import { polyfillDialog } from '../dialog/dialog.testing';
 import { SearchOverlayComponent } from './search-overlay.component';
 import { vi } from 'vitest';
 
-function render(suggest: (q: string) => Observable<typeof mockProducts> = (q) => of(mockProducts.filter((p) => p.name.toLowerCase().includes(q.toLowerCase())))) {
+function render(suggest: (q: string) => Observable<SuggestResult> = (q) => of(fakeSuggest(q))) {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: '**', children: [] }]),
       provideStore({ [searchSuggestFeature.name]: searchSuggestFeature.reducer }),
       provideSiteSettings(),
       provideEffects(SearchSuggestEffects),
-      { provide: SearchSuggestService, useValue: { suggest } },
+      { provide: SearchApi, useValue: { suggest } },
     ],
   });
   TestBed.inject(Store).dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));
@@ -60,17 +61,19 @@ describe('SearchOverlayComponent', () => {
     expect(chips).toEqual(['Dresses', 'T-shirts', 'Shorts']);
   });
 
-  it('SC-9 shows up to four suggestions 200 ms after typing', () => {
+  it('SC-9 shows suggestions 200 ms after typing: products link to their page, categories are chips', () => {
     const f = render();
-    type(f, 'a');
+    type(f, 'd');
     vi.advanceTimersByTime(199);
     f.detectChanges();
     expect(el(f).querySelectorAll('.rp-suggestions li').length).toBe(0);
     vi.advanceTimersByTime(1);
     f.detectChanges();
-    const n = el(f).querySelectorAll('.rp-suggestions li').length;
-    expect(n).toBeGreaterThan(0);
-    expect(n).toBeLessThanOrEqual(4);
+    const products = [...el(f).querySelectorAll('.rp-suggestions a')].map((a) => a.getAttribute('href'));
+    expect(products).toEqual(['/boys/jumpsuits/cotton-dungaree', '/girls/dresses/floral-summer-dress']);
+    expect([...el(f).querySelectorAll('.rp-chips a')].map((a) => a.getAttribute('href'))).toEqual(['/girls/dresses']);
+    expect(el(f).querySelector('.rp-suggestions img')!.getAttribute('src')).toBe('/media/a-320.jpg');
+    expect(el(f).textContent).toContain('Rs. 4,100');
   });
 
   it('SC-9 SC-10 shows "Nothing for" with links to the entries when there are no results', () => {

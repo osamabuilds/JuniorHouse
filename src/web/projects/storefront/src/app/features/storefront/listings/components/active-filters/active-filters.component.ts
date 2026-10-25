@@ -20,8 +20,10 @@ export class ActiveFiltersComponent {
   readonly chips = input.required<readonly FilterChip[]>();
   readonly clearAll = input.required<ListingFilter>();
   readonly path = input.required<string>();
+  /** Query values every link keeps besides the filter (for example the search text). */
+  readonly extra = input<Readonly<Record<string, string>>>({});
 
   protected query(filter: ListingFilter): Record<string, string | string[]> {
-    return toCanonicalQuery(filter);
+    return { ...this.extra(), ...toCanonicalQuery(filter) };
   }
 }

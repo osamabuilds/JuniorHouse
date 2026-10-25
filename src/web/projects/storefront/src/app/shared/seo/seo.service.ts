@@ -15,6 +15,8 @@ export interface SeoInput {
   readonly siteName: string;
   readonly crumbs: readonly Crumb[];
   readonly noindex?: boolean;
+  /** With noindex: still let crawlers follow the links (search results, SRC-11). */
+  readonly follow?: boolean;
   /** Extra JSON-LD objects for the page (for example Organization and WebSite on the home page). Each is a plain, serialisable object. */
   readonly structured?: readonly object[];
 }
@@ -40,7 +42,7 @@ export class SeoService {
     this.tag('name', 'twitter:card', 'summary');
     this.tag('name', 'twitter:title', title);
     this.tag('name', 'twitter:description', input.description);
-    if (input.noindex) this.tag('name', 'robots', 'noindex, nofollow');
+    if (input.noindex) this.tag('name', 'robots', input.follow ? 'noindex, follow' : 'noindex, nofollow');
     else this.meta.removeTag('name="robots"');
     this.canonical(url);
     this.breadcrumbs(input.crumbs);

@@ -3,15 +3,15 @@ import { Store, provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { afterEach, beforeEach, vi } from 'vitest';
-import { mockProducts } from '../../../../shared/data/mock-products';
-import { SearchSuggestService } from '../services/search-suggest.service';
+import { SearchApi } from '../services/search-api.service';
+import { fakeSuggest } from '../testing';
 import { SearchSuggestActions } from './search-suggest.actions';
 import { SearchSuggestEffects } from './search-suggest.effects';
-import { searchSuggestFeature } from './search-suggest.reducer';
+import { MAX_SUGGESTIONS, searchSuggestFeature } from './search-suggest.reducer';
 import { selectSuggestions } from './search-suggest.selectors';
 
 describe('searchSuggest', () => {
-  const suggest = vi.fn((q: string) => of(mockProducts.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()))));
+  const suggest = vi.fn((q: string) => of(fakeSuggest(q)));
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -20,7 +20,7 @@ describe('searchSuggest', () => {
       providers: [
         provideStore({ [searchSuggestFeature.name]: searchSuggestFeature.reducer }),
         provideEffects(SearchSuggestEffects),
-        { provide: SearchSuggestService, useValue: { suggest } },
+        { provide: SearchApi, useValue: { suggest } },
       ],
     });
   });
@@ -40,13 +40,18 @@ describe('searchSuggest', () => {
     expect(suggest).toHaveBeenCalledWith('shirt');
   });
 
-  it('SC-9 caps the suggestions at four and records what was searched', () => {
+  it('SRC-1 records what was searched and holds at most the eight the API sends', () => {
     const store = TestBed.inject(Store);
     store.dispatch(SearchSuggestActions.queryChanged({ query: 'a' }));
     vi.advanceTimersByTime(200);
     const s = store.selectSignal(selectSuggestions)();
-    expect(s.results.length).toBeLessThanOrEqual(4);
+    expect(s.results.length).toBeGreaterThan(0);
+    expect(s.results.length).toBeLessThanOrEqual(MAX_SUGGESTIONS);
     expect(s.searched).toBe('a');
+
+    const many = Array.from({ length: 20 }, (_, i) => ({ kind: 'product' as const, label: `P${i}`, path: `/p/${i}`, image: null, price: 1 }));
+    store.dispatch(SearchSuggestActions.resultsLoaded({ query: 'many', result: { query: 'many', items: many } }));
+    expect(store.selectSignal(selectSuggestions)().results.length).toBe(MAX_SUGGESTIONS);
   });
 
   it('SC-10 an empty query clears the suggestions without a request', () => {
@@ -61,7 +66,7 @@ describe('searchSuggest', () => {
     expect(store.selectSignal(selectSuggestions)().searched).toBe('');
   });
 
-  it('SC-9 trims and caps very long input at 100 characters', () => {
+  it('SRC-3 trims and caps very long input at 100 characters', () => {
     const store = TestBed.inject(Store);
     store.dispatch(SearchSuggestActions.queryChanged({ query: '  ' + 'x'.repeat(300) }));
     vi.advanceTimersByTime(200);
