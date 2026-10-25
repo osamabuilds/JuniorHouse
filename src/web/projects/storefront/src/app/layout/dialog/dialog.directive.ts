@@ -1,4 +1,4 @@
-import { Directive, ElementRef, inject, output } from '@angular/core';
+import { Directive, ElementRef, OnDestroy, inject, output } from '@angular/core';
 
 let openCount = 0;
 
@@ -15,7 +15,7 @@ let openCount = 0;
     '(close)': 'onClosed()',
   },
 })
-export class RpDialog {
+export class RpDialog implements OnDestroy {
   private readonly el = inject<ElementRef<HTMLDialogElement>>(ElementRef).nativeElement;
   private opener: HTMLElement | null = null;
   private locked = false;
@@ -54,6 +54,11 @@ export class RpDialog {
     this.opener?.focus();
     this.opener = null;
     this.closed.emit();
+  }
+
+  /** A dialog destroyed while open (a route change, a closed test fixture) must not leave the page scroll-locked. */
+  ngOnDestroy(): void {
+    if (this.locked) this.unlock();
   }
 
   private lock(): void {
