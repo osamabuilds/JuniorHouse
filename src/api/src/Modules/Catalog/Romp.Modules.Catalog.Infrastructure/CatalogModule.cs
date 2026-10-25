@@ -66,6 +66,7 @@ public sealed class CatalogModule : IModule
         services.AddScoped<ICompositionGate, CompositionGate>();
         services.AddScoped<IChartGate, ChartGate>();
         services.AddScoped<ProductAssembler>();
+        services.AddScoped<IPublishedProductQueries, PublishedProductQueries>();
         services.AddScoped<LabelledVariantWriter>();
         services.AddScoped<ProductImageMapper>();
         services.AddScoped<CompositionCareReader>();
