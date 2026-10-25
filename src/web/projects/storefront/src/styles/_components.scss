@@ -92,7 +92,7 @@
 .rp-search input:focus { width: 360px; }
 .rp-search input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 @media (min-width: 64rem) {
-  /* Wordmark left, nav centre, tools right (docs/design/shared/header.html). The template order is unchanged. */
+  /* Wordmark left, nav centre, tools right (docs/design-system SiteHeader). The template order is unchanged. */
   .rp-header__bar { grid-template-columns: auto 1fr auto; gap: var(--space-8); height: var(--header-h-desktop); }
   .rp-left { display: contents; }
   .rp-logo { order: -1; }
