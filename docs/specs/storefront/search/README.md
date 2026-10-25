@@ -1,6 +1,6 @@
 # Search
 
-- **Module:** [`storefront`](../README.md) · **Feature:** `search` · **Status:** Planned
+- **Module:** [`storefront`](../README.md) · **Feature:** `search` · **Status:** Implemented (SRC-10 deferred with seo)
 
 Keyword search with autosuggest, safe input handling and exact SKU lookup.
 
