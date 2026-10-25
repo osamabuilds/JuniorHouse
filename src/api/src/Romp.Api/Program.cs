@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Romp.Api;
 using Romp.Api.ExceptionHandling;
+using Romp.Api.HostVerbs;
 using Romp.Api.Seeding;
 using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Modules;
@@ -28,6 +29,15 @@ using Romp.Modules.Vendor.Domain.Vendors;
 using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 
+// Operator verbs (create-owner, reset-owner, migrate, healthcheck, rebuild-storefront) are parsed before anything else is built, so a bad
+// verb or a secret on the command line is refused without touching configuration, the database or the logs.
+var verbParse = HostVerbParser.Parse(args);
+if (verbParse.Error is not null)
+{
+    await Console.Error.WriteLineAsync(verbParse.Error);
+    return 2;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ADR 0011: an explicit request-body ceiling (large uploads keep their own per-endpoint validation).
@@ -38,6 +48,8 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule()];
 
 builder.Services.AddSharedPersistence();
+builder.Services.AddHttpContextCurrentActor();
+builder.Services.AddRompHostOptions(builder.Configuration, builder.Environment);
 
 // Registration order is pipeline order (outermost first): every request is logged, then
 // validated - a rejected request is still logged - before reaching any module's own
@@ -110,9 +122,15 @@ var app = builder.Build();
 
 // Operator verb (ADR 0016): `dotnet Romp.Api.dll rebuild-storefront` rebuilds the storefront read model inline on the server and exits.
 // It needs server access; the hosted services (outbox dispatcher, workers) are not started, so nothing else runs alongside it.
-if (args.Contains(Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildVerb))
+// The verbs create-owner, reset-owner, migrate and healthcheck are registered here as their tasks land (staff-accounts 10, platform D2/D3).
+if (verbParse.Request is { } verb)
 {
-    return await Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildAsync(app.Services, Console.Out, CancellationToken.None);
+    var handlers = new Dictionary<string, HostVerbHandler>
+    {
+        [Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildVerb] =
+            (_, output, cancellationToken) => Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildAsync(app.Services, output, cancellationToken),
+    };
+    return await HostVerbRunner.RunAsync(verb, handlers, Console.Out, Console.Error, CancellationToken.None);
 }
 
 // ADR 0011 deployment gate: outside Development/Testing the host refuses to start without a real authentication scheme.
