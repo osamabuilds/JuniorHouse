@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 /**
  * Pages redesign (PR-1..17): discounts, card size line, 404/410 layout and the help page, against the storefront container and the
  * API behind it. Data-driven checks use the first product the shop lists and skip when there is none.
- * Run: `docker compose up -d --build api storefront`, then `STOREFRONT_BASE_URL=http://localhost:4000 npx playwright test e2e/storefront/pages-redesign`.
+ * Run: `docker compose up -d --build api storefront`, then `STOREFRONT_BASE_URL=http://localhost:4000 npx playwright test e2e/storefront/listings.pages-redesign`.
  */
 const BASE = process.env['STOREFRONT_BASE_URL'] ?? 'http://localhost:4000';
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'];

@@ -13,7 +13,7 @@ Test first for every task: write the failing test, then make it pass. Backend te
 - [x] 9. 404 / 503 / removed page layout in `page.container` with decorative `404`, links, `noindex` (proves PR-10, 12; `page.container.spec.ts`)
 - [x] 10. 410 state in the product page container: "This piece has left the collection" and shop link; 301 unchanged (proves PR-11; `product-page.container.spec.ts`)
 - [x] 11. Content page layout: eyebrow, `rp-sidenav`, `rp-prose`; blocks as `<dl>`, callout, `<table>` with `<th scope>`, lists (no accordion: the settings have no accordion block, see As built) (proves PR-13, 14, 15; `page-block` and `page.container` specs)
-- [x] 12. Playwright: axe, no horizontal scroll and 44px targets at 390/768/1280 on a sale listing, sale and non-sale product, 404, 410 and a help page (proves PR-16; `e2e/storefront/pages-redesign.e2e.spec.ts`; 12 passed against the Docker stack 2026-10-25, also runs in CI)
+- [x] 12. Playwright: axe, no horizontal scroll and 44px targets at 390/768/1280 on a sale listing, sale and non-sale product, 404, 410 and a help page (proves PR-16; `e2e/storefront/listings.pages-redesign.e2e.spec.ts`; 12 passed against the Docker stack 2026-10-25, also runs in CI)
 - [x] 13. Full web unit suite, `ng build storefront`, Storefront backend tests green; diff touches only the storefront project and the listing tile (proves PR-17)
 - [ ] 14. Lighthouse budgets unchanged on home, category, product (proves PR-18; CI)
 - [x] 15. Close the loop: spec "As built", traceability, README status, memory note
