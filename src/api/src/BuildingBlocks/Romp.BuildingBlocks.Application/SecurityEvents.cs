@@ -23,6 +23,10 @@ public static partial class SecurityEvents
     [LoggerMessage(EventId = SignInFailedId, Level = LogLevel.Warning, Message = "Security event: sign-in failed. Outcome={Outcome} UserId={UserId} ClientIp={ClientIp}")]
     public static partial void SignInFailed(this ILogger logger, string outcome, long userId, string clientIp);
 
+    /// <summary>A wrong second-step code (outcome mfa_bad_code), or the fifth, which ended the pending sign-in (mfa_pending_ended).</summary>
+    [LoggerMessage(EventId = MfaFailedId, Level = LogLevel.Warning, Message = "Security event: second step failed. Outcome={Outcome} UserId={UserId} ClientIp={ClientIp}")]
+    public static partial void MfaFailed(this ILogger logger, string outcome, long userId, string clientIp);
+
     /// <summary>A sign-in attempt refused because a delay is running for the name or the address (outcome signin_throttled).</summary>
     [LoggerMessage(EventId = RateLimitedId, Level = LogLevel.Warning, Message = "Security event: sign-in throttled. Outcome=signin_throttled RetryAfterSeconds={RetryAfterSeconds} ClientIp={ClientIp}")]
     public static partial void SignInThrottled(this ILogger logger, int retryAfterSeconds, string clientIp);

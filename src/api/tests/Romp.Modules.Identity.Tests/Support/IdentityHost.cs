@@ -126,6 +126,7 @@ internal sealed class IdentityHost : IDisposable
         services.AddSingleton<ISecretProtector>(new AesGcmSecretProtector(Microsoft.Extensions.Options.Options.Create(new MfaOptions())));
         services.AddSingleton<IRecoveryPepper>(new ConfiguredRecoveryPepper(Microsoft.Extensions.Options.Options.Create(new MfaOptions())));
         services.AddScoped<SessionIssuer>();
+        services.AddScoped<SignInThrottle>();
 
         services.AddSingleton<IOptions<Argon2Options>>(
             Microsoft.Extensions.Options.Options.Create(new Argon2Options { MemoryKiB = 8, Iterations = 1, Parallelism = 1 }));

@@ -61,6 +61,7 @@ public sealed class IdentityModule : IModule
         services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(SessionPrincipal.Scheme, _ => { });
         services.AddSingleton<Sessions.SessionCookieWriter>();
         services.AddScoped<Application.Sessions.SessionIssuer>();
+        services.AddScoped<Application.Sessions.SignInThrottle>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(IdentityTransactionBehavior<,>));
 

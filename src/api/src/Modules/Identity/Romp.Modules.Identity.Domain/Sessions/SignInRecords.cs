@@ -36,6 +36,9 @@ public sealed class PendingSignIn : Entity<long>, IAuditable
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(5);
 
+    /// <summary>Wrong codes allowed for one pending sign-in; the fifth ends it (mfa AC-5).</summary>
+    public const int MaxFailures = 5;
+
     private PendingSignIn()
     {
         TokenHash = [];
@@ -57,6 +60,15 @@ public sealed class PendingSignIn : Entity<long>, IAuditable
     public DateTimeOffset? UpdtDte { get; set; }
 
     public string? UpdtBy { get; set; }
+
+    public bool IsExpired(DateTimeOffset now) => now >= ExpiresAt;
+
+    /// <summary>Counts a wrong code; true when that was the last one allowed, so the caller destroys this pending sign-in.</summary>
+    public bool RecordFailure()
+    {
+        FailureCount++;
+        return FailureCount >= MaxFailures;
+    }
 
     public static (PendingSignIn Pending, SecretString Token) Start(long userId, DateTimeOffset now)
     {

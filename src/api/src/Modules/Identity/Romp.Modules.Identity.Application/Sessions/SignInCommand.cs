@@ -91,12 +91,10 @@ public sealed class SignInCommandHandler(
     SignInDummyHash dummyHash,
     IMfaEnrolmentStatus mfa,
     SessionIssuer sessions,
+    SignInThrottle throttle,
     TimeProvider clock,
     ILoggerFactory loggers) : IRequestHandler<SignInCommand, SignInResult>
 {
-    /// <summary>How many recent attempts of a name+address pair are read; the delay reaches its cap well before this many failures.</summary>
-    private const int PairLookback = 10;
-
     private readonly ILogger _security = loggers.CreateLogger(SecurityEvents.Category);
 
     public async Task<SignInResult> Handle(SignInCommand request, CancellationToken cancellationToken)
@@ -104,7 +102,7 @@ public sealed class SignInCommandHandler(
         var now = clock.GetUtcNow();
         var typed = AttemptNames.Sanitise(request.UserName);
 
-        var wait = await WaitAsync(typed, request.ClientIp, now, cancellationToken);
+        var wait = await throttle.WaitAsync(typed, request.ClientIp, now, cancellationToken);
         if (wait is { } remaining)
         {
             Record(typed, request.ClientIp, LoginOutcome.Throttled, null, now);
@@ -170,47 +168,6 @@ public sealed class SignInCommandHandler(
         }
 
         return await dbContext.Staff.FirstOrDefaultAsync(u => u.UserName == name, cancellationToken);
-    }
-
-    /// <summary>
-    /// How long this attempt must still wait, or null. Two reads, both on the attempt index: the newest attempts of the name+address
-    /// pair (progressive delay) and the failures for the name from anywhere in the last 15 minutes (global ceiling). Throttled
-    /// attempts are ignored by both, so hammering during a delay does not lengthen it, and unknown names are treated like known ones.
-    /// </summary>
-    private async Task<TimeSpan?> WaitAsync(string typed, string clientIp, DateTimeOffset now, CancellationToken cancellationToken)
-    {
-        var pair = await dbContext.LoginAttempts.AsNoTracking()
-            .Where(a => a.AttemptName == typed && a.ClientIp == clientIp && LoginOutcomes.Counted.Contains(a.Outcome))
-            .OrderByDescending(a => a.AttemptedAt).ThenByDescending(a => a.Id)
-            .Select(a => new { a.Outcome, a.AttemptedAt })
-            .Take(PairLookback)
-            .ToListAsync(cancellationToken);
-
-        TimeSpan? pairWait = null;
-        if (pair.Count > 0)
-        {
-            var failures = ThrottlePolicy.ConsecutiveFailures(pair.Select(a => LoginOutcomes.IsSuccess(a.Outcome)));
-            pairWait = ThrottlePolicy.RetryAfter(failures, pair[0].AttemptedAt, now);
-        }
-
-        var since = now - ThrottlePolicy.GlobalWindow;
-        var global = await dbContext.LoginAttempts.AsNoTracking()
-            .Where(a => a.AttemptName == typed && a.AttemptedAt >= since && LoginOutcomes.Failures.Contains(a.Outcome))
-            .GroupBy(a => a.AttemptName)
-            .Select(g => new { Count = g.Count(), Last = g.Max(a => a.AttemptedAt) })
-            .FirstOrDefaultAsync(cancellationToken);
-
-        TimeSpan? globalWait = global is not null && ThrottlePolicy.GlobalCeilingReached(global.Count)
-            ? ThrottlePolicy.RetryAfter(ThrottlePolicy.GlobalDelay, global.Last, now)
-            : null;
-
-        return (pairWait, globalWait) switch
-        {
-            (null, null) => null,
-            (null, { } g) => g,
-            ({ } p, null) => p,
-            ({ } p, { } g) => p > g ? p : g,
-        };
     }
 }
 
