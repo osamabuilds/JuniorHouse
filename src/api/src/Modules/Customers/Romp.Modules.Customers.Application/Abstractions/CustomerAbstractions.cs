@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Customers.Domain.Accounts;
+using Romp.Modules.Customers.Domain.Addresses;
 
 namespace Romp.Modules.Customers.Application.Abstractions;
 
@@ -10,6 +11,8 @@ public interface ICustomerCommand;
 public interface ICustomerDbContext
 {
     DbSet<Customer> Customers { get; }
+
+    DbSet<CustomerAddress> Addresses { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

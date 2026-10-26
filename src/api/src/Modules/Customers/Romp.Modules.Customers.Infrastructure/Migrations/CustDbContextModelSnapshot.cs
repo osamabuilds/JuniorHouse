@@ -188,6 +188,114 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
 
                     b.ToTable("CUST_MAIN", "CUST");
                 });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Addresses.CustomerAddress", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("CityId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CITY_ID");
+
+                    b.Property<long>("CustomerId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("CUST_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean")
+                        .HasColumnName("DFLT_IND");
+
+                    b.Property<string>("LineOne")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("LINE_ONE");
+
+                    b.Property<string>("LineTwo")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("LINE_TWO");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("PHON");
+
+                    b.Property<string>("Postcode")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("PCDE");
+
+                    b.Property<short>("ProvinceId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("PROV_ID");
+
+                    b.Property<string>("RecipientName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("RCPT_NAME");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "CustomerId" }, "IX_CUST_ADDR_CUST_ID");
+
+                    b.HasIndex(new[] { "CustomerId" }, "UQ_CUST_ADDR_DFLT")
+                        .IsUnique()
+                        .HasFilter("\"DFLT_IND\"");
+
+                    b.ToTable("CUST_ADDR", "CUST", t =>
+                        {
+                            t.HasCheckConstraint("CK_CUST_ADDR_LINE", "char_length(btrim(\"LINE_ONE\")) BETWEEN 5 AND 150 AND (\"LINE_TWO\" IS NULL OR char_length(btrim(\"LINE_TWO\")) BETWEEN 1 AND 150)");
+
+                            t.HasCheckConstraint("CK_CUST_ADDR_PCDE", "\"PCDE\" IS NULL OR \"PCDE\" ~ '^[A-Za-z0-9]{1,10}$'");
+
+                            t.HasCheckConstraint("CK_CUST_ADDR_PHON", "\"PHON\" ~ '^\\+92[2-9][0-9]{9}$'");
+
+                            t.HasCheckConstraint("CK_CUST_ADDR_RCPT", "char_length(btrim(\"RCPT_NAME\")) BETWEEN 2 AND 80");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Addresses.CustomerAddress", b =>
+                {
+                    b.HasOne("Romp.Modules.Customers.Domain.Accounts.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_CUST_ADDR_CUST_ID");
+                });
 #pragma warning restore 612, 618
         }
     }

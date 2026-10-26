@@ -354,4 +354,6 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 
 | Word | Abbr. | | Word | Abbr. |
 |---|---|---|---|---|
-| province | PROV | | | |
+| postcode | PCDE | | recipient | RCPT |
+| province | PROV | | two | TWO |
+| one | ONE | | | |

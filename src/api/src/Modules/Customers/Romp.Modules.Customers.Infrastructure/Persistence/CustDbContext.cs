@@ -3,6 +3,7 @@ using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Domain.Accounts;
+using Romp.Modules.Customers.Domain.Addresses;
 
 namespace Romp.Modules.Customers.Infrastructure.Persistence;
 
@@ -13,6 +14,8 @@ namespace Romp.Modules.Customers.Infrastructure.Persistence;
 public sealed class CustDbContext(DbContextOptions<CustDbContext> options) : DbContext(options), ICustomerDbContext
 {
     public DbSet<Customer> Customers => Set<Customer>();
+
+    public DbSet<CustomerAddress> Addresses => Set<CustomerAddress>();
 
     async Task ICustomerDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
