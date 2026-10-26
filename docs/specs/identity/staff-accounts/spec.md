@@ -1,6 +1,6 @@
 # SCRUM-202: Staff accounts
 
-- **Status:** Approved (owner, 2026-10-16)
+- **Status:** Implemented (2026-10-26)
 - **Jira:** SCRUM-202; sources SCRUM-114, SCRUM-85
 - **BRD sections:** §8.4, §7.8
 - **Requirement IDs:** NFR-12, NFR-13, NFR-14, FR-60 (accounts side), SEC-25
@@ -56,3 +56,8 @@ Until now every request runs as an anonymous development user. The back office n
 - [x] ~~Owner bootstrap inputs~~ Decided: login name `osama`, display name "Osama Shafique".
 - [x] ~~Temporary password lifetime~~ Decided: 48 hours, single-use, regenerable by an administrator (AC-4, AC-6).
 - [x] Source of the common-password list: SecLists `Pwdb_top-100000` (MIT), entries of 12+ characters, 1,400 lines, embedded in the Domain assembly.
+
+## As built
+- **AC-12, partial:** account changes stamp the audit columns (`INSR_BY`, `UPDT_BY`; `operator-cli` for the operator step). A separate audit-trail record per action waits for the audit-trail feature.
+- **AC-5:** the server-side refusal of every other endpoint to a limited session is the roles permission handler (limited scope gets no permissions).
+- The e2e journey (`e2e/identity/staff-accounts.e2e.spec.ts`, real authentication, isolated stack) covers AC-3, AC-4, AC-5, AC-6 (temporary password stops working after use), AC-7 and AC-8 end to end. It needs an Owner reset with `reset-owner --password --mfa` before each run, because the Owner's secret is kept in `src/web/.e2e-state` (git-ignored) for the run only.
