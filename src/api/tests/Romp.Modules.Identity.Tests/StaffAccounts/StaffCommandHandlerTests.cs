@@ -140,6 +140,31 @@ public sealed class ChangeOwnPasswordHandlerTests(IdentityPostgres postgres)
 
     [Fact]
     [Trait("Spec", "AC-7")]
+    public async Task ThePasswordHistory_KeepsTheLastThree_WhenMoreThanThreeAreChosen()
+    {
+        // Found by the sessions e2e run: the fourth change tried to drop the oldest entry and EF refused ("association severed").
+        using var host = new IdentityHost(postgres);
+        var created = await StaffHandlerHelpers.CreateAsync(host, await host.RoleIdAsync(RoleCodes.Catalogue));
+        var current = created.TemporaryPassword;
+
+        for (var i = 1; i <= 6; i++)
+        {
+            var next = Secret($"chosen passphrase number {i} {i * 7919}");
+            await host.SendAsync(new ChangeOwnPasswordCommand(created.UserId, null, current, next));
+            current = next;
+        }
+
+        var stored = await host.LoadAsync(created.UserId);
+        Assert.Equal(3, stored.PasswordHistory.Count);
+        Assert.True(StaffHandlerHelpers.Hasher.Verify(current, stored.PasswordHash));
+
+        // The three kept are the three before the current one: the fourth-last is free to be used again, the third-last is not.
+        await Assert.ThrowsAsync<DomainException>(() => host.SendAsync(new ChangeOwnPasswordCommand(created.UserId, null, current, Secret("chosen passphrase number 3 23757"))));
+        await host.SendAsync(new ChangeOwnPasswordCommand(created.UserId, null, current, Secret("chosen passphrase number 2 15838")));
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-7")]
     public async Task RequiresCurrentAndRevokesOthers()
     {
         using var host = new IdentityHost(postgres);

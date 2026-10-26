@@ -140,7 +140,7 @@ describe('authInterceptor (sessions AC-2, AC-10)', () => {
   });
 
   it('does not try to refresh for the auth endpoints themselves', () => {
-    for (const url of ['/api/auth/me', '/api/auth/sign-in', '/api/auth/refresh']) {
+    for (const url of ['/api/auth/me', '/api/auth/sign-in', '/api/auth/mfa/verify', '/api/auth/refresh']) {
       let status = 0;
       http.get(url).subscribe({ error: (e) => (status = e.status) });
       controller.expectOne(url).flush({}, { status: 401, statusText: 'Unauthorized' });

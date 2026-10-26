@@ -11,7 +11,7 @@ const CSRF_HEADER = 'X-Romp-Csrf';
 const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const AUTH_PREFIX = '/api/auth/';
 /** The auth routes that must never trigger a refresh: they are how a session starts, ends or is renewed. */
-const NO_REFRESH = ['/api/auth/me', '/api/auth/sign-in', '/api/auth/refresh'];
+const NO_REFRESH = ['/api/auth/me', '/api/auth/sign-in', '/api/auth/mfa/verify', '/api/auth/refresh'];
 
 /** Marks the repeat of a request after a refresh, so a second 401 is returned instead of looping. */
 const REPEATED = new HttpContextToken<boolean>(() => false);

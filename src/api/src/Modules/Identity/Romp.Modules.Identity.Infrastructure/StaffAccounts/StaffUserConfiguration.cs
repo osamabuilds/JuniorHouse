@@ -39,7 +39,8 @@ internal sealed class StaffUserConfiguration : IEntityTypeConfiguration<StaffUse
         builder.Navigation(u => u.Roles).HasField("_roles").UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasMany(u => u.PasswordHistory).WithOne().HasForeignKey(h => h.UserId)
-            .HasConstraintName("FK_USR_PWD_HIST_USR_ID").OnDelete(DeleteBehavior.Restrict);
+            // ClientCascade: when the oldest entry rolls out of the window of three, EF deletes the orphan row; the database itself never cascades.
+            .HasConstraintName("FK_USR_PWD_HIST_USR_ID").OnDelete(DeleteBehavior.ClientCascade);
         builder.Navigation(u => u.PasswordHistory).HasField("_history").UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasAuditColumns();

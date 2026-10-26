@@ -1348,7 +1348,7 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                     b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
                         .WithMany("PasswordHistory")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired()
                         .HasConstraintName("FK_USR_PWD_HIST_USR_ID");
                 });
