@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Identity.Domain.Mfa;
 using Romp.Modules.Identity.Domain.Roles;
 using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
@@ -20,6 +21,10 @@ public interface IIdentityDbContext
     DbSet<LoginAttempt> LoginAttempts { get; }
 
     DbSet<PendingSignIn> PendingSignIns { get; }
+
+    DbSet<RecoveryCode> RecoveryCodes { get; }
+
+    DbSet<MfaEnrolmentPending> MfaEnrolmentsPending { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 

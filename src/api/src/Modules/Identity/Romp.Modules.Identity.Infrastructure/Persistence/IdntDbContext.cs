@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Identity.Application.Abstractions;
+using Romp.Modules.Identity.Domain.Mfa;
 using Romp.Modules.Identity.Domain.Roles;
 using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
@@ -27,6 +28,10 @@ public sealed class IdntDbContext(DbContextOptions<IdntDbContext> options) : DbC
     public DbSet<PendingSignIn> PendingSignIns => Set<PendingSignIn>();
 
     public DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
+
+    public DbSet<RecoveryCode> RecoveryCodes => Set<RecoveryCode>();
+
+    public DbSet<MfaEnrolmentPending> MfaEnrolmentsPending => Set<MfaEnrolmentPending>();
 
     async Task IIdentityDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);

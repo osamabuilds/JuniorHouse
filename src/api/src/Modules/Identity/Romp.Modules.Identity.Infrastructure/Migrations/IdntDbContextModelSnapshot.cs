@@ -124,6 +124,123 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                     b.ToTable("OUTB_MSG", "IDNT");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Mfa.MfaEnrolmentPending", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("EXPY_DTE");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("KeyId")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("KEY_ID");
+
+                    b.Property<byte[]>("SecretCipher")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("bytea")
+                        .HasColumnName("SECR_ENC");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("USR_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("MFA_ENRL_PEND", "IDNT");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Mfa.RecoveryCode", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<byte[]>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("bytea")
+                        .HasColumnName("CODE_HASH");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("USED_DTE");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("USR_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("USR_RCVR_CODE", "IDNT");
+                });
+
             modelBuilder.Entity("Romp.Modules.Identity.Domain.Roles.PermissionLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -842,6 +959,24 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("ACT_IND");
 
+                    b.Property<DateTimeOffset?>("MfaEnrolledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("MFA_ENRL_DTE");
+
+                    b.Property<string>("MfaKeyId")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("MFA_KEY_ID");
+
+                    b.Property<long>("MfaLastStep")
+                        .HasColumnType("bigint")
+                        .HasColumnName("MFA_LAST_STEP");
+
+                    b.Property<byte[]>("MfaSecretCipher")
+                        .HasMaxLength(128)
+                        .HasColumnType("bytea")
+                        .HasColumnName("MFA_SECR_ENC");
+
                     b.Property<bool>("MustChangePassword")
                         .HasColumnType("boolean")
                         .HasColumnName("MUST_CHNG_PWD_IND");
@@ -1125,6 +1260,26 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                             Name = "Multi-factor enrolment reset",
                             SortSeq = (short)9
                         });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Mfa.MfaEnrolmentPending", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_MFA_ENRL_PEND_USR_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Mfa.RecoveryCode", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_USR_RCVR_CODE_USR_ID");
                 });
 
             modelBuilder.Entity("Romp.Modules.Identity.Domain.Roles.RoleGrant", b =>

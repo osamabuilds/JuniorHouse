@@ -105,6 +105,19 @@ public sealed class StaffUser : AggregateRoot<long>, IAuditable
 
     public bool HasTemporaryPassword => TemporaryPasswordExpiresAt is not null;
 
+    /// <summary>The authenticator secret as sealed by the secret protector (mfa AC-7); null until enrolment is confirmed. Never the secret itself.</summary>
+    public byte[]? MfaSecretCipher { get; private set; }
+
+    /// <summary>Which key sealed <see cref="MfaSecretCipher"/>, so keys can be rotated.</summary>
+    public string? MfaKeyId { get; private set; }
+
+    public DateTimeOffset? MfaEnrolledAt { get; private set; }
+
+    /// <summary>The newest time step whose code was accepted. A code for this step or an earlier one is a replay (mfa AC-4).</summary>
+    public long MfaLastStep { get; private set; }
+
+    public bool IsMfaEnrolled => MfaEnrolledAt is not null;
+
     public IReadOnlyCollection<short> RoleIds => _roles.Select(r => r.RoleId).ToArray();
 
     public IReadOnlyCollection<StaffUserRole> Roles => _roles.AsReadOnly();
@@ -195,6 +208,57 @@ public sealed class StaffUser : AggregateRoot<long>, IAuditable
         MustChangePassword = true;
         TemporaryPasswordExpiresAt = null;
         TemporaryPasswordUsedAt = null;
+    }
+
+    /// <summary>
+    /// Confirmed enrolment (mfa AC-2): the sealed secret becomes active. <paramref name="firstStep"/> is the step of the code that
+    /// confirmed it, so that code cannot be replayed to sign in.
+    /// </summary>
+    public void EnrolMfa(byte[] sealedSecret, string keyId, DateTimeOffset now, long firstStep)
+    {
+        ArgumentNullException.ThrowIfNull(sealedSecret);
+        ArgumentException.ThrowIfNullOrWhiteSpace(keyId);
+
+        if (IsMfaEnrolled)
+        {
+            throw new DomainException("Two-step verification is already set up for this account.");
+        }
+
+        MfaSecretCipher = sealedSecret;
+        MfaKeyId = keyId;
+        MfaEnrolledAt = now;
+        MfaLastStep = firstStep;
+    }
+
+    /// <summary>Forgets the second factor (reset by an administrator or the operator): the person must enrol again (mfa AC-8, AC-9). Idempotent.</summary>
+    public void ClearMfa()
+    {
+        MfaSecretCipher = null;
+        MfaKeyId = null;
+        MfaEnrolledAt = null;
+        MfaLastStep = 0;
+    }
+
+    /// <summary>Records an accepted step; false (and no change) when it is not newer than the last one. The caller's save is the conditional write.</summary>
+    public bool TryAcceptMfaStep(long step)
+    {
+        if (step <= MfaLastStep)
+        {
+            return false;
+        }
+
+        MfaLastStep = step;
+        return true;
+    }
+
+    /// <summary>A key rotation re-seals the same secret under the current key (mfa AC-7).</summary>
+    public void ReplaceSealedSecret(byte[] sealedSecret, string keyId)
+    {
+        ArgumentNullException.ThrowIfNull(sealedSecret);
+        ArgumentException.ThrowIfNullOrWhiteSpace(keyId);
+
+        MfaSecretCipher = sealedSecret;
+        MfaKeyId = keyId;
     }
 
     /// <summary>Idempotent. Refused for the last active Owner (AC-9).</summary>

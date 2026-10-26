@@ -25,6 +25,11 @@ internal sealed class StaffUserConfiguration : IEntityTypeConfiguration<StaffUse
         builder.Property(u => u.MustChangePassword).HasColumnName("MUST_CHNG_PWD_IND").IsRequired();
         builder.Property(u => u.TemporaryPasswordExpiresAt).HasColumnName("TEMP_PWD_EXPY_DTE");
         builder.Property(u => u.TemporaryPasswordUsedAt).HasColumnName("TEMP_PWD_USED_DTE");
+        builder.Property(u => u.MfaSecretCipher).HasColumnName("MFA_SECR_ENC").HasMaxLength(128);
+        builder.Property(u => u.MfaKeyId).HasColumnName("MFA_KEY_ID").HasMaxLength(40);
+        builder.Property(u => u.MfaEnrolledAt).HasColumnName("MFA_ENRL_DTE");
+        builder.Property(u => u.MfaLastStep).HasColumnName("MFA_LAST_STEP").IsRequired();
+        builder.Ignore(u => u.IsMfaEnrolled);
         builder.Ignore(u => u.HasTemporaryPassword);
         builder.Ignore(u => u.RoleIds);
         builder.Ignore(u => u.DomainEvents);
