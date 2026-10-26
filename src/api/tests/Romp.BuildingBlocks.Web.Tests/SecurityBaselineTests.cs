@@ -65,9 +65,39 @@ public sealed class SecurityBaselineTests
     {
         await using var app = Build("Production", services: s => s
             .AddAuthentication()
-            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>("Staff-Login", _ => { }));
+            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>(RompAuthorizationExtensions.SessionScheme, _ => { }));
 
         await SecurityGate.VerifyAsync(app.Services, app.Environment);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-14")]
+    public async Task InProduction_SomeOtherScheme_DoesNotOpenTheGate()
+    {
+        await using var app = Build("Production", services: s => s
+            .AddAuthentication()
+            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>("Staff-Login", _ => { }));
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => SecurityGate.VerifyAsync(app.Services, app.Environment));
+
+        Assert.Contains(RompAuthorizationExtensions.SessionScheme, ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-14")]
+    public async Task InProduction_TheSessionScheme_MustAlsoBeTheDefault()
+    {
+        await using var app = Build("Production", services: s =>
+        {
+            s.AddAuthentication()
+                .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>(RompAuthorizationExtensions.SessionScheme, _ => { })
+                .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>("Other", _ => { });
+            s.Configure<Microsoft.AspNetCore.Authentication.AuthenticationOptions>(o => o.DefaultScheme = "Other");
+        });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => SecurityGate.VerifyAsync(app.Services, app.Environment));
+
+        Assert.Contains("default", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
