@@ -291,6 +291,21 @@ public sealed class AuthEndpointsTests(ProductionApiFixture api)
     }
 
     [Fact]
+    [Trait("Spec", "AC-14")]
+    public async Task Me_UnderTheDevelopmentHandler_StillAnswers_SoTheAdminAppRunsWithoutSignIn()
+    {
+        // The default test host uses the development handler (no real authentication): the admin app asks /me on start-up and must
+        // find a usable caller instead of being sent to a sign-in page that cannot work in that mode.
+        var response = await api.Client.GetAsync("/api/auth/me");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await BodyAsync(response);
+        Assert.Equal("dev-staff", body.GetProperty("userName").GetString());
+        Assert.Equal("Full", body.GetProperty("scope").GetString());
+        Assert.Equal(string.Empty, body.GetProperty("csrfToken").GetString()); // nothing to forge against: there is no session
+    }
+
+    [Fact]
     [Trait("Spec", "AC-9")]
     public async Task Me_WithoutASession_Returns401()
     {

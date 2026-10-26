@@ -137,6 +137,14 @@ internal static class AuthEndpoints
         SessionCookieWriter.NoStore(http.Response);
 
         var user = http.User;
+
+        // A Development/Testing host without real authentication signs everyone in as one stand-in user. The admin app asks here on
+        // start-up, so it gets a usable answer instead of being sent to a sign-in page that cannot work in that mode.
+        if (user.Identity?.AuthenticationType == RompAuthorizationExtensions.DevelopmentScheme)
+        {
+            return Results.Ok(new MeResponse(0, "dev-staff", "Development user", nameof(SessionScope.Full), string.Empty));
+        }
+
         if (SessionClaims.UserId(user) is not { } userId || SessionClaims.Session(user) is not { } sessionId
             || !Enum.TryParse<SessionScope>(user.FindFirstValue(SessionPrincipal.ScopeClaim), out var scope))
         {
