@@ -21,6 +21,9 @@ public sealed class NetworkOptions
     public const string Section = "Network";
 
     public string[] TrustedProxies { get; set; } = [];
+
+    /// <summary>The header that carries the visitor address when the peer is a trusted proxy: <c>X-Forwarded-For</c> or <c>CF-Connecting-IP</c>.</summary>
+    public string ClientIpHeader { get; set; } = "X-Forwarded-For";
 }
 
 /// <summary><c>Identity:*</c> - host-level switches for authentication.</summary>
@@ -81,6 +84,11 @@ public sealed class NetworkOptionsValidator : IValidateOptions<NetworkOptions>
     public ValidateOptionsResult Validate(string? name, NetworkOptions options)
     {
         var errors = new List<string>();
+        if (options.ClientIpHeader is not ("X-Forwarded-For" or "CF-Connecting-IP"))
+        {
+            errors.Add("Network:ClientIpHeader must be X-Forwarded-For or CF-Connecting-IP.");
+        }
+
         foreach (var entry in options.TrustedProxies)
         {
             if (!TryParse(entry, out var address, out var prefix))

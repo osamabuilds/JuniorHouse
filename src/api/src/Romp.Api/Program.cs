@@ -102,6 +102,7 @@ builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddRompAuthorization(builder.Environment);
 builder.Services.AddRompRateLimiting(builder.Configuration);
+builder.Services.AddRompForwardedHeaders();
 builder.Services.AddOpenApi();
 
 // Storefront and admin are separate origins (SSR/SPA hosts, different ports). No auth yet
@@ -141,6 +142,7 @@ if (verbParse.Request is { } verb)
 // ADR 0011 deployment gate: outside Development/Testing the host refuses to start without a real authentication scheme.
 await SecurityGate.VerifyAsync(app.Services, app.Environment);
 
+app.UseRompForwardedHeaders(); // first: the rate limiter, authentication and sign-in all read the client address
 app.UseRompSecurityHeaders();
 
 app.UseExceptionHandler();
