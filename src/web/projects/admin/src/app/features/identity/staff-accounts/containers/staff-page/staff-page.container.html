@@ -1,0 +1,51 @@
+<h1>Staff</h1>
+<p class="page-intro">
+  The people who can sign in to this admin. Add someone, give them roles, and deactivate them when they leave. You can never see
+  anyone's password; you can only make a new temporary one.
+</p>
+
+@if (oneTimePassword(); as password) {
+  <app-one-time-password [password]="password" (dismissed)="dismissPassword()" />
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@switch (mode()) {
+  @case ('create') {
+    <app-staff-create [roles]="roles()" [saving]="saving()" [error]="error()" (submitted)="create($event)" (cancelled)="backToList()" />
+  }
+  @case ('detail') {
+    @if (selected(); as person) {
+      <app-staff-detail
+        [staff]="person"
+        [saving]="saving()"
+        (deactivate)="deactivate(person)"
+        (reactivate)="reactivate(person)"
+        (resetPassword)="resetPassword(person)"
+        (back)="backToList()"
+      />
+    } @else {
+      <p class="state-message">Loading…</p>
+    }
+  }
+  @default {
+    <div class="toolbar">
+      <label class="toolbar__search">
+        <span class="sr-only">Search</span>
+        <input type="search" placeholder="Search by user name or name" [value]="searchText()" (input)="onSearchInput($event)" />
+      </label>
+
+      <label class="toolbar__checkbox">
+        <input type="checkbox" [checked]="activeOnly()" (change)="toggleActiveOnly()" />
+        Active only
+      </label>
+
+      <button type="button" class="button button--primary" (click)="startCreate()">Add staff member</button>
+    </div>
+
+    <app-staff-list [staff]="staff()" [loading]="loading()" (selected)="open($event)" />
+    <app-pagination [total]="total()" [page]="currentPage()" [pageSize]="pageSize()" (pageChanged)="changePage($event)" (pageSizeChanged)="changePageSize($event)" />
+  }
+}

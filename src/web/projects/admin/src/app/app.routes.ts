@@ -7,6 +7,10 @@ export const routes: Routes = [
     loadChildren: () => import('@features/reference/lookups/lookups.routes').then((m) => m.LOOKUPS_ROUTES),
   },
   {
+    path: 'staff',
+    loadChildren: () => import('@features/identity/staff-accounts/staff-accounts.routes').then((m) => m.STAFF_ACCOUNTS_ROUTES),
+  },
+  {
     path: 'styles',
     loadChildren: () => import('@features/catalog/styles/styles.routes').then((m) => m.STYLES_ROUTES),
   },

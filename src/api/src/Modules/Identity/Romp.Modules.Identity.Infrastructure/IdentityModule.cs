@@ -13,6 +13,7 @@ using Romp.Modules.Identity.Application.Abstractions;
 using Romp.Modules.Identity.Application.StaffAccounts;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 using Romp.Modules.Identity.Infrastructure.Persistence;
+using Romp.Modules.Identity.Infrastructure.Roles;
 using Romp.Modules.Identity.Infrastructure.StaffAccounts;
 
 namespace Romp.Modules.Identity.Infrastructure;
@@ -57,5 +58,6 @@ public sealed class IdentityModule : IModule
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapStaffEndpoints();
+        endpoints.MapRoleEndpoints();
     }
 }
