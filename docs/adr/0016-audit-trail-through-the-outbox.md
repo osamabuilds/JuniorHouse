@@ -28,3 +28,10 @@ FR-59 and NFR-SC-05 require every action to be attributable and timestamped; the
 - The audit view is eventually consistent (seconds, bounded by the dispatcher interval); the record of the change is guaranteed because it commits with the change.
 - One outbox message per save per module adds write volume; measured in the audit-trail spec (AC-10).
 - A new feature is audited automatically; excluding an entity needs an explicit attribute and a reason.
+
+## As built (2026-10-26)
+
+- The collector is `AuditTrailSaveChangesInterceptor`. A new row gets its generated key during the save, so the message is written after the save, by plain SQL on the same connection and inside the same transaction (the interceptor opens one when the caller has none). The change and its entry still commit or fail together.
+- `AuditRecorded` lives in `Romp.BuildingBlocks`, not in the Application project, so Persistence can use it.
+- The extra round trips cost roughly 4 to 9 ms on a one-statement save in a local container; the 15 percent target is not met on that micro-benchmark (see the audit-trail spec, "As built").
+- The store has no default partition; the handler creates the month it needs, and a daily worker keeps the next months ready.

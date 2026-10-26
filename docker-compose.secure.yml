@@ -1,0 +1,11 @@
+# Sprint 8 (secure): the same local stack with real staff sign-in instead of the development stand-in user.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build
+#
+# Create the first Owner once (see "Try Sprint 8" in the README). Plain-HTTP cookies are allowed here only because this is a local stack
+# on localhost; the host refuses that setting anywhere else. To go back to the open stack, start with docker-compose.yml alone.
+services:
+  api:
+    environment:
+      Identity__UseRealAuthentication: "true"
+      Identity__AllowInsecureCookies: "true"
