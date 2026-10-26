@@ -9,6 +9,34 @@ namespace Romp.Modules.Identity.Application.StaffAccounts;
 /// <summary>What the staff handlers share: loading an account, and reading the Owner facts the aggregate cannot see (AC-9).</summary>
 internal static class StaffLookups
 {
+    public static readonly string UserNameRule =
+        $"A user name is {Domain.StaffAccounts.UserName.MinLength} to {Domain.StaffAccounts.UserName.MaxLength} characters of lower-case letters, digits, '.', '_' and '-'.";
+
+    /// <summary>The charset lives in <c>UserName.Create</c> (one source of truth); this turns a bad name into a yes/no for validators.</summary>
+    public static bool IsValidUserName(string? raw)
+    {
+        try
+        {
+            _ = Domain.StaffAccounts.UserName.Create(raw ?? string.Empty);
+            return true;
+        }
+        catch (DomainException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>A password that fails the policy becomes a validation error that says why and never repeats the password (AC-2).</summary>
+    public static void EnsurePasswordAcceptable(PasswordPolicy policy, SecretString password, string userName, string field)
+    {
+        var verdict = policy.Evaluate(password.Reveal(), userName);
+        if (!verdict.IsAcceptable)
+        {
+            var reasons = verdict.Failures.Select(PasswordPolicyMessages.For).ToArray();
+            throw new Romp.BuildingBlocks.Application.ValidationException(new Dictionary<string, string[]> { [field] = reasons });
+        }
+    }
+
     public static async Task<StaffUser> GetAsync(IIdentityDbContext db, long userId, CancellationToken cancellationToken) =>
         await db.Staff.Include(u => u.Roles).Include(u => u.PasswordHistory).FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
         ?? throw new KeyNotFoundException($"Staff account {userId} was not found.");

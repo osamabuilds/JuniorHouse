@@ -59,6 +59,18 @@ internal sealed class CommandCounter : DbCommandInterceptor
     }
 }
 
+/// <summary>Records the Owner accounts whose MFA enrolment was cleared; the real reset arrives with the mfa feature.</summary>
+internal sealed class RecordingMfaReset : IMfaEnrolmentReset
+{
+    public List<long> Cleared { get; } = [];
+
+    public Task ClearAsync(long userId, CancellationToken cancellationToken)
+    {
+        Cleared.Add(userId);
+        return Task.CompletedTask;
+    }
+}
+
 internal sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
 {
     public DateTimeOffset Now { get; set; } = now;
@@ -90,6 +102,8 @@ internal sealed class IdentityHost : IDisposable
         services.AddSingleton<TimeProvider>(Time);
         Sessions = new RecordingSessionRevoker();
         services.AddSingleton<IUserSessionRevoker>(Sessions);
+        MfaReset = new RecordingMfaReset();
+        services.AddSingleton<IMfaEnrolmentReset>(MfaReset);
 
         services.AddSingleton<IOptions<Argon2Options>>(
             Microsoft.Extensions.Options.Options.Create(new Argon2Options { MemoryKiB = 8, Iterations = 1, Parallelism = 1 }));
@@ -126,6 +140,8 @@ internal sealed class IdentityHost : IDisposable
     public FixedTimeProvider Time { get; }
 
     public RecordingSessionRevoker Sessions { get; }
+
+    public RecordingMfaReset MfaReset { get; }
 
     /// <summary>A user name no other test uses, so tests own their accounts although the database is shared.</summary>
     public static string NewUserName() =>

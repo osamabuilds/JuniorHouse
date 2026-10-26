@@ -184,6 +184,19 @@ public sealed class StaffUser : AggregateRoot<long>, IAuditable
         TemporaryPasswordUsedAt = null;
     }
 
+    /// <summary>
+    /// Break-glass reset by the operator (AC-13): the operator chose the password, so there is no single-use window, but the person must
+    /// still replace it at the next sign-in. Refused for a deactivated account.
+    /// </summary>
+    public void ResetPasswordByOperator(string passwordHash)
+    {
+        EnsureActive();
+        PasswordHash = RequireHash(passwordHash);
+        MustChangePassword = true;
+        TemporaryPasswordExpiresAt = null;
+        TemporaryPasswordUsedAt = null;
+    }
+
     /// <summary>Idempotent. Refused for the last active Owner (AC-9).</summary>
     public void Deactivate(OwnerGuard guard)
     {

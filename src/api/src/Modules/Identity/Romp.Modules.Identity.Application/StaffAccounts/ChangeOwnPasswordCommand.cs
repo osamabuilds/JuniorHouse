@@ -3,7 +3,6 @@ using MediatR;
 using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Identity.Application.Abstractions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
-using ValidationException = Romp.BuildingBlocks.Application.ValidationException;
 
 namespace Romp.Modules.Identity.Application.StaffAccounts;
 
@@ -40,12 +39,7 @@ public sealed class ChangeOwnPasswordCommandHandler(
             throw new DomainException("The current password is not correct.");
         }
 
-        var verdict = policy.Evaluate(request.NewPassword.Reveal(), user.UserName);
-        if (!verdict.IsAcceptable)
-        {
-            var reasons = verdict.Failures.Select(PasswordPolicyMessages.For).ToArray();
-            throw new ValidationException(new Dictionary<string, string[]> { ["NewPassword"] = reasons });
-        }
+        StaffLookups.EnsurePasswordAcceptable(policy, request.NewPassword, user.UserName, nameof(request.NewPassword));
 
         user.SetPassword(hasher.Hash(request.NewPassword), stored => hasher.Verify(request.NewPassword, stored));
         await sessions.RevokeAsync(user.Id, request.SessionId, cancellationToken);

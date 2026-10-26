@@ -46,6 +46,7 @@ public sealed class IdentityModule : IModule
 
         // Replaced by the sessions feature, which owns session rows. Until then there is nothing to end.
         services.TryAddSingleton<IUserSessionRevoker, NoSessionsYetRevoker>();
+        services.TryAddSingleton<IMfaEnrolmentReset, NoMfaYetReset>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(IdentityTransactionBehavior<,>));
 

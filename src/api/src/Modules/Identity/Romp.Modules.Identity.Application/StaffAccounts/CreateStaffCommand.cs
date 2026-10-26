@@ -16,24 +16,11 @@ public sealed class CreateStaffCommandValidator : AbstractValidator<CreateStaffC
     public CreateStaffCommandValidator()
     {
         // The charset lives in UserName.Create (one source of truth); the validator turns a bad name into a 400 with a field error.
-        RuleFor(c => c.UserName).NotEmpty().Must(IsValidUserName)
-            .WithMessage($"A user name is {Domain.StaffAccounts.UserName.MinLength} to {Domain.StaffAccounts.UserName.MaxLength} characters of lower-case letters, digits, '.', '_' and '-'.");
+        RuleFor(c => c.UserName).NotEmpty().Must(StaffLookups.IsValidUserName)
+            .WithMessage(StaffLookups.UserNameRule);
         RuleFor(c => c.DisplayName).NotEmpty().MaximumLength(StaffUser.DisplayNameMaxLength)
             .Must(name => !name.Any(char.IsControl)).WithMessage("The display name must not contain control characters.");
         RuleFor(c => c.RoleIds).NotNull().Must(ids => ids is { Count: <= 20 }).WithMessage("Give at most 20 roles.");
-    }
-
-    private static bool IsValidUserName(string? raw)
-    {
-        try
-        {
-            _ = Domain.StaffAccounts.UserName.Create(raw ?? string.Empty);
-            return true;
-        }
-        catch (DomainException)
-        {
-            return false;
-        }
     }
 }
 

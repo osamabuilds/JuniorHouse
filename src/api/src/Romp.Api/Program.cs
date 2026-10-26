@@ -130,6 +130,10 @@ if (verbParse.Request is { } verb)
     {
         [Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildVerb] =
             (_, output, cancellationToken) => Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildAsync(app.Services, output, cancellationToken),
+        [Romp.Api.HostVerbs.OwnerVerbs.CreateVerb] = (_, output, cancellationToken) =>
+            Romp.Api.HostVerbs.OwnerVerbs.CreateAsync(app.Services, OperatorSecretReader.ForConsole(), output, cancellationToken),
+        [Romp.Api.HostVerbs.OwnerVerbs.ResetVerb] = (request, output, cancellationToken) =>
+            Romp.Api.HostVerbs.OwnerVerbs.ResetAsync(app.Services, OperatorSecretReader.ForConsole(), request, output, cancellationToken),
     };
     return await HostVerbRunner.RunAsync(verb, handlers, Console.Out, Console.Error, CancellationToken.None);
 }

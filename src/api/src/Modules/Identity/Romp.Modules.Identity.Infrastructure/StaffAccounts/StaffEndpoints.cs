@@ -109,3 +109,9 @@ internal sealed class NoSessionsYetRevoker : Application.StaffAccounts.IUserSess
 {
     public Task RevokeAsync(long userId, long? exceptSessionId, CancellationToken cancellationToken) => Task.CompletedTask;
 }
+
+/// <summary>Stands in for the mfa feature: nothing is enrolled yet, so there is nothing to clear.</summary>
+internal sealed class NoMfaYetReset : Application.StaffAccounts.IMfaEnrolmentReset
+{
+    public Task ClearAsync(long userId, CancellationToken cancellationToken) => Task.CompletedTask;
+}
