@@ -510,6 +510,250 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Sessions.LoginAttempt", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AttemptName")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ATMP_NAME");
+
+                    b.Property<DateTimeOffset>("AttemptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ATMP_DTE");
+
+                    b.Property<string>("ClientIp")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("CLNT_IP_ADDR");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<short>("Outcome")
+                        .HasColumnType("smallint")
+                        .HasColumnName("OTCM_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<long?>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("USR_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttemptedAt");
+
+                    b.HasIndex("Outcome");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("AttemptName", "AttemptedAt");
+
+                    b.HasIndex("AttemptName", "ClientIp", "AttemptedAt");
+
+                    b.ToTable("LGIN_ATMP", "IDNT");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Sessions.PendingSignIn", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("EXPY_DTE");
+
+                    b.Property<int>("FailureCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("FAIL_CNT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<byte[]>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("bytea")
+                        .HasColumnName("TOKN_HASH");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("USR_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("LGIN_PEND", "IDNT");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Sessions.Session", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("AbsoluteExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ABS_EXPY_DTE");
+
+                    b.Property<DateTimeOffset>("AccessExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ACSS_EXPY_DTE");
+
+                    b.Property<byte[]>("AccessTokenHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("bytea")
+                        .HasColumnName("ACSS_TOKN_HASH");
+
+                    b.Property<string>("ClientIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("CLNT_IP_ADDR");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<byte[]>("PreviousRefreshTokenHash")
+                        .HasMaxLength(32)
+                        .HasColumnType("bytea")
+                        .HasColumnName("PREV_RFSH_TOKN_HASH");
+
+                    b.Property<DateTimeOffset>("RefreshExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("RFSH_EXPY_DTE");
+
+                    b.Property<byte[]>("RefreshTokenHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("bytea")
+                        .HasColumnName("RFSH_TOKN_HASH");
+
+                    b.Property<short?>("RevokeReason")
+                        .HasColumnType("smallint")
+                        .HasColumnName("RVKD_RSN_ID");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("RVKD_DTE");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("STRT_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("USR_AGNT");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("USR_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AbsoluteExpiresAt");
+
+                    b.HasIndex("AccessTokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("PreviousRefreshTokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("RefreshTokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("RevokeReason");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SESS_MAIN", "IDNT");
+                });
+
             modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.PasswordHistoryEntry", b =>
                 {
                     b.Property<long>("Id")
@@ -661,6 +905,224 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                     b.ToTable("USR_ROLE_MAP", "IDNT");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Identity.Infrastructure.Sessions.LoginOutcomeRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("LGIN_OTCM_LKP", "IDNT");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "OK",
+                            IsActive = true,
+                            Name = "Password accepted",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "BAD_CRED",
+                            IsActive = true,
+                            Name = "Unknown user or wrong password",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "INACTIVE",
+                            IsActive = true,
+                            Name = "Account inactive",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "TEMP_EXPD",
+                            IsActive = true,
+                            Name = "Temporary password expired",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "MFA_BAD",
+                            IsActive = true,
+                            Name = "Wrong multi-factor code",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "MFA_OK",
+                            IsActive = true,
+                            Name = "Multi-factor code accepted",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "THROTTLED",
+                            IsActive = true,
+                            Name = "Refused while a delay was running",
+                            SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "REFRESH_REUSE",
+                            IsActive = true,
+                            Name = "Rotated refresh value presented again",
+                            SortSeq = (short)8
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Infrastructure.Sessions.RevokeReasonRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("SESS_RVKD_RSN_LKP", "IDNT");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "SIGN_OUT",
+                            IsActive = true,
+                            Name = "Signed out",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "SIGN_OUT_ALL",
+                            IsActive = true,
+                            Name = "Signed out everywhere",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "REFRESH_REUSE",
+                            IsActive = true,
+                            Name = "Rotated refresh value presented again",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "NEW_SIGN_IN",
+                            IsActive = true,
+                            Name = "Replaced by a new sign-in",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "PWD_CHNG",
+                            IsActive = true,
+                            Name = "Password changed or reset",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "DEACT",
+                            IsActive = true,
+                            Name = "Account deactivated",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "ADMIN",
+                            IsActive = true,
+                            Name = "Revoked by an administrator",
+                            SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "SESS_LIMIT",
+                            IsActive = true,
+                            Name = "Oldest session over the per-user limit",
+                            SortSeq = (short)8
+                        },
+                        new
+                        {
+                            Id = (short)9,
+                            Code = "MFA_RESET",
+                            IsActive = true,
+                            Name = "Multi-factor enrolment reset",
+                            SortSeq = (short)9
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Identity.Domain.Roles.RoleGrant", b =>
                 {
                     b.HasOne("Romp.Modules.Identity.Domain.Roles.PermissionLookup", "Permission")
@@ -678,6 +1140,48 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Sessions.LoginAttempt", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Infrastructure.Sessions.LoginOutcomeRow", null)
+                        .WithMany()
+                        .HasForeignKey("Outcome")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_LGIN_ATMP_OTCM_ID");
+
+                    b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_LGIN_ATMP_USR_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Sessions.PendingSignIn", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_LGIN_PEND_USR_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.Sessions.Session", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Infrastructure.Sessions.RevokeReasonRow", null)
+                        .WithMany()
+                        .HasForeignKey("RevokeReason")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_SESS_MAIN_RVKD_RSN_ID");
+
+                    b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_SESS_MAIN_USR_ID");
                 });
 
             modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.PasswordHistoryEntry", b =>

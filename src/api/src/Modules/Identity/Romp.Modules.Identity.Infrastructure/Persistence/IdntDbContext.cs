@@ -3,6 +3,7 @@ using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Identity.Application.Abstractions;
 using Romp.Modules.Identity.Domain.Roles;
+using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 
 namespace Romp.Modules.Identity.Infrastructure.Persistence;
@@ -20,6 +21,12 @@ public sealed class IdntDbContext(DbContextOptions<IdntDbContext> options) : DbC
     public DbSet<RoleGrant> RolePermissions => Set<RoleGrant>();
 
     public DbSet<StaffUser> Staff => Set<StaffUser>();
+
+    public DbSet<Session> Sessions => Set<Session>();
+
+    public DbSet<PendingSignIn> PendingSignIns => Set<PendingSignIn>();
+
+    public DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
 
     async Task IIdentityDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);

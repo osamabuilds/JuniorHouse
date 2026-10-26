@@ -38,8 +38,8 @@ Transactional tables carry `ID bigint identity`, the four audit columns and `xmi
 | `USR_PWD_HIST` | Last password hashes (reuse check) | `USR_ID`, `PWD_HASH` |
 | `USR_ROLE_MAP` | User to role | `USR_ID`, `ROLE_ID` |
 | `USR_RCVR_CODE` | MFA recovery codes | `USR_ID`, `CODE_HASH`, `USED_DTE` |
-| `SESS_MAIN` | Session | `USR_ID`, `ACSS_TOKN_HASH`, `ACSS_EXPY_DTE`, `RFSH_TOKN_HASH`, `PREV_RFSH_TOKN_HASH`, `RFSH_EXPY_DTE`, `ABS_EXPY_DTE`, `RVKD_DTE`, `RVKD_RSN_ID`, `CLNT_IP_ADDR`, `USR_AGNT` (truncated) |
-| `SESS_RVKD_RSN_LKP` | SIGN_OUT, SIGN_OUT_ALL, ADMIN, REUSE, PWD_CHNG, DEACT, MFA_RESET, EXPIRED | lookup |
+| `SESS_MAIN` | Session | `USR_ID`, `STRT_DTE`, `ACSS_TOKN_HASH`, `ACSS_EXPY_DTE`, `RFSH_TOKN_HASH`, `PREV_RFSH_TOKN_HASH`, `RFSH_EXPY_DTE`, `ABS_EXPY_DTE`, `RVKD_DTE`, `RVKD_RSN_ID`, `CLNT_IP_ADDR`, `USR_AGNT` (truncated) |
+| `SESS_RVKD_RSN_LKP` | SIGN_OUT, SIGN_OUT_ALL, REFRESH_REUSE, NEW_SIGN_IN, PWD_CHNG, DEACT, ADMIN, SESS_LIMIT, MFA_RESET (expiry is by date, so no EXPIRED row) | lookup |
 | `LGIN_PEND` | Step-1-passed, awaiting MFA (5 minutes) | `USR_ID`, `TOKN_HASH`, `EXPY_DTE`, `FAIL_CNT` |
 | `LGIN_ATMP` | Every sign-in or MFA attempt (NFR-15); throttle state is derived from it | `ATMP_NAME` (as typed, <= 40, sanitised), `CLNT_IP_ADDR`, `OTCM_ID`, `ATMP_DTE`, nullable `USR_ID` |
 | `LGIN_OTCM_LKP` | OK, BAD_CRED, INACTIVE, TEMP_EXPD, MFA_BAD, MFA_OK, THROTTLED, REFRESH_REUSE | lookup |

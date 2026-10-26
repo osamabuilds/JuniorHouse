@@ -53,6 +53,7 @@ public enum SessionRevokeReason : short
     AccountDeactivated = 6,
     AdminRevoked = 7,
     SessionLimit = 8,
+    MfaReset = 9,
 }
 
 /// <summary>
@@ -62,6 +63,8 @@ public enum SessionRevokeReason : short
 public sealed class Session : AggregateRoot<long>, IAuditable
 {
     public const int MaxPerUser = 10;
+    public const int ClientIpMaxLength = 45;
+    public const int UserAgentMaxLength = 200;
 
     private Session()
     {
@@ -90,6 +93,10 @@ public sealed class Session : AggregateRoot<long>, IAuditable
 
     public SessionRevokeReason? RevokeReason { get; private set; }
 
+    public string? ClientIp { get; private set; }
+
+    public string? UserAgent { get; private set; }
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; }
@@ -98,7 +105,12 @@ public sealed class Session : AggregateRoot<long>, IAuditable
 
     public string? UpdtBy { get; set; }
 
-    public static (Session Session, IssuedTokens Tokens) Start(long userId, DateTimeOffset now, SessionLifetimes lifetimes)
+    /// <summary>
+    /// Starts a session. The client address and browser text are kept only to help the owner recognise a session; the agent text is
+    /// truncated, never rejected.
+    /// </summary>
+    public static (Session Session, IssuedTokens Tokens) Start(
+        long userId, DateTimeOffset now, SessionLifetimes lifetimes, string? clientIp = null, string? userAgent = null)
     {
         ArgumentNullException.ThrowIfNull(lifetimes);
 
@@ -108,6 +120,8 @@ public sealed class Session : AggregateRoot<long>, IAuditable
             UserId = userId,
             StartedAt = now,
             AbsoluteExpiresAt = now + lifetimes.Absolute,
+            ClientIp = clientIp is { Length: > ClientIpMaxLength } ? clientIp[..ClientIpMaxLength] : clientIp,
+            UserAgent = userAgent is { Length: > UserAgentMaxLength } ? userAgent[..UserAgentMaxLength] : userAgent,
         };
         session.Apply(tokens, now, lifetimes);
         return (session, tokens);
