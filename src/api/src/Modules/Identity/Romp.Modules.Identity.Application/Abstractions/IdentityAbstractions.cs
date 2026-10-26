@@ -16,6 +16,10 @@ public interface IIdentityDbContext
 
     DbSet<Role> Roles { get; }
 
+    DbSet<PermissionLookup> Permissions { get; }
+
+    DbSet<RoleGrant> RolePermissions { get; }
+
     DbSet<Session> Sessions { get; }
 
     DbSet<LoginAttempt> LoginAttempts { get; }
