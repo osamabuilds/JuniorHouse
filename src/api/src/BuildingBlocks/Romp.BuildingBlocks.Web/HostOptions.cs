@@ -31,6 +31,12 @@ public sealed class IdentityOptions
     /// <summary>Unset means "the environment decides": real outside Development/Testing, the development handler inside.</summary>
     public bool? UseRealAuthentication { get; set; }
 
+    /// <summary>
+    /// Sends session cookies without the <c>Secure</c> flag and the <c>__Secure-</c> name prefix, so sign-in works over plain HTTP on
+    /// a developer machine. Refused at start-up outside Development and Testing (sessions AC-1, AC-14).
+    /// </summary>
+    public bool AllowInsecureCookies { get; set; }
+
     public static bool IsRealAuthentication(IdentityOptions options, IHostEnvironment environment) =>
         !RompAuthorizationExtensions.IsDevelopmentLike(environment) || options.UseRealAuthentication == true;
 }
@@ -117,10 +123,26 @@ public sealed class NetworkOptionsValidator : IValidateOptions<NetworkOptions>
 
 public sealed class IdentityOptionsValidator(IHostEnvironment environment) : IValidateOptions<IdentityOptions>
 {
-    public ValidateOptionsResult Validate(string? name, IdentityOptions options) =>
-        !RompAuthorizationExtensions.IsDevelopmentLike(environment) && options.UseRealAuthentication == false
-            ? ValidateOptionsResult.Fail("Identity:UseRealAuthentication cannot be false outside Development and Testing.")
-            : ValidateOptionsResult.Success;
+    public ValidateOptionsResult Validate(string? name, IdentityOptions options)
+    {
+        if (RompAuthorizationExtensions.IsDevelopmentLike(environment))
+        {
+            return ValidateOptionsResult.Success;
+        }
+
+        var errors = new List<string>();
+        if (options.UseRealAuthentication == false)
+        {
+            errors.Add("Identity:UseRealAuthentication cannot be false outside Development and Testing.");
+        }
+
+        if (options.AllowInsecureCookies)
+        {
+            errors.Add("Identity:AllowInsecureCookies cannot be true outside Development and Testing.");
+        }
+
+        return errors.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(errors);
+    }
 }
 
 public static class HostOptionsExtensions

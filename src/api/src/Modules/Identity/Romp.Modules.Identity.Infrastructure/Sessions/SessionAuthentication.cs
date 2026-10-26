@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Romp.BuildingBlocks.Web;
 using Romp.Modules.Identity.Application.Sessions;
 using Romp.Modules.Identity.Infrastructure.StaffAccounts;
 
@@ -35,12 +36,6 @@ public static class SessionPrincipal
     }
 }
 
-/// <summary>Where the access value is read from. The cookie writer (sessions task 9) uses the same name.</summary>
-public static class SessionCookieNames
-{
-    public const string Access = "__Secure-romp-acs";
-}
-
 /// <summary>
 /// Authenticates a request from its access cookie by asking <see cref="AuthenticateSessionQuery"/> (AC-9). No cookie, or a session
 /// that cannot be used, means no result, which the pipeline turns into 401.
@@ -49,12 +44,13 @@ public sealed class SessionAuthenticationHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
     UrlEncoder encoder,
-    ISender sender)
+    ISender sender,
+    IOptions<IdentityOptions> identityOptions)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (!Request.Cookies.TryGetValue(SessionCookieNames.Access, out var value))
+        if (!Request.Cookies.TryGetValue(SessionCookieNames.For(identityOptions.Value.AllowInsecureCookies).Access, out var value))
         {
             return AuthenticateResult.NoResult();
         }

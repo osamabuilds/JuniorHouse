@@ -14,6 +14,7 @@ using Romp.Modules.Identity.Application.StaffAccounts;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.Roles;
+using Romp.Modules.Identity.Infrastructure.Sessions;
 using Romp.Modules.Identity.Infrastructure.StaffAccounts;
 
 namespace Romp.Modules.Identity.Infrastructure;
@@ -50,7 +51,8 @@ public sealed class IdentityModule : IModule
         services.TryAddSingleton<IUserSessionRevoker, NoSessionsYetRevoker>();
         services.TryAddSingleton<IMfaEnrolmentReset, NoMfaYetReset>();
         services.TryAddSingleton<Application.Sessions.IMfaEnrolmentStatus, Sessions.NoMfaYetStatus>();
-        services.AddSingleton(Domain.Sessions.SessionLifetimes.Default); // configuration binding arrives with the options validator (task 9)
+        services.AddSessionLifetimes(configuration);
+        services.AddSingleton<Sessions.SessionCookieWriter>();
         services.AddScoped<Application.Sessions.SessionIssuer>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(IdentityTransactionBehavior<,>));
