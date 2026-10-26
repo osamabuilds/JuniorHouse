@@ -1,6 +1,6 @@
 # SCRUM-202: Multi-factor authentication
 
-- **Status:** Approved (owner, 2026-10-16)
+- **Status:** Implemented (2026-10-26); see "As built" at the end
 - **Jira:** SCRUM-202; source SCRUM-121 (priority Highest)
 - **BRD sections:** §11.1, §11.2
 - **Requirement IDs:** SEC-01
@@ -41,3 +41,36 @@ An admin account can see every customer and Child Profile record, so a stolen pa
 
 ## Open questions
 - [x] ~~Recovery codes~~ Decided: shown once at MFA enrolment (AC-6); the Owner break-glass reset lives in staff-accounts AC-13. The encryption key (AC-7) is a deployment secret; the plan describes rotation.
+
+## As built (2026-10-26)
+
+What differs from, or adds to, the text above. Everything else is built as written.
+
+- **TOTP:** in-house `Totp`, `TotpVerifier` and `Base32` (about 120 lines, checked against the RFC 6238 test vectors); no `Otp.NET` package. The verifier sits behind plain static functions in the Domain, so a WebAuthn verifier can be added beside it later.
+- **Encryption key (AC-7):** `Identity:Mfa:KeyId`, `Identity:Mfa:EncryptionKey` (base64, 32 bytes) and `Identity:Mfa:RecoveryPepper` (base64, at least 16 bytes) are required outside Development and Testing, validated at start-up (a Staging host test refuses to start without them). `Identity:Mfa:PreviousKeys` lists earlier keys by id for decryption during a rotation. In Development and Testing a well-known development key stands in so a developer's database keeps working across restarts. `AesGcmSecretProtector.NeedsRotation` says when a secret was sealed with an old key; the secret is re-sealed when enrolment is confirmed. A bulk "re-encrypt every secret" command from the plan is not built (no secret has ever been sealed with a retired key).
+- **AC-2:** the secret is shown only in the response to `enrol/start`, as the `otpauth://` address and as grouped text. It is sealed with the owner's id as associated data, so a copy on another account's row does not open. An unconfirmed enrolment lives 15 minutes in `MFA_ENRL_PEND`, one per account; starting again replaces it.
+- **AC-4, AC-6, concurrent use:** the "last accepted step" and each recovery code's "used" date are written before anything else changes in the verify step, guarded by the PostgreSQL `xmin` token, so of several requests with one code exactly one is accepted. The code that confirms enrolment counts as used (a later sign-in cannot replay it).
+- **AC-5:** five wrong codes end the pending sign-in; failures are recorded as `MfaBad` attempts, so the sessions throttle applies, and a delay that is running answers 429 without counting as a failure. The pending sign-in lasts 5 minutes.
+- **Answers:** a wrong, replayed or malformed code gets one answer (401 "That code is not valid"); an unknown, expired, spent or ended pending sign-in gets 401 "Sign in again" and clears the pending cookie. Enrolment mistakes are 409 with the reason (the person is signed in, so they may be told).
+- **AC-1:** `enrol/start` and `enrol/confirm` need scope `EnrolMfa` and the anti-forgery header; `recovery-codes` needs the full scope. An account that must still change its password cannot start enrolment. A general rule that refuses every other endpoint to a limited session belongs to the roles feature.
+- **AC-8:** `POST /api/identity/staff/{id}/reset-mfa` needs `staff.manage`, refuses the caller's own account, clears the second factor, the recovery codes and every session of the target (revoke reason `MfaReset`), and is repeatable. It does not yet stop a non-Owner administrator resetting an Owner's second factor; that is a roles decision.
+- **AC-9:** the operator `reset-owner --mfa` step uses the same clearing code; the Owner then enrols again and receives new recovery codes once.
+- **AC-10:** `MfaPolicyTests` scan every settings class of the host and Identity, `appsettings*.json` and `docker-compose.yml` for anything that reads like an MFA on/off switch.
+- **Security events:** 1002 `mfa_bad_code` and `mfa_pending_ended` (typed values only). Recovery-code use is recorded by the code's own `USED_DTE` and by the `MfaOk` attempt row.
+- **Not built:** recovery-code use does not raise its own security event; enrolment failures are limited by the strict rate limit only (no five-try cut-off for enrolment).
+- **Admin app:** `features/identity/mfa`: enrolment page (the `/setup-required` route; QR drawn in the browser with the `qrcode` package, which is a new admin dependency, MIT), recovery-code panel, the second-step challenge on the sign-in page, and the security page (`/security`, linked from the header) with the status card and new recovery codes. The secret and the codes live in memory only and are dropped once shown.
+
+## Traceability
+
+| AC | Proof |
+|---|---|
+| AC-1 | `MfaEnrolmentTests.UnenrolledUser_CanReachOnlyEnrolment`, `MfaEndpointsTests.TheScopeRules_KeepEachStepToItsOwnSession`, `MfaEndpointsTests.WithoutASession_EveryEnrolmentRouteReturns401_AndUnsafeOnesNeedTheHeader` |
+| AC-2 | `TotpSecretTests`, `MfaEnrolmentTests.SecretIsInactiveUntilConfirmed`, `StartingAgain_ReplacesTheUnconfirmedSecret`, `AnExpiredEnrolment_CannotBeConfirmed`, `MfaMigrationTests` |
+| AC-3 | `TotpVerifierTests.MatchesRfcVectors`, `AllowsOneStepOfDrift`, `MfaVerifyTests.AValidCode_IssuesAFullSession_AndTheStepIsRecorded`, `MfaEndpointsTests.FullEnrolmentAndSignIn` |
+| AC-4 | `TotpVerifierTests.ReusedCode_IsRejected`, `MfaVerifyTests.ACodeThatWasAlreadyAccepted_IsRejected`, `ParallelSameCode_OnlyOneSucceeds`, `e2e/identity/mfa.e2e.spec.ts` |
+| AC-5 | `MfaVerifyTests.FiveFailures_EndThePendingSignIn`, `TheFailures_FeedTheThrottleOfTheSessionsFeature` |
+| AC-6 | `RecoveryCodeTests.*`, `MfaEnrolmentTests.RecoveryCodes_AreReturnedOnce`, `Regenerate_InvalidatesOldCodes_AndNeedsACurrentCode`, `MfaVerifyTests.ARecoveryCode_WorksOnce`, `ParallelSameRecoveryCode_OnlyOneSucceeds`, `MfaEndpointsTests.ARecoveryCode_SignsIn_Once` |
+| AC-7 | `SecretProtectorTests.*`, `MfaSecretLeakTests.NothingSensitive_AppearsInOutput`, `SecurityGateTests.Staging_RefusesToStart_WithoutTheMfaKeys`, `mfa.effects.spec.ts` (nothing in storage) |
+| AC-8 | `ResetStaffMfaTests.*`, `MfaEndpointsTests.ResetMfa_NeedsThePermission_AndForcesReEnrolment` |
+| AC-9 | `MfaOwnerResetTests.OwnerBreakGlassReset_ForcesReEnrolment_AndNewRecoveryCodesAreShownOnce`, `OwnerCommandsTests.ResetOwner_ClearsPasswordAndMfa_AndAudits` |
+| AC-10 | `MfaPolicyTests.*` |
