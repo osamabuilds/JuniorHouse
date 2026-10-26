@@ -186,9 +186,10 @@ public sealed class StaffUser : AggregateRoot<long>, IAuditable
         }
 
         _history.Add(new PasswordHistoryEntry(PasswordHash, DateTimeOffset.UtcNow));
+        // The oldest by date goes, not the first in the list: the list is loaded from the database in no promised order.
         while (_history.Count > PasswordHistorySize)
         {
-            _history.RemoveAt(0);
+            _history.Remove(_history.OrderBy(h => h.RetiredAt).ThenBy(h => h.Id).First());
         }
 
         PasswordHash = newPasswordHash;

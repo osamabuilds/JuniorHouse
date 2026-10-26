@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Identity.Application.StaffAccounts;
 using Romp.Modules.Identity.Domain.Roles;
-using Romp.Modules.Identity.Infrastructure.Authorization;
+using Romp.Modules.Identity.Infrastructure.Roles;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.Sessions;
 using Romp.Modules.Identity.Tests.StaffAccounts;

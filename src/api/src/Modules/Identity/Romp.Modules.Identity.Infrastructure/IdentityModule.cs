@@ -57,7 +57,7 @@ public sealed class IdentityModule : IModule
         services.AddSingleton<Application.Mfa.IRecoveryPepper, Mfa.ConfiguredRecoveryPepper>();
         services.AddSessionLifetimes(configuration);
         services.AddSessionCsrf(configuration);
-        services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, Authorization.IdentityPermissionHandler>();
+        services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, Roles.IdentityPermissionHandler>();
         services.AddHostedService<SessionPurgeWorker>();
         services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(SessionPrincipal.Scheme, _ => { });
         services.AddSingleton<Sessions.SessionCookieWriter>();

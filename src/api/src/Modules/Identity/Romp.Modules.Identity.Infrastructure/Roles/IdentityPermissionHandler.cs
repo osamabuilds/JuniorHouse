@@ -11,7 +11,7 @@ using Romp.Modules.Identity.Application.Roles;
 using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Infrastructure.Sessions;
 
-namespace Romp.Modules.Identity.Infrastructure.Authorization;
+namespace Romp.Modules.Identity.Infrastructure.Roles;
 
 /// <summary>
 /// Decides a <see cref="PermissionRequirement"/> from the database on every request (roles AC-3, SEC-08). The cookie carries no
