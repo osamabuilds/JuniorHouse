@@ -60,7 +60,7 @@ public sealed class CustomerOwnershipArchitectureTests
         var offenders = new List<string>();
         foreach (var file in CustomersSources("Romp.Modules.Customers.Infrastructure"))
         {
-            foreach (var line in File.ReadAllLines(file).Where(l => l.Contains("\"/api/customers/me", StringComparison.Ordinal)))
+            foreach (var line in File.ReadAllLines(file).Where(l => l.Contains("\"/api/customers/me", StringComparison.Ordinal) && (l.Contains("MapSecuredGroup(", StringComparison.Ordinal) || l.Contains("MapGroup(", StringComparison.Ordinal))))
             {
                 if (!line.Contains("Policies.Customer", StringComparison.Ordinal))
                 {

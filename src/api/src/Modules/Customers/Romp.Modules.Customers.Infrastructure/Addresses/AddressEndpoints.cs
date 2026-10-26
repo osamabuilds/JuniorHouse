@@ -21,7 +21,7 @@ internal static class AddressEndpoints
 
     public static void MapAddressEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var book = endpoints.MapSecuredGroup(Prefix, Policies.Customer).WithTags("Customers").AddEndpointFilter<CustomerNoStoreFilter>();
+        var book = endpoints.MapSecuredGroup("/api/customers/me/addresses", Policies.Customer).WithTags("Customers").AddEndpointFilter<CustomerNoStoreFilter>();
 
         book.MapGet("", async (ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = PageRequest.DefaultPageSize) =>
             Results.Ok(await sender.Send(new ListAddressesQuery(page, pageSize), cancellationToken)));
