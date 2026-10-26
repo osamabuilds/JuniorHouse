@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Romp.BuildingBlocks.Web;
+using Romp.Modules.Identity.Application.Mfa;
 using Romp.Modules.Identity.Application.Sessions;
 using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
@@ -16,6 +17,15 @@ public sealed record SignInRequest(string? UserName, string? Password);
 
 /// <summary>Answer to a password that was accepted: either a second step is owed, or the account first has to fix something.</summary>
 public sealed record SignInResponse(string Status, string? Scope);
+
+/// <summary>Body of the MFA routes that take a code. A missing code is answered as an empty one (a validation error).</summary>
+public sealed record MfaCodeRequest(string? Code);
+
+/// <summary>The one answer that shows the secret (AC-2): the address a QR code carries, the same secret as grouped text, and how long it stays valid.</summary>
+public sealed record MfaEnrolmentResponse(string OtpAuthUri, string SecretText, DateTimeOffset ExpiresAt);
+
+/// <summary>Recovery codes, shown once (AC-6).</summary>
+public sealed record RecoveryCodesResponse(IReadOnlyList<string> RecoveryCodes);
 
 /// <summary>GET /api/auth/me: who the caller is, what the session may do, and the anti-forgery value for unsafe requests (AC-10).</summary>
 public sealed record MeResponse(long UserId, string UserName, string DisplayName, string Scope, string CsrfToken);
@@ -36,12 +46,13 @@ internal static class AuthEndpoints
 
         auth.MapPost("/sign-in", SignIn).AddEndpointFilter<OriginCheckFilter>();
 
-        // The second step arrives with the mfa feature; until then there is nothing to verify against.
-        auth.MapPost("/mfa/verify", (HttpContext http) =>
-        {
-            SessionCookieWriter.NoStore(http.Response);
-            return Results.Problem(statusCode: StatusCodes.Status501NotImplemented, title: "Not available yet");
-        }).AddEndpointFilter<OriginCheckFilter>();
+        auth.MapPost("/mfa/verify", VerifyMfa).AddEndpointFilter<OriginCheckFilter>();
+
+        // Enrolment: only a session that still owes it (scope EnrolMfa) may start or confirm; the anti-forgery header is required.
+        auth.MapPost("/mfa/enrol/start", StartEnrolment).RequireAuthorization().AddEndpointFilter<CsrfFilter>().RequireScope(SessionScope.EnrolMfa);
+        auth.MapPost("/mfa/enrol/confirm", ConfirmEnrolment).RequireAuthorization().AddEndpointFilter<CsrfFilter>().RequireScope(SessionScope.EnrolMfa);
+        auth.MapGet("/mfa", MfaStatusOf).RequireAuthorization().RequireScope(SessionScope.Full, SessionScope.EnrolMfa);
+        auth.MapPost("/mfa/recovery-codes", RegenerateCodes).RequireAuthorization().AddEndpointFilter<CsrfFilter>().RequireScope(SessionScope.Full);
 
         auth.MapPost("/refresh", Refresh).AddEndpointFilter<OriginCheckFilter>();
         auth.MapPost("/sign-out", SignOut).AddEndpointFilter<OriginCheckFilter>();
@@ -158,6 +169,92 @@ internal static class AuthEndpoints
             scope.ToString(),
             csrf.Create(sessionId)));
     }
+
+    private static async Task<IResult> VerifyMfa(
+        MfaCodeRequest body, ISender sender, HttpContext http, SessionCookieWriter cookies, CancellationToken cancellationToken)
+    {
+        SessionCookieWriter.NoStore(http.Response);
+
+        var pending = cookies.ReadPending(http.Request);
+        if (string.IsNullOrEmpty(pending) || pending.Length > 128)
+        {
+            return EndSignIn(http, cookies);
+        }
+
+        var result = await sender.Send(
+            new VerifyMfaCommand(pending, body.Code ?? string.Empty, http.ClientIp(), cookies.ReadAccess(http.Request), http.Request.Headers.UserAgent.ToString()),
+            cancellationToken);
+
+        switch (result.Status)
+        {
+            case VerifyMfaStatus.Succeeded:
+                cookies.ClearPending(http.Response);
+                cookies.WriteSession(http.Response, result.Session!.Tokens, result.Session.AccessExpiresAt, result.Session.RefreshExpiresAt);
+                return Results.Ok(new SignInResponse("signed_in", null));
+
+            case VerifyMfaStatus.Throttled:
+                http.Response.Headers.RetryAfter = result.RetryAfterSeconds!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return Results.Problem(statusCode: StatusCodes.Status429TooManyRequests, title: "Too many attempts");
+
+            case VerifyMfaStatus.PendingEnded:
+                return EndSignIn(http, cookies);
+
+            default: // one answer for a wrong, replayed or malformed code
+                return Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "That code is not valid");
+        }
+    }
+
+    private static async Task<IResult> StartEnrolment(ISender sender, HttpContext http, CancellationToken cancellationToken)
+    {
+        SessionCookieWriter.NoStore(http.Response);
+
+        var started = await sender.Send(new StartMfaEnrolmentCommand(CallerId(http)), cancellationToken);
+        return Results.Ok(new MfaEnrolmentResponse(started.OtpAuthUri.Reveal(), started.SecretText.Reveal(), started.ExpiresAt));
+    }
+
+    private static async Task<IResult> ConfirmEnrolment(MfaCodeRequest body, ISender sender, HttpContext http, CancellationToken cancellationToken)
+    {
+        SessionCookieWriter.NoStore(http.Response);
+
+        var issued = await sender.Send(new ConfirmMfaEnrolmentCommand(CallerId(http), body.Code ?? string.Empty), cancellationToken);
+        return Results.Ok(new RecoveryCodesResponse(issued.Codes.Select(c => c.Reveal()).ToList()));
+    }
+
+    private static async Task<IResult> MfaStatusOf(ISender sender, HttpContext http, CancellationToken cancellationToken)
+    {
+        SessionCookieWriter.NoStore(http.Response);
+
+        return Results.Ok(await sender.Send(new GetMfaStatusQuery(CallerId(http)), cancellationToken));
+    }
+
+    private static async Task<IResult> RegenerateCodes(MfaCodeRequest body, ISender sender, HttpContext http, CancellationToken cancellationToken)
+    {
+        SessionCookieWriter.NoStore(http.Response);
+
+        var issued = await sender.Send(new RegenerateRecoveryCodesCommand(CallerId(http), body.Code ?? string.Empty), cancellationToken);
+        return Results.Ok(new RecoveryCodesResponse(issued.Codes.Select(c => c.Reveal()).ToList()));
+    }
+
+    /// <summary>The account of the session. Only reached behind authorization and a scope check, so the claim is always there.</summary>
+    private static long CallerId(HttpContext http) =>
+        SessionClaims.UserId(http.User) ?? throw new InvalidOperationException("An authenticated request has no user id.");
+
+    /// <summary>The pending sign-in is gone (unknown, expired, spent or ended): the person starts again with the password.</summary>
+    private static IResult EndSignIn(HttpContext http, SessionCookieWriter cookies)
+    {
+        cookies.ClearPending(http.Response);
+        return Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Sign in again");
+    }
+
+    /// <summary>Refuses a session whose scope is not one of the allowed ones: a limited session reaches only the step it owes (AC-1).</summary>
+    private static RouteHandlerBuilder RequireScope(this RouteHandlerBuilder builder, params SessionScope[] allowed) =>
+        builder.AddEndpointFilter(async (context, next) =>
+        {
+            var scope = context.HttpContext.User.FindFirstValue(SessionPrincipal.ScopeClaim);
+            return allowed.Any(a => a.ToString() == scope)
+                ? await next(context)
+                : Results.Problem(statusCode: StatusCodes.Status403Forbidden, title: "Forbidden");
+        });
 
     private static IResult EndSession(HttpContext http, SessionCookieWriter cookies)
     {

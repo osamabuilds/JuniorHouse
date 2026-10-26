@@ -12,8 +12,8 @@ Module steps are in [../tasks.md](../tasks.md). Depends on sessions steps 1 to 6
 - [x] 8. `ResetStaffMfa` by an administrator (not self), clears MFA and sessions. Test: `ResetStaffMfaTests.NeedsPermission_AndCannotTargetSelf`, `ResetStaffMfaTests.ForcesReEnrolment` (AC-8).
 - [x] 9. Owner break-glass MFA reset (covered by `OwnerCommandsTests` in staff-accounts step 10) shows new recovery codes once at the next enrolment. Test: `OwnerCommandsTests.ResetOwner_ClearsPasswordAndMfa_AndAudits` (AC-9).
 - [x] 10. No switch turns MFA off. Test: `MfaPolicyTests.NoConfigurationKey_DisablesMfa` (scans options for such a key, AC-10).
-- [ ] 11. Secrets never logged: secret, codes and recovery codes through the logging paths. Test: `MfaSecretLeakTests.NothingSensitive_AppearsInOutput` (AC-7).
-- [ ] 12. Endpoints `enrol/start`, `enrol/confirm`, `recovery-codes`, `mfa/verify`, `reset-mfa`. Test: `MfaEndpointsTests.FullEnrolmentAndSignIn`, `MfaEndpointsTests.StrictRateLimitApplies`.
+- [x] 11. Secrets never logged: secret, codes and recovery codes through the logging paths. Test: `MfaSecretLeakTests.NothingSensitive_AppearsInOutput` (AC-7).
+- [x] 12. Endpoints `enrol/start`, `enrol/confirm`, `recovery-codes`, `mfa/verify`, `reset-mfa`. Test: `MfaEndpointsTests.FullEnrolmentAndSignIn`, `MfaEndpointsTests.StrictRateLimitApplies`.
 - [ ] 13. Web `features/identity/mfa`: enrolment page (QR drawn in the browser with `qrcode`, secret as text, `autocomplete="one-time-code"`), recovery-code panel, challenge page, status card. Test: `mfa-enrol.component.spec.ts`, `mfa-challenge.component.spec.ts`, `recovery-codes.component.spec.ts`.
 - [ ] 14. e2e with real authentication: first sign-in forces password change then enrolment, sign-out, sign-in with TOTP (a test helper computes the code), sign-in with a recovery code, a reused code is refused. Test: `e2e/identity/mfa.e2e.spec.ts`.
 - [ ] 15. Update spec.md to **Implemented**, note deviations, tick traceability rows.

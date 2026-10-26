@@ -280,14 +280,15 @@ public sealed class AuthEndpointsTests(ProductionApiFixture api)
 
     [Fact]
     [Trait("Spec", "AC-1")]
-    public async Task MfaVerify_IsNotAvailableUntilMfaIsBuilt()
+    public async Task MfaVerify_WithoutAPendingSignIn_IsJustAnEndedSignIn()
     {
         using var factory = RealAuth();
         using var browser = Browser(factory);
 
-        var response = await browser.PostAsync("/api/auth/mfa/verify", null);
+        var response = await browser.PostAsJsonAsync("/api/auth/mfa/verify", new { code = "123456" }, Json);
 
-        Assert.Equal(HttpStatusCode.NotImplemented, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.DoesNotContain(SetCookies(response), c => c.StartsWith("romp-acs=", StringComparison.Ordinal) && !c.Contains("1970", StringComparison.Ordinal));
     }
 
     [Fact]

@@ -58,6 +58,14 @@ public sealed class SessionCookieWriter(IOptions<IdentityOptions> options)
 
     public string? ReadPending(HttpRequest request) => request.Cookies[Names.Pending];
 
+    /// <summary>Expires the pending cookie once the second step is done or the sign-in is over.</summary>
+    public void ClearPending(HttpResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        response.Cookies.Append(Names.Pending, string.Empty, Options(PendingPath, DateTimeOffset.UnixEpoch));
+    }
+
     /// <summary>Expires all three cookies. Each is cleared on the path it was set on, or the browser keeps it.</summary>
     public void Clear(HttpResponse response)
     {

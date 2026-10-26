@@ -79,6 +79,14 @@ internal static class StaffEndpoints
                 OneTimePassword(http, await sender.Send(new ResetPasswordCommand(id), cancellationToken), created: false))
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
+        // An administrator clears another person's second factor (mfa AC-8). The command refuses the caller's own account.
+        staff.MapPost("/{id:long}/reset-mfa", async (long id, ISender sender, HttpContext http, CancellationToken cancellationToken) =>
+            {
+                await sender.Send(new Romp.Modules.Identity.Application.Mfa.ResetStaffMfaCommand(id, SessionClaims.UserId(http.User) ?? 0), cancellationToken);
+                return Results.NoContent();
+            })
+            .RequireRateLimiting(RateLimitPolicies.Strict);
+
         // Any signed-in person may change their own password; the account is the session's, never one named in the body (SEC-05).
         endpoints.MapSecuredGroup("/api/auth").WithTags("Identity")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes))
