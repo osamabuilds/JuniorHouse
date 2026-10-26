@@ -58,6 +58,6 @@ Until now every request runs as an anonymous development user. The back office n
 - [x] Source of the common-password list: SecLists `Pwdb_top-100000` (MIT), entries of 12+ characters, 1,400 lines, embedded in the Domain assembly.
 
 ## As built
-- **AC-12, partial:** account changes stamp the audit columns (`INSR_BY`, `UPDT_BY`; `operator-cli` for the operator step). A separate audit-trail record per action waits for the audit-trail feature.
+- **AC-12:** account changes are in the audit trail (accounts, role mappings, MFA reset, deactivation, password resets, sign-in attempts), attributed to the acting person, or to `operator-cli` for the operator step (`IdentityAuditTests`).
 - **AC-5:** the server-side refusal of every other endpoint to a limited session is the roles permission handler (limited scope gets no permissions).
 - The e2e journey (`e2e/identity/staff-accounts.e2e.spec.ts`, real authentication, isolated stack) covers AC-3, AC-4, AC-5, AC-6 (temporary password stops working after use), AC-7 and AC-8 end to end. It needs an Owner reset with `reset-owner --password --mfa` before each run, because the Owner's secret is kept in `src/web/.e2e-state` (git-ignored) for the run only.

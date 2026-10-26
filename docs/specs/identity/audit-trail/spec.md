@@ -1,6 +1,6 @@
 # SCRUM-202: Audit trail
 
-- **Status:** Approved (owner, 2026-10-16)
+- **Status:** Implemented (2026-10-26); see "As built" at the end
 - **Jira:** SCRUM-202; source SCRUM-84
 - **BRD sections:** §7.8, §12.1, §5.14
 - **Requirement IDs:** FR-59, NFR-SC-05, SEC-25, NFR-FT-08
@@ -52,3 +52,35 @@ Every table already has `INSR_BY` / `UPDT_BY` columns, but they all say "system"
 ## Open questions
 - [ ] Retention: kept forever for now; owner sets a policy before launch (S19).
 - [ ] The audit page shows entity type and record key but not business values (AC-6); owner confirms this is enough for "what did they change".
+
+## As built
+- **Collector (AC-2, AC-3, AC-6, AC-10):** `AuditTrailSaveChangesInterceptor` in `BuildingBlocks.Persistence`, registered by every module next to the outbox interceptor (`AuditArchitectureTests` fails a module that forgets). `SavingChanges` notes one record per added, modified or deleted entity; `SavedChanges` (when generated keys exist) writes `AuditRecorded` into the module's own `OUTB_MSG` by plain SQL on the same connection and transaction. If the caller has no transaction the interceptor opens one around the save and commits it itself, so a change and its entry commit or fail together. At most 500 records per message.
+- **Where the contract lives:** `AuditRecorded` and the attributes `[NotAudited]` / `[AuditExcluded]` are in `Romp.BuildingBlocks` (namespace `Auditing`), not `BuildingBlocks.Application` as the plan said, because Persistence cannot reference Application. `AddOutboxModule` adds `AuditRecorded` to every module's registration, and the placeholder logging handler skips it.
+- **What is left out:** technical tables carry `[NotAudited("reason")]` (outbox, inbox, sessions, pending sign-ins, pending MFA enrolments, password history); the stamping columns and concurrency tokens are never named; a column whose name has a word HASH, SECR, TOKN, PEPR or CIPH, or that carries `[AuditExcluded]`, is never named. Sign-in attempts (`LGIN_ATMP`), account rows, role mappings and recovery codes are audited.
+- **Store (AC-4, AC-5):** `AddAuditTrail` creates `AUDT_OPRN_LKP` and two range-partitioned tables, `AUDT_ENTY` and `AUDT_CHNG`, with raw SQL. Triggers reject UPDATE, DELETE and TRUNCATE (including on each partition); `AUDT_PART_ENSR` creates monthly UTC partitions under an advisory lock. The unique key is (module, source message, table, record key, time), because outbox ids repeat across modules. There is no INSR/UPDT/concurrency column on these tables (they are append-only and carry the time and the person).
+- **Partitions:** no default partition, so nothing can be hiding in a catch-all that blocks a later month. The handler creates the month it needs before inserting, and `AuditPartitionWorker` keeps the next months in place daily.
+- **Module as text:** `MODL_NAME` holds the producing schema code (for example `CTLG`), an identifier and not an enumerated status, so a new module needs no lookup row.
+- **Actor (AC-1, AC-11):** the actor is the authenticated user name, `system` outside a request, `operator-cli` for operator verbs; names outside the charset become `unknown` in the store.
+- **AC-7:** account creation, role changes (mapping rows), MFA reset, deactivation, password resets, break-glass resets and every sign-in attempt are entries. For a role change or MFA reset the entry names the table and the person's key; the actor is who did it. This closes roles AC-6 and staff-accounts AC-12.
+- **AC-8, AC-12:** `GET /api/identity/audit` and `GET /api/identity/audit/{id}` behind `audit.read`; no write route (`NoWriteRoutesExist`). With no dates the list covers the last 30 days; a range over 366 days is a 400. Authorization per role is in the matrix tests.
+- **AC-9:** Audit page in the admin app (`features/identity/audit-trail`), menu entry for `audit.read`, record link for accounts and styles.
+- **AC-10, deviation (owner to decide):** writing the audit row in the same transaction adds round trips (BEGIN, INSERT, COMMIT) to a one-statement save. On a pure-insert micro-benchmark of 30 rows against a local container that is roughly 4 to 9 ms per save (about 50 percent of a very fast save); the 15 percent target was not measured on the Warehouse putaway and Catalog publish scenarios and is not met on the micro-benchmark. `AuditTrailOverheadTests` is a loose tripwire (25 ms) against a gross regression. A cheaper design (put the message in the same batch for updates and deletes, whose keys are known) is possible if the owner wants it.
+- **Retention and values (open questions):** unchanged; nothing is deleted, and the page shows no values by design.
+
+## Traceability
+
+| AC | Proof |
+|---|---|
+| AC-1 | `HttpContextCurrentActorTests`, `ActorScopeTests`, `IdentityAuditTests.OperatorBreakGlass_IsAuditedAsOperatorCli`, `AuditEndpointsTests.AChangeInAnotherModule_ReachesTheTrail_ThroughItsOutbox` |
+| AC-2 | `AuditTrailCollectorTests.RecordsOneEntryPerEntity_WithItsGeneratedKey`, `.Deletes_AreRecordedWithTheirKey`, `.TechnicalTables_AreExcluded`, `AuditArchitectureTests.EveryModule_RegistersTheAuditCollector_NextToTheOutbox` |
+| AC-3 | `AuditTrailCollectorTests.RolledBackChange_LeavesNoEntry`, `.CommittedChange_AlwaysHasItsOutboxRow_WithoutACallerTransaction`, `.FailedSave_LeavesNeitherTheChangeNorAnEntry` |
+| AC-4 | `AuditStoreTests.UpdateAndDelete_AreRejectedByTheTrigger`, `.TruncatingAPartitionDirectly_IsRejectedToo`, `.InsertsLandInTheRightPartition`, `AuditEndpointsTests.NoWriteRoutesExist`, `AuditArchitectureTests.NothingInTheCode_UpdatesOrDeletesAuditRows` |
+| AC-5 | `AuditStoreTests.TheSameMessageAndRecord_CannotBeStoredTwice`, `IdentityAuditTests.DeliveredTwice_StoresOnce` |
+| AC-6 | `AuditTrailCollectorTests.StoresColumnNamesNotValues`, `.SecretColumns_AreExcludedEvenByName`, `IdentityAuditTests.NoSecretValueOrSecretColumnName_ReachesTheTrail`, `AuditStoreTests.AnEntry_NeverCarriesAForgedActorOrColumn` |
+| AC-7 | `IdentityAuditTests.AccountRoleAndMfaChanges_AreAudited_WithWhoDidThem`, `.SignInFailures_AreAudited_AsAttemptRows`, `.OperatorBreakGlass_IsAuditedAsOperatorCli` |
+| AC-8 | `AuditQueryTests.*`, `AuditEndpointsTests.ARangeOver366Days_IsABadRequest` |
+| AC-9 | `audit-list.component.spec.ts`, `audit-detail.component.spec.ts`, `audit-filters.component.spec.ts`, `audit.effects.spec.ts`, `app.spec.ts`, `e2e/identity/audit-trail.e2e.spec.ts` |
+| AC-10 | `AuditTrailCollectorTests.SplitsAtFiveHundred`, `.OneMessagePerSave_ForUpToFiveHundredEntities`, `AuditTrailOverheadTests` (tripwire only; see deviation) |
+| AC-11 | `HttpContextCurrentActorTests`, `AuditStoreTests.AnEntry_NeverCarriesAForgedActorOrColumn` |
+| AC-12 | `AuthorizationMatrixTests`, `RoleBehaviourTests` (audit.read is Owner-only), `AuditEndpointsTests` |
+| AC-13 | `IdentityAuditTests.AFailingHandler_StoresNothing_AndLeavesTheCommittedChangeAlone`, the existing dispatcher retry and dead-letter tests |

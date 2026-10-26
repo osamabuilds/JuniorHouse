@@ -81,7 +81,7 @@ Sprints 1 to 7 declared who may call each endpoint (`Staff`, `Admin`, `Inventory
 - [x] ~~`warehouse.write`~~ Decided (owner, 2026-10-16): bins and putaway stay Owner-only as their own permission, separate from `inventory.write`, because moving stock between places does not change stock value but write-offs do. A future Warehouse role bundles `warehouse.write`, `qc.write` and `labelling.write` as one lookup row; whether it also gets `inventory.write` is decided later, not in Sprint 8.
 
 ## As built
-- **AC-6, open:** role assignments are validated (the last active Owner keeps the Owner role) and stamp the audit columns of the role mapping rows, but there is no separate audit-trail record of "who changed whose roles" because the audit-trail feature is not built yet. Close this when it lands.
+- **AC-6:** role assignments are audited: each change of a mapping row is an entry in the audit trail with the person who made it and the person concerned (audit-trail AC-7, `IdentityAuditTests`). The last active Owner keeps the Owner role.
 - **AC-7, partial:** menus, routes (`permissionGuard` on every top-level route, `/forbidden` page) and the staff screens' buttons are hidden through `*hasPermission`. Write buttons on the other feature screens (styles, catalog, warehouse, ...) are still shown to people who only hold the read permission; the server answers 403. Per-button hiding there is a follow-up.
 - **Authorization matrix:** `authorization-matrix.csv` (with `authorization-matrix.md` explaining the reviewed calls, e.g. slugs and suggestions need `catalog.read`, storefront admin needs `catalog.*`) is enforced by `AuthorizationMatrixTests`; `PermissionArchitectureTests` fails a mutating route that requires only a read permission. The old role-shaped policies are gone; only `Policies.Public` remains.
 - **Open item for the owner:** a non-Owner holding `staff.manage` can reset an Owner's MFA. The matrix allows it today; decide whether that must be Owner-only.
@@ -91,7 +91,7 @@ Sprints 1 to 7 declared who may call each endpoint (`Staff`, `Admin`, `Inventory
 | AC | Proof |
 |---|---|
 | AC-1..AC-5 | `EffectivePermissionsTests`, `PermissionHandlerTests`, `RoleBehaviourTests` |
-| AC-6 | `AssignRolesTests` (last Owner), staff-detail role picker spec (audit record open, see above) |
+| AC-6 | `AssignRolesTests` (last Owner), staff-detail role picker spec, `IdentityAuditTests` |
 | AC-7 | `has-permission.directive.spec.ts`, `permission.guard.spec.ts`, `roles-matrix.component.spec.ts`, `staff-detail.component.spec.ts`, `e2e/identity/roles.e2e.spec.ts` |
 | AC-8 | `RoleBehaviourTests` (Support, Marketing write nothing) |
 | AC-9, AC-10 | `AuthorizationMatrixTests` |

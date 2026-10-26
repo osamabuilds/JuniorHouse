@@ -1,6 +1,6 @@
 # Audit trail
 
-- **Module:** [`identity`](../README.md) · **Feature:** `audit-trail` · **Status:** Planned
+- **Module:** [`identity`](../README.md) · **Feature:** `audit-trail` · **Status:** Implemented
 
 Real actor on every change and an append-only log of every state change in every module.
 
