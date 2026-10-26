@@ -7,16 +7,6 @@ using Romp.Modules.Customers.Application.Accounts;
 
 namespace Romp.Modules.Customers.Infrastructure.Accounts;
 
-/// <summary>Customer data is personal: no shared cache or browser history may keep a response (SEC-25, NFR-26).</summary>
-internal sealed class CustomerNoStoreFilter : IEndpointFilter
-{
-    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
-    {
-        context.HttpContext.Response.Headers.CacheControl = "no-store";
-        return await next(context);
-    }
-}
-
 /// <summary>The customer's own account. No route takes a customer id: the caller is the customer (ACT-18, SEC-05).</summary>
 internal static class AccountEndpoints
 {

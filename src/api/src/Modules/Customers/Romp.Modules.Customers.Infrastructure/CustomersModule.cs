@@ -13,6 +13,7 @@ using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Infrastructure.Accounts;
+using Romp.Modules.Customers.Infrastructure.Addresses;
 using Romp.Modules.Customers.Infrastructure.Persistence;
 
 namespace Romp.Modules.Customers.Infrastructure;
@@ -67,6 +68,7 @@ public sealed class CustomersModule : IModule
         }
 
         endpoints.MapAccountEndpoints();
+        endpoints.MapAddressEndpoints();
     }
 
     /// <summary>

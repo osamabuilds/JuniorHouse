@@ -18,7 +18,7 @@ namespace Romp.Modules.Customers.Infrastructure.Accounts;
 /// <summary>
 /// The development-only stand-in for a signed-in customer (ADR 0021, decision 2). Real registration and sign-in are built in the final
 /// authentication sprint; until then, in Development and Testing only, every request is the seeded test customer unless it carries
-/// <c>X-Dev-Customer: none</c> or the cookie set by <c>/dev/customer?state=off</c>. Nothing here is registered in any other environment.
+/// <c>X-Dev-Customer: none</c> (or <c>other</c>, the second seeded customer, for ownership checks) or the cookie set by <c>/dev/customer?state=off</c>. Nothing here is registered in any other environment.
 /// </summary>
 public static class StandInCustomer
 {
@@ -79,7 +79,8 @@ internal sealed class StandInCustomerHandler(
         }
 
         var db = Context.RequestServices.GetRequiredService<ICustomerDbContext>();
-        var id = await db.Customers.AsNoTracking().Where(c => c.Email == StandInCustomer.Email).Select(c => (long?)c.Id).FirstOrDefaultAsync(Context.RequestAborted);
+        var email = Request.Headers[StandInCustomer.Header] == "other" ? StandInCustomer.OtherEmail : StandInCustomer.Email;
+        var id = await db.Customers.AsNoTracking().Where(c => c.Email == email).Select(c => (long?)c.Id).FirstOrDefaultAsync(Context.RequestAborted);
         if (id is null)
         {
             return AuthenticateResult.NoResult();
