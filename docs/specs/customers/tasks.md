@@ -21,7 +21,7 @@ Ordered, checkable steps. Each names the test that proves it. Test-first: write 
 - [x] **A3** `CUST_ADDR` migration with the partial unique default index. *Proof:* `AddressMigrationTests`.
 - [x] **A4** Commands and the paged list query, with the row lock on `CUST_MAIN`. *Proof:* `AddressCommandTests`, `AddressConcurrencyTests` (ADD-1, ADD-2, ADD-6, ADD-7).
 - [x] **A5** Endpoints under `/api/customers/me/addresses`, ownership by construction. *Proof:* `AddressEndpointsTests.AnotherCustomersAddress_Is404ForReadEditRemoveAndDefault` (ADD-3).
-- [ ] **A6** `ICustomerAddressQueries` in `Customers.Contracts`. *Proof:* `AddressContractTests`.
+- [x] **A6** `ICustomerAddressQueries` in `Customers.Contracts`. *Proof:* `AddressContractTests`.
 - [ ] **A7** Storefront `features/customers/addresses` (labels, dependent selects, focus trap), account shell, `noindex`, `no-store`. *Proof:* component and store specs, `AddressesPage` e2e (ADD-8).
 
 ## wishlist, newsletter, notify-me

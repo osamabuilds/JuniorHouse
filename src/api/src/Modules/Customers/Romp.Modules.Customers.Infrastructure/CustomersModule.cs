@@ -43,6 +43,7 @@ public sealed class CustomersModule : IModule
             .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50.").ValidateOnStart();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentCustomer, HttpContextCurrentCustomer>();
+        services.AddScoped<Contracts.ICustomerAddressQueries, Addresses.CustomerAddressQueries>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CustTransactionBehavior<,>));
