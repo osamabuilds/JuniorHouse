@@ -14,7 +14,7 @@ internal static class StockEndpoints
 {
     public static void MapStockEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/warehouse/stock").WithTags("Warehouse");
+        var group = endpoints.MapSecuredGroup("/api/warehouse/stock", Permissions.InventoryRead).WithTags("Warehouse");
 
         group.MapGet("", async (
                 string? search,
@@ -43,7 +43,7 @@ internal static class StockEndpoints
             Results.Ok(await sender.Send(new GetMovementsQuery(variantId, binId, kindId, page, pageSize), cancellationToken)));
 
         // The books-agree check (LED-2) is an administrative action.
-        endpoints.MapSecuredGroup("/api/warehouse/stock", Policies.Admin).WithTags("Warehouse")
+        endpoints.MapSecuredGroup("/api/warehouse/stock", Permissions.OpsAdmin).WithTags("Warehouse")
             .MapGet("/consistency", async (ISender sender, CancellationToken cancellationToken) =>
                 Results.Ok(await sender.Send(new StockConsistencyQuery(), cancellationToken)));
     }

@@ -33,7 +33,7 @@ internal static class ProductEndpoints
 
     public static void MapProductEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/catalog/products", Policies.Catalogue).WithTags("Catalog")
+        var group = endpoints.MapSecuredGroup("/api/catalog/products", Permissions.CatalogRead).WithTags("Catalog")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/", async (
@@ -52,36 +52,36 @@ internal static class ProductEndpoints
         group.MapPost("/", async (CreateProductRequest body, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(
                 new CreateProductCommand(body.StyleId, body.Name, body.Description, body.GenderId, body.CategoryId, body.AgeBracketId, body.ActingPerson),
-                cancellationToken)));
+                cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/{id:long}", async (long id, UpdateProductContentRequest body, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(
                 new UpdateProductContentCommand(id, body.Name, body.Description, body.GenderId, body.CategoryId, body.AgeBracketId, body.CareNote, body.Version, body.ActingPerson),
-                cancellationToken)));
+                cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/{id:long}/prices", async (long id, SetVariantPricesRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SetVariantPricesCommand(id, body.Prices, body.Version, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SetVariantPricesCommand(id, body.Prices, body.Version, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/{id:long}/collections", async (long id, SetCollectionsRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SetCollectionsCommand(id, body.CollectionIds, body.Version, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SetCollectionsCommand(id, body.CollectionIds, body.Version, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         // A refused publish is 422 with every failure (PRD-4); the editor lists them as links to the tabs that fix them.
         group.MapPost("/{id:long}/publish", async (long id, ProductActionRequest body, ISender sender, CancellationToken cancellationToken) =>
             {
                 var result = await sender.Send(new PublishProductCommand(id, body.Version, body.ActingPerson), cancellationToken);
                 return result.Published ? Results.Ok(result) : Results.Json(result, statusCode: StatusCodes.Status422UnprocessableEntity);
-            })
+            }).RequirePermission(Permissions.CatalogWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapPost("/{id:long}/unpublish", async (long id, ProductActionRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new UnpublishProductCommand(id, body.Version, body.ActingPerson), cancellationToken)))
+                Results.Ok(await sender.Send(new UnpublishProductCommand(id, body.Version, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapPost("/{id:long}/archive", async (long id, ProductActionRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new ArchiveProductCommand(id, body.Version, body.ActingPerson), cancellationToken)))
+                Results.Ok(await sender.Send(new ArchiveProductCommand(id, body.Version, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapPost("/{id:long}/refresh-variants", async (long id, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new RefreshVariantsFromLabellingCommand(id), cancellationToken)));
+            Results.Ok(await sender.Send(new RefreshVariantsFromLabellingCommand(id), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
     }
 }

@@ -11,7 +11,7 @@ internal static class PurchaseOrderFileEndpoints
 {
     public static void MapPurchaseOrderFileEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/purchase-orders").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/purchase-orders", Permissions.ProcurementRead).WithTags("Vendor");
 
         // SCRUM-93 task 40. Multipart upload; the content type is detected from the bytes, never trusted from the client.
         group.MapGet("/{id:long}/files", async (long id, ISender sender, CancellationToken cancellationToken) =>
@@ -28,14 +28,14 @@ internal static class PurchaseOrderFileEndpoints
                 using var buffer = new MemoryStream();
                 await stream.CopyToAsync(buffer, cancellationToken);
                 return Results.Ok(await sender.Send(new UploadPoFileCommand(id, categoryId, file.FileName, buffer.ToArray()), cancellationToken));
-            })
+            }).RequirePermission(Permissions.ProcurementWrite)
             .DisableAntiforgery();
 
         group.MapDelete("/{id:long}/files/{fileId:long}", async (long id, long fileId, ISender sender, CancellationToken cancellationToken) =>
         {
             await sender.Send(new RemovePoFileCommand(id, fileId), cancellationToken);
             return Results.NoContent();
-        });
+        }).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapGet("/{id:long}/files/{fileId:long}", async (
             long id, long fileId, HttpContext http, ISender sender, CancellationToken cancellationToken) =>

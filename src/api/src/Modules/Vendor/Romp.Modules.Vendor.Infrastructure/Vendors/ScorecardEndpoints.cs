@@ -14,7 +14,7 @@ internal static class ScorecardEndpoints
 {
     public static void MapScorecardEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api");
+        var group = endpoints.MapSecuredGroup("/api", Permissions.ProcurementRead);
         group.MapGet("/vendors/{id:long}/scorecard", async (long id, ISender sender, CancellationToken cancellationToken) =>
                 Results.Ok(await sender.Send(new GetVendorScorecardQuery(id), cancellationToken)))
             .WithTags("Vendor");

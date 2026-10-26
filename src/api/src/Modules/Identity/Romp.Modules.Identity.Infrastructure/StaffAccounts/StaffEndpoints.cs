@@ -103,7 +103,7 @@ internal static class StaffEndpoints
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         // Any signed-in person may change their own password; the account is the session's, never one named in the body (SEC-05).
-        endpoints.MapSecuredGroup("/api/auth").WithTags("Identity")
+        endpoints.MapSecuredGroup("/api/auth", Policies.Public).RequireAuthorization().WithTags("Identity")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes))
             .AddEndpointFilter<CsrfFilter>()
             .MapPost("/password", async (ChangePasswordRequest body, ISender sender, HttpContext http, CancellationToken cancellationToken) =>

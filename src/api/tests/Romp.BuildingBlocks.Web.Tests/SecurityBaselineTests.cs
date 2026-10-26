@@ -28,10 +28,10 @@ public sealed class SecurityBaselineTests
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
-        var group = app.MapSecuredGroup("/secured");
+        var group = app.MapSecuredGroup("/secured", Permissions.CatalogRead);
         group.MapGet("/ping", () => Results.Ok("pong"));
         group.MapGet("/strict", () => Results.Ok("strict")).RequireRateLimiting(RateLimitPolicies.Strict);
-        app.MapSecuredGroup("/admin", Policies.Admin).MapGet("/ping", () => Results.Ok("admin"));
+        app.MapSecuredGroup("/admin", Permissions.OpsAdmin).MapGet("/ping", () => Results.Ok("admin"));
         app.MapGet("/open", () => Results.Ok("open"));
         return app;
     }

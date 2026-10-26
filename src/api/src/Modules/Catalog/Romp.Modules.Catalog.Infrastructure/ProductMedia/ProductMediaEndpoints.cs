@@ -27,7 +27,7 @@ internal static class ProductMediaEndpoints
 
     public static void MapProductMediaEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/catalog", Policies.Catalogue).WithTags("Catalog");
+        var group = endpoints.MapSecuredGroup("/api/catalog", Permissions.CatalogRead).WithTags("Catalog");
 
         group.MapGet("/products/{id:long}/images", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new ListProductImagesQuery(id), cancellationToken)));
@@ -57,7 +57,7 @@ internal static class ProductMediaEndpoints
                 await stream.CopyToAsync(buffer, cancellationToken);
                 return Results.Ok(await sender.Send(
                     new UploadProductImageCommand(id, buffer.ToArray(), file.FileName, colourId, altText, actingPerson), cancellationToken));
-            })
+            }).RequirePermission(Permissions.CatalogWrite)
             .AddEndpointFilter(async (context, next) =>
             {
                 var limit = context.HttpContext.RequestServices.GetRequiredService<IOptions<CatalogOptions>>().Value.MaxImageBytes + MultipartOverheadBytes;
@@ -73,16 +73,16 @@ internal static class ProductMediaEndpoints
             .DisableAntiforgery();
 
         group.MapPut("/images/{imageId:long}/alt", async (long imageId, SetImageAltRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SetImageAltCommand(imageId, body.Text, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SetImageAltCommand(imageId, body.Text, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/products/{id:long}/images/order", async (long id, ReorderImagesRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new ReorderImagesCommand(id, body.ImageIds, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new ReorderImagesCommand(id, body.ImageIds, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapDelete("/images/{imageId:long}", async (long imageId, [FromQuery] string actingPerson, ISender sender, CancellationToken cancellationToken) =>
         {
             await sender.Send(new DeleteImageCommand(imageId, actingPerson), cancellationToken);
             return Results.NoContent();
-        });
+        }).RequirePermission(Permissions.CatalogWrite);
 
         // MED-9: the file is served from our own record of its type, never the client's; the browser may not guess a different one.
         group.MapGet("/images/{imageId:long}/file", async (long imageId, HttpContext http, ISender sender, CancellationToken cancellationToken) =>

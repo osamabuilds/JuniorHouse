@@ -21,16 +21,16 @@ internal static class CompositionCareEndpoints
 
     public static void MapCompositionCareEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/catalog/products", Policies.Catalogue).WithTags("Catalog")
+        var group = endpoints.MapSecuredGroup("/api/catalog/products", Permissions.CatalogRead).WithTags("Catalog")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/{id:long}/composition-care", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetCompositionAndCareQuery(id), cancellationToken)));
 
         group.MapPut("/{id:long}/composition", async (long id, SetCompositionRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SetCompositionCommand(id, body.Rows, body.Version, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SetCompositionCommand(id, body.Rows, body.Version, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/{id:long}/care", async (long id, SetCareRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SetCareCommand(id, body.CareIds, body.Note, body.Version, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SetCareCommand(id, body.CareIds, body.Note, body.Version, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
     }
 }

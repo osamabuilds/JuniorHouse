@@ -92,7 +92,7 @@ internal static class StockAlertEndpoints
 
     public static void MapStockAlertEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var reads = endpoints.MapSecuredGroup("/api/warehouse/alerts").WithTags("Warehouse");
+        var reads = endpoints.MapSecuredGroup("/api/warehouse/alerts", Permissions.InventoryRead).WithTags("Warehouse");
 
         reads.MapGet("", async (
                 short? levelId,
@@ -115,13 +115,13 @@ internal static class StockAlertEndpoints
                 int pageSize = PageRequest.DefaultPageSize) =>
             Results.Ok(await sender.Send(new SearchThresholdsQuery(search, page, pageSize), cancellationToken)));
 
-        var writes = endpoints.MapSecuredGroup("/api/warehouse/alerts", Policies.Inventory).WithTags("Warehouse")
+        var writes = endpoints.MapSecuredGroup("/api/warehouse/alerts", Permissions.InventoryWrite).WithTags("Warehouse")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         writes.MapPost("/{id:long}/acknowledge", async (long id, AcknowledgeAlertRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new AcknowledgeAlertCommand(id, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new AcknowledgeAlertCommand(id, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.InventoryWrite);
 
         writes.MapPut("/thresholds/{variantRefId:long}", async (long variantRefId, SetThresholdRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SetThresholdCommand(variantRefId, body.Quantity, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SetThresholdCommand(variantRefId, body.Quantity, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.InventoryWrite);
     }
 }

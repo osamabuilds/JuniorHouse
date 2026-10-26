@@ -21,7 +21,7 @@ internal static class UrlEndpoints
 
     public static void MapUrlEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/catalog", Policies.Catalogue).WithTags("Catalog")
+        var group = endpoints.MapSecuredGroup("/api/catalog", Permissions.CatalogRead).WithTags("Catalog")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapPost("/slugs/suggest", async (SuggestSlugRequest body, ISender sender, CancellationToken cancellationToken) =>
@@ -29,7 +29,7 @@ internal static class UrlEndpoints
 
         group.MapPut("/products/{id:long}/path", async (long id, SetProductPathRequest body, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(
-                new SetProductPathCommand(id, body.GenderId, body.CategoryId, body.Slug, body.Version, body.ActingPerson), cancellationToken)));
+                new SetProductPathCommand(id, body.GenderId, body.CategoryId, body.Slug, body.Version, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapGet("/products/{id:long}/path-history", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetPathHistoryQuery(id), cancellationToken)));

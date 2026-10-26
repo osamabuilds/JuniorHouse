@@ -20,7 +20,7 @@ internal static class VariantEndpoints
 
     public static void MapVariantEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/labelling").WithTags("Labelling")
+        var group = endpoints.MapSecuredGroup("/api/labelling", Permissions.LabellingRead).WithTags("Labelling")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/variants", async (
@@ -35,10 +35,9 @@ internal static class VariantEndpoints
         group.MapGet("/variants/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetVariantQuery(id), cancellationToken)));
 
-        // Void is an Admin action: declared now, enforced with roles in Sprint 8 (SEC-08).
+        // Void is an operational action: ops.admin (roles spec).
         group.MapPost("/variants/{id:long}/void", async (long id, VoidGtinRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new VoidGtinCommand(id, body.ReasonId, body.Note, body.ActingPerson), cancellationToken)))
-            .RequireAuthorization(Policies.Admin)
+                Results.Ok(await sender.Send(new VoidGtinCommand(id, body.ReasonId, body.Note, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.OpsAdmin)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapGet("/capacity", async (ISender sender, CancellationToken cancellationToken) =>

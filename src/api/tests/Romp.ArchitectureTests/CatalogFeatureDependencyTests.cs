@@ -149,7 +149,7 @@ public sealed class CatalogFeatureDependencyTests
 
     [Fact]
     [Trait("Spec", "SEC-08")]
-    public void EveryCatalogueEndpointGroup_IsBehindTheCataloguePolicy()
+    public void EveryCatalogueEndpointGroup_NeedsTheCataloguePermissions()
     {
         var infra = Path.Combine(FindRepoRoot(), "src", "api", "src", "Modules", "Catalog", "Romp.Modules.Catalog.Infrastructure");
 
@@ -160,7 +160,8 @@ public sealed class CatalogFeatureDependencyTests
         })
         {
             var text = File.ReadAllText(Path.Combine(infra, file));
-            Assert.Contains("Policies.Catalogue", text, StringComparison.Ordinal);
+            Assert.Contains("Permissions.CatalogRead", text, StringComparison.Ordinal);
+            Assert.Contains("Permissions.CatalogWrite", text, StringComparison.Ordinal);
             Assert.DoesNotContain(".MapGroup(", text, StringComparison.Ordinal);
         }
     }

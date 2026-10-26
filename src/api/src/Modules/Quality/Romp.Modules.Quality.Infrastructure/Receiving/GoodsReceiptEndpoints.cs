@@ -21,7 +21,7 @@ internal static class GoodsReceiptEndpoints
 {
     public static void MapGoodsReceiptEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/quality/grns").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality/grns", Permissions.QcRead).WithTags("Quality");
 
         group.MapGet("/", async (
                 string? search,
@@ -44,6 +44,6 @@ internal static class GoodsReceiptEndpoints
                 new RecordGoodsReceiptCommand(body.InboundDeliveryId, body.ReceivedDate, body.ActingPerson, body.Note, body.Lines),
                 cancellationToken);
             return Results.Created($"/api/quality/grns/{grn.Id}", grn);
-        });
+        }).RequirePermission(Permissions.QcWrite);
     }
 }

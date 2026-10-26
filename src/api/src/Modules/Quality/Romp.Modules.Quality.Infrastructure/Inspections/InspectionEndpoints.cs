@@ -24,7 +24,7 @@ internal static class InspectionEndpoints
 {
     public static void MapInspectionEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/quality/batches").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality/batches", Permissions.QcRead).WithTags("Quality");
 
         group.MapPost("/{id:long}/inspections", async (long id, RecordInspectionRequest body, ISender sender, CancellationToken cancellationToken) =>
         {
@@ -34,6 +34,6 @@ internal static class InspectionEndpoints
                     body.Checks, body.Defects),
                 cancellationToken);
             return Results.Created($"/api/quality/batches/{id}", inspection);
-        });
+        }).RequirePermission(Permissions.QcWrite);
     }
 }

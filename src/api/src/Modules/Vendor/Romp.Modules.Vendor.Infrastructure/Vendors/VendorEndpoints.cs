@@ -12,17 +12,17 @@ internal static class VendorEndpoints
 {
     public static void MapVendorEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/vendors").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/vendors", Permissions.ProcurementRead).WithTags("Vendor");
 
         group.MapPost("/", async (CreateVendorCommand command, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(command, cancellationToken)));
+            Results.Ok(await sender.Send(command, cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPut("/{id:long}", async (
                 long id,
                 UpdateVendorRequest body,
                 ISender sender,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
+            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapGet("/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
         {

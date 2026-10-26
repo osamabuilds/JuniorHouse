@@ -22,7 +22,7 @@ internal static class SizeChartEndpoints
 
     public static void MapSizeChartEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/catalog", Policies.Catalogue).WithTags("Catalog")
+        var group = endpoints.MapSecuredGroup("/api/catalog", Permissions.CatalogRead).WithTags("Catalog")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/size-charts", async (ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = PageRequest.DefaultPageSize) =>
@@ -32,16 +32,16 @@ internal static class SizeChartEndpoints
             Results.Ok(await sender.Send(new GetSizeChartQuery(id), cancellationToken)));
 
         group.MapPost("/size-charts", async (CreateSizeChartRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new CreateSizeChartCommand(body.CategoryId, body.GenderId, body.Name, body.Lines, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new CreateSizeChartCommand(body.CategoryId, body.GenderId, body.Name, body.Lines, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/size-charts/{id:long}", async (long id, UpdateSizeChartRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new UpdateSizeChartCommand(id, body.Name, body.Lines, body.Version, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new UpdateSizeChartCommand(id, body.Name, body.Lines, body.Version, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapDelete("/size-charts/{id:long}", async (long id, [FromQuery] string actingPerson, ISender sender, CancellationToken cancellationToken) =>
         {
             await sender.Send(new DeleteSizeChartCommand(id, actingPerson), cancellationToken);
             return Results.NoContent();
-        });
+        }).RequirePermission(Permissions.CatalogWrite);
 
         group.MapGet("/products/{id:long}/size-chart", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetChartForProductQuery(id), cancellationToken)));

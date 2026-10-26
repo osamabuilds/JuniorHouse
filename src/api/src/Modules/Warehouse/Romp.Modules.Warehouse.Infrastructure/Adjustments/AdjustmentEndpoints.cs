@@ -27,7 +27,7 @@ internal static class AdjustmentEndpoints
 
     public static void MapAdjustmentEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var reads = endpoints.MapSecuredGroup("/api/warehouse/adjustments").WithTags("Warehouse");
+        var reads = endpoints.MapSecuredGroup("/api/warehouse/adjustments", Permissions.InventoryRead).WithTags("Warehouse");
 
         reads.MapGet("", async (
                 short? reasonId,
@@ -43,14 +43,14 @@ internal static class AdjustmentEndpoints
         reads.MapGet("/reasons", async (ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new ListAdjustmentReasonsQuery(), cancellationToken)));
 
-        endpoints.MapSecuredGroup("/api/warehouse/adjustments", Policies.Inventory).WithTags("Warehouse")
+        endpoints.MapSecuredGroup("/api/warehouse/adjustments", Permissions.InventoryWrite).WithTags("Warehouse")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes))
             .MapPost("", async (PostAdjustmentRequest body, ISender sender, CancellationToken cancellationToken) =>
                 Results.Ok(await sender.Send(
                     new PostAdjustmentCommand(
                         body.VariantRefId, body.Gtin, body.BinCode, body.GradeId, body.QuantityChange, body.ReasonId, body.Note,
                         body.Reconfirmed, body.IdempotencyKey, body.ActingPerson),
-                    cancellationToken)))
+                    cancellationToken))).RequirePermission(Permissions.InventoryWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
     }
 }

@@ -24,7 +24,7 @@ internal static class LabelWorkEndpoints
 
     public static void MapLabelWorkEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/labelling/work-items").WithTags("Labelling")
+        var group = endpoints.MapSecuredGroup("/api/labelling/work-items", Permissions.LabellingRead).WithTags("Labelling")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/", async (
@@ -41,14 +41,14 @@ internal static class LabelWorkEndpoints
             Results.Ok(await sender.Send(new GetLabelWorkItemQuery(id), cancellationToken)));
 
         group.MapPost("/{id:long}/resolve", async (long id, ResolveWorkItemRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new ResolveWorkItemCommand(id, body.ConfirmRetiredStyle, body.ActingPerson), cancellationToken)))
+                Results.Ok(await sender.Send(new ResolveWorkItemCommand(id, body.ConfirmRetiredStyle, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.LabellingWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapPost("/{id:long}/print-jobs", async (long id, QueueTagsRequest body, ISender sender, CancellationToken cancellationToken) =>
             {
                 var job = await sender.Send(new QueueTagsCommand(id, body.Qty, body.PrinterCode, body.ActingPerson), cancellationToken);
                 return Results.Created($"/api/labelling/print-jobs/{job.Id}", job);
-            })
+            }).RequirePermission(Permissions.LabellingWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         // PDF of what will be printed (TAG-8). Expensive-ish and read-only, so rate limited; served inline, never sniffed.

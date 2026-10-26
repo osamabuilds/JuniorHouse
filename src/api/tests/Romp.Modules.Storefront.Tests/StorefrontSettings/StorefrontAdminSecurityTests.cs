@@ -19,8 +19,8 @@ using Romp.Modules.Storefront.Infrastructure.StorefrontSettings;
 namespace Romp.Modules.Storefront.Tests.StorefrontSettings;
 
 /// <summary>
-/// SCRUM-206 task 12, ST-11 / SEC-08: every admin route is behind the StorefrontSettings policy (401 without a user, 403 without the
-/// role), the public routes are explicitly anonymous, and the host will not expose the admin routes in production without real
+/// SCRUM-206 task 12, ST-11 / SEC-08: every admin route needs a catalogue permission (401 without a user, 403 without the
+/// permission), the public routes are explicitly anonymous, and the host will not expose the admin routes in production without real
 /// authentication. The routes are the real ones from the module; authorization answers before any handler (or database) is reached.
 /// </summary>
 public sealed class StorefrontAdminSecurityTests
@@ -36,9 +36,10 @@ public sealed class StorefrontAdminSecurityTests
         builder.Services.AddRompAuthorization(builder.Environment);
         if (realAuthentication)
         {
-            builder.Services.AddAuthentication(TestScheme).AddScheme<AuthenticationSchemeOptions, RoleHeaderHandler>(TestScheme, _ => { });
+            builder.Services.AddAuthentication(TestScheme).AddScheme<AuthenticationSchemeOptions, PermissionHeaderHandler>(TestScheme, _ => { });
         }
 
+        builder.Services.AddSingleton<IAuthorizationHandler, HeaderPermissionHandler>();
         builder.Services.AddSharedPersistence();
         builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Application.AssemblyReference).Assembly));
         var module = new StorefrontModule();
@@ -60,12 +61,12 @@ public sealed class StorefrontAdminSecurityTests
                 e.RoutePattern.RawText!.Replace("{id:long}", "1", StringComparison.Ordinal).Replace("{slug}", "x", StringComparison.Ordinal),
                 e)))];
 
-    private static async Task<HttpStatusCode> SendAsync(WebApplication app, string method, string path, string? role)
+    private static async Task<HttpStatusCode> SendAsync(WebApplication app, string method, string path, string? permissions)
     {
         var request = new HttpRequestMessage(new HttpMethod(method), path);
-        if (role is not null)
+        if (permissions is not null)
         {
-            request.Headers.Add("X-Role", role);
+            request.Headers.Add("X-Permissions", permissions);
         }
 
         if (method is "PUT" or "POST")
@@ -79,48 +80,52 @@ public sealed class StorefrontAdminSecurityTests
     [Fact]
     [Trait("Spec", "ST-11")]
     [Trait("Spec", "SEC-08")]
-    public async Task EveryAdminRoute_HasTheStorefrontSettingsPolicy_AndThereAreRoutes()
+    public async Task EveryAdminRoute_NeedsACataloguePermission_AndThereAreRoutes()
     {
         await using var app = await StartAsync();
 
         var routes = Routes(app, StorefrontSettingsEndpoints.AdminPrefix);
 
         Assert.True(routes.Count >= 15);
-        Assert.All(routes, r => Assert.Contains(r.Endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(), a => a.Policy == Policies.StorefrontSettings));
+        Assert.All(routes, r => Assert.Equal(
+            r.Method == "GET" ? Permissions.CatalogRead : Permissions.CatalogWrite,
+            r.Endpoint.Metadata.GetOrderedMetadata<PermissionMetadata>()[^1].Code));
         Assert.Contains(routes, r => r is { Method: "POST", Path: $"{StorefrontSettingsEndpoints.AdminPrefix}/publish" });
     }
 
     [Fact]
     [Trait("Spec", "SRC-12")]
     [Trait("Spec", "SEC-08")]
-    public async Task EverySearchAdminRoute_HasTheStorefrontSearchPolicy_Is401WithoutAUser_And403WithoutTheRole()
+    public async Task EverySearchAdminRoute_NeedsACataloguePermission_Is401WithoutAUser_And403WithoutIt()
     {
         await using var app = await StartAsync();
 
         var routes = Routes(app, Romp.Modules.Storefront.Infrastructure.Search.SearchAdminEndpoints.Prefix);
 
         Assert.Equal(5, routes.Count);
-        Assert.All(routes, r => Assert.Contains(r.Endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(), a => a.Policy == Policies.StorefrontSearch));
+        Assert.All(routes, r => Assert.Equal(
+            r.Method == "GET" ? Permissions.CatalogRead : Permissions.CatalogWrite,
+            r.Endpoint.Metadata.GetOrderedMetadata<PermissionMetadata>()[^1].Code));
         foreach (var (method, path, _) in routes)
         {
             Assert.True(HttpStatusCode.Unauthorized == await SendAsync(app, method, path, null), $"{method} {path} without a user");
-            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "Staff"), $"{method} {path} as plain staff");
-            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "StorefrontSettings"), $"{method} {path} with another capability role");
+            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "none"), $"{method} {path} with no permission");
+            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "ref.read,ops.admin,inventory.write"), $"{method} {path} with other permissions");
         }
     }
 
     [Fact]
     [Trait("Spec", "ST-11")]
     [Trait("Spec", "SEC-08")]
-    public async Task EveryAdminRoute_Is401WithoutAUser_And403ForAStaffUserWithoutTheRole()
+    public async Task EveryAdminRoute_Is401WithoutAUser_And403ForAUserWithoutThePermission()
     {
         await using var app = await StartAsync();
 
         foreach (var (method, path, _) in Routes(app, StorefrontSettingsEndpoints.AdminPrefix))
         {
             Assert.True(HttpStatusCode.Unauthorized == await SendAsync(app, method, path, null), $"{method} {path} without a user");
-            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "Staff"), $"{method} {path} as plain staff");
-            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "Catalogue"), $"{method} {path} with another capability role");
+            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "none"), $"{method} {path} with no permission");
+            Assert.True(HttpStatusCode.Forbidden == await SendAsync(app, method, path, "ref.read,qc.write"), $"{method} {path} with other permissions");
         }
     }
 
@@ -148,7 +153,7 @@ public sealed class StorefrontAdminSecurityTests
 
         Assert.Empty(Routes(app, StorefrontSettingsEndpoints.AdminPrefix));
         Assert.Equal(11, Routes(app, StorefrontSettingsEndpoints.PublicPrefix).Count);
-        Assert.Equal(HttpStatusCode.NotFound, await SendAsync(app, "GET", $"{StorefrontSettingsEndpoints.AdminPrefix}/draft", "Admin"));
+        Assert.Equal(HttpStatusCode.NotFound, await SendAsync(app, "GET", $"{StorefrontSettingsEndpoints.AdminPrefix}/draft", "catalog.read"));
     }
 
     [Fact]
@@ -178,27 +183,41 @@ public sealed class StorefrontAdminSecurityTests
 
     [Fact]
     [Trait("Spec", "SEC-08")]
-    public void ThePolicyNames_AreNotAliasesOfAdmin()
+    public void OnlyThePublicPolicyRemains()
     {
-        Assert.Equal("StorefrontSettings", Policies.StorefrontSettings);
         Assert.Equal("Public", Policies.Public);
+        Assert.Single(typeof(Policies).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static));
     }
 
-    /// <summary>Signs a caller in with the roles named in the <c>X-Role</c> header; no header means no user (401).</summary>
-    private sealed class RoleHeaderHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+    /// <summary>Signs a caller in with the permissions named in the <c>X-Permissions</c> header (comma separated); no header means no user (401).</summary>
+    private sealed class PermissionHeaderHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
         : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
     {
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            if (!Request.Headers.TryGetValue("X-Role", out var roles))
+            if (!Request.Headers.TryGetValue("X-Permissions", out var permissions))
             {
                 return Task.FromResult(AuthenticateResult.NoResult());
             }
 
             var identity = new ClaimsIdentity(
-                roles.ToString().Split(',').Select(r => new Claim(ClaimTypes.Role, r)).Append(new Claim(ClaimTypes.Name, "tester")),
+                permissions.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => new Claim("permission", p)).Append(new Claim(ClaimTypes.Name, "tester")),
                 TestScheme);
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), TestScheme)));
+        }
+    }
+
+    /// <summary>Allows a permission requirement when the caller's claims carry it: a stand-in for the Identity module's handler.</summary>
+    private sealed class HeaderPermissionHandler : AuthorizationHandler<PermissionRequirement>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+        {
+            if (context.User.HasClaim("permission", requirement.Code.Value))
+            {
+                context.Succeed(requirement);
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

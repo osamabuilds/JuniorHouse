@@ -106,7 +106,7 @@ public static class StorefrontRebuildEndpoints
     public static void MapAdminStorefrontRebuildEndpoints(this IEndpointRouteBuilder endpoints)
     {
         // Admin-only now; the narrower `storefront.operate` permission arrives with the roles of Sprint 8.
-        var group = endpoints.MapSecuredGroup(Prefix, Policies.Admin).WithTags("Storefront rebuild");
+        var group = endpoints.MapSecuredGroup(Prefix, Permissions.OpsAdmin).WithTags("Storefront rebuild");
 
         group.MapPost("/", async (HttpContext http, ISender sender, PendingRebuilds queue, CancellationToken cancellationToken) =>
             {
@@ -114,7 +114,7 @@ public static class StorefrontRebuildEndpoints
                 var runId = await sender.Send(new StartRebuildCommand(actor.Length > 100 ? actor[..100] : actor), cancellationToken);
                 queue.Enqueue(runId);
                 return Results.Accepted($"{Prefix}/{runId}", new { runId });
-            })
+            }).RequirePermission(Permissions.OpsAdmin)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapGet("/{runId:long}", async (long runId, ISender sender, CancellationToken cancellationToken) =>

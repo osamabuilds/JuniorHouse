@@ -9,7 +9,7 @@ public static class SecuredEndpointExtensions
     /// The only way a module maps an endpoint group (ADR 0011): the group always carries an authorization policy, so an
     /// endpoint cannot be added without deciding who may call it. An architecture test rejects a bare <c>MapGroup</c>.
     /// </summary>
-    public static RouteGroupBuilder MapSecuredGroup(this IEndpointRouteBuilder endpoints, string prefix, string policy = Policies.Staff) =>
+    public static RouteGroupBuilder MapSecuredGroup(this IEndpointRouteBuilder endpoints, string prefix, string policy) =>
         endpoints.MapGroup(prefix).RequireAuthorization(policy);
 
     /// <summary>

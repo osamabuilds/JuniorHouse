@@ -83,7 +83,7 @@ public static class SearchAdminEndpoints
 
     public static void MapAdminSearchEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup(Prefix, Policies.StorefrontSearch).WithTags("Storefront search")
+        var group = endpoints.MapSecuredGroup(Prefix, Permissions.CatalogRead).WithTags("Storefront search")
             .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(16 * 1024));
 
         group.MapGet("/synonyms", async (ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = Romp.BuildingBlocks.Application.Paging.PageRequest.DefaultPageSize) =>
@@ -93,13 +93,13 @@ public static class SearchAdminEndpoints
         {
             var created = await sender.Send(body, cancellationToken);
             return Results.Created($"{Prefix}/synonyms/{created.Id}", created);
-        });
+        }).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/synonyms/{id:long}", async (long id, UpdateSynonymGroupRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new UpdateSynonymGroupCommand(id, body.RowVersion, body.Name, body.IsActive, body.Terms), cancellationToken)));
+            Results.Ok(await sender.Send(new UpdateSynonymGroupCommand(id, body.RowVersion, body.Name, body.IsActive, body.Terms), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapDelete("/synonyms/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
-            await sender.Send(new DeleteSynonymGroupCommand(id), cancellationToken) ? Results.NoContent() : Results.NotFound());
+            await sender.Send(new DeleteSynonymGroupCommand(id), cancellationToken) ? Results.NoContent() : Results.NotFound()).RequirePermission(Permissions.CatalogWrite);
 
         group.MapGet("/misses", async (ISender sender, CancellationToken cancellationToken, int page = 1, int pageSize = Romp.BuildingBlocks.Application.Paging.PageRequest.DefaultPageSize) =>
             Results.Ok(await sender.Send(new ListMissesQuery(page, pageSize), cancellationToken)));

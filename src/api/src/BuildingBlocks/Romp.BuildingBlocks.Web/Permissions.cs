@@ -7,7 +7,7 @@ namespace Romp.BuildingBlocks.Web;
 /// A permission code an endpoint declares (<c>area.action</c>, lower-case, at most 30 characters so it fits the lookup
 /// <c>CODE</c> column). A distinct type, not a bare string, so a permission can never be passed where a legacy policy name is
 /// expected (and the other way round): <c>MapSecuredGroup(prefix, Permissions.CatalogRead)</c> and
-/// <c>MapSecuredGroup(prefix, Policies.Staff)</c> are different overloads.
+/// <c>MapSecuredGroup(prefix, Policies.Public)</c> are different overloads.
 /// </summary>
 public readonly partial record struct PermissionCode
 {

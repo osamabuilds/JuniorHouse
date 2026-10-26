@@ -122,13 +122,13 @@ public sealed class WarehouseFeatureDependencyTests
     [Fact]
     [Trait("Spec", "TC-STK-06")]
     [Trait("Spec", "SEC-08")]
-    public void TheWritesThatChangeStockAreBehindTheInventoryPolicy()
+    public void TheWritesThatChangeStockNeedTheInventoryWritePermission()
     {
         var infra = Path.Combine(FindRepoRoot(), "src", "api", "src", "Modules", "Warehouse", "Romp.Modules.Warehouse.Infrastructure");
 
         foreach (var file in new[] { "Adjustments/AdjustmentEndpoints.cs", "StockAlerts/StockAlertInfrastructure.cs", "CycleCounts/CycleCountPorts.cs" })
         {
-            Assert.Contains("Policies.Inventory", File.ReadAllText(Path.Combine(infra, file)), StringComparison.Ordinal);
+            Assert.Contains("Permissions.InventoryWrite", File.ReadAllText(Path.Combine(infra, file)), StringComparison.Ordinal);
         }
     }
 

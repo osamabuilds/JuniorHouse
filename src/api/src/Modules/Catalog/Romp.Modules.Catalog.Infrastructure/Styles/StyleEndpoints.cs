@@ -12,17 +12,17 @@ internal static class StyleEndpoints
 {
     public static void MapStyleEndpoints(this IEndpointRouteBuilder endpoints, string tag)
     {
-        var group = endpoints.MapSecuredGroup("/api/catalog/styles").WithTags(tag);
+        var group = endpoints.MapSecuredGroup("/api/catalog/styles", Permissions.CatalogRead).WithTags(tag);
 
         group.MapPost("/", async (CreateStyleCommand command, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(command, cancellationToken)));
+            Results.Ok(await sender.Send(command, cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/{id:long}", async (
                 long id,
                 UpdateStyleRequest body,
                 ISender sender,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
+            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapGet("/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
         {
