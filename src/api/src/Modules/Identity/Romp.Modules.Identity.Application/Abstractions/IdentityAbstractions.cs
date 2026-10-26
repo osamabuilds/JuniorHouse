@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Identity.Domain.Roles;
+using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 
 namespace Romp.Modules.Identity.Application.Abstractions;
@@ -13,6 +14,10 @@ public interface IIdentityDbContext
     DbSet<StaffUser> Staff { get; }
 
     DbSet<Role> Roles { get; }
+
+    DbSet<LoginAttempt> LoginAttempts { get; }
+
+    DbSet<PendingSignIn> PendingSignIns { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 

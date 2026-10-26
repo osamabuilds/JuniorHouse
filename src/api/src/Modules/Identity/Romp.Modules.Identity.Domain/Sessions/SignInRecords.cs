@@ -16,6 +16,19 @@ public enum LoginOutcome : short
     RefreshReuse = 8,
 }
 
+/// <summary>Which outcomes count towards the throttle (sessions AC-6). Throttled and reuse rows are neither a failure nor a success.</summary>
+public static class LoginOutcomes
+{
+    public static readonly LoginOutcome[] Failures =
+        [LoginOutcome.BadCredentials, LoginOutcome.Inactive, LoginOutcome.TemporaryExpired, LoginOutcome.MfaBad];
+
+    /// <summary>Failures and successes: the rows the consecutive-failure count is read from.</summary>
+    public static readonly LoginOutcome[] Counted =
+        [LoginOutcome.Ok, LoginOutcome.MfaOk, .. Failures];
+
+    public static bool IsSuccess(LoginOutcome outcome) => outcome is LoginOutcome.Ok or LoginOutcome.MfaOk;
+}
+
 /// <summary>
 /// IDNT.LGIN_PEND: the password step passed and the MFA step is still to come (sessions plan). Short-lived; only the token hash is stored.
 /// </summary>

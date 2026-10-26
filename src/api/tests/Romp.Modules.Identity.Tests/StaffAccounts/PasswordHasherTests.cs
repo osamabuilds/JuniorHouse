@@ -39,6 +39,16 @@ public sealed class PasswordHasherTests
     private static Argon2PasswordHasher Hasher(Argon2Options? options = null) => new(Options.Create(options ?? Fast));
 
     [Fact]
+    [Trait("Spec", "AC-7")]
+    public void Verify_EmptyPassword_IsFalse_AndDoesNotThrow()
+    {
+        var hasher = Hasher();
+        var stored = hasher.Hash(new SecretString("a-perfectly-fine-password-1"));
+
+        Assert.False(hasher.Verify(new SecretString(string.Empty), stored));
+    }
+
+    [Fact]
     [Trait("Spec", "AC-3")]
     public void Hash_IsSaltedAndVerifies()
     {

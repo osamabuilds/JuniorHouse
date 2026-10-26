@@ -52,6 +52,8 @@ public sealed class Argon2PasswordHasher(IOptions<Argon2Options> options) : IPas
     private const int HashBytes = 32;
     private const int Version = 19;
 
+    private static readonly SecretString EmptyPlaceholder = new("\0");
+
     public string Hash(SecretString password)
     {
         var settings = options.Value;
@@ -69,8 +71,11 @@ public sealed class Argon2PasswordHasher(IOptions<Argon2Options> options) : IPas
             return false;
         }
 
-        var actual = Compute(password, parsed.Salt, parsed.Memory, parsed.Iterations, parsed.Parallelism, parsed.Hash.Length);
-        return CryptographicOperations.FixedTimeEquals(actual, parsed.Hash);
+        // Argon2 refuses an empty password. A sign-in form can send one, so it does the same work as any other wrong password
+        // (same time, no exception) and never matches; the policy makes an empty password impossible to have set.
+        var isEmpty = password.Length == 0;
+        var actual = Compute(isEmpty ? EmptyPlaceholder : password, parsed.Salt, parsed.Memory, parsed.Iterations, parsed.Parallelism, parsed.Hash.Length);
+        return CryptographicOperations.FixedTimeEquals(actual, parsed.Hash) && !isEmpty;
     }
 
     public bool NeedsRehash(string storedHash)

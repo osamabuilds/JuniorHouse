@@ -12,6 +12,7 @@ using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Identity.Application;
 using Romp.Modules.Identity.Application.Abstractions;
+using Romp.Modules.Identity.Application.Sessions;
 using Romp.Modules.Identity.Application.StaffAccounts;
 using Romp.Modules.Identity.Domain.Roles;
 using Romp.Modules.Identity.Domain.StaffAccounts;
@@ -90,7 +91,8 @@ internal sealed class IdentityHost : IDisposable
 
     private readonly ServiceProvider _root;
 
-    public IdentityHost(IdentityPostgres postgres, CommandCounter? counter = null)
+    /// <param name="configure">Runs after the standard registrations, so a test can replace a service (for example with a counting spy).</param>
+    public IdentityHost(IdentityPostgres postgres, CommandCounter? counter = null, Action<IServiceCollection>? configure = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -108,6 +110,7 @@ internal sealed class IdentityHost : IDisposable
         services.AddSingleton<IOptions<Argon2Options>>(
             Microsoft.Extensions.Options.Options.Create(new Argon2Options { MemoryKiB = 8, Iterations = 1, Parallelism = 1 }));
         services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
+        services.AddSingleton<SignInDummyHash>();
         services.AddSingleton<ITemporaryPasswordGenerator, TemporaryPasswordGenerator>();
         services.AddSingleton<ICommonPasswords, EmbeddedCommonPasswords>();
         services.AddSingleton<PasswordPolicy>();
@@ -133,6 +136,8 @@ internal sealed class IdentityHost : IDisposable
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             cfg.AddOpenBehavior(typeof(IdentityTransactionBehavior<,>));
         });
+
+        configure?.Invoke(services);
 
         _root = services.BuildServiceProvider();
     }

@@ -39,6 +39,7 @@ public sealed class IdentityModule : IModule
         services.AddOptions<Argon2Options>().Bind(configuration.GetSection(Argon2Options.Section)).ValidateOnStart();
         services.AddSingleton<IValidateOptions<Argon2Options>, Argon2OptionsValidator>();
         services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
+        services.AddSingleton<Application.Sessions.SignInDummyHash>();
         services.AddSingleton<ITemporaryPasswordGenerator, TemporaryPasswordGenerator>();
         services.AddSingleton<ICommonPasswords, EmbeddedCommonPasswords>();
         services.AddSingleton<PasswordPolicy>();
