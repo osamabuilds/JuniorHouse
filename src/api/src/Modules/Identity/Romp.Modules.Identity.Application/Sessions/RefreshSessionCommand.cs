@@ -1,6 +1,8 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Romp.BuildingBlocks.Application;
 using Romp.Modules.Identity.Application.Abstractions;
 using Romp.Modules.Identity.Domain.Sessions;
 
@@ -31,7 +33,7 @@ public sealed class RefreshSessionCommandValidator : AbstractValidator<RefreshSe
 /// nobody changed the session since it was read. Of several requests with the same cookie one wins; the others find the row changed
 /// and answer <see cref="RefreshOutcome.ConcurrentRefresh"/>, which never revokes (the grace is in <see cref="Session.Rotate"/>).
 /// </summary>
-public sealed class RefreshSessionCommandHandler(IIdentityDbContext dbContext, SessionLifetimes lifetimes, TimeProvider clock)
+public sealed class RefreshSessionCommandHandler(IIdentityDbContext dbContext, SessionLifetimes lifetimes, TimeProvider clock, ILoggerFactory loggers)
     : IRequestHandler<RefreshSessionCommand, RefreshSessionResult>
 {
     public async Task<RefreshSessionResult> Handle(RefreshSessionCommand request, CancellationToken cancellationToken)
@@ -59,6 +61,11 @@ public sealed class RefreshSessionCommandHandler(IIdentityDbContext dbContext, S
             // Someone else changed this session first (another refresh, a sign-out). Drop our change; the client may retry once.
             dbContext.Discard(session);
             return new RefreshSessionResult(RefreshOutcome.ConcurrentRefresh, null);
+        }
+
+        if (result.Outcome == RefreshOutcome.ReuseDetected)
+        {
+            loggers.CreateLogger(SecurityEvents.Category).RefreshReuse(session.Id, session.UserId);
         }
 
         return result.Outcome == RefreshOutcome.Rotated

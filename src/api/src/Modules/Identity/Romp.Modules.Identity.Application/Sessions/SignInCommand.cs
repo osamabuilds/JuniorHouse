@@ -1,6 +1,8 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Identity.Application.Abstractions;
 using Romp.Modules.Identity.Application.StaffAccounts;
@@ -89,10 +91,13 @@ public sealed class SignInCommandHandler(
     SignInDummyHash dummyHash,
     IMfaEnrolmentStatus mfa,
     SessionIssuer sessions,
-    TimeProvider clock) : IRequestHandler<SignInCommand, SignInResult>
+    TimeProvider clock,
+    ILoggerFactory loggers) : IRequestHandler<SignInCommand, SignInResult>
 {
     /// <summary>How many recent attempts of a name+address pair are read; the delay reaches its cap well before this many failures.</summary>
     private const int PairLookback = 10;
+
+    private readonly ILogger _security = loggers.CreateLogger(SecurityEvents.Category);
 
     public async Task<SignInResult> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
@@ -103,6 +108,7 @@ public sealed class SignInCommandHandler(
         if (wait is { } remaining)
         {
             Record(typed, request.ClientIp, LoginOutcome.Throttled, null, now);
+            _security.SignInThrottled((int)Math.Ceiling(remaining.TotalSeconds), request.ClientIp);
             return SignInResult.Throttle(remaining);
         }
 
@@ -114,12 +120,14 @@ public sealed class SignInCommandHandler(
         if (user is null || !passwordMatches)
         {
             Record(typed, request.ClientIp, LoginOutcome.BadCredentials, user?.Id, now);
+            _security.SignInFailed("bad_credentials", user?.Id ?? 0, request.ClientIp);
             return SignInResult.Failure;
         }
 
         if (!user.IsActive)
         {
             Record(typed, request.ClientIp, LoginOutcome.Inactive, user.Id, now);
+            _security.SignInFailed("inactive", user.Id, request.ClientIp);
             return SignInResult.Failure;
         }
 
@@ -127,6 +135,7 @@ public sealed class SignInCommandHandler(
         if (user.HasTemporaryPassword && !user.TryUseTemporaryPassword(now))
         {
             Record(typed, request.ClientIp, LoginOutcome.TemporaryExpired, user.Id, now);
+            _security.SignInFailed("temporary_expired", user.Id, request.ClientIp);
             return SignInResult.Failure;
         }
 
