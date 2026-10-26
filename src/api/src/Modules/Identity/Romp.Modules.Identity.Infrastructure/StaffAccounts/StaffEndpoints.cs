@@ -17,6 +17,9 @@ namespace Romp.Modules.Identity.Infrastructure.StaffAccounts;
 /// <summary>Body of POST /api/identity/staff. Role ids are checked against the role lookup by the handler.</summary>
 public sealed record CreateStaffRequest(string UserName, string DisplayName, IReadOnlyList<short> RoleIds);
 
+/// <summary>Body of PUT /api/identity/staff/{id}/roles.</summary>
+public sealed record AssignRolesRequest(IReadOnlyList<short>? RoleIds);
+
 /// <summary>Body of POST /api/auth/password. Plain strings on the wire; they become <see cref="SecretString"/> at the edge.</summary>
 public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
@@ -78,6 +81,18 @@ internal static class StaffEndpoints
         staff.MapPost("/{id:long}/reset-password", async (long id, ISender sender, HttpContext http, CancellationToken cancellationToken) =>
                 OneTimePassword(http, await sender.Send(new ResetPasswordCommand(id), cancellationToken), created: false))
             .RequireRateLimiting(RateLimitPolicies.Strict);
+
+        // Replaces a person's roles (roles AC-6): an absent list is a bad request, never "remove every role".
+        staff.MapPut("/{id:long}/roles", async (long id, AssignRolesRequest body, ISender sender, CancellationToken cancellationToken) =>
+        {
+            if (body.RoleIds is null)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["RoleIds"] = ["A list of role ids is required (it may be empty)."] });
+            }
+
+            await sender.Send(new Romp.Modules.Identity.Application.Roles.AssignRolesCommand(id, body.RoleIds), cancellationToken);
+            return Results.NoContent();
+        });
 
         // An administrator clears another person's second factor (mfa AC-8). The command refuses the caller's own account.
         staff.MapPost("/{id:long}/reset-mfa", async (long id, ISender sender, HttpContext http, CancellationToken cancellationToken) =>

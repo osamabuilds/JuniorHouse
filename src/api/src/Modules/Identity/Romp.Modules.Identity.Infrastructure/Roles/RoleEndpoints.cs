@@ -12,8 +12,13 @@ internal static class RoleEndpoints
 {
     public static void MapRoleEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapSecuredGroup("/api/identity/roles", Permissions.StaffManage).WithTags("Identity").AddEndpointFilter<Sessions.CsrfFilter>()
-            .MapGet("", async (ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new ListRolesQuery(), cancellationToken)));
+        var roles = endpoints.MapSecuredGroup("/api/identity/roles", Permissions.StaffManage).WithTags("Identity").AddEndpointFilter<Sessions.CsrfFilter>();
+
+        roles.MapGet("", async (ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new ListRolesQuery(), cancellationToken)));
+
+        // The read-only matrix: which role holds which permission (roles AC-6).
+        roles.MapGet("/matrix", async (ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new GetRoleMatrixQuery(), cancellationToken)));
     }
 }

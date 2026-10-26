@@ -27,6 +27,10 @@ public static partial class SecurityEvents
     [LoggerMessage(EventId = MfaFailedId, Level = LogLevel.Warning, Message = "Security event: second step failed. Outcome={Outcome} UserId={UserId} ClientIp={ClientIp}")]
     public static partial void MfaFailed(this ILogger logger, string outcome, long userId, string clientIp);
 
+    /// <summary>A signed-in caller refused for lack of a permission (outcome forbidden). The log names the permission; the response to the caller never does.</summary>
+    [LoggerMessage(EventId = ForbiddenId, Level = LogLevel.Warning, Message = "Security event: forbidden. Outcome=forbidden UserId={UserId} Permission={Permission}")]
+    public static partial void Forbidden(this ILogger logger, long userId, string permission);
+
     /// <summary>A sign-in attempt refused because a delay is running for the name or the address (outcome signin_throttled).</summary>
     [LoggerMessage(EventId = RateLimitedId, Level = LogLevel.Warning, Message = "Security event: sign-in throttled. Outcome=signin_throttled RetryAfterSeconds={RetryAfterSeconds} ClientIp={ClientIp}")]
     public static partial void SignInThrottled(this ILogger logger, int retryAfterSeconds, string clientIp);
