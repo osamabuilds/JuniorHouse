@@ -163,6 +163,29 @@ public sealed class RoleBehaviourTests(ProductionApiFixture api)
     }
 
     [Fact]
+    [Trait("Spec", "AC-7")]
+    public async Task Me_ListsThePermissionsOfTheCaller_ForHidingMenusOnly()
+    {
+        using var factory = RealAuth();
+        short catalogue;
+        using (var scope = api.Services.CreateScope())
+        {
+            catalogue = (await scope.ServiceProvider.GetRequiredService<ISender>().Send(new ListRolesQuery())).Single(r => r.Code == "CATALOGUE").Id;
+        }
+
+        var person = await SignedInAsync(factory, "CATALOGUE", catalogue);
+        using var browser = person.Browser;
+
+        var me = await BodyAsync(await browser.GetAsync("/api/auth/me"));
+        var listed = me.GetProperty("permissions").EnumerateArray().Select(p => p.GetString()).Order(StringComparer.Ordinal).ToList();
+        Assert.Equal(["catalog.read", "catalog.write", "ref.read", "warehouse.read"], listed);
+
+        // The development stand-in user holds everything, so the admin app works unchanged without sign-in.
+        var dev = await BodyAsync(await api.Client.GetAsync("/api/auth/me"));
+        Assert.Equal(Romp.BuildingBlocks.Web.Permissions.All.Count, dev.GetProperty("permissions").GetArrayLength());
+    }
+
+    [Fact]
     [Trait("Spec", "AC-15")]
     public async Task OrderOps_CanViewStock_ButCannotAdjustApproveOrSetThresholds()
     {
@@ -216,7 +239,7 @@ public sealed class RoleBehaviourTests(ProductionApiFixture api)
                 "INSERT INTO \"IDNT\".\"ROLE_PERM_MAP\" (\"ROLE_ID\", \"PERM_ID\") SELECT 9100, \"ID\" FROM \"IDNT\".\"PERM_LKP\" WHERE \"CODE\" IN ('procurement.read', 'ref.read')");
             Assert.Equal(HttpStatusCode.Forbidden, (await browser.GetAsync("/api/purchase-orders/")).StatusCode); // the person does not have the new role yet
 
-            using var admin = api.Client; // the development host's stand-in user holds staff.manage
+            var admin = api.Client; // the development host stand-in user holds staff.manage; the shared client is not disposed
             var both = new[] { (int)catalogue, 9100 };
             Assert.Equal(HttpStatusCode.NoContent, (await admin.PutAsJsonAsync($"/api/identity/staff/{person.UserId}/roles", new { roleIds = both }, ProductionApiFixture.Json)).StatusCode);
 

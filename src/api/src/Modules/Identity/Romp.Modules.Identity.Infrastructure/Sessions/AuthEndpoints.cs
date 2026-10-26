@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Identity.Application.Mfa;
+using Romp.Modules.Identity.Application.Roles;
 using Romp.Modules.Identity.Application.Sessions;
 using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
@@ -27,8 +28,11 @@ public sealed record MfaEnrolmentResponse(string OtpAuthUri, string SecretText, 
 /// <summary>Recovery codes, shown once (AC-6).</summary>
 public sealed record RecoveryCodesResponse(IReadOnlyList<string> RecoveryCodes);
 
-/// <summary>GET /api/auth/me: who the caller is, what the session may do, and the anti-forgery value for unsafe requests (AC-10).</summary>
-public sealed record MeResponse(long UserId, string UserName, string DisplayName, string Scope, string CsrfToken);
+/// <summary>
+/// GET /api/auth/me: who the caller is, what the session may do, the anti-forgery value for unsafe requests (AC-10), and the permissions the
+/// caller holds right now. The permissions are for hiding menus and buttons only; every request is still checked on the server (roles AC-7).
+/// </summary>
+public sealed record MeResponse(long UserId, string UserName, string DisplayName, string Scope, string CsrfToken, IReadOnlyList<string> Permissions);
 
 /// <summary>
 /// The <c>/api/auth</c> routes (sessions AC-1, AC-2, AC-3, AC-6 to AC-11). Everything here answers <c>Cache-Control: no-store</c>. The
@@ -143,7 +147,7 @@ internal static class AuthEndpoints
         return Results.NoContent();
     }
 
-    private static IResult Me(HttpContext http, CsrfTokenService csrf)
+    private static async Task<IResult> Me(HttpContext http, CsrfTokenService csrf, ISender sender, CancellationToken cancellationToken)
     {
         SessionCookieWriter.NoStore(http.Response);
 
@@ -153,7 +157,7 @@ internal static class AuthEndpoints
         // start-up, so it gets a usable answer instead of being sent to a sign-in page that cannot work in that mode.
         if (user.Identity?.AuthenticationType == RompAuthorizationExtensions.DevelopmentScheme)
         {
-            return Results.Ok(new MeResponse(0, "dev-staff", "Development user", nameof(SessionScope.Full), string.Empty));
+            return Results.Ok(new MeResponse(0, "dev-staff", "Development user", nameof(SessionScope.Full), string.Empty, [.. Permissions.All.Select(p => p.Value)]));
         }
 
         if (SessionClaims.UserId(user) is not { } userId || SessionClaims.Session(user) is not { } sessionId
@@ -162,12 +166,17 @@ internal static class AuthEndpoints
             return Results.Unauthorized();
         }
 
+        // A session that still owes a step may do nothing but that step, so it is told it holds nothing.
+        IReadOnlyList<string> permissions = scope == SessionScope.Full
+            ? [.. (await sender.Send(new GetEffectivePermissionsQuery(userId), cancellationToken)).Order(StringComparer.Ordinal)]
+            : [];
         return Results.Ok(new MeResponse(
             userId,
             user.FindFirstValue(ClaimTypes.Name) ?? string.Empty,
             user.FindFirstValue(SessionPrincipal.DisplayNameClaim) ?? string.Empty,
             scope.ToString(),
-            csrf.Create(sessionId)));
+            csrf.Create(sessionId),
+            permissions));
     }
 
     private static async Task<IResult> VerifyMfa(
