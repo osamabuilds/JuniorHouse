@@ -15,6 +15,7 @@ using Romp.Modules.Identity.Application.Abstractions;
 using Romp.Modules.Identity.Application.Sessions;
 using Romp.Modules.Identity.Application.StaffAccounts;
 using Romp.Modules.Identity.Domain.Roles;
+using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.StaffAccounts;
@@ -72,6 +73,14 @@ internal sealed class RecordingMfaReset : IMfaEnrolmentReset
     }
 }
 
+/// <summary>Says which accounts have MFA enrolled; the real answer arrives with the mfa feature. Nobody is enrolled unless a test says so.</summary>
+internal sealed class RecordingMfaStatus : IMfaEnrolmentStatus
+{
+    public HashSet<long> Enrolled { get; } = [];
+
+    public Task<bool> IsEnrolledAsync(long userId, CancellationToken cancellationToken) => Task.FromResult(Enrolled.Contains(userId));
+}
+
 internal sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
 {
     public DateTimeOffset Now { get; set; } = now;
@@ -106,6 +115,10 @@ internal sealed class IdentityHost : IDisposable
         services.AddSingleton<IUserSessionRevoker>(Sessions);
         MfaReset = new RecordingMfaReset();
         services.AddSingleton<IMfaEnrolmentReset>(MfaReset);
+        Mfa = new RecordingMfaStatus();
+        services.AddSingleton<IMfaEnrolmentStatus>(Mfa);
+        services.AddSingleton(SessionLifetimes.Default);
+        services.AddScoped<SessionIssuer>();
 
         services.AddSingleton<IOptions<Argon2Options>>(
             Microsoft.Extensions.Options.Options.Create(new Argon2Options { MemoryKiB = 8, Iterations = 1, Parallelism = 1 }));
@@ -147,6 +160,8 @@ internal sealed class IdentityHost : IDisposable
     public RecordingSessionRevoker Sessions { get; }
 
     public RecordingMfaReset MfaReset { get; }
+
+    public RecordingMfaStatus Mfa { get; }
 
     /// <summary>A user name no other test uses, so tests own their accounts although the database is shared.</summary>
     public static string NewUserName() =>

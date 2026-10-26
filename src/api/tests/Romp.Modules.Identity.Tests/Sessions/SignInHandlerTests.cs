@@ -44,6 +44,7 @@ public sealed class SignInHandlerTests(IdentityPostgres postgres)
     {
         var created = await StaffHandlerHelpers.CreateAsync(host, await host.RoleIdAsync(RoleCodes.Catalogue));
         await host.SendAsync(new ChangeOwnPasswordCommand(created.UserId, null, created.TemporaryPassword, new SecretString(GoodPassword)));
+        host.Mfa.Enrolled.Add(created.UserId); // an enrolled person goes on to the MFA step; an unenrolled one gets a limited session
         return (created.UserId, created.UserName);
     }
 
@@ -127,7 +128,7 @@ public sealed class SignInHandlerTests(IdentityPostgres postgres)
         var first = await SignInAsync(host, created.UserName, created.TemporaryPassword.Reveal());
         var second = await SignInAsync(host, created.UserName, created.TemporaryPassword.Reveal(), "198.51.100.77");
 
-        Assert.Equal(SignInStatus.PasswordAccepted, first.Status);
+        Assert.Equal(SignInStatus.LimitedSession, first.Status); // must change the password before anything else
         Assert.Equal(SignInResult.Failure, second);
     }
 

@@ -15,6 +15,8 @@ public interface IIdentityDbContext
 
     DbSet<Role> Roles { get; }
 
+    DbSet<Session> Sessions { get; }
+
     DbSet<LoginAttempt> LoginAttempts { get; }
 
     DbSet<PendingSignIn> PendingSignIns { get; }

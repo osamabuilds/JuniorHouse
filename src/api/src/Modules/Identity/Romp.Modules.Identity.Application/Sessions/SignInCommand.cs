@@ -19,26 +19,45 @@ public enum SignInStatus
 
     /// <summary>A delay is running for this name and address, or for the name overall (AC-6); answer 429 with <see cref="SignInResult.RetryAfterSeconds"/>.</summary>
     Throttled = 3,
+
+    /// <summary>
+    /// The password passed but the account must first change its password or enrol a second factor, so there is no MFA step: it gets a
+    /// session that can do only that (<see cref="SignInResult.Scope"/>).
+    /// </summary>
+    LimitedSession = 4,
 }
 
 /// <summary>
 /// The outcome of the password step. <see cref="Failed"/> is a single shared value, so the result of every kind of failure is equal
 /// (AC-7). The token is a <see cref="SecretString"/>: it prints as a mask and cannot be serialised.
 /// </summary>
-public sealed record SignInResult(SignInStatus Status, long? UserId, SecretString? PendingToken, int? RetryAfterSeconds)
+public sealed record SignInResult(
+    SignInStatus Status,
+    long? UserId,
+    SecretString? PendingToken,
+    int? RetryAfterSeconds,
+    long? SessionId = null,
+    IssuedTokens? Tokens = null,
+    SessionScope? Scope = null)
 {
     public static readonly SignInResult Failure = new(SignInStatus.Failed, null, null, null);
 
     public static SignInResult Accepted(long userId, SecretString pendingToken) => new(SignInStatus.PasswordAccepted, userId, pendingToken, null);
 
     public static SignInResult Throttle(TimeSpan wait) => new(SignInStatus.Throttled, null, null, (int)Math.Ceiling(wait.TotalSeconds));
+
+    public static SignInResult Limited(long userId, IssuedSession session) =>
+        new(SignInStatus.LimitedSession, userId, null, null, session.SessionId, session.Tokens, session.Scope);
 }
 
 /// <summary>
 /// Step 1 of staff sign-in: user name and password (sessions AC-6, AC-7, AC-8). <paramref name="ClientIp"/> is the real visitor address,
-/// worked out by the caller from trusted forwarded headers only (AC-15).
+/// worked out by the caller from trusted forwarded headers only (AC-15). <paramref name="PresentedAccessToken"/> is the session cookie
+/// that came with the request; it is revoked when a session is issued (AC-4).
 /// </summary>
-public sealed record SignInCommand(string UserName, SecretString Password, string ClientIp) : IRequest<SignInResult>, IIdentityCommand;
+public sealed record SignInCommand(
+    string UserName, SecretString Password, string ClientIp, string? PresentedAccessToken = null, string? UserAgent = null)
+    : IRequest<SignInResult>, IIdentityCommand;
 
 public sealed class SignInCommandValidator : AbstractValidator<SignInCommand>
 {
@@ -66,6 +85,8 @@ public sealed class SignInCommandHandler(
     IIdentityDbContext dbContext,
     IPasswordHasher hasher,
     SignInDummyHash dummyHash,
+    IMfaEnrolmentStatus mfa,
+    SessionIssuer sessions,
     TimeProvider clock) : IRequestHandler<SignInCommand, SignInResult>
 {
     /// <summary>How many recent attempts of a name+address pair are read; the delay reaches its cap well before this many failures.</summary>
@@ -107,9 +128,18 @@ public sealed class SignInCommandHandler(
             return SignInResult.Failure;
         }
 
+        Record(typed, request.ClientIp, LoginOutcome.Ok, user.Id, now);
+
+        // An account that still has to change its password or enrol MFA cannot do the MFA step, so it gets a limited session now.
+        var scope = SessionScopes.For(user.MustChangePassword, await mfa.IsEnrolledAsync(user.Id, cancellationToken));
+        if (scope != SessionScope.Full)
+        {
+            var limited = await sessions.IssueAsync(user, request.PresentedAccessToken, request.ClientIp, request.UserAgent, cancellationToken);
+            return SignInResult.Limited(user.Id, limited);
+        }
+
         var (pending, token) = PendingSignIn.Start(user.Id, now);
         dbContext.PendingSignIns.Add(pending);
-        Record(typed, request.ClientIp, LoginOutcome.Ok, user.Id, now);
         return SignInResult.Accepted(user.Id, token);
     }
 
