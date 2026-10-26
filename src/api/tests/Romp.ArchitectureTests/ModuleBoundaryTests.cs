@@ -9,7 +9,7 @@ namespace Romp.ArchitectureTests;
 /// </summary>
 public sealed class ModuleBoundaryTests
 {
-    private static readonly string[] ModuleNames = ["Catalog", "Reference", "Vendor", "Production", "Quality", "Labelling", "Warehouse", "Storefront", "Identity"];
+    private static readonly string[] ModuleNames = ["Catalog", "Reference", "Vendor", "Production", "Quality", "Labelling", "Warehouse", "Storefront", "Identity", "Customers"];
 
     public static TheoryData<string> Modules => new(ModuleNames);
 

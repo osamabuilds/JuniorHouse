@@ -104,7 +104,7 @@ public sealed class RoleBehaviourTests(ProductionApiFixture api)
     }
 
     private static IReadOnlyList<MatrixRow> Protected(IReadOnlyList<MatrixRow> matrix) =>
-        [.. matrix.Where(r => r.Permission is not (MatrixRow.Anonymous or MatrixRow.Session) && !NotCalled.Any(n => r.Route.Contains(n, StringComparison.Ordinal)))];
+        [.. matrix.Where(r => r.Permission is not (MatrixRow.Anonymous or MatrixRow.Session or MatrixRow.Customer) && !NotCalled.Any(n => r.Route.Contains(n, StringComparison.Ordinal)))];
 
     [Fact]
     [Trait("Spec", "AC-11")]

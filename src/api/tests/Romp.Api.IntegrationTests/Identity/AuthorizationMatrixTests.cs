@@ -24,6 +24,7 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "POST /api/auth/mfa/verify",
         "POST /api/auth/refresh",
         "POST /api/auth/sign-out",
+        "GET /dev/customer", // Development and Testing only: switches the stand-in customer off and on (ADR 0021)
     ];
 
     private static string MatrixPath()
@@ -88,7 +89,7 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
     [Trait("Spec", "AC-9")]
     public void TheMatrix_IsWellFormed_AndNamesOnlyKnownPermissions()
     {
-        var known = Romp.BuildingBlocks.Web.Permissions.All.Select(p => p.Value).Append(MatrixRow.Anonymous).Append(MatrixRow.Session).ToHashSet(StringComparer.Ordinal);
+        var known = Romp.BuildingBlocks.Web.Permissions.All.Select(p => p.Value).Append(MatrixRow.Anonymous).Append(MatrixRow.Session).Append(MatrixRow.Customer).ToHashSet(StringComparer.Ordinal);
         var rows = Checked();
 
         Assert.NotEmpty(rows);

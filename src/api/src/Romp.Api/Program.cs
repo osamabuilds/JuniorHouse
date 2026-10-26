@@ -16,6 +16,9 @@ using Romp.Modules.Labelling.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure;
 using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure;
+using Romp.Modules.Customers.Infrastructure;
+using Romp.Modules.Customers.Infrastructure.Accounts;
+using Romp.Modules.Customers.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure;
 using Romp.Modules.Storefront.Infrastructure;
@@ -45,7 +48,7 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule(), new CustomersModule()];
 
 builder.Services.AddSharedPersistence();
 builder.Services.AddHttpContextCurrentActor();
@@ -65,7 +68,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(Romp.Modules.Labelling.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Warehouse.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Storefront.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Identity.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Identity.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Customers.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -101,6 +105,11 @@ builder.Services.AddExceptionHandler<ConcurrencyExceptionHandler>();
 builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddRompAuthorization(builder.Environment);
+if (RompAuthorizationExtensions.IsDevelopmentLike(builder.Environment))
+{
+    // The stand-in for a signed-in customer (ADR 0021): Development and Testing only.
+    CustomersModule.AddStandInCustomer(builder.Services);
+}
 builder.Services.AddRompRateLimiting(builder.Configuration);
 builder.Services.AddRompForwardedHeaders();
 builder.Services.AddOpenApi();
@@ -177,7 +186,13 @@ if (app.Environment.IsDevelopment())
         labellingContext.Database.MigrateAsync(),
         warehouseContext.Database.MigrateAsync(),
         scope.ServiceProvider.GetRequiredService<StfrDbContext>().Database.MigrateAsync(),
-        scope.ServiceProvider.GetRequiredService<IdntDbContext>().Database.MigrateAsync());
+        scope.ServiceProvider.GetRequiredService<IdntDbContext>().Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<CustDbContext>().Database.MigrateAsync());
+
+    if (RompAuthorizationExtensions.IsDevelopmentLike(app.Environment))
+    {
+        await StandInCustomer.SeedAsync(scope.ServiceProvider.GetRequiredService<CustDbContext>(), CancellationToken.None);
+    }
 
     // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
     // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough

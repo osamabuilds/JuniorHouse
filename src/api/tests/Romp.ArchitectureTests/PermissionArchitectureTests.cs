@@ -63,9 +63,9 @@ public sealed class PermissionArchitectureTests
 
         Assert.True(offenders.Count == 0, "Old role-shaped policy names:" + Environment.NewLine + string.Join(Environment.NewLine, offenders));
 
-        // The policy class itself names nothing but the explicit "open to everyone".
+        // The policy class itself names nothing but the explicit "open to everyone" and the customer policy (a different kind of caller, ADR 0021).
         var policies = File.ReadAllText(Path.Combine(RepositoryRoot(), "src", "api", "src", "BuildingBlocks", "Romp.BuildingBlocks.Web", "Policies.cs"));
-        Assert.Single(Regex.Matches(policies, @"public const string \w+ = ""[^""]+"";"), m => !m.Value.Contains("strict", StringComparison.Ordinal));
+        Assert.Equal(["Customer", "Public"], Regex.Matches(policies, @"public const string (\w+) = ""[^""]+"";").Where(m => !m.Value.Contains("strict", StringComparison.Ordinal)).Select(m => m.Groups[1].Value).Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -76,6 +76,11 @@ public sealed class PermissionArchitectureTests
         var offenders = new List<string>();
         foreach (var file in SourceFiles(Path.Combine("src", "Modules")).Where(f => f.Contains($"{Path.DirectorySeparatorChar}Infrastructure", StringComparison.Ordinal)))
         {
+            if (file.Contains($"Customers{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            {
+                continue; // a signed-in customer is not staff: Customers routes sit in a Policies.Customer group; the endpoint-list tests check each one
+            }
+
             if (file.Contains($"Identity{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
             {
                 continue; // Identity's routes mix session-only and permission routes; the authorization matrix test covers them one by one

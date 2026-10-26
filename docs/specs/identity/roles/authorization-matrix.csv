@@ -66,6 +66,7 @@ GET,/api/catalog/styles/,catalog.read
 POST,/api/catalog/styles/,catalog.write
 GET,/api/catalog/styles/{id:long},catalog.read
 PUT,/api/catalog/styles/{id:long},catalog.write
+GET,/api/customers/me/,customer
 GET,/api/identity/audit/,audit.read
 GET,/api/identity/audit/{id:long},audit.read
 GET,/api/identity/roles/,staff.manage
@@ -248,6 +249,7 @@ GET,/api/warehouse/stock/,inventory.read
 GET,/api/warehouse/stock/by-bin/{binId:long},inventory.read
 GET,/api/warehouse/stock/consistency,ops.admin
 GET,/api/warehouse/stock/movements,inventory.read
+GET,/dev/customer,anonymous
 ANY,/health/live,anonymous
 ANY,/health/ready,anonymous
 GET,/media/{name},anonymous

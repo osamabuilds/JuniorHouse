@@ -15,6 +15,9 @@ internal sealed record MatrixRow(string Method, string Route, string Permission,
     /// <summary>Any signed-in caller of any scope may call it (sign-out, the caller's own profile, own password, MFA enrolment).</summary>
     public const string Session = "session";
 
+    /// <summary>A signed-in shopper, decided by the Customers module (ADR 0021); staff roles do not apply to these routes.</summary>
+    public const string Customer = "customer";
+
     public string Key => $"{Method} {Route}";
 }
 
@@ -39,7 +42,8 @@ internal static class AuthorizationMatrix
             // A route that asks for a signed-in caller without naming a policy (the default policy) is "session" even inside a group
             // that is public; a route with no authorization at all is open and must be on the explicit anonymous list.
             var effective = permission
-                ?? (authorize.Any(a => string.IsNullOrEmpty(a.Policy)) ? MatrixRow.Session
+                ?? (policies.Contains(Policies.Customer, StringComparison.Ordinal) ? MatrixRow.Customer
+                    : authorize.Any(a => string.IsNullOrEmpty(a.Policy)) ? MatrixRow.Session
                     : anonymous || policies.Contains(Policies.Public, StringComparison.Ordinal) || authorize.Count == 0 ? MatrixRow.Anonymous
                     : $"UNMAPPED({policies})");
             var note = policies.Length > 0 ? $"policy {policies}" : string.Empty;
