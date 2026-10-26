@@ -10,10 +10,10 @@ Customer accounts (registration, password reset, addresses, Child Profiles) are 
 
 | Feature | What it does | Status |
 |---|---|---|
-| [staff-accounts](staff-accounts/spec.md) | Staff users, password hashing, owner bootstrap, admin-created accounts with a temporary password and forced change | Planned |
-| [sessions](sessions/spec.md) | Sign-in, short-lived access cookie, rotating refresh cookie, new session on every login, throttling, sign-out | Planned |
-| [mfa](mfa/spec.md) | TOTP enrolment, recovery codes, mandatory for every staff account | Planned |
-| [roles](roles/spec.md) | Permissions, the Owner role plus the four BRD roles, the policy-to-permission mapping, the endpoint authorization matrix | Planned |
+| [staff-accounts](staff-accounts/spec.md) | Staff users, password hashing, owner bootstrap, admin-created accounts with a temporary password and forced change | Implemented |
+| [sessions](sessions/spec.md) | Sign-in, short-lived access cookie, rotating refresh cookie, new session on every login, throttling, sign-out | Implemented |
+| [mfa](mfa/spec.md) | TOTP enrolment, recovery codes, mandatory for every staff account | Implemented |
+| [roles](roles/spec.md) | Permissions, the Owner role plus the four BRD roles, the policy-to-permission mapping, the endpoint authorization matrix | Implemented |
 | [audit-trail](audit-trail/spec.md) | Real actor on every change; append-only audit log of every state change in every module | Planned |
 
 ## Module decisions (owner, 2026-10-16)

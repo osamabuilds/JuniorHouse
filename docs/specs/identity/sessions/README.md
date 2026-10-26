@@ -1,6 +1,6 @@
 # Sessions and sign-in
 
-- **Module:** [`identity`](../README.md) · **Feature:** `sessions` · **Status:** Planned
+- **Module:** [`identity`](../README.md) · **Feature:** `sessions` · **Status:** Implemented
 
 Two-step sign-in, short-lived access cookie, rotating refresh cookie, new session on every login, progressive throttling, sign-out.
 
