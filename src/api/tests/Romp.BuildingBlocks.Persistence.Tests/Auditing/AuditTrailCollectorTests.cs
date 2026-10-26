@@ -377,9 +377,9 @@ public sealed class AuditTrailOverheadTests : IAsyncLifetime
         }
 
         // The audit row is written in the same transaction (BEGIN, INSERT, COMMIT are extra round trips on a one-statement save), so on a
-        // pure-insert micro-benchmark the relative cost is high while the absolute cost is a few milliseconds. The guard is a loose absolute tripwire against a gross regression (measured 4 to 9 ms on loopback, depending on load).
+        // pure-insert micro-benchmark the relative cost is high while the absolute cost is a few milliseconds. The guard is a loose relative tripwire against a gross regression such as a query per entity (measured 4 to 9 ms per save on loopback; machine load moves both sides).
         var perSave = (audited - plain) / 40;
         var overhead = (audited - plain) / plain;
-        Assert.True(perSave < 25, $"Auditing added {perSave:F1} ms ({overhead:P0}) to a 30-row save ({plain:F0} ms plain, {audited:F0} ms audited for 40 saves).");
+        Assert.True(audited < (plain * 3) + 500, $"Auditing added {perSave:F1} ms ({overhead:P0}) to a 30-row save ({plain:F0} ms plain, {audited:F0} ms audited for 40 saves).");
     }
 }
