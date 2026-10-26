@@ -11,7 +11,7 @@ import { sessionReducer } from './auth.reducer';
 import { selectCsrfToken, selectMfaEnded, selectMfaRequired, selectSessionError, selectSessionStatus, selectSessionUser, selectSigningIn } from './auth.selectors';
 import { SESSION_FEATURE_KEY } from './auth.state';
 
-const me = (scope: SessionScope = 'Full') => ({ userId: 7, userName: 'amna.khan', displayName: 'Amna Khan', scope, csrfToken: 'csrf-value' });
+const me = (scope: SessionScope = 'Full') => ({ userId: 7, userName: 'amna.khan', displayName: 'Amna Khan', scope, csrfToken: 'csrf-value', permissions: [] as string[] });
 
 describe('session store and effects (sessions AC-1, AC-2, AC-9, AC-11, AC-13)', () => {
   let store: Store;

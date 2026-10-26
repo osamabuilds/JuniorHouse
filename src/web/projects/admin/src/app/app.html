@@ -16,17 +16,18 @@
 
     <nav class="shell-nav" aria-label="Primary">
       <ul>
-        <li><a routerLink="/reference-data" routerLinkActive="is-active">Reference Data</a></li>
-        <li><a routerLink="/styles" routerLinkActive="is-active">Styles</a></li>
-        <li><a routerLink="/catalog" routerLinkActive="is-active">Catalog</a></li>
-        <li><a routerLink="/vendors" routerLinkActive="is-active">Vendors</a></li>
-        <li><a routerLink="/purchase-orders" routerLinkActive="is-active">Purchase Orders</a></li>
-        <li><a routerLink="/production" routerLinkActive="is-active">Production</a></li>
-        <li><a routerLink="/quality" routerLinkActive="is-active">Receiving &amp; QC</a></li>
-        <li><a routerLink="/labelling" routerLinkActive="is-active">Labelling</a></li>
-        <li><a routerLink="/warehouse" routerLinkActive="is-active">Warehouse</a> <app-alert-badge /></li>
-        <li><a routerLink="/storefront" routerLinkActive="is-active">Storefront</a></li>
-        <li><a routerLink="/staff" routerLinkActive="is-active">Staff</a></li>
+        <li *hasPermission="'ref.read'"><a routerLink="/reference-data" routerLinkActive="is-active">Reference Data</a></li>
+        <li *hasPermission="'catalog.read'"><a routerLink="/styles" routerLinkActive="is-active">Styles</a></li>
+        <li *hasPermission="'catalog.read'"><a routerLink="/catalog" routerLinkActive="is-active">Catalog</a></li>
+        <li *hasPermission="'procurement.read'"><a routerLink="/vendors" routerLinkActive="is-active">Vendors</a></li>
+        <li *hasPermission="'procurement.read'"><a routerLink="/purchase-orders" routerLinkActive="is-active">Purchase Orders</a></li>
+        <li *hasPermission="'production.read'"><a routerLink="/production" routerLinkActive="is-active">Production</a></li>
+        <li *hasPermission="'qc.read'"><a routerLink="/quality" routerLinkActive="is-active">Receiving &amp; QC</a></li>
+        <li *hasPermission="'labelling.read'"><a routerLink="/labelling" routerLinkActive="is-active">Labelling</a></li>
+        <li *hasPermission="'warehouse.read'"><a routerLink="/warehouse" routerLinkActive="is-active">Warehouse</a> <app-alert-badge *hasPermission="'inventory.read'" /></li>
+        <li *hasPermission="'catalog.read'"><a routerLink="/storefront" routerLinkActive="is-active">Storefront</a></li>
+        <li *hasPermission="'staff.manage'"><a routerLink="/staff" routerLinkActive="is-active">Staff</a></li>
+        <li *hasPermission="'staff.manage'"><a routerLink="/roles" routerLinkActive="is-active">Roles</a></li>
       </ul>
     </nav>
   </header>

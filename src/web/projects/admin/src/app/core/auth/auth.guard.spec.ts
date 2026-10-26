@@ -8,7 +8,7 @@ import { SessionApiActions } from './store/auth.actions';
 import { sessionReducer } from './store/auth.reducer';
 import { SESSION_FEATURE_KEY } from './store/auth.state';
 
-const user = (scope: SessionScope) => ({ userId: 7, userName: 'amna.khan', displayName: 'Amna Khan', scope, csrfToken: 'c' }) as const;
+const user = (scope: SessionScope) => ({ userId: 7, userName: 'amna.khan', displayName: 'Amna Khan', scope, csrfToken: 'c', permissions: [] as string[] }) as const;
 
 describe('authGuard (sessions AC-9)', () => {
   let store: Store;

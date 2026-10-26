@@ -3,7 +3,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { catchError, filter, map, of, switchMap, timer } from 'rxjs';
-import { SessionPageActions, selectSessionUser } from '@core/auth';
+import { HasPermissionDirective, SessionPageActions, selectSessionUser } from '@core/auth';
 import { OutboxHealthService } from '@core/health';
 import { AlertBadgeComponent } from '@features/warehouse/stock-alerts';
 import { OutboxHealthComponent } from '@shared';
@@ -22,7 +22,7 @@ const isChromeless = (url: string): boolean => CHROMELESS_SEGMENTS.some((segment
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, OutboxHealthComponent, AlertBadgeComponent],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, OutboxHealthComponent, AlertBadgeComponent, HasPermissionDirective],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

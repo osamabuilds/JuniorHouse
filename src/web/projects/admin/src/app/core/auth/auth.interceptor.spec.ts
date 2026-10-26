@@ -10,7 +10,7 @@ import { SessionApiActions } from './store/auth.actions';
 import { sessionReducer } from './store/auth.reducer';
 import { SESSION_FEATURE_KEY } from './store/auth.state';
 
-const signedIn = { userId: 7, userName: 'amna.khan', displayName: 'Amna Khan', scope: 'Full', csrfToken: 'csrf-value' } as const;
+const signedIn = { userId: 7, userName: 'amna.khan', displayName: 'Amna Khan', scope: 'Full', csrfToken: 'csrf-value', permissions: [] as string[] } as const;
 
 describe('authInterceptor (sessions AC-2, AC-10)', () => {
   let http: HttpClient;
