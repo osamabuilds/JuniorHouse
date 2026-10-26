@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, linkedSignal, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { StaffDto } from '../../models';
+import { inputChecked } from '@shared';
+import { RoleDto, StaffDto } from '../../models';
 
-/** One account, with the three things an administrator can do to it. Presentational: the page runs the actions. */
+/** One account, with what an administrator can do to it: change its roles, deactivate it, reset its password. Presentational: the page runs the actions. */
 @Component({
   selector: 'app-staff-detail',
   imports: [DatePipe],
@@ -30,6 +31,28 @@ import { StaffDto } from '../../models';
         <dd>{{ staff().createdAt | date: 'medium' }}</dd>
       </dl>
 
+      @if (staff().isActive && roles().length > 0) {
+        <fieldset class="form-field">
+          <legend>Roles</legend>
+          @for (role of roles(); track role.id) {
+            <label class="toolbar__checkbox">
+              <input type="checkbox" [checked]="chosen().includes(role.id)" (change)="toggle(role.id, $event)" />
+              {{ role.name }}
+              @if (role.description) {
+                <span class="field-hint">{{ role.description }}</span>
+              }
+              @if (role.hasAllPermissions) {
+                <span class="field-hint">Can do everything.</span>
+              }
+            </label>
+          }
+          <p class="field-hint">A role gives a set of permissions; a person gets all the permissions of every role they hold. The change applies on their next request.</p>
+          <div class="form-actions">
+            <button type="button" class="button" [disabled]="saving()" (click)="rolesSaved.emit(chosen())">Save roles</button>
+          </div>
+        </fieldset>
+      }
+
       <div class="form-actions">
         @if (staff().isActive) {
           <button type="button" class="button" [disabled]="saving()" (click)="deactivate.emit()">Deactivate</button>
@@ -46,15 +69,24 @@ import { StaffDto } from '../../models';
 })
 export class StaffDetailComponent {
   readonly staff = input.required<StaffDto>();
+  readonly roles = input<readonly RoleDto[]>([]);
   readonly saving = input(false);
 
   readonly deactivate = output<void>();
   readonly reactivate = output<void>();
   readonly resetPassword = output<void>();
+  readonly rolesSaved = output<readonly number[]>();
   readonly back = output<void>();
+
+  /** The roles ticked in the picker: starts as the roles the person holds, and starts again whenever the page shows someone else. */
+  readonly chosen = linkedSignal<readonly number[]>(() => this.staff().roles.map((role) => role.id));
 
   roleNames(): string {
     const roles = this.staff().roles;
     return roles.length === 0 ? 'None' : roles.map((role) => role.name).join(', ');
+  }
+
+  toggle(roleId: number, event: Event): void {
+    this.chosen.update((ids) => (inputChecked(event) ? [...ids.filter((id) => id !== roleId), roleId].sort((a, b) => a - b) : ids.filter((id) => id !== roleId)));
   }
 }

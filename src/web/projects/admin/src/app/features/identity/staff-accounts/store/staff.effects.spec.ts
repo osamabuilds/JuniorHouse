@@ -140,3 +140,47 @@ describe('staff effects and reducer (spec AC-4, AC-8, AC-9, AC-11)', () => {
     expect(store.selectSignal(selectOneTimePassword)()?.temporaryPassword).toBe('New-Pass-1234-abcd');
   });
 });
+
+describe('changing roles (roles AC-6)', () => {
+  let store: Store;
+  let http: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideStore({ [STAFF_FEATURE_KEY]: staffReducer }), provideEffects(effects)],
+    });
+    store = TestBed.inject(Store);
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => http.verify());
+
+  it('sends the whole set, then shows the account as it now is', () => {
+    store.dispatch(Ui.staffSelected({ id: 11 }));
+    http.expectOne((r) => r.url.endsWith('/api/identity/staff/11') && r.method === 'GET').flush(staffMember());
+
+    store.dispatch(Ui.rolesSubmitted({ id: 11, roleIds: [2, 3] }));
+    expect(store.selectSignal(selectStaffSaving)()).toBe(true);
+    const put = http.expectOne((r) => r.method === 'PUT' && r.url.endsWith('/api/identity/staff/11/roles'));
+    expect(put.request.body).toEqual({ roleIds: [2, 3] });
+    put.flush(null, { status: 204, statusText: 'No Content' });
+    http.expectOne((r) => r.url.endsWith('/api/identity/staff/11') && r.method === 'GET').flush(
+      staffMember({ roles: [{ id: 2, code: 'CATALOGUE', name: 'Catalogue' }, { id: 3, code: 'ORDER_OPS', name: 'Order-ops' }] }),
+    );
+
+    expect(store.selectSignal(selectSelectedStaff)()?.roles).toHaveLength(2);
+    expect(store.selectSignal(selectStaffSaving)()).toBe(false);
+  });
+
+  it('the last-Owner refusal is shown and nothing changes', () => {
+    store.dispatch(Ui.rolesSubmitted({ id: 1, roleIds: [2] }));
+
+    http.expectOne((r) => r.method === 'PUT' && r.url.endsWith('/staff/1/roles')).flush(
+      { title: 'Conflict', detail: 'This is the last active Owner. Make someone else an Owner first.' },
+      { status: 409, statusText: 'Conflict' },
+    );
+
+    expect(store.selectSignal(selectStaffError)()?.message).toContain('last active Owner');
+    expect(store.selectSignal(selectStaffSaving)()).toBe(false);
+  });
+});

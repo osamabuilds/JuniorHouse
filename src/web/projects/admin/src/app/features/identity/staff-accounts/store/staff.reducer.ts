@@ -20,6 +20,7 @@ export const staffReducer = createReducer(
     StaffPageActions.deactivateClicked,
     StaffPageActions.reactivateClicked,
     StaffPageActions.resetPasswordClicked,
+    StaffPageActions.rolesSubmitted,
     (state) => ({ ...state, saving: true, error: null }),
   ),
   on(StaffPageActions.passwordDismissed, (state) => ({ ...state, oneTimePassword: null })),

@@ -24,6 +24,8 @@
         (deactivate)="deactivate(person)"
         (reactivate)="reactivate(person)"
         (resetPassword)="resetPassword(person)"
+        [roles]="roles()"
+        (rolesSaved)="saveRoles(person, $event)"
         (back)="backToList()"
       />
     } @else {

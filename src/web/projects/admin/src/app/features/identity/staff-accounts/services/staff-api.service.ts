@@ -37,6 +37,10 @@ export class StaffApiService {
     return this.api.post<void>(`/api/identity/staff/${id}/reactivate`, {});
   }
 
+  assignRoles(id: number, roleIds: readonly number[]): Observable<void> {
+    return this.api.put<void>(`/api/identity/staff/${id}/roles`, { roleIds });
+  }
+
   resetPassword(id: number): Observable<TemporaryPasswordDto> {
     return this.api.post<TemporaryPasswordDto>(`/api/identity/staff/${id}/reset-password`, {});
   }

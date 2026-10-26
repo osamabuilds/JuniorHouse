@@ -95,6 +95,10 @@ export class StaffPageContainer {
     this.store.dispatch(StaffPageActions.resetPasswordClicked({ id: person.id }));
   }
 
+  saveRoles(person: StaffDto, roleIds: readonly number[]): void {
+    this.store.dispatch(StaffPageActions.rolesSubmitted({ id: person.id, roleIds }));
+  }
+
   dismissPassword(): void {
     this.store.dispatch(StaffPageActions.passwordDismissed());
   }

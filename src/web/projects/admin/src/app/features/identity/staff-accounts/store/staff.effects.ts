@@ -106,6 +106,21 @@ export const reactivateStaff$ = createEffect(
   { functional: true },
 );
 
+/** Replaces the person's roles with exactly the set sent; afterwards the detail shows the account as it now is (roles AC-6). */
+export const assignRoles$ = createEffect(
+  (actions$ = inject(Actions), api = inject(StaffApiService)) =>
+    actions$.pipe(
+      ofType(StaffPageActions.rolesSubmitted),
+      switchMap(({ id, roleIds }) =>
+        api.assignRoles(id, roleIds).pipe(
+          map(() => StaffApiActions.statusChangeSucceeded({ id })),
+          catchError((error: ApiError) => of(StaffApiActions.actionFailed({ error }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
 /** A reset is never retried by the client: each call makes a new password (see the plan's idempotency row). */
 export const resetPassword$ = createEffect(
   (actions$ = inject(Actions), api = inject(StaffApiService)) =>

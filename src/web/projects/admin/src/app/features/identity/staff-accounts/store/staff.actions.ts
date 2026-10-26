@@ -19,6 +19,7 @@ export const StaffPageActions = createActionGroup({
     'Deactivate Clicked': props<{ id: number }>(),
     'Reactivate Clicked': props<{ id: number }>(),
     'Reset Password Clicked': props<{ id: number }>(),
+    'Roles Submitted': props<{ id: number; roleIds: readonly number[] }>(),
     'Password Dismissed': emptyProps(),
   },
 });
