@@ -2,18 +2,9 @@ import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, comp
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { SignInValue } from '@core/auth';
 import type { ApiError } from '@core/http';
+import { waitText } from '@shared';
 
 export type { SignInValue } from '@core/auth';
-
-/** "Try again in 30 seconds" / "2 minutes": the wait the server asked for, rounded up so the person is never early. */
-export function waitText(seconds: number): string {
-  if (seconds < 60) {
-    return `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
-  }
-
-  const minutes = Math.ceil(seconds / 60);
-  return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
-}
 
 /**
  * The staff sign-in form (sessions AC-7, AC-13). One generic message whichever part was wrong, a wait time when sign-in is throttled,
@@ -30,10 +21,8 @@ export function waitText(seconds: number): string {
       @if (message(); as text) {
         <p id="si-error" #errorSummary class="banner banner--error" role="alert" tabindex="-1">{{ text }}</p>
       }
-      @if (mfaRequired()) {
-        <p class="banner banner--info" role="status">
-          Two-step verification is required for this account, but it is not available yet. Ask an Owner to help you.
-        </p>
+      @if (restarted()) {
+        <p class="banner banner--info" role="status">Your sign-in timed out or was stopped. Enter your user name and password again.</p>
       }
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -59,7 +48,8 @@ export class SignInComponent {
 
   readonly signingIn = input(false);
   readonly error = input<ApiError | null>(null);
-  readonly mfaRequired = input(false);
+  /** The second step ended (too many wrong codes, or too long): say why the password is asked for again. */
+  readonly restarted = input(false);
 
   readonly submitted = output<SignInValue>();
 

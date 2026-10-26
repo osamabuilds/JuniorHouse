@@ -9,6 +9,8 @@ export const SessionPageActions = createActionGroup({
     'Sign In Opened': emptyProps(),
     'Sign In Submitted': props<SignInValue>(),
     'Change Password Submitted': props<ChangePasswordValue>(),
+    'Mfa Code Submitted': props<{ code: string }>(),
+    'Mfa Cancelled': emptyProps(),
     'Sign Out Clicked': emptyProps(),
     'Sign Out Everywhere Clicked': emptyProps(),
     /** The interceptor could not renew the session: the person has to sign in again. */
@@ -23,6 +25,8 @@ export const SessionApiActions = createActionGroup({
     'Load Failed': emptyProps(),
     'Sign In Succeeded': props<{ response: SignInResponse }>(),
     'Sign In Failed': props<{ error: ApiError }>(),
+    'Mfa Verified': emptyProps(),
+    'Mfa Failed': props<{ error: ApiError }>(),
     'Password Changed': emptyProps(),
     'Password Change Failed': props<{ error: ApiError }>(),
     'Signed Out': emptyProps(),

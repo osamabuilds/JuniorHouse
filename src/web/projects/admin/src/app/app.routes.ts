@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@core/auth';
+import { MFA_SECURITY_ROUTES, MFA_SETUP_ROUTES } from '@features/identity/mfa';
 import { SESSIONS_ROUTES } from '@features/identity/sessions';
 
 const staffRoutes: Routes = [
@@ -106,7 +107,7 @@ const staffRoutes: Routes = [
 ];
 
 /**
- * The sign-in, change-password and two-step notice pages sit outside the guard; every staff screen is behind it (sessions AC-9). The
+ * The sign-in, change-password and two-step setup pages sit outside the staff screens; every staff screen is behind it (sessions AC-9). The
  * guard lets the vendor-facing purchase order page through, because a vendor opens it with a link and never signs in as staff.
  */
-export const routes: Routes = [...SESSIONS_ROUTES, { path: '', canActivate: [authGuard], children: staffRoutes }];
+export const routes: Routes = [...SESSIONS_ROUTES, ...MFA_SETUP_ROUTES, { path: '', canActivate: [authGuard], children: [...staffRoutes, ...MFA_SECURITY_ROUTES] }];

@@ -8,7 +8,7 @@ import type { SessionScope } from '../auth.model';
 import { SessionPageActions as Ui } from './auth.actions';
 import * as effects from './auth.effects';
 import { sessionReducer } from './auth.reducer';
-import { selectCsrfToken, selectSessionError, selectSessionStatus, selectSessionUser, selectSigningIn } from './auth.selectors';
+import { selectCsrfToken, selectMfaEnded, selectMfaRequired, selectSessionError, selectSessionStatus, selectSessionUser, selectSigningIn } from './auth.selectors';
 import { SESSION_FEATURE_KEY } from './auth.state';
 
 const me = (scope: SessionScope = 'Full') => ({ userId: 7, userName: 'amna.khan', displayName: 'Amna Khan', scope, csrfToken: 'csrf-value' });
@@ -169,5 +169,89 @@ describe('session store and effects (sessions AC-1, AC-2, AC-9, AC-11, AC-13)', 
     store.dispatch(Ui.signInOpened());
 
     expect(store.selectSignal(selectSessionError)()).toBeNull();
+  });
+});
+
+describe('second step of sign-in (mfa AC-3, AC-5)', () => {
+  let store: Store;
+  let http: HttpTestingController;
+  let navigate: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    navigate = vi.fn().mockResolvedValue(true);
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideStore({ [SESSION_FEATURE_KEY]: sessionReducer }),
+        provideEffects(effects),
+        { provide: Router, useValue: { navigate, navigateByUrl: navigate, url: '/sign-in' } },
+      ],
+    });
+    store = TestBed.inject(Store);
+    http = TestBed.inject(HttpTestingController);
+    store.dispatch(Ui.signInSubmitted({ userName: 'amna.khan', password: 'a-long-passphrase-1' }));
+    http.expectOne((r) => r.url.endsWith('/api/auth/sign-in')).flush({ status: 'mfa_required' });
+  });
+
+  afterEach(() => http.verify());
+
+  const verify = () => http.expectOne((r) => r.url.endsWith('/api/auth/mfa/verify'));
+
+  it('a valid code starts the session and loads who the person is', () => {
+    expect(store.selectSignal(selectMfaRequired)()).toBe(true);
+
+    store.dispatch(Ui.mfaCodeSubmitted({ code: '123456' }));
+    expect(store.selectSignal(selectSigningIn)()).toBe(true);
+    const request = verify();
+    expect(request.request.body).toEqual({ code: '123456' });
+    request.flush({ status: 'signed_in' });
+    http.expectOne((r) => r.url.endsWith('/api/auth/me')).flush(me());
+
+    expect(store.selectSignal(selectSessionStatus)()).toBe('authenticated');
+    expect(store.selectSignal(selectMfaRequired)()).toBe(false);
+    expect(store.selectSignal(selectSigningIn)()).toBe(false);
+  });
+
+  it('a wrong code keeps the second step open with one generic error', () => {
+    store.dispatch(Ui.mfaCodeSubmitted({ code: '000000' }));
+    verify().flush({ title: 'That code is not valid' }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(store.selectSignal(selectMfaRequired)()).toBe(true);
+    expect(store.selectSignal(selectSessionError)()?.status).toBe(401);
+    expect(store.selectSignal(selectSigningIn)()).toBe(false);
+    expect(store.selectSignal(selectSessionStatus)()).toBe('unknown');
+  });
+
+  it('a throttled attempt keeps the wait', () => {
+    store.dispatch(Ui.mfaCodeSubmitted({ code: '000000' }));
+    verify().flush({ title: 'Too many attempts' }, { status: 429, statusText: 'Too Many Requests', headers: { 'Retry-After': '45' } });
+
+    expect(store.selectSignal(selectSessionError)()?.retryAfterSeconds).toBe(45);
+    expect(store.selectSignal(selectMfaRequired)()).toBe(true);
+  });
+
+  it('when the pending sign-in has ended the person goes back to the password step with a notice', () => {
+    store.dispatch(Ui.mfaCodeSubmitted({ code: '000000' }));
+    verify().flush({ title: 'Sign in again' }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(store.selectSignal(selectMfaRequired)()).toBe(false);
+    expect(store.selectSignal(selectMfaEnded)()).toBe(true);
+    expect(store.selectSignal(selectSessionError)()).toBeNull();
+  });
+
+  it('going back to the password step closes the second step', () => {
+    store.dispatch(Ui.mfaCancelled());
+
+    expect(store.selectSignal(selectMfaRequired)()).toBe(false);
+  });
+
+  it('opening the sign-in page again clears the notice', () => {
+    store.dispatch(Ui.mfaCodeSubmitted({ code: '000000' }));
+    verify().flush({ title: 'Sign in again' }, { status: 401, statusText: 'Unauthorized' });
+
+    store.dispatch(Ui.signInOpened());
+
+    expect(store.selectSignal(selectMfaEnded)()).toBe(false);
   });
 });

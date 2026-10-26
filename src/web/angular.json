@@ -108,6 +108,9 @@
             ],
             "styles": [
               "projects/admin/src/styles.scss"
+            ],
+            "allowedCommonJsDependencies": [
+              "qrcode"
             ]
           },
           "configurations": {

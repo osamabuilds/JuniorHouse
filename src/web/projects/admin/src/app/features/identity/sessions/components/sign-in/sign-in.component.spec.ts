@@ -87,12 +87,14 @@ describe('SignInComponent (sessions AC-7, AC-13)', () => {
     expect(root.querySelector('#si-error')?.textContent).toContain('Try again in 30 seconds');
   });
 
-  it('explains that the second step is not available yet, without a session', () => {
+  it('says why the password is asked for again after the second step ended', () => {
     const { fixture, root } = create();
-    fixture.componentRef.setInput('mfaRequired', true);
+    expect(root.querySelector('[role="status"]')).toBeNull();
+
+    fixture.componentRef.setInput('restarted', true);
     fixture.detectChanges();
 
-    expect(root.querySelector('[role="status"], [role="alert"]')?.textContent).toContain('Two-step verification');
+    expect(root.querySelector('[role="status"]')?.textContent).toContain('timed out or was stopped');
   });
 
   it('disables the button while signing in, so a second click cannot send a second attempt', () => {

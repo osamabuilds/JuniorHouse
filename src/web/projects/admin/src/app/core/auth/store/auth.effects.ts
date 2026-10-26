@@ -37,6 +37,30 @@ export const signIn$ = createEffect(
   { functional: true },
 );
 
+/** The second step of sign-in: the pending cookie travels by itself, so only the code is sent. */
+export const verifyMfa$ = createEffect(
+  (actions$ = inject(Actions), api = inject(AuthApiService)) =>
+    actions$.pipe(
+      ofType(SessionPageActions.mfaCodeSubmitted),
+      switchMap(({ code }) =>
+        api.mfaVerify(code).pipe(
+          map(() => SessionApiActions.mfaVerified()),
+          catchError((error: ApiError) => of(SessionApiActions.mfaFailed({ error }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const loadAfterMfa$ = createEffect(
+  (actions$ = inject(Actions), api = inject(AuthApiService)) =>
+    actions$.pipe(
+      ofType(SessionApiActions.mfaVerified),
+      switchMap(() => loadMe(api)),
+    ),
+  { functional: true },
+);
+
 /** A session was started (limited scope): find out who the person is and what they may do. */
 export const loadAfterSignIn$ = createEffect(
   (actions$ = inject(Actions), api = inject(AuthApiService)) =>

@@ -15,6 +15,10 @@ export class AuthApiService {
     return this.api.post<SignInResponse>('/api/auth/sign-in', value);
   }
 
+  mfaVerify(code: string): Observable<void> {
+    return this.api.post<void>('/api/auth/mfa/verify', { code });
+  }
+
   signOut(): Observable<void> {
     return this.api.post<void>('/api/auth/sign-out', {});
   }

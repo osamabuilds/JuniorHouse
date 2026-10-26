@@ -8,6 +8,7 @@
     <div class="shell-user">
       <span class="shell-user__name">{{ user()?.displayName }}</span>
       @if (canSignOut()) {
+        <a routerLink="/security" routerLinkActive="is-active">Security</a>
         <button type="button" class="button" (click)="signOut()">Sign out</button>
         <button type="button" class="button" (click)="signOutEverywhere()">Sign out everywhere</button>
       }

@@ -15,6 +15,8 @@ export interface SessionState {
   readonly error: ApiError | null;
   /** The password was accepted but a second step is owed; the second step does not exist yet. */
   readonly mfaRequired: boolean;
+  /** The pending sign-in ended (too many wrong codes, or too long): the password step is shown again with a notice. */
+  readonly mfaEnded: boolean;
 }
 
 export const initialSessionState: SessionState = {
@@ -24,4 +26,5 @@ export const initialSessionState: SessionState = {
   saving: false,
   error: null,
   mfaRequired: false,
+  mfaEnded: false,
 };
