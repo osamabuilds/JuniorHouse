@@ -346,3 +346,4 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | IP address | IP | | temporary | TEMP |
 | login | LGIN | | token | TOKN |
 | multi-factor authentication | MFA | | used | USED |
+| rotated | ROTD | | | |

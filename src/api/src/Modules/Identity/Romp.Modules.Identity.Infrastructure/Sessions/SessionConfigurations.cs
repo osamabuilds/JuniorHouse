@@ -55,6 +55,7 @@ internal sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
         builder.Property(s => s.AccessExpiresAt).HasColumnName("ACSS_EXPY_DTE").IsRequired();
         builder.Property(s => s.RefreshExpiresAt).HasColumnName("RFSH_EXPY_DTE").IsRequired();
         builder.Property(s => s.AbsoluteExpiresAt).HasColumnName("ABS_EXPY_DTE").IsRequired();
+        builder.Property(s => s.RotatedAt).HasColumnName("ROTD_DTE");
         builder.Property(s => s.RevokedAt).HasColumnName("RVKD_DTE");
         builder.Property(s => s.RevokeReason).HasColumnName("RVKD_RSN_ID").HasConversion<short?>();
         builder.Property(s => s.ClientIp).HasColumnName("CLNT_IP_ADDR").HasMaxLength(Session.ClientIpMaxLength);

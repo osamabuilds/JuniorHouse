@@ -80,6 +80,53 @@ public sealed class SessionTests
     }
 
     [Fact]
+    [Trait("Spec", "AC-2")]
+    public void Rotate_RecordsWhenItRotated()
+    {
+        var (session, tokens) = Session.Start(7, T0, Defaults);
+        Assert.Null(session.RotatedAt);
+
+        session.Rotate(tokens.Refresh.Reveal(), T0.AddMinutes(4));
+
+        Assert.Equal(T0.AddMinutes(4), session.RotatedAt);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-3")]
+    public void PreviousValue_WithinTheGrace_IsRefusedWithoutRevoking()
+    {
+        var (session, first) = Session.Start(7, T0, Defaults);
+        var rotatedAt = T0.AddMinutes(1);
+        var winner = session.Rotate(first.Refresh.Reveal(), rotatedAt);
+
+        // A second request that carried the same cookie (two tabs, a retry): refused, not punished.
+        var late = session.Rotate(first.Refresh.Reveal(), rotatedAt + Session.RefreshGrace - TimeSpan.FromMilliseconds(1));
+
+        Assert.Equal(RefreshOutcome.ConcurrentRefresh, late.Outcome);
+        Assert.Null(late.Tokens);
+        Assert.Null(session.RevokedAt);
+        Assert.Equal(SessionTokens.Hash(winner.Tokens!.Refresh.Reveal()), session.RefreshTokenHash); // nothing changed
+        Assert.Equal(rotatedAt, session.RotatedAt);
+
+        // The winner's value still works afterwards.
+        Assert.Equal(RefreshOutcome.Rotated, session.Rotate(winner.Tokens.Refresh.Reveal(), rotatedAt.AddSeconds(5)).Outcome);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-3")]
+    public void PreviousValue_OnceTheGraceHasPassed_IsReuse()
+    {
+        var (session, first) = Session.Start(7, T0, Defaults);
+        var rotatedAt = T0.AddMinutes(1);
+        session.Rotate(first.Refresh.Reveal(), rotatedAt);
+
+        var replay = session.Rotate(first.Refresh.Reveal(), rotatedAt + Session.RefreshGrace);
+
+        Assert.Equal(RefreshOutcome.ReuseDetected, replay.Outcome);
+        Assert.Equal(SessionRevokeReason.RefreshReuse, session.RevokeReason);
+    }
+
+    [Fact]
     [Trait("Spec", "AC-3")]
     public void UnknownRefreshValue_IsRefused_WithoutRevoking()
     {

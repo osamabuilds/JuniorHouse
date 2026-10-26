@@ -38,6 +38,12 @@ public enum RefreshOutcome
 
     /// <summary>Unknown value, or the session is revoked or expired. Nothing changed.</summary>
     Unusable = 3,
+
+    /// <summary>
+    /// The presented value was rotated away less than <see cref="Session.RefreshGrace"/> ago, so it is most likely a second request
+    /// that carried the same cookie. Refused with no new pair and no revocation; the client retries with the cookie the winner set.
+    /// </summary>
+    ConcurrentRefresh = 4,
 }
 
 public sealed record RefreshResult(RefreshOutcome Outcome, IssuedTokens? Tokens);
@@ -63,6 +69,9 @@ public enum SessionRevokeReason : short
 public sealed class Session : AggregateRoot<long>, IAuditable
 {
     public const int MaxPerUser = 10;
+
+    /// <summary>How long after a rotation the previous refresh value is treated as a concurrent retry rather than as theft (AC-3).</summary>
+    public static readonly TimeSpan RefreshGrace = TimeSpan.FromSeconds(10);
     public const int ClientIpMaxLength = 45;
     public const int UserAgentMaxLength = 200;
 
@@ -88,6 +97,9 @@ public sealed class Session : AggregateRoot<long>, IAuditable
     public DateTimeOffset RefreshExpiresAt { get; private set; }
 
     public DateTimeOffset AbsoluteExpiresAt { get; private set; }
+
+    /// <summary>When the refresh value last changed; null until the first rotation. Starts the <see cref="RefreshGrace"/> window.</summary>
+    public DateTimeOffset? RotatedAt { get; private set; }
 
     public DateTimeOffset? RevokedAt { get; private set; }
 
@@ -151,12 +163,18 @@ public sealed class Session : AggregateRoot<long>, IAuditable
         {
             var tokens = new IssuedTokens(SessionTokens.Generate(), SessionTokens.Generate());
             PreviousRefreshTokenHash = RefreshTokenHash;
+            RotatedAt = now;
             Apply(tokens, now, lifetimes ?? SessionLifetimes.Default);
             return new RefreshResult(RefreshOutcome.Rotated, tokens);
         }
 
         if (PreviousRefreshTokenHash is not null && SessionTokens.Matches(presentedRefresh, PreviousRefreshTokenHash))
         {
+            if (RotatedAt is { } rotatedAt && now - rotatedAt < RefreshGrace)
+            {
+                return new RefreshResult(RefreshOutcome.ConcurrentRefresh, null);
+            }
+
             Revoke(SessionRevokeReason.RefreshReuse, now);
             return new RefreshResult(RefreshOutcome.ReuseDetected, null);
         }

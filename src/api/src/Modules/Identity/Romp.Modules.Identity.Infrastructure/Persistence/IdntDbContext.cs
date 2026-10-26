@@ -31,6 +31,8 @@ public sealed class IdntDbContext(DbContextOptions<IdntDbContext> options) : DbC
     async Task IIdentityDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 
+    void IIdentityDbContext.Discard(object entity) => Entry(entity).State = EntityState.Detached;
+
     /// <summary>Arbitrary constant naming the "Owner set" lock; advisory locks are per database, so it only has to be unique among Romp's.</summary>
     private const long OwnerLockKey = 0x524F4D50_4F574E52; // "ROMPOWNR"
 

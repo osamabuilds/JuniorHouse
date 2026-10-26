@@ -23,6 +23,9 @@ public interface IIdentityDbContext
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 
+    /// <summary>Stops tracking an entity so its unsaved changes are dropped, for example after losing an optimistic-concurrency race.</summary>
+    void Discard(object entity);
+
     /// <summary>
     /// Serialises every change that could remove an active Owner (AC-9): blocks until no other transaction holds the Owner lock, then
     /// holds it until this transaction ends. Call it before reading who the Owners are, inside the command's transaction.
