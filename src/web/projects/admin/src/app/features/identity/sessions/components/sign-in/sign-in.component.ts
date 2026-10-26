@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { SignInValue } from '@core/auth';
 import type { ApiError } from '@core/http';
@@ -17,7 +17,7 @@ export function waitText(seconds: number): string {
 
 /**
  * The staff sign-in form (sessions AC-7, AC-13). One generic message whichever part was wrong, a wait time when sign-in is throttled,
- * the password field emptied after a failure, and focus moved to the error summary so a keyboard or screen-reader user hears it.
+ * the password field emptied as soon as it is sent, and focus moved to the error summary so a keyboard or screen-reader user hears it.
  * Nothing typed here is stored anywhere in the browser; the browser's own password manager is left to do its job.
  */
 @Component({
@@ -98,11 +98,6 @@ export class SignInComponent {
       this.errorSummary()?.nativeElement.focus();
     });
 
-    effect(() => {
-      if (this.error()) {
-        this.form.controls.password.reset('');
-      }
-    });
   }
 
   submit(): void {
@@ -115,5 +110,7 @@ export class SignInComponent {
     this.missing.set(null);
     const value = this.form.getRawValue();
     this.submitted.emit({ userName: value.userName.trim(), password: value.password });
+    // The password is emptied the moment it is sent, so it never sits in the page after an attempt (and a fast retype is never wiped).
+    this.form.controls.password.reset('');
   }
 }

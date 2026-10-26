@@ -103,13 +103,15 @@ describe('SignInComponent (sessions AC-7, AC-13)', () => {
     expect((root.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('clears the password field after a failed attempt', () => {
-    const { fixture, root } = create();
+  it('empties the password field as soon as the attempt is sent, keeping the user name', () => {
+    const { root, submitted } = create();
+    typeInto(root, '#si-user', 'amna.khan');
     typeInto(root, '#si-password', 'wrong-one');
 
-    fixture.componentRef.setInput('error', { status: 401, message: 'Sign-in failed', fieldErrors: {} });
-    fixture.detectChanges();
+    submit(root);
 
+    expect(submitted).toHaveBeenCalledWith({ userName: 'amna.khan', password: 'wrong-one' });
     expect((root.querySelector('#si-password') as HTMLInputElement).value).toBe('');
+    expect((root.querySelector('#si-user') as HTMLInputElement).value).toBe('amna.khan');
   });
 });

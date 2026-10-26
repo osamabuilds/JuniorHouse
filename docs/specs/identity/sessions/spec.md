@@ -1,6 +1,6 @@
 # SCRUM-202: Sessions and sign-in
 
-- **Status:** Approved (owner, 2026-10-16)
+- **Status:** Implemented (2026-10-26), except step 2 of sign-in (`POST /api/auth/mfa/verify`), which is a shell until the [mfa](../mfa/spec.md) feature lands; see "As built" at the end
 - **Jira:** SCRUM-202; sources SCRUM-124, SCRUM-122 (staff part), SCRUM-128, SCRUM-114
 - **BRD sections:** §11.2, §8.4
 - **Requirement IDs:** SEC-03, SEC-04, SEC-08, NFR-10, NFR-15, SEC-02 (behaviour reused for staff)
@@ -61,3 +61,41 @@ Staff must prove who they are, stay signed in safely, and be signed out the mome
 ## Open questions
 - [x] ~~CAPTCHA for staff~~ Decided: none. Staff sign-in uses throttling per account and per IP without hard lockout; the customer lockout vs CAPTCHA decision (SCRUM-199) stays open for the customer-auth sprint.
 - [x] ~~Session lifetimes~~ Decided: 30 minutes idle and 12 hours absolute, configurable.
+
+## As built (2026-10-26)
+
+What differs from, or adds to, the text above. Everything else is built as written.
+
+- **AC-2, AC-5:** the three lifetimes are configurable as `Identity:Sessions:AccessMinutes`, `IdleMinutes` and `AbsoluteMinutes` (defaults 15, 30, 720). They are validated at start-up (access at most idle, idle at most absolute, absolute at most one week).
+- **AC-3, concurrent refresh:** the previous refresh value is refused with **409** and no new cookies, and the session survives, for 10 seconds after a rotation (`Session.RefreshGrace`). A second request that carried the same cookie therefore retries once with the pair the first one set. It does not receive the same new pair: only hashes are stored, so the raw values cannot be handed out again. From 10 seconds on the previous value revokes the session. The conditional update is the PostgreSQL `xmin` concurrency token on `SESS_MAIN`; the new column is `ROTD_DTE`.
+- **AC-8:** the name is also lower-cased before it is stored, so "Admin" and "ADMIN" share one throttle.
+- **AC-6, open:** the global per-name ceiling (10 failures from any address in 15 minutes) can delay a real user while someone is guessing their name. This is the plan's accepted trade-off; it is not a lockout. Revisit with the owner if it bites.
+- **AC-10:** the anti-forgery header is required on unsafe requests that carry a session. Sign-in, refresh and sign-out have no session value to forge against and are guarded by `SameSite=Strict` plus an `Origin` check instead. The check compares `Origin` with `Site:PublicBaseUrl` (or, when that is unset, the request's own origin); a request with no `Origin` header is allowed, because browsers always send one on a cross-site unsafe request. Only one site origin is accepted, so an admin app served from a different host than `Site:PublicBaseUrl` would be refused (open question for the deployment plan).
+- **AC-12:** the auth routes use the existing strict rate-limit policy (`RateLimit:StrictPerMinute`, default 60 a minute per address). A dedicated lower value for `/api/auth` is a small change if wanted.
+- **AC-14:** the gate is stricter than written: outside Development/Testing the host starts only when the `RompSession` scheme is registered and is the default scheme (another scheme no longer opens it), and it refuses a missing `Identity:Csrf:Key`, `Identity:AllowInsecureCookies=true`, `Identity:UseRealAuthentication=false` and invalid session lifetimes.
+- **AC-15:** `Network:TrustedProxies` lists the proxies whose forwarded address is believed; with none configured forwarding is switched off (the framework would otherwise trust every peer). `Network:ClientIpHeader` is `X-Forwarded-For` (default) or `CF-Connecting-IP` when Cloudflare's header is passed through. Production proxy ranges must be set at deploy time.
+- **Security events (observability AC-9):** `SecurityEvents` in `Romp.BuildingBlocks.Application`, category `Romp.Security`: 1001 sign-in failed (outcome `bad_credentials`, `inactive` or `temporary_expired`), 1003 refresh reuse, 1004 sign-in throttled. The typed user name is not logged (people type passwords into that box); the user id and client address are. 1002, 1005, 1006 and 1007 belong to the mfa, roles and observability work.
+- **Housekeeping:** `PurgeExpiredSessionsCommand` removes sessions whose absolute limit passed more than 90 days ago, attempts older than 90 days and unfinished sign-ins, once a day from a hosted service.
+- **Endpoints added:** `GET /api/auth/me` (also answers a stand-in user under the development handler, so the admin app runs without sign-in in that mode), `POST /api/auth/sign-out-all`. `POST /api/auth/mfa/verify` answers 501 until mfa is built.
+- **Limited sessions:** an account that must change its password or enrol MFA gets a session the moment the password is accepted, and the admin app keeps it on `/change-password` or `/setup-required`. Until mfa lands nobody can reach the full scope. The server-side rule that refuses every other endpoint to a limited scope belongs to the roles feature's permission handler (not built yet).
+- **Admin app (AC-13):** same-origin API (`proxy.conf.json` for `ng serve`, an nginx `/api` proxy in the container, `API_BASE_URL` empty), `core/auth` (store, interceptor, guard), pages `sign-in`, `change-password` and `setup-required`; the staff header, navigation and footer are not shown to anyone who is not signed in. `permissionGuard` and `*hasPermission` (Sprint 8 G10) wait for the roles feature.
+
+## Traceability
+
+| AC | Proof |
+|---|---|
+| AC-1 | `SessionTokenTests`, `CookieWriterTests.SetsEveryRequiredFlag`, `AuthEndpointsTests.Cookies_AreSecureByDefault`, `e2e/identity/sessions.e2e.spec.ts` (HttpOnly, SameSite) |
+| AC-2 | `SessionTests.Rotate_ReplacesBothTokens`, `RefreshSessionTests.*`, `SessionLifetimeOptionsTests`, `AuthEndpointsTests.FullFlow_SetsRotatesAndClearsCookies`, auth interceptor spec, e2e silent refresh |
+| AC-3 | `SessionTests.ReusedRefresh_RevokesTheSession`, `RefreshSessionTests.OldValueAfterGrace_RevokesTheSession`, `RefreshSessionTests.TwoParallelRefreshes_OneWins_NoRevocation`, `SessionSecurityEventTests` |
+| AC-4 | `NewSessionOnLoginTests.PresentedSession_IsRevoked_AndNeverReused`, `safe-return-url.spec.ts` |
+| AC-5 | `SessionTests.Expires_IdleAndAbsolute`, `SessionAuthenticationHandlerTests.RejectsEveryUnusableSession` |
+| AC-6 | `ThrottlePolicyTests`, `SignInHandlerTests.Throttles_PerPairAndPerName`, `AuthEndpointsTests.RepeatedFailures_AreThrottled_WithRetryAfterOnly`, e2e throttling message |
+| AC-7 | `SignInHandlerTests.AllFailureKinds_LookIdentical`, `SignInHandlerTests.UnknownUser_StillPaysTheHashCost`, `sign-in.component.spec.ts` |
+| AC-8 | `SignInHandlerTests.LogsEveryAttempt_WithoutThePassword`, `SessionSecurityEventTests` |
+| AC-9 | `SessionAuthenticationHandlerTests.*`, `SessionRevocationTests.Deactivating_AnAccount_EndsItsSessionsAtOnce`, `authGuard` spec |
+| AC-10 | `CsrfFilterTests.*`, `AuthEndpointsTests.UnsafeRequests_FromASession_NeedTheAntiForgeryHeader`, `AuthEndpointsTests.SignIn_FromAnotherOrigin_IsRefused` |
+| AC-11 | `SessionRevocationTests.*`, `AuthEndpointsTests.SignOutEverywhere_RevokesAll`, e2e sign-out |
+| AC-12 | `AuthRateLimitTests.*` |
+| AC-13 | `auth.storage.spec.ts`, `auth.interceptor.spec.ts`, `auth.effects.spec.ts`, e2e (no storage, no readable cookie) |
+| AC-14 | `SecurityBaselineTests` gate cases, `SecurityGateTests.*` (real Staging host), `IdentityOptionsValidatorTests` |
+| AC-15 | `ClientIpTests.*` |
