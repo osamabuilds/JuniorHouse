@@ -14,6 +14,9 @@ public interface ICustomerDbContext
 
     DbSet<CustomerAddress> Addresses { get; }
 
+    /// <summary>Takes a row lock on the customer until the transaction ends, so changes to that customer's owned lists run one at a time.</summary>
+    Task LockCustomerAsync(long customerId, CancellationToken cancellationToken);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
 

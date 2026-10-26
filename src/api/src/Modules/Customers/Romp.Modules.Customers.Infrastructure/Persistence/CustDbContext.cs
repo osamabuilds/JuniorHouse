@@ -17,6 +17,9 @@ public sealed class CustDbContext(DbContextOptions<CustDbContext> options) : DbC
 
     public DbSet<CustomerAddress> Addresses => Set<CustomerAddress>();
 
+    async Task ICustomerDbContext.LockCustomerAsync(long customerId, CancellationToken cancellationToken) =>
+        await Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM \"CUST\".\"CUST_MAIN\" WHERE \"ID\" = {customerId} FOR UPDATE", cancellationToken);
+
     async Task ICustomerDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 

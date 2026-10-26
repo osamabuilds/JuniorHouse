@@ -20,6 +20,15 @@ public static class AddressBook
         added.SetDefault(book.Count == 0);
     }
 
+    /// <summary>Leaves the book with no default. Only a step inside a transaction, before <see cref="MakeDefault"/>: the unique index allows no moment with two.</summary>
+    public static void ClearDefault(IReadOnlyCollection<CustomerAddress> book)
+    {
+        foreach (var address in book)
+        {
+            address.SetDefault(false);
+        }
+    }
+
     public static void MakeDefault(IReadOnlyCollection<CustomerAddress> book, CustomerAddress target)
     {
         foreach (var address in book)

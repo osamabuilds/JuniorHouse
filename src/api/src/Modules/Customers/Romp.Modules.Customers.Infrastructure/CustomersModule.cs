@@ -38,6 +38,8 @@ public sealed class CustomersModule : IModule
                 sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
 
         services.AddScoped<ICustomerDbContext>(sp => sp.GetRequiredService<CustDbContext>());
+        services.AddOptions<Application.CustomersOptions>().Bind(configuration.GetSection(Application.CustomersOptions.SectionName))
+            .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50.").ValidateOnStart();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentCustomer, HttpContextCurrentCustomer>();
 

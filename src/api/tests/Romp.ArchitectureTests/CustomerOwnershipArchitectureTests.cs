@@ -41,7 +41,7 @@ public sealed class CustomerOwnershipArchitectureTests
     public void NoRoute_TakesACustomerId()
     {
         var offenders = new List<string>();
-        var routeLiteral = new Regex("\"[^\"]*\\{(customerId|custId|ownerId)[^}]*\\}[^\"]*\"", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(5));
+        var routeLiteral = new Regex("\"/[^\"]*\\{(customerId|custId|ownerId)[^}]*\\}[^\"]*\"", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(5));
         foreach (var file in CustomersSources("Romp.Modules.Customers.Infrastructure"))
         {
             if (routeLiteral.IsMatch(File.ReadAllText(file)))

@@ -71,6 +71,20 @@ public sealed class AddressBookTests
 
     [Fact]
     [Trait("Spec", "ADD-2")]
+    public void ClearDefault_LeavesNoDefault()
+    {
+        var a = Address(1);
+        var b = Address(2);
+        AddressBook.Add([], a, 10);
+        AddressBook.Add([a], b, 10);
+
+        AddressBook.ClearDefault([a, b]);
+
+        Assert.False(a.IsDefault || b.IsDefault);
+    }
+
+    [Fact]
+    [Trait("Spec", "ADD-2")]
     public void MakeDefault_OnTheCurrentDefault_ChangesNothing()
     {
         var a = Address(1);
