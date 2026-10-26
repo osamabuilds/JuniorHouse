@@ -93,6 +93,7 @@ public sealed class CustomerOwnershipArchitectureTests
 
         Assert.Empty(OwnershipScan.FindUnfilteredFiles("Ok.cs", "var id = current.Require(); await db.Addresses.Where(a => a.Id == x && a.CustomerId == id).ToListAsync();", sets));
         Assert.Single(OwnershipScan.FindUnfilteredFiles("Bad.cs", "await db.Addresses.Where(a => a.Id == x).ToListAsync();", sets));
+        Assert.Empty(OwnershipScan.FindUnfilteredFiles("Using.cs", "using Romp.Modules.Customers.Domain.Addresses;\nnamespace Romp.Modules.Customers.Application.Addresses;", sets));
         Assert.Empty(OwnershipScan.FindUnfilteredFiles("None.cs", "await db.Customers.ToListAsync();", sets));
     }
 
@@ -136,8 +137,10 @@ internal static class OwnershipScan
 {
     public static IEnumerable<string> FindUnfilteredFiles(string fileName, string source, IEnumerable<string> ownedSets)
     {
-        var touchesOwnedSet = ownedSets.Any(set => Regex.IsMatch(source, $@"\.{Regex.Escape(set)}\b", RegexOptions.None, TimeSpan.FromSeconds(5)));
-        if (touchesOwnedSet && !Regex.IsMatch(source, @"\.CustomerId\b", RegexOptions.None, TimeSpan.FromSeconds(5)))
+        // Namespace and using lines name folders, not data access (Domain.Addresses is a namespace).
+        var code = string.Join('\n', source.Split('\n').Where(l => !l.TrimStart().StartsWith("using ", StringComparison.Ordinal) && !l.TrimStart().StartsWith("namespace ", StringComparison.Ordinal)));
+        var touchesOwnedSet = ownedSets.Any(set => Regex.IsMatch(code, $@"\.{Regex.Escape(set)}\b", RegexOptions.None, TimeSpan.FromSeconds(5)));
+        if (touchesOwnedSet && !Regex.IsMatch(code, @"\.CustomerId\b", RegexOptions.None, TimeSpan.FromSeconds(5)))
         {
             yield return fileName;
         }
