@@ -17,6 +17,8 @@ namespace Romp.Api.IntegrationTests.Identity;
 public sealed class SecurityGateTests(ProductionApiFixture api)
 {
     private static readonly string StrongKey = Convert.ToBase64String(new byte[32].Select((_, i) => (byte)(i + 7)).ToArray());
+    private static readonly string MfaKey = Convert.ToBase64String(new byte[32].Select((_, i) => (byte)(i + 77)).ToArray());
+    private static readonly string MfaPepper = Convert.ToBase64String(new byte[32].Select((_, i) => (byte)(i + 177)).ToArray());
 
     private WebApplicationFactory<Program> Staging(Action<IWebHostBuilder>? more = null, bool complete = true) =>
         api.Factory.WithWebHostBuilder(builder =>
@@ -26,6 +28,9 @@ public sealed class SecurityGateTests(ProductionApiFixture api)
             {
                 builder.UseSetting("Site:PublicBaseUrl", "https://staging.romp.example");
                 builder.UseSetting("Identity:Csrf:Key", StrongKey);
+                builder.UseSetting("Identity:Mfa:KeyId", "k1");
+                builder.UseSetting("Identity:Mfa:EncryptionKey", MfaKey);
+                builder.UseSetting("Identity:Mfa:RecoveryPepper", MfaPepper);
             }
 
             more?.Invoke(builder);
@@ -87,6 +92,22 @@ public sealed class SecurityGateTests(ProductionApiFixture api)
         using var factory = Staging(b => b.UseSetting("Identity:AllowInsecureCookies", "true"));
 
         Assert.ThrowsAny<Exception>(() => factory.CreateClient());
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-7")]
+    [Trait("Spec", "AC-14")]
+    public void Staging_RefusesToStart_WithoutTheMfaKeys()
+    {
+        // The authenticator secrets and recovery codes cannot be protected without them, so there is no fallback key outside Development.
+        using var noKey = Staging(b => b.UseSetting("Identity:Mfa:EncryptionKey", string.Empty));
+        Assert.ThrowsAny<Exception>(() => noKey.CreateClient());
+
+        using var weakKey = Staging(b => b.UseSetting("Identity:Mfa:EncryptionKey", Convert.ToBase64String(new byte[16])));
+        Assert.ThrowsAny<Exception>(() => weakKey.CreateClient());
+
+        using var noPepper = Staging(b => b.UseSetting("Identity:Mfa:RecoveryPepper", string.Empty));
+        Assert.ThrowsAny<Exception>(() => noPepper.CreateClient());
     }
 
     [Fact]

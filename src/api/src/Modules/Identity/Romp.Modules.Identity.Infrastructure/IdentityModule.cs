@@ -49,8 +49,12 @@ public sealed class IdentityModule : IModule
         services.AddScoped<IIdentityDbContext>(sp => sp.GetRequiredService<IdntDbContext>());
 
         services.AddScoped<IUserSessionRevoker, Application.Sessions.SessionRevoker>();
-        services.TryAddSingleton<IMfaEnrolmentReset, NoMfaYetReset>();
-        services.TryAddSingleton<Application.Sessions.IMfaEnrolmentStatus, Sessions.NoMfaYetStatus>();
+        services.AddScoped<Application.Sessions.IMfaEnrolmentStatus, Application.Mfa.MfaEnrolmentStatus>();
+        services.AddScoped<IMfaEnrolmentReset, Application.Mfa.MfaEnrolmentReset>();
+        services.AddOptions<Mfa.MfaOptions>().Bind(configuration.GetSection(Mfa.MfaOptions.Section)).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<Mfa.MfaOptions>, Mfa.MfaOptionsValidator>();
+        services.AddSingleton<Application.Mfa.ISecretProtector, Mfa.AesGcmSecretProtector>();
+        services.AddSingleton<Application.Mfa.IRecoveryPepper, Mfa.ConfiguredRecoveryPepper>();
         services.AddSessionLifetimes(configuration);
         services.AddSessionCsrf(configuration);
         services.AddHostedService<SessionPurgeWorker>();

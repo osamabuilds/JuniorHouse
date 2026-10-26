@@ -106,9 +106,3 @@ internal static class StaffEndpoints
         return created ? Results.Created(new Uri($"/api/identity/staff/{result.UserId}", UriKind.Relative), body) : Results.Ok(body);
     }
 }
-
-/// <summary>Stands in for the mfa feature: nothing is enrolled yet, so there is nothing to clear.</summary>
-internal sealed class NoMfaYetReset : Application.StaffAccounts.IMfaEnrolmentReset
-{
-    public Task ClearAsync(long userId, CancellationToken cancellationToken) => Task.CompletedTask;
-}

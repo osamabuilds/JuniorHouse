@@ -12,11 +12,13 @@ using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Identity.Application;
 using Romp.Modules.Identity.Application.Abstractions;
+using Romp.Modules.Identity.Application.Mfa;
 using Romp.Modules.Identity.Application.Sessions;
 using Romp.Modules.Identity.Application.StaffAccounts;
 using Romp.Modules.Identity.Domain.Roles;
 using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
+using Romp.Modules.Identity.Infrastructure.Mfa;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.StaffAccounts;
 using Romp.Modules.Identity.Tests.Roles;
@@ -121,6 +123,8 @@ internal sealed class IdentityHost : IDisposable
         Mfa = new RecordingMfaStatus();
         services.AddSingleton<IMfaEnrolmentStatus>(Mfa);
         services.AddSingleton(SessionLifetimes.Default);
+        services.AddSingleton<ISecretProtector>(new AesGcmSecretProtector(Microsoft.Extensions.Options.Options.Create(new MfaOptions())));
+        services.AddSingleton<IRecoveryPepper>(new ConfiguredRecoveryPepper(Microsoft.Extensions.Options.Options.Create(new MfaOptions())));
         services.AddScoped<SessionIssuer>();
 
         services.AddSingleton<IOptions<Argon2Options>>(
