@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -47,12 +48,12 @@ public sealed class IdentityModule : IModule
 
         services.AddScoped<IIdentityDbContext>(sp => sp.GetRequiredService<IdntDbContext>());
 
-        // Replaced by the sessions feature, which owns session rows. Until then there is nothing to end.
-        services.TryAddSingleton<IUserSessionRevoker, NoSessionsYetRevoker>();
+        services.AddScoped<IUserSessionRevoker, Application.Sessions.SessionRevoker>();
         services.TryAddSingleton<IMfaEnrolmentReset, NoMfaYetReset>();
         services.TryAddSingleton<Application.Sessions.IMfaEnrolmentStatus, Sessions.NoMfaYetStatus>();
         services.AddSessionLifetimes(configuration);
         services.AddSessionCsrf(configuration);
+        services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>(SessionPrincipal.Scheme, _ => { });
         services.AddSingleton<Sessions.SessionCookieWriter>();
         services.AddScoped<Application.Sessions.SessionIssuer>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
@@ -64,6 +65,7 @@ public sealed class IdentityModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapAuthEndpoints();
         endpoints.MapStaffEndpoints();
         endpoints.MapRoleEndpoints();
     }

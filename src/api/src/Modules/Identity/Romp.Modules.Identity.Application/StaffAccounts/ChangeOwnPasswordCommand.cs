@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Identity.Application.Abstractions;
+using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 
 namespace Romp.Modules.Identity.Application.StaffAccounts;
@@ -42,6 +43,6 @@ public sealed class ChangeOwnPasswordCommandHandler(
         StaffLookups.EnsurePasswordAcceptable(policy, request.NewPassword, user.UserName, nameof(request.NewPassword));
 
         user.SetPassword(hasher.Hash(request.NewPassword), stored => hasher.Verify(request.NewPassword, stored));
-        await sessions.RevokeAsync(user.Id, request.SessionId, cancellationToken);
+        await sessions.RevokeAsync(user.Id, request.SessionId, SessionRevokeReason.PasswordChanged, cancellationToken);
     }
 }

@@ -1,3 +1,4 @@
+using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 
 namespace Romp.Modules.Identity.Application.StaffAccounts;
@@ -8,8 +9,8 @@ namespace Romp.Modules.Identity.Application.StaffAccounts;
 /// </summary>
 public interface IUserSessionRevoker
 {
-    /// <summary>Revokes every session of the account, except <paramref name="exceptSessionId"/> when one is given.</summary>
-    Task RevokeAsync(long userId, long? exceptSessionId, CancellationToken cancellationToken);
+    /// <summary>Revokes every active session of the account, except <paramref name="exceptSessionId"/> when one is given; the caller saves.</summary>
+    Task RevokeAsync(long userId, long? exceptSessionId, SessionRevokeReason reason, CancellationToken cancellationToken);
 }
 
 /// <summary>

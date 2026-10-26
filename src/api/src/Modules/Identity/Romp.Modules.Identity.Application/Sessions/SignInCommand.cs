@@ -38,7 +38,9 @@ public sealed record SignInResult(
     int? RetryAfterSeconds,
     long? SessionId = null,
     IssuedTokens? Tokens = null,
-    SessionScope? Scope = null)
+    SessionScope? Scope = null,
+    DateTimeOffset? AccessExpiresAt = null,
+    DateTimeOffset? RefreshExpiresAt = null)
 {
     public static readonly SignInResult Failure = new(SignInStatus.Failed, null, null, null);
 
@@ -47,7 +49,7 @@ public sealed record SignInResult(
     public static SignInResult Throttle(TimeSpan wait) => new(SignInStatus.Throttled, null, null, (int)Math.Ceiling(wait.TotalSeconds));
 
     public static SignInResult Limited(long userId, IssuedSession session) =>
-        new(SignInStatus.LimitedSession, userId, null, null, session.SessionId, session.Tokens, session.Scope);
+        new(SignInStatus.LimitedSession, userId, null, null, session.SessionId, session.Tokens, session.Scope, session.AccessExpiresAt, session.RefreshExpiresAt);
 }
 
 /// <summary>

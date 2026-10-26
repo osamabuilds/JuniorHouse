@@ -12,7 +12,7 @@ internal static class RoleEndpoints
 {
     public static void MapRoleEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapSecuredGroup("/api/identity/roles", Permissions.StaffManage).WithTags("Identity")
+        endpoints.MapSecuredGroup("/api/identity/roles", Permissions.StaffManage).WithTags("Identity").AddEndpointFilter<Sessions.CsrfFilter>()
             .MapGet("", async (ISender sender, CancellationToken cancellationToken) =>
                 Results.Ok(await sender.Send(new ListRolesQuery(), cancellationToken)));
     }

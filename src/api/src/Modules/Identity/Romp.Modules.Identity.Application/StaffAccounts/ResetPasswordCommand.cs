@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Romp.Modules.Identity.Application.Abstractions;
+using Romp.Modules.Identity.Domain.Sessions;
 
 namespace Romp.Modules.Identity.Application.StaffAccounts;
 
@@ -28,7 +29,7 @@ public sealed class ResetPasswordCommandHandler(
 
         var temporary = generator.Generate();
         user.IssueTemporaryPassword(hasher.Hash(temporary), clock.GetUtcNow());
-        await sessions.RevokeAsync(user.Id, exceptSessionId: null, cancellationToken);
+        await sessions.RevokeAsync(user.Id, exceptSessionId: null, SessionRevokeReason.PasswordChanged, cancellationToken);
 
         return new TemporaryPasswordResult(user.Id, user.UserName, temporary, user.TemporaryPasswordExpiresAt!.Value);
     }

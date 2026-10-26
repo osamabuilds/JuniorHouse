@@ -34,9 +34,12 @@ internal sealed class RecordingSessionRevoker : IUserSessionRevoker
 {
     public List<(long UserId, long? ExceptSessionId)> Calls { get; } = [];
 
-    public Task RevokeAsync(long userId, long? exceptSessionId, CancellationToken cancellationToken)
+    public List<SessionRevokeReason> Reasons { get; } = [];
+
+    public Task RevokeAsync(long userId, long? exceptSessionId, SessionRevokeReason reason, CancellationToken cancellationToken)
     {
         Calls.Add((userId, exceptSessionId));
+        Reasons.Add(reason);
         return Task.CompletedTask;
     }
 }

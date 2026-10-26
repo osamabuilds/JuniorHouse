@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Identity.Application.Abstractions;
+using Romp.Modules.Identity.Domain.Sessions;
 using Romp.Modules.Identity.Domain.Roles;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 using ValidationException = Romp.BuildingBlocks.Application.ValidationException;
@@ -108,6 +109,6 @@ public sealed class ResetOwnerCommandHandler(
             await mfa.ClearAsync(user.Id, cancellationToken);
         }
 
-        await sessions.RevokeAsync(user.Id, exceptSessionId: null, cancellationToken);
+        await sessions.RevokeAsync(user.Id, exceptSessionId: null, SessionRevokeReason.AdminRevoked, cancellationToken);
     }
 }

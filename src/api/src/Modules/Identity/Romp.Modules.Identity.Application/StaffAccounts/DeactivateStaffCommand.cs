@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Romp.Modules.Identity.Application.Abstractions;
+using Romp.Modules.Identity.Domain.Sessions;
 
 namespace Romp.Modules.Identity.Application.StaffAccounts;
 
@@ -27,6 +28,6 @@ public sealed class DeactivateStaffCommandHandler(IIdentityDbContext dbContext, 
         var user = await StaffLookups.GetAsync(dbContext, request.UserId, cancellationToken);
 
         user.Deactivate(await StaffLookups.OwnerGuardForAsync(dbContext, user, cancellationToken));
-        await sessions.RevokeAsync(user.Id, exceptSessionId: null, cancellationToken);
+        await sessions.RevokeAsync(user.Id, exceptSessionId: null, SessionRevokeReason.AccountDeactivated, cancellationToken);
     }
 }

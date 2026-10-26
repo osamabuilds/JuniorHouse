@@ -16,7 +16,9 @@ namespace Romp.Modules.Identity.Infrastructure.Sessions;
 /// </summary>
 public static class SessionPrincipal
 {
-    public const string Scheme = "RompSession";
+    public const string Scheme = RompAuthorizationExtensions.SessionScheme;
+
+    public const string DisplayNameClaim = "display_name";
 
     public const string ScopeClaim = "scope";
 
@@ -29,6 +31,7 @@ public static class SessionPrincipal
                 new Claim(ClaimTypes.NameIdentifier, session.UserId.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new Claim(SessionClaims.SessionId, session.SessionId.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new Claim(ClaimTypes.Name, session.UserName),
+                new Claim(DisplayNameClaim, session.DisplayName),
                 new Claim(ScopeClaim, session.Scope.ToString()),
             ],
             Scheme);

@@ -19,15 +19,22 @@ public static class RompAuthorizationExtensions
 {
     public const string DevelopmentScheme = "DevelopmentStaff";
 
+    /// <summary>The scheme of the Identity module's session cookie handler. The module registers the handler; this layer only names it.</summary>
+    public const string SessionScheme = "RompSession";
+
     public static IServiceCollection AddRompAuthorization(this IServiceCollection services, IHostEnvironment environment)
     {
         var authentication = services.AddAuthentication();
         if (IsDevelopmentLike(environment))
         {
             authentication.AddScheme<AuthenticationSchemeOptions, DevelopmentStaffHandler>(DevelopmentScheme, _ => { });
-            services.Configure<AuthenticationOptions>(options => options.DefaultScheme = DevelopmentScheme);
             services.AddSingleton<IAuthorizationHandler, DevelopmentPermissionHandler>();
         }
+
+        // Real authentication (the session cookie) is the default everywhere except a Development/Testing host that has not asked for
+        // it with Identity:UseRealAuthentication; only there does the development handler stand in.
+        services.AddOptions<AuthenticationOptions>().Configure<IOptions<IdentityOptions>>((options, identity) =>
+            options.DefaultScheme = IdentityOptions.IsRealAuthentication(identity.Value, environment) ? SessionScheme : DevelopmentScheme);
 
         services.AddAuthorizationBuilder()
             .AddPolicy(Policies.Staff, policy => policy.RequireAuthenticatedUser())

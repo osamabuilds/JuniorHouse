@@ -52,6 +52,12 @@ public sealed class SessionCookieWriter(IOptions<IdentityOptions> options)
         response.Cookies.Append(Names.Pending, token.Reveal(), Options(PendingPath, expiresAt));
     }
 
+    public string? ReadAccess(HttpRequest request) => request.Cookies[Names.Access];
+
+    public string? ReadRefresh(HttpRequest request) => request.Cookies[Names.Refresh];
+
+    public string? ReadPending(HttpRequest request) => request.Cookies[Names.Pending];
+
     /// <summary>Expires all three cookies. Each is cleared on the path it was set on, or the browser keeps it.</summary>
     public void Clear(HttpResponse response)
     {

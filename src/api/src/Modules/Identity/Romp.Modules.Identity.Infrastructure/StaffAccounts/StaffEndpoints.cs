@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Routing;
 using Romp.BuildingBlocks.Application.Paging;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Identity.Application.StaffAccounts;
+using Romp.Modules.Identity.Infrastructure.Sessions;
 using Romp.Modules.Identity.Domain.StaffAccounts;
 
 namespace Romp.Modules.Identity.Infrastructure.StaffAccounts;
@@ -45,7 +46,8 @@ internal static class StaffEndpoints
     public static void MapStaffEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var staff = endpoints.MapSecuredGroup("/api/identity/staff", Permissions.StaffManage).WithTags("Identity")
-            .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
+            .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes))
+            .AddEndpointFilter<CsrfFilter>();
 
         staff.MapGet("", async (ISender sender, CancellationToken cancellationToken, string? search = null, bool? isActive = null,
                 int page = 1, int pageSize = PageRequest.DefaultPageSize) =>
@@ -80,6 +82,7 @@ internal static class StaffEndpoints
         // Any signed-in person may change their own password; the account is the session's, never one named in the body (SEC-05).
         endpoints.MapSecuredGroup("/api/auth").WithTags("Identity")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes))
+            .AddEndpointFilter<CsrfFilter>()
             .MapPost("/password", async (ChangePasswordRequest body, ISender sender, HttpContext http, CancellationToken cancellationToken) =>
             {
                 if (SessionClaims.UserId(http.User) is not { } userId)
@@ -102,12 +105,6 @@ internal static class StaffEndpoints
         var body = new TemporaryPasswordResponse(result.UserId, result.UserName, result.TemporaryPassword.Reveal(), result.ExpiresAt);
         return created ? Results.Created(new Uri($"/api/identity/staff/{result.UserId}", UriKind.Relative), body) : Results.Ok(body);
     }
-}
-
-/// <summary>Stands in for the sessions feature's revoker: no session rows exist yet, so there is nothing to end.</summary>
-internal sealed class NoSessionsYetRevoker : Application.StaffAccounts.IUserSessionRevoker
-{
-    public Task RevokeAsync(long userId, long? exceptSessionId, CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 /// <summary>Stands in for the mfa feature: nothing is enrolled yet, so there is nothing to clear.</summary>

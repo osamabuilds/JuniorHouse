@@ -160,7 +160,8 @@ public sealed class SessionPrincipalTests
         // Permissions are looked up on each request (roles AC-5), so a role change applies at once and nothing goes stale in a cookie.
         Assert.Empty(principal.FindAll(ClaimTypes.Role));
         Assert.DoesNotContain(principal.Claims, c => c.Type.Contains("perm", StringComparison.OrdinalIgnoreCase));
-        Assert.Equal(4, principal.Claims.Count());
+        Assert.Equal("Ayesha K", principal.FindFirstValue(SessionPrincipal.DisplayNameClaim));
+        Assert.Equal(5, principal.Claims.Count());
     }
 
     [Fact]
