@@ -32,6 +32,7 @@ public static class LoginOutcomes
 /// <summary>
 /// IDNT.LGIN_PEND: the password step passed and the MFA step is still to come (sessions plan). Short-lived; only the token hash is stored.
 /// </summary>
+[Romp.BuildingBlocks.Auditing.NotAudited("Technical: a half-finished sign-in that lives for minutes and holds a token digest.")]
 public sealed class PendingSignIn : Entity<long>, IAuditable
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(5);

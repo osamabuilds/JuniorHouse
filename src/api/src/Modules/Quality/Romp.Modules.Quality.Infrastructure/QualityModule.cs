@@ -39,7 +39,8 @@ public sealed class QualityModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "QC"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
 
         services.AddScoped<IQualityDbContext>(sp => sp.GetRequiredService<QcDbContext>());
         services.AddScoped<IQualityQueries, QualityQueries>();

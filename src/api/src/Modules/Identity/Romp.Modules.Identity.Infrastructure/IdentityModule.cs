@@ -13,6 +13,7 @@ using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Identity.Application.Abstractions;
 using Romp.Modules.Identity.Application.StaffAccounts;
 using Romp.Modules.Identity.Domain.StaffAccounts;
+using Romp.Modules.Identity.Infrastructure.AuditTrail;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.Roles;
 using Romp.Modules.Identity.Infrastructure.Sessions;
@@ -36,7 +37,8 @@ public sealed class IdentityModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "IDNT"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
 
         services.AddOptions<Argon2Options>().Bind(configuration.GetSection(Argon2Options.Section)).ValidateOnStart();
         services.AddSingleton<IValidateOptions<Argon2Options>, Argon2OptionsValidator>();
@@ -66,7 +68,12 @@ public sealed class IdentityModule : IModule
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(IdentityTransactionBehavior<,>));
 
-        // The module's events (none yet) go to the shared dispatcher; each feature adds its own as it lands.
+        // Identity writes the audit trail for every module: it consumes AuditRecorded from each outbox (ADR 0016).
+        services.AddScoped<Romp.BuildingBlocks.Persistence.Outbox.IOutboxMessageHandler<Romp.BuildingBlocks.Auditing.AuditRecorded>, AuditTrail.RecordAuditHandler>();
+        services.AddSingleton<AuditTrail.AuditPartitionWorker>();
+        services.AddHostedService(sp => sp.GetRequiredService<AuditTrail.AuditPartitionWorker>());
+
+        // The module events go to the shared dispatcher; each feature adds its own as it lands.
         services.AddOutboxModule("IDNT");
     }
 
@@ -75,5 +82,6 @@ public sealed class IdentityModule : IModule
         endpoints.MapAuthEndpoints();
         endpoints.MapStaffEndpoints();
         endpoints.MapRoleEndpoints();
+        endpoints.MapAuditEndpoints();
     }
 }

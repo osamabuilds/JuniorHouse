@@ -66,6 +66,8 @@ GET,/api/catalog/styles/,catalog.read
 POST,/api/catalog/styles/,catalog.write
 GET,/api/catalog/styles/{id:long},catalog.read
 PUT,/api/catalog/styles/{id:long},catalog.write
+GET,/api/identity/audit/,audit.read
+GET,/api/identity/audit/{id:long},audit.read
 GET,/api/identity/roles/,staff.manage
 GET,/api/identity/roles/matrix,staff.manage
 GET,/api/identity/staff/,staff.manage

@@ -46,7 +46,8 @@ public sealed class WarehouseModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "WHSE"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
         services.AddScoped<IWarehouseDbContext>(sp => sp.GetRequiredService<WhseDbContext>());
 
         // "Configuration, not constants" (D5, D13): validated when the host starts.

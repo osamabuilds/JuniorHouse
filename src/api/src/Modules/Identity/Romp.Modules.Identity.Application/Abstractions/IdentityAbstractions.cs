@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Identity.Domain.AuditTrail;
 using Romp.Modules.Identity.Domain.Mfa;
 using Romp.Modules.Identity.Domain.Roles;
 using Romp.Modules.Identity.Domain.Sessions;
@@ -29,6 +30,8 @@ public interface IIdentityDbContext
     DbSet<RecoveryCode> RecoveryCodes { get; }
 
     DbSet<MfaEnrolmentPending> MfaEnrolmentsPending { get; }
+
+    DbSet<AuditEntry> AuditEntries { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 

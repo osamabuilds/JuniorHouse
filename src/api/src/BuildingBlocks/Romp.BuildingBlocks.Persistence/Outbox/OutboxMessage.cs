@@ -8,6 +8,7 @@ namespace Romp.BuildingBlocks.Persistence.Outbox;
 /// they're additive here (task 6) - <see cref="OutboxSaveChangesInterceptor"/> and the dispatcher
 /// that reads/claims them are task 7+.
 /// </summary>
+[Romp.BuildingBlocks.Auditing.NotAudited("Technical table: it carries the audit trail itself and every other event.")]
 public sealed class OutboxMessage
 {
     public long Id { get; init; }

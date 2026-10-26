@@ -15,7 +15,12 @@ public sealed partial class LoggingOutboxMessageHandler<TEvent>(ILogger<LoggingO
 {
     public Task HandleAsync(TEvent domainEvent, CancellationToken cancellationToken)
     {
-        LogReceived(typeof(TEvent).Name);
+        // Every save of every module emits an audit message; logging each one would only add noise.
+        if (typeof(TEvent) != typeof(Romp.BuildingBlocks.Auditing.AuditRecorded))
+        {
+            LogReceived(typeof(TEvent).Name);
+        }
+
         return Task.CompletedTask;
     }
 

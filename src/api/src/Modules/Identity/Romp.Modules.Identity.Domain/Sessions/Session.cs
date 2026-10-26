@@ -66,6 +66,7 @@ public enum SessionRevokeReason : short
 /// IDNT.SESS_MAIN: a signed-in staff session (sessions). Holds the hashes of the access and refresh values, never the values.
 /// A refresh value is single use: presenting the previous one again means it leaked, so the whole session is revoked (AC-3).
 /// </summary>
+[Romp.BuildingBlocks.Auditing.NotAudited("Technical: a session changes on every refresh; its start, end and revocation reason are on the account and the sign-in attempts.")]
 public sealed class Session : AggregateRoot<long>, IAuditable
 {
     public const int MaxPerUser = 10;

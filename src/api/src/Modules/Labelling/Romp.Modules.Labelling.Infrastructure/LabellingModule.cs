@@ -41,7 +41,8 @@ public sealed class LabellingModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "SKU"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
         services.AddScoped<ILabellingDbContext>(sp => sp.GetRequiredService<SkuDbContext>());
 
         // "Configuration, not constants" (D2, D10): validated when the host starts, so dangerous values cannot reach real labels.

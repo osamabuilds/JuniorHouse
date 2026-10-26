@@ -124,6 +124,110 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                     b.ToTable("OUTB_MSG", "IDNT");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.AuditTrail.AuditColumn", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID")
+                        .HasDefaultValueSql("nextval('\"IDNT\".\"AUDT_CHNG_ID_SEQ\"')");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("OCCR_DTE");
+
+                    b.Property<long>("EntryId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ENTY_ID");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("COLM_NAME");
+
+                    b.HasKey("Id", "OccurredAt");
+
+                    b.HasIndex("EntryId", "OccurredAt", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AUDT_CHNG_COLM");
+
+                    b.ToTable("AUDT_CHNG", "IDNT");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.AuditTrail.AuditEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID")
+                        .HasDefaultValueSql("nextval('\"IDNT\".\"AUDT_ENTY_ID_SEQ\"')");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("OCCR_DTE");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("ACTR_NAME");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("CORR_ID");
+
+                    b.Property<string>("EntityKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("ENTY_KEY");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("ENTY_TYP_NAME");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("MODL_NAME");
+
+                    b.Property<short>("Operation")
+                        .HasColumnType("smallint")
+                        .HasColumnName("OPRN_ID");
+
+                    b.Property<long>("SourceMessageId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("SRC_MSG_ID");
+
+                    b.HasKey("Id", "OccurredAt");
+
+                    b.HasIndex("OccurredAt")
+                        .HasDatabaseName("IX_AUDT_ENTY_OCCR_DTE");
+
+                    b.HasIndex("Operation")
+                        .HasDatabaseName("IX_AUDT_ENTY_OPRN_ID");
+
+                    b.HasIndex("Actor", "OccurredAt")
+                        .HasDatabaseName("IX_AUDT_ENTY_ACTR_NAME");
+
+                    b.HasIndex("Module", "OccurredAt")
+                        .HasDatabaseName("IX_AUDT_ENTY_MODL_NAME");
+
+                    b.HasIndex("EntityType", "EntityKey", "OccurredAt")
+                        .HasDatabaseName("IX_AUDT_ENTY_ENTY_KEY");
+
+                    b.HasIndex("Module", "SourceMessageId", "EntityType", "EntityKey", "OccurredAt")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AUDT_ENTY_SRC");
+
+                    b.ToTable("AUDT_ENTY", "IDNT");
+                });
+
             modelBuilder.Entity("Romp.Modules.Identity.Domain.Mfa.MfaEnrolmentPending", b =>
                 {
                     b.Property<long>("Id")
@@ -1044,6 +1148,71 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                     b.ToTable("USR_ROLE_MAP", "IDNT");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Identity.Infrastructure.AuditTrail.AuditOperationRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("AUDT_OPRN_LKP", "IDNT");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "INSERT",
+                            IsActive = true,
+                            Name = "Created",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "UPDATE",
+                            IsActive = true,
+                            Name = "Changed",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "DELETE",
+                            IsActive = true,
+                            Name = "Deleted",
+                            SortSeq = (short)3
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Identity.Infrastructure.Sessions.LoginOutcomeRow", b =>
                 {
                     b.Property<short>("Id")
@@ -1262,6 +1431,26 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.AuditTrail.AuditColumn", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Domain.AuditTrail.AuditEntry", null)
+                        .WithMany("Columns")
+                        .HasForeignKey("EntryId", "OccurredAt")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_AUDT_CHNG_ENTY");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.AuditTrail.AuditEntry", b =>
+                {
+                    b.HasOne("Romp.Modules.Identity.Infrastructure.AuditTrail.AuditOperationRow", null)
+                        .WithMany()
+                        .HasForeignKey("Operation")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_AUDT_ENTY_OPRN_ID");
+                });
+
             modelBuilder.Entity("Romp.Modules.Identity.Domain.Mfa.MfaEnrolmentPending", b =>
                 {
                     b.HasOne("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", null)
@@ -1368,6 +1557,11 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_USR_ROLE_MAP_USR_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Identity.Domain.AuditTrail.AuditEntry", b =>
+                {
+                    b.Navigation("Columns");
                 });
 
             modelBuilder.Entity("Romp.Modules.Identity.Domain.StaffAccounts.StaffUser", b =>

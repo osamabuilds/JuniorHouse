@@ -6,6 +6,7 @@ namespace Romp.Modules.Identity.Domain.Mfa;
 /// IDNT.MFA_ENRL_PEND: an authenticator secret that has been shown but not yet confirmed with a valid code (mfa plan). It is kept apart
 /// from the account so a half-finished enrolment never leaves an active secret behind; one per account, valid for 15 minutes.
 /// </summary>
+[Romp.BuildingBlocks.Auditing.NotAudited("Technical: an unconfirmed enrolment that lives for minutes and holds an encrypted secret.")]
 public sealed class MfaEnrolmentPending : Entity<long>, IAuditable
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(15);

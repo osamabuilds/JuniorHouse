@@ -140,7 +140,10 @@ internal sealed class IdentityHost : IDisposable
         {
             options
                 .UseNpgsql(postgres.ConnectionString, npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "IDNT"))
-                .AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>(), sp.GetRequiredService<OutboxSaveChangesInterceptor>());
+                .AddInterceptors(
+                    sp.GetRequiredService<AuditSaveChangesInterceptor>(),
+                    sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                    sp.GetRequiredService<AuditTrailSaveChangesInterceptor>());
             if (counter is not null)
             {
                 options.AddInterceptors(counter);

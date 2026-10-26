@@ -27,6 +27,7 @@ public sealed class StaffUserRole
 }
 
 /// <summary>IDNT.USR_PWD_HIST: a hash the account used before, kept so it cannot be reused at once.</summary>
+[Romp.BuildingBlocks.Auditing.NotAudited("Holds only password hashes; the password change itself is on the account.")]
 public sealed class PasswordHistoryEntry : Entity<long>, IAuditable
 {
     private PasswordHistoryEntry()
