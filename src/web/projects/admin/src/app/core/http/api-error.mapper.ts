@@ -12,10 +12,13 @@ export function toApiError(error: HttpErrorResponse): ApiError {
   const body = isProblemDetailsBody(error.error) ? error.error : undefined;
   const specific = body?.detail ?? summariseFieldErrors(body?.errors);
 
+  const retryAfter = Number(error.headers?.get('Retry-After'));
+
   return {
     status: error.status,
     message: specific ?? plainMessageFor(error.status, body?.title),
     fieldErrors: body?.errors ?? {},
+    ...(Number.isFinite(retryAfter) && retryAfter > 0 ? { retryAfterSeconds: retryAfter } : {}),
   };
 }
 

@@ -3,10 +3,18 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter, withComponentInputBinding } from '@angular/router';
+import { SessionApiActions } from '@core/auth';
+import { Store } from '@ngrx/store';
 import { App } from './app';
 import { routes } from './app.routes';
 
+const staff = { userId: 7, userName: 'amna.khan', displayName: 'Amna Khan', scope: 'Full', csrfToken: 'c' } as const;
+
 describe('App', () => {
+  function signedIn() {
+    TestBed.inject(Store).dispatch(SessionApiActions.loadSucceeded({ user: staff }));
+  }
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
@@ -20,6 +28,7 @@ describe('App', () => {
   });
 
   it('renders the landmark elements exactly once each', () => {
+    signedIn();
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
@@ -31,6 +40,7 @@ describe('App', () => {
   });
 
   it('renders a nav link for each section', () => {
+    signedIn();
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav');
@@ -51,5 +61,38 @@ describe('App', () => {
     expect(root.querySelector('nav')).toBeNull();
     expect(root.querySelector('footer')).toBeNull();
     expect(root.querySelectorAll('main').length).toBe(1);
+  });
+
+  it('shows no staff header, nav or footer to a visitor who is not signed in (sessions AC-9)', () => {
+    TestBed.inject(Store).dispatch(SessionApiActions.loadFailed());
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.querySelector('header')).toBeNull();
+    expect(root.querySelector('nav')).toBeNull();
+    expect(root.querySelector('footer')).toBeNull();
+    expect(root.querySelectorAll('main').length).toBe(1);
+  });
+
+  it('names the signed-in person and offers sign-out and sign-out-everywhere (sessions AC-11)', () => {
+    signedIn();
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const header = (fixture.nativeElement as HTMLElement).querySelector('header') as HTMLElement;
+    const buttons = Array.from(header.querySelectorAll('button')).map((b) => b.textContent?.trim());
+
+    expect(header.textContent).toContain('Amna Khan');
+    expect(buttons).toEqual(['Sign out', 'Sign out everywhere']);
+  });
+
+  it('offers no sign-out to the development stand-in user, who has no session', () => {
+    TestBed.inject(Store).dispatch(SessionApiActions.loadSucceeded({ user: { ...staff, userId: 0, displayName: 'Development user' } }));
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const header = (fixture.nativeElement as HTMLElement).querySelector('header') as HTMLElement;
+
+    expect(header.textContent).toContain('Development user');
+    expect(header.querySelectorAll('button')).toHaveLength(0);
   });
 });

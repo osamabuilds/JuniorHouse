@@ -130,3 +130,18 @@
     padding: var(--space-4) var(--space-6);
   }
 }
+
+/* Who is signed in, and how to sign out: sits at the end of the brand row. */
+.shell-user {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-left: auto;
+  padding-bottom: var(--space-1);
+}
+
+.shell-user__name {
+  color: var(--color-ink-soft);
+  font-weight: 500;
+}

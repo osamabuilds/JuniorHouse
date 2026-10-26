@@ -1,8 +1,16 @@
-@if (!chromeless()) {
+@if (!chromeless() && user()) {
   <header class="shell-header">
     <div class="shell-header__brand">
       <span class="shell-header__mark" aria-hidden="true">R</span>
       <span class="shell-header__title">Romp <span class="shell-header__title-muted">Admin</span></span>
+    </div>
+
+    <div class="shell-user">
+      <span class="shell-user__name">{{ user()?.displayName }}</span>
+      @if (canSignOut()) {
+        <button type="button" class="button" (click)="signOut()">Sign out</button>
+        <button type="button" class="button" (click)="signOutEverywhere()">Sign out everywhere</button>
+      }
     </div>
 
     <nav class="shell-nav" aria-label="Primary">
@@ -27,7 +35,7 @@
   <router-outlet />
 </main>
 
-@if (!chromeless()) {
+@if (!chromeless() && user()) {
   <footer class="shell-footer">
     <p>Romp Admin &middot; Sprint 7 (Publish)</p>
     <app-outbox-health [health]="outboxHealth()" />

@@ -75,9 +75,10 @@ services:
       context: src/web
       dockerfile: Dockerfile.admin
     environment:
-      # The browser (on the host, not in the Docker network) reaches the API through the port
-      # mapping above, so this is localhost:8080, not the api service's in-network hostname.
-      API_BASE_URL: http://localhost:8080
+      # Empty: the browser calls the admin origin itself (the API port mapping above is no longer used by the admin app).
+      API_BASE_URL: ""
+      # nginx in the admin container forwards /api to the API service, so the browser talks to one origin (sessions G9).
+      API_UPSTREAM: http://api:8080
     ports:
       - "4201:80"
     depends_on:

@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '@core/auth';
+import { SESSIONS_ROUTES } from '@features/identity/sessions';
 
-export const routes: Routes = [
+const staffRoutes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'reference-data' },
   {
     path: 'reference-data',
@@ -102,3 +104,9 @@ export const routes: Routes = [
     loadChildren: () => import('@features/vendor/purchase-orders/purchase-orders.routes').then((m) => m.PURCHASE_ORDERS_ROUTES),
   },
 ];
+
+/**
+ * The sign-in, change-password and two-step notice pages sit outside the guard; every staff screen is behind it (sessions AC-9). The
+ * guard lets the vendor-facing purchase order page through, because a vendor opens it with a link and never signs in as staff.
+ */
+export const routes: Routes = [...SESSIONS_ROUTES, { path: '', canActivate: [authGuard], children: staffRoutes }];

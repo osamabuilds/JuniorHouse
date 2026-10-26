@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { toApiError } from './api-error.mapper';
 
 describe('toApiError', () => {
@@ -58,5 +58,19 @@ describe('toApiError', () => {
 
   it('says an item was not found for a 404', () => {
     expect(toApiError(new HttpErrorResponse({ status: 404, error: null })).message).toContain("couldn't find that");
+  });
+});
+
+describe('toApiError Retry-After (sessions AC-6)', () => {
+  it('keeps the number of seconds a throttled answer asks the client to wait', () => {
+    const error = toApiError(new HttpErrorResponse({ status: 429, headers: new HttpHeaders({ 'Retry-After': '45' }), error: { title: 'Too many attempts' } }));
+
+    expect(error.retryAfterSeconds).toBe(45);
+  });
+
+  it('ignores a missing or unusable Retry-After', () => {
+    expect(toApiError(new HttpErrorResponse({ status: 429 })).retryAfterSeconds).toBeUndefined();
+    expect(toApiError(new HttpErrorResponse({ status: 429, headers: new HttpHeaders({ 'Retry-After': 'soon' }) })).retryAfterSeconds).toBeUndefined();
+    expect(toApiError(new HttpErrorResponse({ status: 429, headers: new HttpHeaders({ 'Retry-After': '0' }) })).retryAfterSeconds).toBeUndefined();
   });
 });
