@@ -52,6 +52,7 @@ public sealed class IdentityModule : IModule
         services.TryAddSingleton<IMfaEnrolmentReset, NoMfaYetReset>();
         services.TryAddSingleton<Application.Sessions.IMfaEnrolmentStatus, Sessions.NoMfaYetStatus>();
         services.AddSessionLifetimes(configuration);
+        services.AddSessionCsrf(configuration);
         services.AddSingleton<Sessions.SessionCookieWriter>();
         services.AddScoped<Application.Sessions.SessionIssuer>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
