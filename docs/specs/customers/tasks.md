@@ -12,7 +12,7 @@ Ordered, checkable steps. Each names the test that proves it. Test-first: write 
 - [x] **F2** `Customer` aggregate and `CUST_MAIN` with the first migration (`OUTB_MSG`, `INBX`); `ICustomerDbContext`. *Proof:* `CustomerTests`, `CustomerMigrationTests`.
 - [x] **F3** `ICurrentCustomer`, `Policies.Customer`, the development-only handler (`X-Dev-Customer: none`, `/dev/customer` switch) and the seeder for the stand-in and a second customer. *Proof:* `DevelopmentCustomerHandlerTests`, `CustomerEndpointsTests.Me_ReturnsTheStandIn_AndNobodyWhenSwitchedOff` (ACT-14, ACT-18).
 - [x] **F4** `GET /api/customers/me`. *Proof:* `CustomerEndpointsTests`, matrix row added to `authorization-matrix.csv` (customer routes are a separate policy, listed with `customer`).
-- [ ] **F5** Architecture tests: customer-owned data is never queried without the customer filter; no handler takes a customer id from the request; features depend one way only. *Proof:* `CustomersFeatureDependencyTests`, `CustomerOwnershipArchitectureTests`.
+- [x] **F5** Architecture tests: customer-owned data is never queried without the customer filter; no handler takes a customer id from the request; features depend one way only. *Proof:* `CustomersFeatureDependencyTests`, `CustomerOwnershipArchitectureTests`.
 
 ## addresses
 
