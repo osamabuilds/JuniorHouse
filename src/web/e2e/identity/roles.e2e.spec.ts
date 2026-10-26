@@ -40,6 +40,9 @@ test.describe('roles (needs E2E_OWNER_PASSWORD)', () => {
     const table = page.getByRole('table', { name: 'Which role can do what' });
     await expect(table.getByRole('columnheader')).toContainText(['Permission', 'Owner', 'Catalogue', 'Order operations', 'Support', 'Marketing']);
     await expect(table.getByRole('row', { name: /inventory\.write/ }).getByRole('cell').nth(2)).toHaveText('No'); // Order-ops cannot write stock
+    // The Owner holds catalog.write, so the write button is there to be hidden from others.
+    await page.goto('/styles');
+    await expect(page.getByRole('button', { name: 'Add style' })).toBeVisible();
     await signOut(page);
   });
 
@@ -77,6 +80,14 @@ test.describe('roles (needs E2E_OWNER_PASSWORD)', () => {
     expect(await call(page, 'POST', '/api/warehouse/cycle-counts/999999999/confirm')).toBe(403);
     expect(await call(page, 'PUT', '/api/warehouse/alerts/thresholds/999999999')).toBe(403);
     expect(await call(page, 'GET', '/api/purchase-orders/')).toBe(403); // cost and advance terms are not for this role
+
+    // Read-only means the write buttons are not shown either (the server refusal above is the real control).
+    await page.goto('/styles');
+    await expect(page.getByRole('heading', { level: 1, name: 'Styles' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add style' })).toHaveCount(0);
+    await page.goto('/warehouse/bins');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add a bin' })).toHaveCount(0);
     await signOut(page);
   });
 

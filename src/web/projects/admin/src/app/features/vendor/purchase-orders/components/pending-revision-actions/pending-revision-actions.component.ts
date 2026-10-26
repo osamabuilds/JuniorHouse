@@ -2,6 +2,7 @@ import { Component, computed, input, output, signal } from '@angular/core';
 import { inputValue } from '@shared';
 import { PoRevisionDto } from '../../models';
 import { INITIATOR_LABELS } from '../../purchase-orders.constants';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * SCRUM-93 task 50 (AC-11..AC-13): Accept / Reject / Withdraw for the PO's one open Pending
@@ -10,6 +11,7 @@ import { INITIATOR_LABELS } from '../../purchase-orders.constants';
  * Only the proposer can withdraw.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-pending-revision-actions',
   template: `
     <section class="pending card" aria-labelledby="pending-heading">
@@ -23,11 +25,11 @@ import { INITIATOR_LABELS } from '../../purchase-orders.constants';
       <input id="pending-note" type="text" [value]="note()" (input)="onNote($event)" />
 
       <div class="pending__actions">
-        <button type="button" class="button button--primary" (click)="accepted.emit()">
+        <button *hasPermission="'procurement.write'" type="button" class="button button--primary" (click)="accepted.emit()">
           Accept (on {{ decider() }}'s behalf)
         </button>
-        <button type="button" class="button" (click)="rejected.emit(noteOrNull())">Reject</button>
-        <button type="button" class="button" (click)="withdrawn.emit(noteOrNull())">Withdraw (by {{ proposer() }})</button>
+        <button *hasPermission="'procurement.write'" type="button" class="button" (click)="rejected.emit(noteOrNull())">Reject</button>
+        <button *hasPermission="'procurement.write'" type="button" class="button" (click)="withdrawn.emit(noteOrNull())">Withdraw (by {{ proposer() }})</button>
       </div>
     </section>
   `,

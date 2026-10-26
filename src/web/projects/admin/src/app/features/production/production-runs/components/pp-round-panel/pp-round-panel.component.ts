@@ -4,6 +4,7 @@ import { ApiError } from '@core/http';
 import { AppDatePipe, ControlErrorsComponent, FieldErrorsComponent } from '@shared';
 import { DecideSampleValue, PpSampleRoundDto, SampleFileUpload, SubmitSampleValue } from '../../models';
 import { todayInPakistan } from '../../utils';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The pre-production sample rounds of a run (spec AC-10..AC-13, D6, D7). Every round is shown with its number,
@@ -13,7 +14,7 @@ import { todayInPakistan } from '../../utils';
  */
 @Component({
   selector: 'app-pp-round-panel',
-  imports: [ReactiveFormsModule, AppDatePipe, ControlErrorsComponent, FieldErrorsComponent],
+  imports: [HasPermissionDirective, ReactiveFormsModule, AppDatePipe, ControlErrorsComponent, FieldErrorsComponent],
   template: `
     @if (rounds().length === 0) {
       <p class="state-message state-message--inline">
@@ -52,7 +53,7 @@ import { todayInPakistan } from '../../utils';
                 <a [href]="fileUrlFor()(round.roundNo, file.id)" download>{{ file.fileName }}</a>
                 <span class="round__size">({{ sizeText(file.fileSizeBytes) }})</span>
                 @if (round.decisionCode === 'Pending') {
-                  <button type="button" class="button button--small" (click)="fileRemoved.emit({ roundNo: round.roundNo, fileId: file.id })">
+                  <button *hasPermission="'production.write'" type="button" class="button button--small" (click)="fileRemoved.emit({ roundNo: round.roundNo, fileId: file.id })">
                     Remove<span class="sr-only"> {{ file.fileName }}</span>
                   </button>
                 }
@@ -92,8 +93,8 @@ import { todayInPakistan } from '../../utils';
               </div>
             </div>
             <div class="form-actions">
-              <button type="button" class="button button--primary" [disabled]="saving()" (click)="decide(round.roundNo, true)">Approve sample</button>
-              <button type="button" class="button button--danger" [disabled]="saving()" (click)="decide(round.roundNo, false)">Reject sample</button>
+              <button *hasPermission="'production.write'" type="button" class="button button--primary" [disabled]="saving()" (click)="decide(round.roundNo, true)">Approve sample</button>
+              <button *hasPermission="'production.write'" type="button" class="button button--danger" [disabled]="saving()" (click)="decide(round.roundNo, false)">Reject sample</button>
             </div>
           </form>
         }
@@ -137,7 +138,7 @@ import { todayInPakistan } from '../../utils';
       </form>
     } @else if (canSubmit()) {
       <div class="panel__actions">
-        <button type="button" class="button" (click)="submitOpened.emit()">
+        <button *hasPermission="'production.write'" type="button" class="button" (click)="submitOpened.emit()">
           {{ rounds().length === 0 ? 'Record a sample' : 'Record another sample' }}
         </button>
       </div>

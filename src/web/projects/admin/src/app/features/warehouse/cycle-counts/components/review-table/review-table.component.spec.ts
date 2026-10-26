@@ -3,8 +3,10 @@ import { REASONS, review, reviewLine } from '@app/testing/warehouse-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { CountReviewDto, ReasonChoice, reviewKey } from '../../models';
 import { ReviewTableComponent } from './review-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('ReviewTableComponent (spec CC-4, CC-6, CC-7, CC-8, ADJ-4b)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(data: CountReviewDto, choices: Record<string, ReasonChoice> = {}, canConfirm = false) {
     const fixture = TestBed.createComponent(ReviewTableComponent);
     fixture.componentRef.setInput('review', data);

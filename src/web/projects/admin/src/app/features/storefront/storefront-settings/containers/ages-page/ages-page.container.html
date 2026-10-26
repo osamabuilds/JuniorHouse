@@ -13,7 +13,7 @@
 } @else {
   <app-ages-editor [steps]="steps()" [lockedCodes]="lockedCodes()" [errors]="fieldErrors()" (stepsChange)="steps.set($event)" />
 
-  <app-save-bar label="Save ages" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()">
+  <app-save-bar *hasPermission="'catalog.write'" label="Save ages" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()">
     <button type="button" class="button" (click)="add()">Add an age</button>
   </app-save-bar>
 }

@@ -3,8 +3,10 @@ import { product, variant } from '@app/testing/catalog-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { VariantPriceInput } from '../../models';
 import { VariantsTableComponent } from './variants-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('VariantsTableComponent (spec PRD-1, PRD-2, PRD-8, PRD-13)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(variants = product().variants) {
     const fixture = TestBed.createComponent(VariantsTableComponent);
     fixture.componentRef.setInput('variants', variants);

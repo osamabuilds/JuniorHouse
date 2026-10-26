@@ -19,7 +19,7 @@
     </select>
   </label>
 
-  <button type="button" class="button button--primary" (click)="raiseRequested.emit()">Raise PO</button>
+  <button *hasPermission="'procurement.write'" type="button" class="button button--primary" (click)="raiseRequested.emit()">Raise PO</button>
 </div>
 
 @if (error()) {

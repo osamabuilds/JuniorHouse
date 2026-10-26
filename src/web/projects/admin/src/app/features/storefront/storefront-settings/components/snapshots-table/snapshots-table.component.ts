@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { AppDatePipe } from '@shared';
 import { SnapshotRow } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /** The published versions, newest first. The one on the shop is marked in words; any other can be restored (ST-12). */
 @Component({
   selector: 'app-snapshots-table',
-  imports: [AppDatePipe],
+  imports: [HasPermissionDirective, AppDatePipe],
   template: `
     @if (loading()) {
       <p class="state-message" role="status">Loading the versions…</p>
@@ -38,7 +39,7 @@ import { SnapshotRow } from '../../models';
                 <td>{{ snapshot.note || '—' }}</td>
                 <td>
                   @if (!snapshot.isCurrent) {
-                    <button
+                    <button *hasPermission="'catalog.write'"
                       type="button"
                       class="button button--small"
                       [disabled]="restoringVersion() !== null"

@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Store, provideStore } from '@ngrx/store';
-import { HasPermissionDirective } from './has-permission.directive';
+import { HasPermissionDirective, PermissionAccess, StorePermissionAccess } from './has-permission.directive';
 import { SessionApiActions } from './store/auth.actions';
 import { sessionReducer } from './store/auth.reducer';
 import { SESSION_FEATURE_KEY } from './store/auth.state';
@@ -20,7 +20,7 @@ const user = (permissions: string[]) => ({ userId: 7, userName: 'a', displayName
 
 describe('*hasPermission (roles AC-7: hiding is a convenience, the server still checks)', () => {
   function create(permissions: string[] | null) {
-    TestBed.configureTestingModule({ providers: [provideStore({ [SESSION_FEATURE_KEY]: sessionReducer })] });
+    TestBed.configureTestingModule({ providers: [provideStore({ [SESSION_FEATURE_KEY]: sessionReducer }), { provide: PermissionAccess, useFactory: () => new StorePermissionAccess(inject(Store)) }] });
     const store = TestBed.inject(Store);
     if (permissions) {
       store.dispatch(SessionApiActions.loadSucceeded({ user: user(permissions) }));

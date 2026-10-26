@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LookupDto } from '@features/reference/lookups';
 import { SizeChartRowDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /** The size chart list (CHT-8): one row per category and audience, with its number of sizes and an Edit button. Presentational only. */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-size-chart-table',
   template: `
     @if (loading()) {
@@ -30,7 +32,7 @@ import { SizeChartRowDto } from '../../models';
               <td data-label="For">{{ nameOf(genders(), chart.genderId) }}</td>
               <td data-label="Sizes">{{ chart.lineCount }}</td>
               <td data-label="Actions">
-                <button type="button" class="button button--small" (click)="edit.emit(chart.id)">Edit</button>
+                <button *hasPermission="'catalog.write'" type="button" class="button button--small" (click)="edit.emit(chart.id)">Edit</button>
               </td>
             </tr>
           }

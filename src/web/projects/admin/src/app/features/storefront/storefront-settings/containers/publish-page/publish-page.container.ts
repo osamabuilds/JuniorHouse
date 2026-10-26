@@ -19,6 +19,7 @@ import {
   selectSnapshotsTotal,
 } from '../../store';
 import { flatten } from '../../utils/nav-tree.util';
+import { HasPermissionDirective } from '@core/auth';
 
 /** One line of the report the server gives when it will not publish: where, and what to do. */
 export interface PublishProblem {
@@ -32,7 +33,7 @@ export interface PublishProblem {
  */
 @Component({
   selector: 'app-publish-page',
-  imports: [SectionNavComponent, SnapshotsTableComponent, PaginationComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, SnapshotsTableComponent, PaginationComponent],
   templateUrl: './publish-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

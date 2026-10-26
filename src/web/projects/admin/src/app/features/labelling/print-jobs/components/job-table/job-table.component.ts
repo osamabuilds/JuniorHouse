@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { AppDatePipe } from '@shared';
 import { PrintJobDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The print queue (PJ-13): one row per job with its state, attempts and last error, and the actions that apply. A Failed job can be
@@ -8,7 +9,7 @@ import { PrintJobDto } from '../../models';
  */
 @Component({
   selector: 'app-job-table',
-  imports: [AppDatePipe],
+  imports: [HasPermissionDirective, AppDatePipe],
   template: `
     @if (loading() && jobs().length === 0) {
       <p class="state-message">Loading…</p>
@@ -58,10 +59,10 @@ import { PrintJobDto } from '../../models';
               </td>
               <td data-label="Actions">
                 @if (job.statusCode === 'Failed') {
-                  <button type="button" class="button button--small" [disabled]="busyId() === job.id" (click)="retry.emit(job)">Retry</button>
+                  <button *hasPermission="'labelling.write'" type="button" class="button button--small" [disabled]="busyId() === job.id" (click)="retry.emit(job)">Retry</button>
                 }
                 @if (job.statusCode === 'Queued' || job.statusCode === 'Failed') {
-                  <button type="button" class="button button--small button--danger" [disabled]="busyId() === job.id" (click)="cancel.emit(job)">Cancel</button>
+                  <button *hasPermission="'ops.admin'" type="button" class="button button--small button--danger" [disabled]="busyId() === job.id" (click)="cancel.emit(job)">Cancel</button>
                 }
               </td>
             </tr>

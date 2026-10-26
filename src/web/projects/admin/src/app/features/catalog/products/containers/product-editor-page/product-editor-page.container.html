@@ -37,7 +37,9 @@
     <p class="banner banner--error" role="alert">Type your name in the "Your name" box first, so the change can be recorded against you.</p>
   }
 
-  @if (!editable()) {
+  @if (!canWrite()) {
+    <p class="banner banner--info" role="status">You can look at this product but not change it.</p>
+  } @else if (!editable()) {
     <p class="banner banner--info" role="status">This product is archived, so it is read-only.</p>
   }
 

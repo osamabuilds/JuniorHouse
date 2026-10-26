@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LabelWorkItemDto } from '../../models';
 import { PARK_REASON_TEXT } from '../../label-work.constants';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The accepted batches awaiting tags (LW-7): one row per accepted line with what is printed so far, what is waiting for attention,
  * and the actions that apply. Presentational only: it shows what it is given and emits what the user chose.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-worklist-table',
   template: `
     @if (loading()) {
@@ -74,16 +76,16 @@ import { PARK_REASON_TEXT } from '../../label-work.constants';
               </td>
               <td data-label="Actions">
                 @if (item.statusCode === 'Ready') {
-                  <button type="button" class="button button--small button--primary" [disabled]="item.remainingQty === 0" (click)="queue.emit(item)">
+                  <button *hasPermission="'labelling.write'" type="button" class="button button--small button--primary" [disabled]="item.remainingQty === 0" (click)="queue.emit(item)">
                     Queue tags
                   </button>
                   <a class="button button--small" [href]="previewUrlFor()(item.id)" target="_blank" rel="noopener">Preview tag</a>
                 } @else if (item.parkReasonCode === 'StyleRetired') {
-                  <button type="button" class="button button--small" [disabled]="resolvingId() === item.id" (click)="confirmRetired.emit(item)">
+                  <button *hasPermission="'labelling.write'" type="button" class="button button--small" [disabled]="resolvingId() === item.id" (click)="confirmRetired.emit(item)">
                     Label anyway
                   </button>
                 } @else {
-                  <button type="button" class="button button--small" [disabled]="resolvingId() === item.id" (click)="resolve.emit(item)">
+                  <button *hasPermission="'labelling.write'" type="button" class="button button--small" [disabled]="resolvingId() === item.id" (click)="resolve.emit(item)">
                     {{ resolvingId() === item.id ? 'Checking…' : 'Try again' }}
                   </button>
                 }

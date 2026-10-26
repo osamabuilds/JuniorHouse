@@ -6,19 +6,19 @@
     </div>
     <div class="po-detail__actions">
       @if (canEdit(po())) {
-        <button type="button" class="button" (click)="editRequested.emit()">Edit</button>
+        <button *hasPermission="'procurement.write'" type="button" class="button" (click)="editRequested.emit()">Edit</button>
       }
       @if (canSend(po())) {
-        <button type="button" class="button button--primary" (click)="panelOpened.emit('send')">Send to Vendor</button>
+        <button *hasPermission="'procurement.write'" type="button" class="button button--primary" (click)="panelOpened.emit('send')">Send to Vendor</button>
       }
       @if (canRecordResponse(po())) {
-        <button type="button" class="button" (click)="panelOpened.emit('response')">Record vendor response</button>
+        <button *hasPermission="'procurement.write'" type="button" class="button" (click)="panelOpened.emit('response')">Record vendor response</button>
       }
       @if (canAmend(po())) {
-        <button type="button" class="button" (click)="panelOpened.emit('amend')">Amend</button>
+        <button *hasPermission="'procurement.write'" type="button" class="button" (click)="panelOpened.emit('amend')">Amend</button>
       }
       @if (canClose(po())) {
-        <button type="button" class="button button--primary" (click)="closeRequested.emit()">Close order</button>
+        <button *hasPermission="'procurement.write'" type="button" class="button button--primary" (click)="closeRequested.emit()">Close order</button>
       }
       @if (productionRunId(); as runId) {
         <a class="button" [routerLink]="['/production', runId]">Production</a>
@@ -180,7 +180,7 @@
           <option [value]="reason.id">{{ reason.name }}</option>
         }
       </select>
-      <button
+      <button *hasPermission="'procurement.write'"
         type="button"
         class="button button--danger"
         [disabled]="cancelReasonId() === null || (needsProductionWarning(po()) && !understood())"

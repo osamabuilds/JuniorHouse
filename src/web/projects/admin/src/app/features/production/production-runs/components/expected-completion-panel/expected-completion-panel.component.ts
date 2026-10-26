@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiError } from '@core/http';
 import { AppDatePipe, ControlErrorsComponent, FieldErrorsComponent } from '@shared';
 import { ExpectedCompletionChangeDto, ExpectedCompletionValue } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The expected completion date (spec AC-15, AC-16): what the vendor currently says, every earlier estimate with who
@@ -11,7 +12,7 @@ import { ExpectedCompletionChangeDto, ExpectedCompletionValue } from '../../mode
  */
 @Component({
   selector: 'app-expected-completion-panel',
-  imports: [ReactiveFormsModule, AppDatePipe, ControlErrorsComponent, FieldErrorsComponent],
+  imports: [HasPermissionDirective, ReactiveFormsModule, AppDatePipe, ControlErrorsComponent, FieldErrorsComponent],
   template: `
     <dl class="facts">
       <div>
@@ -82,7 +83,7 @@ import { ExpectedCompletionChangeDto, ExpectedCompletionValue } from '../../mode
       </form>
     } @else if (cuttingStarted() && runOpen()) {
       <div class="panel__actions">
-        <button type="button" class="button" (click)="opened.emit()">{{ expectedDate() ? 'Move the date' : 'Set the date' }}</button>
+        <button *hasPermission="'production.write'" type="button" class="button" (click)="opened.emit()">{{ expectedDate() ? 'Move the date' : 'Set the date' }}</button>
       </div>
     }
   `,

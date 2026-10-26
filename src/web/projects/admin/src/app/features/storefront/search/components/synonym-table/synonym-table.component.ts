@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { SynonymGroup } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-synonym-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: ':host { display: block; }',
@@ -36,10 +38,10 @@ import { SynonymGroup } from '../../models';
                   </button>
                   <button type="button" class="button button--small" (click)="deleteCancelled.emit()">Keep</button>
                 } @else {
-                  <button type="button" class="button button--small" (click)="edit.emit(group)">
+                  <button *hasPermission="'catalog.write'" type="button" class="button button--small" (click)="edit.emit(group)">
                     Edit<span class="sr-only"> {{ group.name }}</span>
                   </button>
-                  <button type="button" class="button button--small" (click)="deleteRequested.emit(group.id)">
+                  <button *hasPermission="'catalog.write'" type="button" class="button button--small" (click)="deleteRequested.emit(group.id)">
                     Delete<span class="sr-only"> {{ group.name }}</span>
                   </button>
                 }

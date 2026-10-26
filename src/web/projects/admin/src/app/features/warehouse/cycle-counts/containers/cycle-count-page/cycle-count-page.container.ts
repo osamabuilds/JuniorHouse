@@ -21,6 +21,7 @@ import {
   selectReviewLoading,
   selectSubmitting,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * One cycle count (docs/specs/warehouse/cycle-counts/spec.md): the blind count sheet, then the review where differences get a reason,
@@ -28,7 +29,7 @@ import {
  */
 @Component({
   selector: 'app-cycle-count-page',
-  imports: [SectionNavComponent, CountSheetComponent, ReviewTableComponent, RouterLink],
+  imports: [HasPermissionDirective, SectionNavComponent, CountSheetComponent, ReviewTableComponent, RouterLink],
   templateUrl: './cycle-count-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

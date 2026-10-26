@@ -7,11 +7,12 @@ import { StorefrontSettingsApiActions, StorefrontSettingsPageActions } from '../
 import { storefrontSettingsReducer } from '../../store/storefront-settings.reducer';
 import { STOREFRONT_SETTINGS_FEATURE_KEY } from '../../store/storefront-settings.state';
 import { NavigationPageContainer } from './navigation-page.container';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('NavigationPageContainer (spec ST-1, ST-1a, ST-4, ST-14, ST-15)', () => {
   function create() {
     TestBed.configureTestingModule({
-      providers: [provideRouter([]), provideStore({ [STOREFRONT_SETTINGS_FEATURE_KEY]: storefrontSettingsReducer })],
+      providers: [provideAllowAllPermissions(), provideRouter([]), provideStore({ [STOREFRONT_SETTINGS_FEATURE_KEY]: storefrontSettingsReducer })],
     });
     const store = TestBed.inject(Store);
     const dispatched: unknown[] = [];

@@ -27,11 +27,12 @@ import {
   selectVendorsSaving,
   VendorsPageActions,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /** SCRUM-174: vendor list (search by name/city/specialisation) plus a create/edit form (FR-SC-01, AC-5/AC-5a/AC-6). */
 @Component({
   selector: 'app-vendors-page',
-  imports: [VendorTableComponent, VendorFormComponent, PaginationComponent, ScorecardPanelComponent],
+  imports: [HasPermissionDirective, VendorTableComponent, VendorFormComponent, PaginationComponent, ScorecardPanelComponent],
   templateUrl: './vendors-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -16,11 +16,12 @@ import {
 } from '../../store';
 import { DeliveryValues, blankRule, toDeliveryValues, toExchange } from '../../utils/delivery.util';
 import { HasUnsavedChanges } from '../../utils/unsaved-changes.guard';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Delivery and exchange (S-3, ST-7): the city table and the exchange policy that the delivery and exchange pages quote. */
 @Component({
   selector: 'app-delivery-page',
-  imports: [SectionNavComponent, DeliveryEditorComponent, SaveBarComponent, SettingsBannersComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, DeliveryEditorComponent, SaveBarComponent, SettingsBannersComponent],
   templateUrl: './delivery-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

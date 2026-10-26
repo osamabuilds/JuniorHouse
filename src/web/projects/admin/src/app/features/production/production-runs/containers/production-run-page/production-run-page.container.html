@@ -91,7 +91,7 @@
       />
     } @else if (isOpen()) {
       <div class="panel__actions">
-        <button type="button" class="button" (click)="openPanel('milestone')">Record a milestone</button>
+        <button *hasPermission="'production.write'" type="button" class="button" (click)="openPanel('milestone')">Record a milestone</button>
       </div>
     }
   </section>
@@ -159,7 +159,7 @@
       />
     } @else if (isOpen()) {
       <div class="panel__actions">
-        <button type="button" class="button" [disabled]="!run.cuttingStartedDate" (click)="openPanel('delivery')">Record a delivery note</button>
+        <button *hasPermission="'production.write'" type="button" class="button" [disabled]="!run.cuttingStartedDate" (click)="openPanel('delivery')">Record a delivery note</button>
       </div>
       @if (!run.cuttingStartedDate) {
         <p class="field-hint">A delivery note can be recorded once bulk cutting has started.</p>

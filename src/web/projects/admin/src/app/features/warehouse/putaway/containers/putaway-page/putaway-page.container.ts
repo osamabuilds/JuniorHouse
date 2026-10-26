@@ -28,6 +28,7 @@ import {
   selectScanning,
   selectSelection,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * Putaway (docs/specs/warehouse/putaway/spec.md): scan the tag (or choose the item from the list when there is no tag yet), say which
@@ -35,7 +36,7 @@ import {
  */
 @Component({
   selector: 'app-putaway-page',
-  imports: [
+  imports: [HasPermissionDirective, 
     SectionNavComponent,
     PutawayScanComponent,
     PutawayQueueComponent,

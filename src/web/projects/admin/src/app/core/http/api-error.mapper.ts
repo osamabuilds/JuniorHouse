@@ -8,6 +8,8 @@ interface ProblemDetailsBody {
   readonly errors?: Record<string, string[]>;
 }
 
+export const FORBIDDEN_MESSAGE = "You do not have permission to do that. If you need it, ask an owner to change your role.";
+
 export function toApiError(error: HttpErrorResponse): ApiError {
   const body = isProblemDetailsBody(error.error) ? error.error : undefined;
   const specific = body?.detail ?? summariseFieldErrors(body?.errors);
@@ -16,7 +18,8 @@ export function toApiError(error: HttpErrorResponse): ApiError {
 
   return {
     status: error.status,
-    message: specific ?? plainMessageFor(error.status, body?.title),
+    // A refusal for lack of permission always gets the same plain sentence: the server deliberately names no permission (roles AC-5).
+    message: error.status === 403 ? FORBIDDEN_MESSAGE : (specific ?? plainMessageFor(error.status, body?.title)),
     fieldErrors: body?.errors ?? {},
     ...(Number.isFinite(retryAfter) && retryAfter > 0 ? { retryAfterSeconds: retryAfter } : {}),
   };

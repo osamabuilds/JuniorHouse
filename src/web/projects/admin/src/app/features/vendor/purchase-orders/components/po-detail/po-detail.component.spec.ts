@@ -6,6 +6,7 @@ import { LOOKUP_NAMES_STUB } from '@app/testing/lookup-names.stub';
 import { buttonByText, textOf } from '@app/testing/production-fixtures';
 import { PoDto } from '../../models';
 import { PoDetailComponent } from './po-detail.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 const po = (statusId: number): PoDto =>
   ({
@@ -34,7 +35,7 @@ const reasons = [
 describe('PoDetailComponent after Sprint 3 (spec AC-25, AC-28, D5)', () => {
   function create(statusId: number, extra: Record<string, unknown> = {}) {
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({ providers: [provideAllowAllPermissions(), provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
     const fixture = TestBed.createComponent(PoDetailComponent);
     const inputs: Record<string, unknown> = {
       po: po(statusId),

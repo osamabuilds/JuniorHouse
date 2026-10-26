@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { AdjustmentReasonDto } from '@features/warehouse/adjustments';
 import { LARGE_VARIANCE_HINT } from '../../cycle-counts.constants';
 import { CountReviewDto, CountReviewLineDto, ReasonChoice, reviewKey } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The review step (CC-4, CC-7, CC-8): counted against system for every line, the difference, and a reason for each difference.
@@ -9,6 +10,7 @@ import { CountReviewDto, CountReviewLineDto, ReasonChoice, reviewKey } from '../
  * must be recounted before the count can be confirmed. A large difference asks to be confirmed. Presentational only.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-review-table',
   template: `
     <section class="card" aria-labelledby="rt-heading">
@@ -82,7 +84,7 @@ import { CountReviewDto, CountReviewLineDto, ReasonChoice, reviewKey } from '../
       }
 
       <div class="form-actions">
-        <button type="button" class="button button--primary" [disabled]="!canConfirm() || confirming()" (click)="confirmed.emit()">
+        <button *hasPermission="'inventory.write'" type="button" class="button button--primary" [disabled]="!canConfirm() || confirming()" (click)="confirmed.emit()">
           {{ confirming() ? 'Confirming…' : 'Confirm the count' }}
         </button>
         <button type="button" class="button" (click)="closed.emit()">Back to counting</button>

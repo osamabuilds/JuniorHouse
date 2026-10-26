@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { toApiError } from './api-error.mapper';
+import { FORBIDDEN_MESSAGE, toApiError } from './api-error.mapper';
 
 describe('toApiError', () => {
   it('shows the API detail when there is one', () => {
@@ -72,5 +72,15 @@ describe('toApiError Retry-After (sessions AC-6)', () => {
     expect(toApiError(new HttpErrorResponse({ status: 429 })).retryAfterSeconds).toBeUndefined();
     expect(toApiError(new HttpErrorResponse({ status: 429, headers: new HttpHeaders({ 'Retry-After': 'soon' }) })).retryAfterSeconds).toBeUndefined();
     expect(toApiError(new HttpErrorResponse({ status: 429, headers: new HttpHeaders({ 'Retry-After': '0' }) })).retryAfterSeconds).toBeUndefined();
+  });
+});
+
+describe('toApiError for a refusal (roles AC-5, AC-7)', () => {
+  it('turns a 403 into one friendly sentence that names no permission', () => {
+    const error = toApiError(new HttpErrorResponse({ status: 403, error: { title: 'Forbidden', detail: 'catalog.write is required' } }));
+
+    expect(error.status).toBe(403);
+    expect(error.message).toBe(FORBIDDEN_MESSAGE);
+    expect(error.message).not.toContain('catalog.write');
   });
 });

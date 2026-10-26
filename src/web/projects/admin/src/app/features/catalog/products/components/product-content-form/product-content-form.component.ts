@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LookupDto } from '@features/reference/lookups';
 import { ControlErrorsComponent, inputChecked } from '@shared';
 import { ProductContentValue, ProductDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The Content tab (PRD-5): name, description, who it is for, category, age group, and the collections it belongs to (PRD-12).
@@ -10,7 +11,7 @@ import { ProductContentValue, ProductDto } from '../../models';
  */
 @Component({
   selector: 'app-product-content-form',
-  imports: [ReactiveFormsModule, ControlErrorsComponent],
+  imports: [HasPermissionDirective, ReactiveFormsModule, ControlErrorsComponent],
   template: `
     <form [formGroup]="form" (ngSubmit)="submit()" aria-label="Product content" novalidate>
       <div class="form-grid">
@@ -67,7 +68,7 @@ import { ProductContentValue, ProductDto } from '../../models';
         </label>
       }
       <div class="form-actions">
-        <button type="button" class="button" (click)="collectionsSaved.emit([...chosen()])">Save collections</button>
+        <button *hasPermission="'catalog.write'" type="button" class="button" (click)="collectionsSaved.emit([...chosen()])">Save collections</button>
       </div>
     </fieldset>
   `,

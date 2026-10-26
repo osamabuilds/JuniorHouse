@@ -3,8 +3,10 @@ import { textOf } from '@app/testing/production-fixtures';
 import { workItem } from '@app/testing/labelling-fixtures';
 import { LabelWorkItemDto } from '../../models';
 import { WorklistTableComponent } from './worklist-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('WorklistTableComponent (spec LW-4, LW-5, LW-7, PJ-1)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(items: LabelWorkItemDto[], loading = false, resolvingId: number | null = null) {
     const fixture = TestBed.createComponent(WorklistTableComponent);
     fixture.componentRef.setInput('items', items);

@@ -17,6 +17,7 @@ import {
 } from '../../store';
 import { cleanBlocks } from '../../utils/blocks.util';
 import { HasUnsavedChanges } from '../../utils/unsaved-changes.guard';
+import { HasPermissionDirective } from '@core/auth';
 
 const BLANK: PageValue = { slug: '', title: '', metaDescription: '', blocks: [] };
 
@@ -30,7 +31,7 @@ function toValue(page: ContentPage | null): PageValue {
  */
 @Component({
   selector: 'app-page-editor-page',
-  imports: [RouterLink, PageBlocksEditorComponent, SaveBarComponent],
+  imports: [HasPermissionDirective, RouterLink, PageBlocksEditorComponent, SaveBarComponent],
   templateUrl: './page-editor-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

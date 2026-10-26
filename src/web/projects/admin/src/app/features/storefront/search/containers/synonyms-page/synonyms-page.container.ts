@@ -22,11 +22,12 @@ import {
   selectSynonymsPageSize,
   selectSynonymsTotal,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Synonym groups (SRC-12): staff add words that mean the same to a shopper, with no deployment. */
 @Component({
   selector: 'app-synonyms-page',
-  imports: [SectionNavComponent, SynonymTableComponent, SynonymFormComponent, PaginationComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, SynonymTableComponent, SynonymFormComponent, PaginationComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h1>Search</h1>
@@ -44,7 +45,7 @@ import {
       }
 
       <div class="toolbar">
-        <button type="button" class="button button--primary" (click)="startCreate()">Add synonym group</button>
+        <button *hasPermission="'catalog.write'" type="button" class="button button--primary" (click)="startCreate()">Add synonym group</button>
       </div>
 
       <app-synonym-table

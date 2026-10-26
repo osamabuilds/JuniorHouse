@@ -3,10 +3,11 @@ import { provideRouter } from '@angular/router';
 import { inboundSummary } from '@app/testing/quality-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { InboundTableComponent } from './inbound-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('InboundTableComponent (spec AC-1, AC-5, AC-44)', () => {
   function create(deliveries: ReturnType<typeof inboundSummary>[], loading = false) {
-    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    TestBed.configureTestingModule({ providers: [provideAllowAllPermissions(), provideRouter([])] });
     const fixture = TestBed.createComponent(InboundTableComponent);
     fixture.componentRef.setInput('deliveries', deliveries);
     fixture.componentRef.setInput('loading', loading);

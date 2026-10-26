@@ -5,6 +5,7 @@ import { Action, Store, provideStore } from '@ngrx/store';
 import { MissRow, SynonymGroup } from '@features/storefront/search/models';
 import { searchAdminReducer } from '@features/storefront/search/store/search.reducer';
 import { SEARCH_FEATURE_KEY } from '@features/storefront/search/store/search.state';
+import { provideAllowAllPermissions } from './provide-allow-all-permissions';
 
 export const synonymGroup = (over: Partial<SynonymGroup> = {}): SynonymGroup => ({
   id: 1,
@@ -20,7 +21,7 @@ export const missRow = (over: Partial<MissRow> = {}): MissRow => ({ text: 'ghagr
 /** A real search-admin store with the actions it receives recorded, for container specs. */
 export function createSearchContainer<T>(component: Type<T>, providers: Provider[] = []) {
   TestBed.configureTestingModule({
-    providers: [provideRouter([]), provideStore({ [SEARCH_FEATURE_KEY]: searchAdminReducer }), ...providers],
+    providers: [provideAllowAllPermissions(), provideRouter([]), provideStore({ [SEARCH_FEATURE_KEY]: searchAdminReducer }), ...providers],
   });
   const store = TestBed.inject(Store);
   const dispatched: Action[] = [];

@@ -34,7 +34,7 @@
   <p class="state-message">Loading…</p>
 } @else {
   <div class="toolbar">
-    <button type="button" class="button button--primary" (click)="startCreate()">New size chart</button>
+    <button *hasPermission="'catalog.write'" type="button" class="button button--primary" (click)="startCreate()">New size chart</button>
   </div>
 }
 

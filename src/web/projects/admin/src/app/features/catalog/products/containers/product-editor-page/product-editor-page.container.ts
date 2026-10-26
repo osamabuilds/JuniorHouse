@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { holdsAny, selectPermissions } from '@core/auth';
 import { ReferenceLookupActions, selectLookup } from '@features/reference/lookups';
 import { ActingPersonService, SectionNavComponent, inputValue } from '@shared';
 import { CompositionCarePanelComponent } from '../../components/composition-care-panel/composition-care-panel.component';
@@ -82,7 +83,11 @@ export class ProductEditorPageContainer {
   readonly saving = this.store.selectSignal(selectSaving);
   readonly error = this.store.selectSignal(selectError);
   readonly notice = this.store.selectSignal(selectNotice);
-  readonly editable = this.store.selectSignal(selectEditable);
+  private readonly productEditable = this.store.selectSignal(selectEditable);
+  private readonly permissions = this.store.selectSignal(selectPermissions);
+  /** Whether this person may change catalogue content at all; the server checks again on every save (roles AC-7). */
+  readonly canWrite = computed(() => holdsAny(this.permissions(), ['catalog.write']));
+  readonly editable = computed(() => this.productEditable() && this.canWrite());
   private readonly refusedFailures = this.store.selectSignal(selectPublishFailures);
 
   readonly genders = this.store.selectSignal(selectLookup('genders'));

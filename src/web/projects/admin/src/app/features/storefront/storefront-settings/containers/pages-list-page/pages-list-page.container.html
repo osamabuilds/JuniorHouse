@@ -20,7 +20,7 @@
       }
     </select>
   </label>
-  <a class="button button--primary" routerLink="/storefront/pages/new">New page</a>
+  <a *hasPermission="'catalog.write'" class="button button--primary" routerLink="/storefront/pages/new">New page</a>
 </div>
 
 <app-pages-table [pages]="pages()" [loading]="loading()" />

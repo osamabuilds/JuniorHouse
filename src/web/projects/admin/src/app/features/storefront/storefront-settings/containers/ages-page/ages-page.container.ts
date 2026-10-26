@@ -17,11 +17,12 @@ import {
 } from '../../store';
 import { withSort } from '../../utils/list.util';
 import { HasUnsavedChanges } from '../../utils/unsaved-changes.guard';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Ages (S-2, ST-2): the "Shop by age" steps. Codes are fixed once saved; labels, order and visibility are free. */
 @Component({
   selector: 'app-ages-page',
-  imports: [SectionNavComponent, AgesEditorComponent, SaveBarComponent, SettingsBannersComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, AgesEditorComponent, SaveBarComponent, SettingsBannersComponent],
   templateUrl: './ages-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

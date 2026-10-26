@@ -16,11 +16,12 @@ import {
 } from '../../store';
 import { ContactValues, cleanSearches, toContactValues, toSettingItems } from '../../utils/contact.util';
 import { HasUnsavedChanges } from '../../utils/unsaved-changes.guard';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Settings (S-3, ST-4, ST-7): brand, WhatsApp, email, hours, the announcement bar and the popular searches. */
 @Component({
   selector: 'app-contact-page',
-  imports: [SectionNavComponent, ContactFormComponent, SaveBarComponent, SettingsBannersComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, ContactFormComponent, SaveBarComponent, SettingsBannersComponent],
   templateUrl: './contact-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

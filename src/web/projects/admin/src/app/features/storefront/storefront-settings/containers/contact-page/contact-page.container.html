@@ -13,5 +13,5 @@
 } @else {
   <app-contact-form [values]="values()" [errors]="fieldErrors()" (valuesChange)="values.set($event)" />
 
-  <app-save-bar label="Save settings" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
+  <app-save-bar *hasPermission="'catalog.write'" label="Save settings" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
 }

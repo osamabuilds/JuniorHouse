@@ -1,9 +1,10 @@
 import { provideTestStore } from '@app/testing/provide-test-store';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter, withComponentInputBinding } from '@angular/router';
-import { SessionApiActions } from '@core/auth';
+import { PermissionAccess, SessionApiActions, StorePermissionAccess } from '@core/auth';
 import { Store } from '@ngrx/store';
 import { App } from './app';
 import { routes } from './app.routes';
@@ -19,7 +20,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter(routes, withComponentInputBinding()), provideHttpClient(), provideHttpClientTesting(), ...provideTestStore()],
+      providers: [provideRouter(routes, withComponentInputBinding()), provideHttpClient(), provideHttpClientTesting(), ...provideTestStore(), { provide: PermissionAccess, useFactory: () => new StorePermissionAccess(inject(Store)) }],
     }).compileComponents();
   });
 
@@ -47,7 +48,7 @@ describe('App', () => {
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav');
     const linkText = Array.from(nav?.querySelectorAll('a') ?? []).map((a) => a.textContent?.trim());
 
-    expect(linkText).toEqual(['Reference Data', 'Styles', 'Catalog', 'Vendors', 'Purchase Orders', 'Production', 'Receiving & QC', 'Labelling', 'Warehouse', 'Storefront', 'Staff', 'Roles']);
+    expect(linkText).toEqual(['Reference Data', 'Styles', 'Catalog', 'Vendors', 'Purchase Orders', 'Production', 'Receiving & QC', 'Labelling', 'Warehouse', 'Storefront', 'Staff', 'Roles', 'Audit']);
   });
 
   it('hides the admin header, nav and footer on the vendor-facing PO view (SCRUM-93 task 51)', async () => {
@@ -120,6 +121,10 @@ describe('App', () => {
 
     it('a person who holds nothing sees no section at all', () => {
       expect(menuFor([])).toEqual([]);
+    });
+
+    it('only audit.read shows Audit', () => {
+      expect(menuFor(['audit.read'])).toEqual(['Audit']);
     });
 
     it('only staff.manage shows Staff and Roles', () => {

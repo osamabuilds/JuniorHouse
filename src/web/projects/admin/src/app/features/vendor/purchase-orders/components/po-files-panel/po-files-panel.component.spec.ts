@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PoFileDto } from '../../models';
 import { PoFilesPanelComponent } from './po-files-panel.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 const file = (overrides: Partial<PoFileDto>): PoFileDto => ({
   id: 1,
@@ -16,6 +17,7 @@ const file = (overrides: Partial<PoFileDto>): PoFileDto => ({
 });
 
 describe('PoFilesPanelComponent (SCRUM-93 task 52, AC-40..AC-42)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(statusId: number, files: PoFileDto[]) {
     const fixture = TestBed.createComponent(PoFilesPanelComponent);
     fixture.componentRef.setInput('downloadUrlFor', (fileId: number) => `http://api/api/purchase-orders/10/files/${fileId}`);

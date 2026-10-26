@@ -3,8 +3,10 @@ import { putawayItem } from '@app/testing/warehouse-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { PutawayItemRowDto } from '../../models';
 import { PutawayQueueComponent } from './putaway-queue.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('PutawayQueueComponent (spec PUT-14, PUT-19, PUT-7)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(items: PutawayItemRowDto[], loading = false) {
     const fixture = TestBed.createComponent(PutawayQueueComponent);
     fixture.componentRef.setInput('items', items);

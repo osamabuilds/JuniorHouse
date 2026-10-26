@@ -2,8 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { buttonByText, round, setText, textOf } from '@app/testing/production-fixtures';
 import { DecideSampleValue, PpSampleRoundDto, SubmitSampleValue } from '../../models';
 import { PpRoundPanelComponent } from './pp-round-panel.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('PpRoundPanelComponent (spec AC-10..AC-13, D6, D7)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(rounds: PpSampleRoundDto[], options: { canSubmit?: boolean; submitFormOpen?: boolean; defaultPerson?: string; runOpen?: boolean } = {}) {
     const fixture = TestBed.createComponent(PpRoundPanelComponent);
     fixture.componentRef.setInput('rounds', rounds);

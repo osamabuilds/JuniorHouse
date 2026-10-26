@@ -4,6 +4,7 @@ import { selectNumberOrNull } from '@shared';
 import { PoFileDto, PoFileUpload } from '../../models';
 import { FILE_CATEGORY_LABELS, PO_STATUS_CANCELLED, PO_STATUS_DRAFT } from '../../purchase-orders.constants';
 import { isVendorVisibleCategory } from '../../utils/po-file-category.util';
+import { HasPermissionDirective } from '@core/auth';
 
 const DRAFT = PO_STATUS_DRAFT;
 const CANCELLED = PO_STATUS_CANCELLED;
@@ -15,6 +16,7 @@ const CANCELLED = PO_STATUS_CANCELLED;
  * disabled with the reason spelled out. Cancelled: read-only, downloads still work.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-po-files-panel',
   template: `
     <section class="files" aria-labelledby="files-heading">
@@ -37,7 +39,7 @@ const CANCELLED = PO_STATUS_CANCELLED;
                 @if (file.addedInRevisionNumber !== null) { &middot; added in Rev {{ file.addedInRevisionNumber }} }
                 @if (file.retiredInRevisionNumber !== null) { &middot; retired in Rev {{ file.retiredInRevisionNumber }} }
               </span>
-              <button
+              <button *hasPermission="'procurement.write'"
                 type="button"
                 class="button button--small"
                 [disabled]="!canRemove(file)"
@@ -63,7 +65,7 @@ const CANCELLED = PO_STATUS_CANCELLED;
             <li>
               <a [href]="downloadUrl(file)">{{ file.fileName }}</a>
               <span class="files__meta">{{ categoryLabel(file.categoryId) }} &middot; {{ file.uploadedBy }}</span>
-              <button
+              <button *hasPermission="'procurement.write'"
                 type="button"
                 class="button button--small"
                 [disabled]="!canRemove(file)"

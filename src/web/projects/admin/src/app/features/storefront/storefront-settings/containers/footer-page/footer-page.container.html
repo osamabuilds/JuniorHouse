@@ -13,7 +13,7 @@
 } @else {
   <app-footer-editor [columns]="columns()" [errors]="fieldErrors()" (columnsChange)="columns.set($event)" />
 
-  <app-save-bar label="Save footer" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()">
+  <app-save-bar *hasPermission="'catalog.write'" label="Save footer" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()">
     <button type="button" class="button" (click)="addColumn()">Add a column</button>
   </app-save-bar>
 }

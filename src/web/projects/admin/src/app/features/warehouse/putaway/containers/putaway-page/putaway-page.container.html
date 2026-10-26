@@ -37,7 +37,7 @@
           @for (item of found.pendingItems; track item.itemId) {
             <li>
               PO {{ item.poId }}, {{ item.gradeCode === 'CONCESSION' ? 'concession' : 'accepted' }}: {{ item.pending }} to put away
-              <button type="button" class="button button--small" (click)="selectScanned(found, item)">Put this away</button>
+              <button *hasPermission="'warehouse.write'" type="button" class="button button--small" (click)="selectScanned(found, item)">Put this away</button>
             </li>
           }
         </ul>

@@ -13,5 +13,5 @@
 } @else {
   <app-delivery-editor [values]="values()" [errors]="fieldErrors()" (valuesChange)="values.set($event)" (addRule)="addRule()" />
 
-  <app-save-bar label="Save delivery and exchange" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
+  <app-save-bar *hasPermission="'catalog.write'" label="Save delivery and exchange" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
 }

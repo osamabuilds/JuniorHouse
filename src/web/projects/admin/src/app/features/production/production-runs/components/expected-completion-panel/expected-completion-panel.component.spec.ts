@@ -2,8 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { buttonByText, setText, textOf } from '@app/testing/production-fixtures';
 import { ExpectedCompletionValue } from '../../models';
 import { ExpectedCompletionPanelComponent } from './expected-completion-panel.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('ExpectedCompletionPanelComponent (spec AC-15, AC-16)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(inputs: Record<string, unknown> = {}) {
     const fixture = TestBed.createComponent(ExpectedCompletionPanelComponent);
     for (const [key, value] of Object.entries({ cuttingStarted: true, ...inputs })) {

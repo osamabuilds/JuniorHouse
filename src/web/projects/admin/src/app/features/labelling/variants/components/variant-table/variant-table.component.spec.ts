@@ -4,9 +4,10 @@ import { variantRow } from '@app/testing/labelling-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { VariantRowDto } from '../../models';
 import { VariantTableComponent } from './variant-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('VariantTableComponent (spec VAR-7, VAR-8, VAR-13, PJ-5, PJ-6)', () => {
-  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter([])] }));
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions(), provideRouter([])] }));
 
   function create(variants: VariantRowDto[], loading = false) {
     const fixture = TestBed.createComponent(VariantTableComponent);
