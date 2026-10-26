@@ -67,6 +67,8 @@ POST,/api/catalog/styles/,catalog.write
 GET,/api/catalog/styles/{id:long},catalog.read
 PUT,/api/catalog/styles/{id:long},catalog.write
 GET,/api/customers/me/,customer
+GET,/api/geography/provinces,anonymous
+GET,/api/geography/provinces/{id:int}/cities,anonymous
 GET,/api/identity/audit/,audit.read
 GET,/api/identity/audit/{id:long},audit.read
 GET,/api/identity/roles/,staff.manage
@@ -191,6 +193,7 @@ PUT,/api/ref/po-cancel-reasons/{id},ref.write
 POST,/api/ref/po-cancel-reasons/{id}/retire,ref.write
 GET,/api/ref/po-file-categories/,ref.read
 GET,/api/ref/po-statuses/,ref.read
+GET,/api/ref/provinces/,ref.read
 GET,/api/ref/revision-statuses/,ref.read
 GET,/api/ref/sizes/,ref.read
 POST,/api/ref/sizes/,ref.write

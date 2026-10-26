@@ -16,6 +16,7 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "/health/",
         "/api/storefront/",
         "/media/",
+        "/api/geography/", // province and city reference data for the address form (customers/addresses ADD-4)
     ];
 
     private static readonly string[] AnonymousRoutes =

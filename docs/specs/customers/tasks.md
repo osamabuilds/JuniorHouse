@@ -16,7 +16,7 @@ Ordered, checkable steps. Each names the test that proves it. Test-first: write 
 
 ## addresses
 
-- [ ] **A1** Reference: `PROV_LKP`, `CITY_LKP.PROV_ID`, seed, `IGeographyQueries`, `GET /api/geography/provinces` and `/provinces/{id}/cities`. *Proof:* `GeographyMigrationTests`, `GeographyQueriesTests`, `GeographyEndpointsTests` (ADD-4).
+- [x] **A1** Reference: `PROV_LKP`, `CITY_LKP.PROV_ID`, seed, `IGeographyQueries`, `GET /api/geography/provinces` and `/provinces/{id}/cities`. *Proof:* `GeographyMigrationTests`, `GeographyQueriesTests`, `GeographyEndpointsTests` (ADD-4).
 - [ ] **A2** `CustomerAddress` and `AddressBook` (default rules, limit, phone normalisation). *Proof:* `AddressBookTests`, `PhoneNumberTests` (ADD-2, ADD-5, ADD-6).
 - [ ] **A3** `CUST_ADDR` migration with the partial unique default index. *Proof:* `AddressMigrationTests`.
 - [ ] **A4** Commands and the paged list query, with the row lock on `CUST_MAIN`. *Proof:* `AddressCommandTests`, `AddressConcurrencyTests` (ADD-1, ADD-2, ADD-6, ADD-7).
@@ -31,3 +31,6 @@ Tasks for these three are added to this file when their turn comes, from their f
 ## Decisions taken on defaults
 
 Recorded as the work reaches them (Q-ADD-1 provinces and cities seed list, Q-ADD-2 fields, Q-ADD-3 limit of 10, Q-ACT-7 phone format). Each is a data or configuration change, not a code change, if the owner chooses otherwise.
+
+- **Q-ADD-1 (A1):** seven provinces and territories and 27 cities (the original 7 plus 20 main cities) are seeded. `CITY_LKP.PROV_ID` is nullable, not required: the admin Reference Data screen creates a city with no province, and a city without one is simply not offered to customers. Provinces are read-only in the admin API (a migration adds one); assigning a province to an admin-added city has no screen yet, so it is a data fix until the owner asks for one.
+- `GET /api/geography/*` are anonymous and `public, max-age=3600`; the prefix is on the authorization-matrix anonymous list.

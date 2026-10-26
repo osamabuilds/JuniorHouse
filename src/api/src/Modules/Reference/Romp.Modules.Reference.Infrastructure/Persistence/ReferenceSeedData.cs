@@ -66,14 +66,45 @@ internal static class ReferenceSeedData
             Row<AgeBracketLookup>(4, "KIDS", "Kids (4-8Y)", 4),
             Row<AgeBracketLookup>(5, "TWEEN", "Tween (9-12Y)", 5));
 
+        // Sprint 10 (customers/addresses, Q-ADD-1 default): the seven provinces and territories, and the main cities with the province each belongs to.
+        // The business supplies the final list; changing it is a data change (the admin Reference Data screen or a migration), not a code change.
+        modelBuilder.Entity<ProvinceLookup>().HasData(
+            Row<ProvinceLookup>(1, "PB", "Punjab", 1),
+            Row<ProvinceLookup>(2, "SD", "Sindh", 2),
+            Row<ProvinceLookup>(3, "KP", "Khyber Pakhtunkhwa", 3),
+            Row<ProvinceLookup>(4, "BL", "Balochistan", 4),
+            Row<ProvinceLookup>(5, "ICT", "Islamabad Capital Territory", 5),
+            Row<ProvinceLookup>(6, "GB", "Gilgit-Baltistan", 6),
+            Row<ProvinceLookup>(7, "AJK", "Azad Jammu and Kashmir", 7));
+
         modelBuilder.Entity<CityLookup>().HasData(
-            Row<CityLookup>(1, "KHI", "Karachi", 1),
-            Row<CityLookup>(2, "LHE", "Lahore", 2),
-            Row<CityLookup>(3, "ISB", "Islamabad", 3),
-            Row<CityLookup>(4, "FSD", "Faisalabad", 4),
-            Row<CityLookup>(5, "RWP", "Rawalpindi", 5),
-            Row<CityLookup>(6, "MUX", "Multan", 6),
-            Row<CityLookup>(7, "SKT", "Sialkot", 7));
+            CityRow(1, "KHI", "Karachi", 1, 2),
+            CityRow(2, "LHE", "Lahore", 2, 1),
+            CityRow(3, "ISB", "Islamabad", 3, 5),
+            CityRow(4, "FSD", "Faisalabad", 4, 1),
+            CityRow(5, "RWP", "Rawalpindi", 5, 1),
+            CityRow(6, "MUX", "Multan", 6, 1),
+            CityRow(7, "SKT", "Sialkot", 7, 1),
+            CityRow(8, "PEW", "Peshawar", 8, 3),
+            CityRow(9, "UET", "Quetta", 9, 4),
+            CityRow(10, "HDD", "Hyderabad", 10, 2),
+            CityRow(11, "GRW", "Gujranwala", 11, 1),
+            CityRow(12, "SGD", "Sargodha", 12, 1),
+            CityRow(13, "BWP", "Bahawalpur", 13, 1),
+            CityRow(14, "SKZ", "Sukkur", 14, 2),
+            CityRow(15, "LRK", "Larkana", 15, 2),
+            CityRow(16, "MRD", "Mardan", 16, 3),
+            CityRow(17, "ABT", "Abbottabad", 17, 3),
+            CityRow(18, "MNG", "Mingora", 18, 3),
+            CityRow(19, "KHT", "Kohat", 19, 3),
+            CityRow(20, "GIL", "Gilgit", 20, 6),
+            CityRow(21, "SKD", "Skardu", 21, 6),
+            CityRow(22, "MZG", "Muzaffarabad", 22, 7),
+            CityRow(23, "MIR", "Mirpur", 23, 7),
+            CityRow(24, "GRT", "Gujrat", 24, 1),
+            CityRow(25, "SHK", "Sheikhupura", 25, 1),
+            CityRow(26, "TRB", "Turbat", 26, 4),
+            CityRow(27, "GWD", "Gwadar", 27, 4));
 
         modelBuilder.Entity<VendorSpecialisationLookup>().HasData(
             Row<VendorSpecialisationLookup>(1, "KNITS", "Knits", 1),
@@ -208,6 +239,9 @@ internal static class ReferenceSeedData
     }
 
     /// <summary>The standard lookup shape's HasData row, for the nine types with no extra column.</summary>
+    private static object CityRow(short id, string code, string name, short sortSeq, short provinceId) =>
+        new { Id = id, Code = code, Name = name, Description = (string?)null, SortSeq = sortSeq, IsActive = true, ProvinceId = (short?)provinceId };
+
     private static object Row<TLookup>(short id, string code, string name, short sortSeq)
         where TLookup : Lookup =>
         new { Id = id, Code = code, Name = name, Description = (string?)null, SortSeq = sortSeq, IsActive = true };

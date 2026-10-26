@@ -347,3 +347,11 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | login | LGIN | | token | TOKN |
 | multi-factor authentication | MFA | | used | USED |
 | rotated | ROTD | | | |
+
+### Added in Sprint 10 (Customers)
+
+`CUST`, `ADDR`, `EML`, `PHON`, `NAME`, `LINE`, `CITY`, `DFLT`, `IND`, `LKP`, `SORT`, `SEQ` and `ACT` already existed. Only the words below are new; more are added with the features that need them (wishlist, newsletter, notify-me).
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| province | PROV | | | |

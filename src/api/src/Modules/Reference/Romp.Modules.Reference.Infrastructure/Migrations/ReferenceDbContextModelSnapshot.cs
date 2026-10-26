@@ -1730,6 +1730,10 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("NAME");
 
+                    b.Property<short?>("ProvinceId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("PROV_ID");
+
                     b.Property<short>("SortSeq")
                         .HasColumnType("smallint")
                         .HasColumnName("SORT_SEQ");
@@ -1738,6 +1742,8 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("ProvinceId");
 
                     b.ToTable("CITY_LKP", "REF");
 
@@ -1748,6 +1754,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             Code = "KHI",
                             IsActive = true,
                             Name = "Karachi",
+                            ProvinceId = (short)2,
                             SortSeq = (short)1
                         },
                         new
@@ -1756,6 +1763,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             Code = "LHE",
                             IsActive = true,
                             Name = "Lahore",
+                            ProvinceId = (short)1,
                             SortSeq = (short)2
                         },
                         new
@@ -1764,6 +1772,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             Code = "ISB",
                             IsActive = true,
                             Name = "Islamabad",
+                            ProvinceId = (short)5,
                             SortSeq = (short)3
                         },
                         new
@@ -1772,6 +1781,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             Code = "FSD",
                             IsActive = true,
                             Name = "Faisalabad",
+                            ProvinceId = (short)1,
                             SortSeq = (short)4
                         },
                         new
@@ -1780,6 +1790,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             Code = "RWP",
                             IsActive = true,
                             Name = "Rawalpindi",
+                            ProvinceId = (short)1,
                             SortSeq = (short)5
                         },
                         new
@@ -1788,6 +1799,7 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             Code = "MUX",
                             IsActive = true,
                             Name = "Multan",
+                            ProvinceId = (short)1,
                             SortSeq = (short)6
                         },
                         new
@@ -1796,7 +1808,188 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             Code = "SKT",
                             IsActive = true,
                             Name = "Sialkot",
+                            ProvinceId = (short)1,
                             SortSeq = (short)7
+                        },
+                        new
+                        {
+                            Id = (short)8,
+                            Code = "PEW",
+                            IsActive = true,
+                            Name = "Peshawar",
+                            ProvinceId = (short)3,
+                            SortSeq = (short)8
+                        },
+                        new
+                        {
+                            Id = (short)9,
+                            Code = "UET",
+                            IsActive = true,
+                            Name = "Quetta",
+                            ProvinceId = (short)4,
+                            SortSeq = (short)9
+                        },
+                        new
+                        {
+                            Id = (short)10,
+                            Code = "HDD",
+                            IsActive = true,
+                            Name = "Hyderabad",
+                            ProvinceId = (short)2,
+                            SortSeq = (short)10
+                        },
+                        new
+                        {
+                            Id = (short)11,
+                            Code = "GRW",
+                            IsActive = true,
+                            Name = "Gujranwala",
+                            ProvinceId = (short)1,
+                            SortSeq = (short)11
+                        },
+                        new
+                        {
+                            Id = (short)12,
+                            Code = "SGD",
+                            IsActive = true,
+                            Name = "Sargodha",
+                            ProvinceId = (short)1,
+                            SortSeq = (short)12
+                        },
+                        new
+                        {
+                            Id = (short)13,
+                            Code = "BWP",
+                            IsActive = true,
+                            Name = "Bahawalpur",
+                            ProvinceId = (short)1,
+                            SortSeq = (short)13
+                        },
+                        new
+                        {
+                            Id = (short)14,
+                            Code = "SKZ",
+                            IsActive = true,
+                            Name = "Sukkur",
+                            ProvinceId = (short)2,
+                            SortSeq = (short)14
+                        },
+                        new
+                        {
+                            Id = (short)15,
+                            Code = "LRK",
+                            IsActive = true,
+                            Name = "Larkana",
+                            ProvinceId = (short)2,
+                            SortSeq = (short)15
+                        },
+                        new
+                        {
+                            Id = (short)16,
+                            Code = "MRD",
+                            IsActive = true,
+                            Name = "Mardan",
+                            ProvinceId = (short)3,
+                            SortSeq = (short)16
+                        },
+                        new
+                        {
+                            Id = (short)17,
+                            Code = "ABT",
+                            IsActive = true,
+                            Name = "Abbottabad",
+                            ProvinceId = (short)3,
+                            SortSeq = (short)17
+                        },
+                        new
+                        {
+                            Id = (short)18,
+                            Code = "MNG",
+                            IsActive = true,
+                            Name = "Mingora",
+                            ProvinceId = (short)3,
+                            SortSeq = (short)18
+                        },
+                        new
+                        {
+                            Id = (short)19,
+                            Code = "KHT",
+                            IsActive = true,
+                            Name = "Kohat",
+                            ProvinceId = (short)3,
+                            SortSeq = (short)19
+                        },
+                        new
+                        {
+                            Id = (short)20,
+                            Code = "GIL",
+                            IsActive = true,
+                            Name = "Gilgit",
+                            ProvinceId = (short)6,
+                            SortSeq = (short)20
+                        },
+                        new
+                        {
+                            Id = (short)21,
+                            Code = "SKD",
+                            IsActive = true,
+                            Name = "Skardu",
+                            ProvinceId = (short)6,
+                            SortSeq = (short)21
+                        },
+                        new
+                        {
+                            Id = (short)22,
+                            Code = "MZG",
+                            IsActive = true,
+                            Name = "Muzaffarabad",
+                            ProvinceId = (short)7,
+                            SortSeq = (short)22
+                        },
+                        new
+                        {
+                            Id = (short)23,
+                            Code = "MIR",
+                            IsActive = true,
+                            Name = "Mirpur",
+                            ProvinceId = (short)7,
+                            SortSeq = (short)23
+                        },
+                        new
+                        {
+                            Id = (short)24,
+                            Code = "GRT",
+                            IsActive = true,
+                            Name = "Gujrat",
+                            ProvinceId = (short)1,
+                            SortSeq = (short)24
+                        },
+                        new
+                        {
+                            Id = (short)25,
+                            Code = "SHK",
+                            IsActive = true,
+                            Name = "Sheikhupura",
+                            ProvinceId = (short)1,
+                            SortSeq = (short)25
+                        },
+                        new
+                        {
+                            Id = (short)26,
+                            Code = "TRB",
+                            IsActive = true,
+                            Name = "Turbat",
+                            ProvinceId = (short)4,
+                            SortSeq = (short)26
+                        },
+                        new
+                        {
+                            Id = (short)27,
+                            Code = "GWD",
+                            IsActive = true,
+                            Name = "Gwadar",
+                            ProvinceId = (short)4,
+                            SortSeq = (short)27
                         });
                 });
 
@@ -1881,6 +2074,106 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Net 30 (no advance)",
                             SortSeq = (short)4
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.ProvinceLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PROV_LKP", "REF");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "PB",
+                            IsActive = true,
+                            Name = "Punjab",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "SD",
+                            IsActive = true,
+                            Name = "Sindh",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "KP",
+                            IsActive = true,
+                            Name = "Khyber Pakhtunkhwa",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "BL",
+                            IsActive = true,
+                            Name = "Balochistan",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "ICT",
+                            IsActive = true,
+                            Name = "Islamabad Capital Territory",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "GB",
+                            IsActive = true,
+                            Name = "Gilgit-Baltistan",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "AJK",
+                            IsActive = true,
+                            Name = "Azad Jammu and Kashmir",
+                            SortSeq = (short)7
                         });
                 });
 
@@ -2043,6 +2336,15 @@ namespace Romp.Modules.Reference.Infrastructure.Migrations
                         .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_CATG_LKP_PRNT_CATG_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Reference.Domain.Lookups.Vendors.CityLookup", b =>
+                {
+                    b.HasOne("Romp.Modules.Reference.Domain.Lookups.Vendors.ProvinceLookup", null)
+                        .WithMany()
+                        .HasForeignKey("ProvinceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CITY_LKP_PROV_ID");
                 });
 #pragma warning restore 612, 618
         }

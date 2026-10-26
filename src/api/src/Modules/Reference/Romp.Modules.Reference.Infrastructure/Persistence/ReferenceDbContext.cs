@@ -29,7 +29,6 @@ public sealed class ReferenceDbContext(DbContextOptions<ReferenceDbContext> opti
         modelBuilder.ConfigureLookup<FabricLookup>("FBRC_LKP");
         modelBuilder.ConfigureLookup<GenderLookup>("GNDR_LKP");
         modelBuilder.ConfigureLookup<AgeBracketLookup>("AGE_BRKT_LKP");
-        modelBuilder.ConfigureLookup<CityLookup>("CITY_LKP");
         modelBuilder.ConfigureLookup<VendorSpecialisationLookup>("VNDR_SPCL_LKP");
         modelBuilder.ConfigureLookup<PoStatusLookup>("PO_STS_LKP");
         modelBuilder.ConfigureLookup<PoCancelReasonLookup>("PO_CNCL_RSN_LKP");
@@ -56,6 +55,18 @@ public sealed class ReferenceDbContext(DbContextOptions<ReferenceDbContext> opti
         modelBuilder.ConfigureLookup<PoVendorCommTypeLookup>("PO_VNDR_COMM_TYP_LKP");
         modelBuilder.ConfigureLookup<PoFileCategoryLookup>("PO_FILE_CATG_LKP")
             .Property(c => c.IsVendorVisible).HasColumnName("VNDR_VSBL_IND").IsRequired();
+
+        // Sprint 10 (customers/addresses): provinces, and the province each city belongs to.
+        modelBuilder.ConfigureLookup<ProvinceLookup>("PROV_LKP");
+        modelBuilder.ConfigureLookup<CityLookup>("CITY_LKP")
+            .Property(c => c.ProvinceId).HasColumnName("PROV_ID");
+        modelBuilder.Entity<CityLookup>()
+            .HasOne<ProvinceLookup>()
+            .WithMany()
+            .HasForeignKey(c => c.ProvinceId)
+            .HasConstraintName("FK_CITY_LKP_PROV_ID")
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<CityLookup>().HasIndex(c => c.ProvinceId);
 
         // Sprint 7 (SCRUM-201)
         modelBuilder.ConfigureLookup<CollectionLookup>("COLN_LKP");
