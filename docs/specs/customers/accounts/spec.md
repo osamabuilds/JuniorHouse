@@ -1,6 +1,6 @@
 # Customer accounts: registration, sign-in, password reset
 
-- **Status:** Draft (2026-10-25). **Scope revised (owner, 2026-10-25): real sign-in and security are built last, together with Sprint 8.** Sprint 10 builds only the stand-in described below.
+- **Status:** Draft, scope revised again (owner, 2026-10-29): **real customer sign-in is no longer parked** and is built in Sprint 10, after addresses and before wishlist. Awaiting approval of this revision.
 - **Jira:** SCRUM-59 (FR-38), SCRUM-60 (FR-39), SCRUM-122 and SCRUM-199 (SEC-02) under epic SCRUM-9
 - **BRD sections:** §7.5, §11.2, §6.4 (TC-ACC-01..07), §12.3.1
 - **Requirement IDs:** FR-38, FR-39, SEC-02, SEC-03, SEC-04, NFR-15, SEC-25, NFR-26
@@ -8,7 +8,10 @@
 ## Problem & intent
 A parent needs an account to save addresses, children, wishlist items and later to see orders. Registration and sign-in must be easy, must not reveal whether an email is registered through the sign-in or reset screens, and must resist password guessing without letting an attacker lock a real customer out.
 
-## Scope split (owner decision, 2026-10-25)
+## Scope (owner decision, 2026-10-29: supersedes the split below)
+The owner said real customer sign-in does not need to be parked. ACT-1..ACT-13, ACT-15 and ACT-16 are now in Sprint 10 and the stand-in remains only as the Development/Testing handler. ACT-14 becomes a real merge hook called by sign-in and registration. ACT-17 (start-up refusal while only the stand-in exists) is no longer needed once real sign-in exists; it is replaced by "the stand-in is not registered outside Development/Testing". Answers to the open questions are recorded below.
+
+## Earlier scope split (owner decision, 2026-10-25, superseded)
 **Sprint 10 (now):** the other customer features need to know who the customer is, so this feature delivers only an `ICurrentCustomer` port, a development-only implementation (a seeded test customer, switchable in local runs, refused outside Development exactly like the staff stand-in, ADR 0011), and the rule that no customer endpoint takes a customer id from the request (SEC-05). No registration, sign-in, reset or throttling screens are built. Nothing customer-facing is deployed before real sign-in exists.
 
 **Final auth sprint (with S8):** everything else below (ACT-1..ACT-13, ACT-15, ACT-16 and the Q-ACT-* questions, including FR-39 vs SEC-02) is unchanged and waits for that sprint.
@@ -40,7 +43,7 @@ A parent needs an account to save addresses, children, wishlist items and later 
 | ID | Given / When / Then | Source |
 |---|---|---|
 | ACT-1 | Given a valid email and a password that meets the rule, when registering, then the account is created and the customer is signed in. | TC-ACC-01 |
-| ACT-2 | Given a password below the rule, then registration is blocked and the rule is explained next to the field. | TC-ACC-02 |
+| ACT-2 | Given a password that breaks the rule (Q-ACT-3), then registration is blocked, and while typing each rule shows met or not met in real time, so the customer sees which one is missing. The server enforces the same rules and returns them by name. | TC-ACC-02 |
 | ACT-3 | Given an email already registered (compared case-insensitively, trimmed), then registration fails with guidance to sign in or reset; no second account exists. | TC-ACC-03, FR-38 |
 | ACT-4 | Given valid credentials, when signing in, then the customer is signed in and sent back to where they were. | TC-ACC-04 |
 | ACT-5 | Given a wrong email or a wrong password, then the response and its timing are the same ("We could not sign you in"); the message never says which was wrong. | NFR-15 (new) |
@@ -68,11 +71,11 @@ A parent needs an account to save addresses, children, wishlist items and later 
 Staff sign-in and MFA (S8); social sign-in; MFA for customers; order history; "remember this device"; account deletion and data export of the whole account (only Child Profile data is covered by NFR-29, see [child-profiles](../child-profiles/spec.md)).
 
 ## Open questions
-- [ ] **Q-ACT-1 (blocks the plan) FR-39 vs SEC-02.** The BRD contradicts itself: FR-39 and TC-ACC-05 say temporary lock after repeated failures (5+); SEC-02 says progressive throttling and CAPTCHA, explicitly not a lock, because a lock lets an attacker lock a customer out. Recommendation: SEC-02, and amend FR-39/TC-ACC-05 to match (the "unlock path" then becomes "wait out the delay or solve the CAPTCHA", and the password reset is always available). Who decides: owner. Until answered, ACT-9 keeps both readings.
-- [ ] **Q-ACT-2 Email verification.** The BRD data model has `IsEmailVerified` but FR-38 does not require verification and the design does not draw it. Default: no verification at registration (the reset flow still proves ownership); verification is added when order emails (S13) make a wrong address costly. OK?
-- [ ] **Q-ACT-3 Password rule.** TC-ACC-02 says "complexity rule" without stating it. Default: at least 10 characters, not on a common-password list, no composition rules (current NIST advice). Or a stated rule such as 8 characters with a letter and a digit?
-- [ ] **Q-ACT-4 "Keep me signed in".** The design draws it. Default: it extends the refresh lifetime (30 days instead of 12 hours); session lifetimes otherwise as the staff defaults (15 minutes access, 30 minutes idle).
+- [x] **Q-ACT-1 FR-39 vs SEC-02. ANSWERED (owner, 2026-10-29): SEC-02, throttling plus CAPTCHA, no lockout.** FR-39 and TC-ACC-05 are to be amended to match; ACT-9 reading (A) applies. Original question: The BRD contradicts itself: FR-39 and TC-ACC-05 say temporary lock after repeated failures (5+); SEC-02 says progressive throttling and CAPTCHA, explicitly not a lock, because a lock lets an attacker lock a customer out. Recommendation: SEC-02, and amend FR-39/TC-ACC-05 to match (the "unlock path" then becomes "wait out the delay or solve the CAPTCHA", and the password reset is always available). Who decides: owner. Until answered, ACT-9 keeps both readings.
+- [x] **Q-ACT-2 Email verification. NOT ANSWERED EXPLICITLY (owner, 2026-10-29): default taken, no verification at registration; confirm.** The BRD data model has `IsEmailVerified` but FR-38 does not require verification and the design does not draw it. Default: no verification at registration (the reset flow still proves ownership); verification is added when order emails (S13) make a wrong address costly. OK?
+- [x] **Q-ACT-3 Password rule. ANSWERED (owner, 2026-10-29): at least 8 characters, letters and digits only (no special characters), with at least one capital letter, one small letter and one digit; validated in real time with a message per missing rule.** Note for the plan: refusing special characters also refuses many generated passwords; only the owner can lift it. Original question: TC-ACC-02 says "complexity rule" without stating it. Default: at least 10 characters, not on a common-password list, no composition rules (current NIST advice). Or a stated rule such as 8 characters with a letter and a digit?
+- [x] **Q-ACT-4 "Keep me signed in". ANSWERED: default accepted (30 days refresh, else 12 hours).** The design draws it. Default: it extends the refresh lifetime (30 days instead of 12 hours); session lifetimes otherwise as the staff defaults (15 minutes access, 30 minutes idle).
 - [ ] **Q-ACT-5 Where do cookies live?** Proposal: the browser holds the cookies on the storefront origin and the SSR server forwards them to the API. Alternative: the SSR server holds the session itself. Settled in the plan with an ADR if you have no preference.
-- [ ] **Q-ACT-6 CAPTCHA provider and SSR rate limiter.** Proposal: Cloudflare Turnstile (free, no image puzzles, already behind Cloudflare), with a fake verifier in tests. Pull the shared SSR rate limiter forward from `seo` task 12 for the sign-in and reset pages?
-- [ ] **Q-ACT-7 Mobile number.** The design asks for a mobile number "used for delivery updates". Required or optional at registration? Format check: Pakistani mobile (`+92 3xx xxxxxxx`)?
+- [x] **Q-ACT-6 CAPTCHA provider. ANSWERED: Cloudflare Turnstile with a fake verifier in tests.** Still open: whether the SSR rate limiter is pulled forward from `seo` task 12. Proposal: Cloudflare Turnstile (free, no image puzzles, already behind Cloudflare), with a fake verifier in tests. Pull the shared SSR rate limiter forward from `seo` task 12 for the sign-in and reset pages?
+- [x] **Q-ACT-7 Mobile number. ANSWERED: required, checked as a Pakistani mobile (+92 3xx xxxxxxx).** The design asks for a mobile number "used for delivery updates". Required or optional at registration? Format check: Pakistani mobile (`+92 3xx xxxxxxx`)?
 - [ ] **Q-ACT-8 Terms and Privacy pages.** The checkbox links to them; do the content pages from `storefront-settings` already cover them, or is text missing from the business?
