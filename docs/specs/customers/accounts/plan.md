@@ -64,7 +64,7 @@ Alternatives and risks are in ADR 0021. The main risk is that the stand-in lulls
 - `CustomerSession` (hashes of access and refresh, previous refresh hash, three expiries, `KeepSignedIn`, revoked date and reason); `Rotate`, `Revoke`, `IsUsable` as in the staff session.
 - `ExternalLogin` (`CustomerId`, `Provider` lookup, `Subject`, `EmailAtLink`); unique on (provider, subject).
 - `PhoneChallenge` (phone, code hash or provider reference, expiry, tries, used date).
-- `PasswordResetToken` (token hash, expiry, used date).
+- `PasswordResetToken` and `EmailVerificationToken` (token hash, expiry, used date); `Customer` also holds `EmailVerifiedAt` (null until the link is used, ACT-27, ACT-28).
 - `PasswordRule` (pure): returns the list of rules with met or not met; used by the API response and by tests (ACT-2).
 - `SignInThrottle` (pure): from failures in the window returns delay and `CaptchaRequired` (ACT-9 reading A).
 
@@ -74,6 +74,7 @@ Alternatives and risks are in ADR 0021. The main risk is that the stand-in lulls
 | `RegisterCommand` | session; refuses weak password, duplicate email or phone | ACT-1, 2, 3 |
 | `SignInWithPasswordCommand` | session, or generic failure with delay | ACT-4, 5, 9, 10 |
 | `RefreshSessionCommand`, `SignOutCommand` | cookies | ACT-11, 12 |
+| `SendEmailVerificationCommand`, `VerifyEmailCommand` | link by email via the email port; single use, expiring | ACT-27, 28 |
 | `RequestPasswordResetCommand`, `ResetPasswordCommand` | identical answer; revokes other sessions | ACT-6, 7, 8, 13 |
 | `StartExternalSignInQuery` (provider) | redirect address, state and nonce cookie | ACT-22 |
 | `CompleteExternalSignInCommand` | session, or link-needs-password, or ask-for-email | ACT-20, 21, 22 |
@@ -83,10 +84,10 @@ Alternatives and risks are in ADR 0021. The main risk is that the stand-in lulls
 | `ICaptchaVerifier`, `ISmsSender`, `IExternalIdentityProvider` (Google, Facebook), `ICustomerSignedInHook` | ports with fakes for tests | ACT-14, 22, 23 |
 
 ## API endpoints (all under `/api/auth`, anonymous unless stated, `strict` rate limit)
-`GET methods` · `GET password-rules` · `POST register` · `POST sign-in` · `POST refresh` · `POST sign-out` (customer) · `POST password-reset/request` · `POST password-reset/confirm` · `GET external/{provider}/start` · `GET external/{provider}/callback` · `POST phone/send` · `POST phone/verify` · `POST profile` (customer, limited session) · `POST external/facebook/deletion` (signed request). The storefront SSR server forwards the browser calls and the cookies; the pass-through allow-list in `server.ts` grows to exactly these routes.
+`GET methods` · `GET password-rules` · `POST register` · `POST sign-in` · `POST refresh` · `POST sign-out` (customer) · `POST email/verify` · `POST email/resend` (customer) · `POST password-reset/request` · `POST password-reset/confirm` · `GET external/{provider}/start` · `GET external/{provider}/callback` · `POST phone/send` · `POST phone/verify` · `POST profile` (customer, limited session) · `POST external/facebook/deletion` (signed request). The storefront SSR server forwards the browser calls and the cookies; the pass-through allow-list in `server.ts` grows to exactly these routes.
 
 ## Data (schema `CUST`; new glossary words added as needed)
-`CUST_MAIN` (adds `PHON`, `PSWD_HASH`, `LAST_SGIN_DTE`; `PHON` unique), `CUST_SESN`, `CUST_XLGN` (external login), `AUTH_PRVD_LKP` (GOOGLE, FACEBOOK), `CUST_PHCH` (phone challenge), `CUST_PWRT` (reset token), `CUST_LGIN_ATMP` (one row per attempt, any method, partition key the attempt date). Every table: audit columns, `xmin`, declared and indexed FKs. Session and token tables are purged by a housekeeping job.
+`CUST_MAIN` (adds `PHON`, `PSWD_HASH`, `LAST_SGIN_DTE`; `PHON` unique), `CUST_SESN`, `CUST_XLGN` (external login), `AUTH_PRVD_LKP` (GOOGLE, FACEBOOK), `CUST_PHCH` (phone challenge), `CUST_PWRT` (reset token), `CUST_EVRT` (email verification token), `CUST_MAIN` also gets `EML_VRFY_DTE`, `CUST_LGIN_ATMP` (one row per attempt, any method, partition key the attempt date). Every table: audit columns, `xmin`, declared and indexed FKs. Session and token tables are purged by a housekeeping job.
 
 ## NFR / security design
 SEC-02, SEC-03, SEC-04, NFR-15 as in ADR 0023 (throttle without lock, Turnstile, Lax cookies with the CSRF header, rotation with reuse detection, one attempt row per try). SEC-25: no password, code, token, provider token or full phone number in logs, URLs or error bodies; reset and code values stored hashed. Sign-in p95 under 500 ms excluding the intended hash cost.
@@ -94,7 +95,7 @@ SEC-02, SEC-03, SEC-04, NFR-15 as in ADR 0023 (throttle without lock, Turnstile,
 ## Frontend
 Storefront `features/customers/sign-in`: sign-in, register (with live password checklist), forgot and set-new-password, mobile sign-in (number then code), complete-profile pages. All `noindex`, `no-store`, every control labelled with the right `autocomplete`, errors move focus to the summary, Turnstile widget loaded only on these pages. Buttons "Continue with Google" and "Continue with Facebook" shown only when `GET methods` says so. `core/customer-auth` store, interceptor-free (cookies), a guard for `/account`, the header account link and sign out. The development customer banner stays for Development only.
 
-## Order of work (becomes `tasks.md` after approval)
+## Order of work (becomes `tasks.md` after approval; email verification joins step 3)
 1. Pure rules and entities (`PasswordRule`, `SignInThrottle`, session, phone normalisation). 2. Migration and glossary. 3. Password registration, sign-in, refresh, sign-out, reset with the fake CAPTCHA and email port. 4. Merge hook wired. 5. Google and Facebook against fake providers. 6. SMS code against a fake sender. 7. Pass-through, storefront pages and e2e. 8. Real-provider check when the owner has the accounts. The wishlist resumes after step 4 so its merge hook is real.
 
 ## Security & coupling review
