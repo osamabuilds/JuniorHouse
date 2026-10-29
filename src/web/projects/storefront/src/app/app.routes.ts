@@ -1,5 +1,6 @@
 import { isDevMode } from '@angular/core';
 import { Routes, UrlMatcher, UrlSegment } from '@angular/router';
+import { provideAddresses } from './features/customers/addresses/addresses.providers';
 import { audienceCanMatch } from './features/storefront/listings/listings.guards';
 
 /** The foundations page is a visual check for the design system; it is not part of production builds. */
@@ -42,6 +43,19 @@ export const routes: Routes = [
     matcher: productMatcher,
     loadComponent: () =>
       import('./features/storefront/product-pages/containers/product-page/product-page.container').then((m) => m.ProductPageContainer),
+  },
+  {
+    path: 'account',
+    providers: [provideAddresses()],
+    loadComponent: () => import('./features/customers/account/containers/account-shell/account-shell.container').then((m) => m.AccountShellContainer),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'addresses' },
+      {
+        path: 'addresses',
+        loadComponent: () =>
+          import('./features/customers/addresses/containers/addresses-page/addresses-page.container').then((m) => m.AddressesPageContainer),
+      },
+    ],
   },
   { path: ':gender/new-in', data: { kind: 'new-in' }, loadComponent: listing },
   { path: ':gender/sale', data: { kind: 'sale' }, loadComponent: listing },

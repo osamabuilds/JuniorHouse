@@ -1,0 +1,8 @@
+.rp-account { display: grid; gap: var(--space-6); padding-block: var(--space-5); }
+.rp-account__nav ul { display: flex; gap: var(--space-4); list-style: none; margin: 0; padding: 0; }
+.rp-account__nav a { color: var(--ink); text-decoration: none; }
+.rp-account__nav a.rp-account__link--on { font-weight: 600; text-decoration: underline; }
+@media (min-width: 48rem) {
+  .rp-account { grid-template-columns: 12rem minmax(0, 1fr); }
+  .rp-account__nav ul { flex-direction: column; }
+}

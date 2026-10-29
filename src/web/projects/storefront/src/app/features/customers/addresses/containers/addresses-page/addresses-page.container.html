@@ -1,0 +1,110 @@
+<div class="rp-lhead">
+  <rp-breadcrumbs [crumbs]="crumbs" />
+  <h1 class="rp-display-lg">Addresses</h1>
+  <p class="t-body">Where we deliver your orders. Choose one as your default and it is ready at checkout.</p>
+</div>
+
+@switch (status()) {
+  @case ('signedOut') {
+    <p class="rp-address-note" role="status">You are not signed in, so there are no addresses to show.</p>
+  }
+  @case ('error') {
+    <p class="rp-address-note" role="alert">We could not load your addresses.</p>
+    <button rpBtn="ghost" type="button" (click)="reload()">Try again</button>
+  }
+  @case ('ready') {
+    @if (message() && !formOpen()) {
+      <p class="rp-address-note" role="alert">{{ message() }}</p>
+    }
+
+    @if (page(); as p) {
+      @if (p.items.length === 0) {
+        <p class="rp-address-note">You have no saved addresses yet.</p>
+      } @else {
+        <ul class="rp-address-list">
+          @for (a of p.items; track a.id) {
+            <li>
+              <article class="rp-panel" [class.rp-panel--on]="a.isDefault" [attr.aria-labelledby]="'rp-address-' + a.id">
+                <header class="rp-address__head">
+                  <h2 class="t-h3" [id]="'rp-address-' + a.id">{{ a.recipientName }}</h2>
+                  @if (a.isDefault) {
+                    <span class="rp-status rp-status--ok">Default</span>
+                  }
+                </header>
+                <p class="rp-address__lines">
+                  {{ a.lineOne }}<br />
+                  @if (a.lineTwo) {
+                    {{ a.lineTwo }}<br />
+                  }
+                  {{ a.cityName }}, {{ a.provinceName }}@if (a.postcode) { {{ a.postcode }} }
+                </p>
+                <p class="t-caption">{{ a.phone }}</p>
+                <div class="rp-address__actions">
+                  <button rpBtn="ghost" size="sm" type="button" data-edit (click)="edit(a)">Edit<span class="sr-only"> {{ a.recipientName }}</span></button>
+                  @if (!a.isDefault) {
+                    <button rpBtn="ghost" size="sm" type="button" data-make-default [disabled]="saving()" (click)="makeDefault(a)">Make default<span class="sr-only"> {{ a.recipientName }}</span></button>
+                  }
+                  <button rpBtn="ghost" size="sm" type="button" data-remove [disabled]="saving()" (click)="askRemove(a)">Remove<span class="sr-only"> {{ a.recipientName }}</span></button>
+                </div>
+              </article>
+            </li>
+          }
+        </ul>
+
+        @if (p.totalPages > 1) {
+          <nav class="rp-address-pager" aria-label="Pages of addresses">
+            <button rpBtn="ghost" size="sm" type="button" [disabled]="p.page <= 1" (click)="goTo(p.page - 1)">Previous</button>
+            <span class="t-caption" aria-current="page">Page {{ p.page }} of {{ p.totalPages }}</span>
+            <button rpBtn="ghost" size="sm" type="button" [disabled]="p.page >= p.totalPages" (click)="goTo(p.page + 1)">Next</button>
+          </nav>
+        }
+      }
+    }
+  }
+}
+
+@if (canAdd()) {
+  <p class="rp-address-add"><button rpBtn type="button" data-add (click)="add()">Add an address</button></p>
+}
+
+<dialog rpDialog #formDialog="rpDialog" class="rp-fullscreen" data-form aria-labelledby="rp-address-form-title" (closed)="formClosed()">
+  <div class="rp-dialog__head">
+    <h2 class="t-h3" id="rp-address-form-title">{{ editing() ? 'Edit address' : 'Add an address' }}</h2>
+    <button rpBtn="ghost" size="sm" type="button" (click)="closeForm()">Close</button>
+  </div>
+  <div class="rp-dialog__body">
+    @if (message()) {
+      <p class="rp-address-note" role="alert">{{ message() }}</p>
+    }
+    @if (formOpen()) {
+      <rp-address-form
+        [value]="formValue()"
+        [provinces]="provinces()"
+        [cities]="cities()"
+        [errors]="fieldErrors()"
+        [saving]="saving()"
+        (submitted)="save($event)"
+        (cancelled)="closeForm()"
+        (provinceChanged)="chooseProvince($event)"
+      />
+    }
+  </div>
+</dialog>
+
+<dialog rpDialog #confirmDialog="rpDialog" class="rp-fullscreen rp-confirm" data-confirm aria-labelledby="rp-address-confirm-title">
+  <div class="rp-dialog__head">
+    <h2 class="t-h3" id="rp-address-confirm-title">Remove this address?</h2>
+  </div>
+  <div class="rp-dialog__body">
+    @if (toRemove(); as a) {
+      <p>{{ a.recipientName }}, {{ a.lineOne }}, {{ a.cityName }}.</p>
+      @if (a.isDefault) {
+        <p class="t-caption">This is your default address. Your most recent remaining address becomes the default.</p>
+      }
+    }
+    <div class="rp-address__actions">
+      <button rpBtn type="button" data-confirm-remove (click)="confirmRemove()">Remove address</button>
+      <button rpBtn="ghost" type="button" (click)="confirmDialog.close()">Keep it</button>
+    </div>
+  </div>
+</dialog>

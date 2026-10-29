@@ -36,6 +36,56 @@ app.get('/api/storefront/{*splat}', async (req, res) => {
   }
 });
 
+/**
+ * The signed-in customer's address book (ADD-*). The browser asks this origin (`/customer-api/addresses`) and the server forwards to
+ * `/api/customers/me/addresses` with the customer's cookie. Nothing else under `/api/customers` is reachable this way, and the answer
+ * is never cached.
+ */
+const addressBook = /^\/customer-api\/addresses(\/[0-9]+(\/default)?)?$/;
+
+app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res) => {
+  if (!addressBook.test(req.path) || !['GET', 'POST', 'PUT', 'DELETE'].includes(req.method)) {
+    res.status(404).end();
+    return;
+  }
+  try {
+    const headers: Record<string, string> = {};
+    const cookie = req.header('cookie');
+    if (cookie) headers['cookie'] = cookie;
+    const sendsJson = (req.method === 'POST' || req.method === 'PUT') && req.body && Object.keys(req.body).length > 0;
+    if (sendsJson) headers['content-type'] = 'application/json';
+    const target = new URL(req.path.replace('/customer-api/addresses', '/api/customers/me/addresses'), apiBaseUrl);
+    target.search = new URL(req.originalUrl, apiBaseUrl).search;
+    const upstream = await fetch(target, {
+      method: req.method,
+      headers,
+      body: sendsJson ? JSON.stringify(req.body) : undefined,
+      redirect: 'manual',
+    });
+    res.status(upstream.status);
+    const type = upstream.headers.get('content-type');
+    if (type) res.setHeader('content-type', type);
+    res.setHeader('cache-control', 'private, no-store');
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
+
+/** The province and city lists behind the address form: public, anonymous, GET only. */
+app.get('/api/geography/{*splat}', async (req, res) => {
+  try {
+    const upstream = await fetch(new URL(req.originalUrl, apiBaseUrl), { redirect: 'manual' });
+    res.status(upstream.status);
+    for (const name of ['content-type', 'etag', 'cache-control']) {
+      const value = upstream.headers.get(name);
+      if (value) res.setHeader(name, value);
+    }
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
 
 /**
  * Product picture files (hashed names, never change for the same bytes) come from the API's file store. Behind nginx in production the
