@@ -24,9 +24,25 @@ Ordered, checkable steps. Each names the test that proves it. Test-first: write 
 - [x] **A6** `ICustomerAddressQueries` in `Customers.Contracts`. *Proof:* `AddressContractTests`.
 - [x] **A7** Storefront `features/customers/addresses` (labels, dependent selects, focus trap), account shell, `noindex`, `no-store`. *Proof:* component and store specs, `AddressesPage` e2e (ADD-8).
 
-## wishlist, newsletter, notify-me
+## wishlist
 
-Tasks for these three are added to this file when their turn comes, from their feature plans, in the order wishlist, newsletter, notify-me (module plan, "Order of work").
+From [wishlist/plan.md](wishlist/plan.md). Two things the plan assumes do not exist yet: `IStorefrontCatalogQueries` (Storefront.Contracts has only `IStorefrontPageQueries`) and an `ICustomerSignedInHook` (sign-in is parked). W2 adds the first; W7 builds the merge endpoint only and the hook waits for the auth sprint.
+
+- [ ] **W1** `WishlistItem` and `WishlistFlags` (pure: saved price, current price, availability to `PriceDropped`, `OnSale`, `SoldOut`, `Unavailable`), `MaxWishlistItems` option validated at start. *Proof:* `WishlistFlagsTests`, `WishlistItemTests` (WSL-4, WSL-5, WSL-6).
+- [ ] **W2** Storefront contract `IStorefrontCatalogQueries.GetProductSummariesAsync(ids)`: one bulk call, DTOs only (id, slug, name, price, was-price, availability, image, link path); unpublished ids are returned as absent. *Proof:* `StorefrontCatalogQueriesTests` in Storefront integration tests, including a query-count assertion (WSL-5, WSL-8).
+- [ ] **W3** `CUST_WSHL` migration (`UQ_CUST_WSHL_CUST_ID_PRDT_ID`, index on `CUST_ID`, `SAVD_PRIC_AMT` numeric(12,2)); glossary words (`WSHL`, `SAVD`, `PRIC`, `AMT` if missing). *Proof:* `WishlistMigrationTests`, `NamingConventionTests`, `GlossaryTests`.
+- [ ] **W4** Commands: add (idempotent `INSERT ... ON CONFLICT DO NOTHING`, price taken from the read model, 200 cap) and remove by product id. *Proof:* `WishlistCommandTests` (WSL-1, WSL-4, WSL-7).
+- [ ] **W5** Queries: paged list (summaries in one contract call, no N+1, page size 1..100) and ids (max 200). *Proof:* `WishlistQueryTests` incl. query count (WSL-5, WSL-6, WSL-8).
+- [ ] **W6** Endpoints `GET/PUT/DELETE /api/customers/me/wishlist...`, ownership by filter, matrix rows. *Proof:* `WishlistEndpointsTests.AnotherCustomersItem_Is404AndUnchanged` (WSL-7), authorization matrix test.
+- [ ] **W7** Merge command and `POST .../wishlist/merge` (ids only, at most 50, unknown or unpublished skipped, repeat-safe). *Proof:* `WishlistMergeTests` (WSL-3).
+- [ ] **W8** Architecture tests still green (`CustomerOwnershipArchitectureTests` covers the new table); extend the `/customer-api` pass-through allow-list in `server.ts` for the wishlist routes. *Proof:* `rt.sh Romp.ArchitectureTests`, storefront server spec or e2e.
+- [ ] **W9** Storefront `features/customers/wishlist`: store, service, `WishlistHeartComponent` (button, `aria-pressed`, named for product and state), guest prompt dialog with the `localStorage` key (at most 50 ids), `/wishlist` page, header link with count, `noindex`, `no-store`. *Proof:* component, store and service specs (WSL-1, WSL-2, WSL-9).
+- [ ] **W10** Wire the heart into the product page and listing tiles without breaking the shared edge cache (state fetched client-side after load). *Proof:* product-page and listing specs still pass; heart renders off on the server.
+- [ ] **W11** E2E journey and axe scan; spec "As built"; rebuild docker. *Proof:* `wishlist.e2e.spec.ts` (WSL-1, WSL-9).
+
+## newsletter, notify-me
+
+Tasks are added when their turn comes, from their feature plans, in that order (module plan, "Order of work").
 
 ## Decisions taken on defaults
 
