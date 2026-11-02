@@ -54,7 +54,7 @@ import { QuantityStepperComponent } from '../quantity-stepper/quantity-stepper.c
           @if (isGone()) {
             <span></span>
           } @else {
-            <rp-quantity-stepper [value]="l.quantity" [label]="l.name" [disabled]="busy()" (changed)="quantityChange.emit($event)" />
+            <rp-quantity-stepper [value]="l.quantity" [label]="l.name" [disabled]="busy()" (changed)="onQuantity($event)" />
           }
           <button type="button" class="rp-icon-btn rp-line__remove" [attr.aria-label]="'Remove ' + l.name" [disabled]="busy()" (click)="remove.emit()"><rp-icon name="trash" /></button>
         </div>
@@ -72,6 +72,12 @@ export class CartLineComponent {
   readonly remove = output<void>();
   /** Following the item's link closes the drawer. */
   readonly navigate = output<void>();
+
+  /** Minus at one removes the line (the server never accepts a quantity below one). */
+  protected onQuantity(quantity: number): void {
+    if (quantity < 1) this.remove.emit();
+    else this.quantityChange.emit(quantity);
+  }
 
   protected readonly isGone = computed(() => this.line().issues.includes('unavailable'));
 

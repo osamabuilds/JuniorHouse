@@ -91,7 +91,10 @@ test.describe('cart', () => {
     const axe = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
     expect(axe.violations.map((v) => v.id)).toEqual([]);
 
-    await page.getByRole('button', { name: /Remove/ }).click();
+    // Minus at one removes the line (the quantity is 2 here, so press minus twice).
+    await page.getByRole('button', { name: 'Decrease quantity' }).click();
+    await expect(page.locator('.rp-count-note')).toContainText('1 item');
+    await page.getByRole('button', { name: 'Remove from bag' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Your bag is empty' })).toBeVisible();
   });
 

@@ -110,9 +110,27 @@ describe('CartLineComponent', () => {
     expect([...busy.el.querySelectorAll('button')].every((b) => b.disabled)).toBe(true);
   });
 
-  it('the stepper never goes below one or above the limit', () => {
-    const one = render({ quantity: 1 });
-    expect((one.el.querySelector('button[aria-label="Decrease quantity"]') as HTMLButtonElement).disabled).toBe(true);
+  it('minus at one removes the line instead of asking for zero, and its name says so', () => {
+    const { fixture, el } = render({ quantity: 1 });
+    const changes: number[] = [];
+    let removed = 0;
+    fixture.componentInstance.quantityChange.subscribe((q) => changes.push(q));
+    fixture.componentInstance.remove.subscribe(() => removed++);
+    const minus = el.querySelector('button[aria-label="Remove from bag"]') as HTMLButtonElement;
+
+    expect(minus.disabled).toBe(false);
+    minus.click();
+
+    expect(removed).toBe(1);
+    expect(changes).toEqual([]);
+  });
+
+  it('minus above one lowers the quantity, and plus stops at the limit', () => {
+    const two = render({ quantity: 2 });
+    const changes: number[] = [];
+    two.fixture.componentInstance.quantityChange.subscribe((q) => changes.push(q));
+    (two.el.querySelector('button[aria-label="Decrease quantity"]') as HTMLButtonElement).click();
+    expect(changes).toEqual([1]);
 
     const ten = render({ quantity: 10 });
     expect((ten.el.querySelector('button[aria-label="Increase quantity"]') as HTMLButtonElement).disabled).toBe(true);
