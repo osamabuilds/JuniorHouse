@@ -11,9 +11,9 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 - [x] **P1** `Order` aggregate, status transition table, history rows, snapshots, order number with check digit (ADR 0006 shape, prefix `RMP`). *Proof:* `OrderTests`, `OrderStatusTransitionTests` (exhaustive), `OrderNumberTests` (ORD-5, 6, 10).
 - [x] **P2** `ORDR_MAIN`, `ORDR_LINE`, `ORDR_HIST` (append-only trigger), `ORDR_NO_SEQ`, lookups; migration. *Proof:* `OrdersMigrationTests`, `OrderHistoryAppendOnlyTests`, naming and glossary tests.
 - [x] **P3** Contracts: `Orders.Contracts` events (`OrderPlacedEvent`, `OrderPaidEvent`, `OrderCancelledEvent`, `CodConfirmationRequestedEvent`, `OrderConfirmedEvent`, `OrderPaymentSuspectEvent`), `IOrderNotificationQueries` (done; `ICodCustomerResponses` comes with the COD confirmation work). *Proof:* `OrdersContractShapeTests` (ids only, no personal data fields).
-- [ ] **P4** `PlaceOrderCommand` following ADR 0025: key lookup, `ICheckoutPricing`, discount hold, stock reserve, one transaction, outbox event, compensation. *Proof:* `PlaceOrderTests` (ORD-1, 4, 7, 11, 12), `PlaceOrderFailureTests` (failure after reserve releases both), `PlaceOrderConcurrencyTests` (double submit gives one order, last unit gives one winner: ORD-1, ORD-2, TC-CHK-16, 17, 19).
-- [ ] **P5** Out-of-stock and code-rejected refusals keep the cart and name the short variants. *Proof:* `PlaceOrderRefusalTests` (ORD-3).
-- [ ] **P6** Notification outage does not affect placement. *Proof:* `PlaceOrderOutboxTests.NotificationDown_OrderStillPlaced` (ORD-8).
+- [x] **P4** `PlaceOrderCommand` following ADR 0025: key lookup, `ICheckoutPricing`, discount hold, stock reserve, one transaction, outbox event, compensation. *Proof:* `PlaceOrderTests` (ORD-1, 4, 7, 11, 12), `PlaceOrderFailureTests` (failure after reserve releases both), `PlaceOrderConcurrencyTests` (double submit gives one order, last unit gives one winner: ORD-1, ORD-2, TC-CHK-16, 17, 19).
+- [x] **P5** Out-of-stock and code-rejected refusals keep the cart and name the short variants. *Proof:* `PlaceOrderRefusalTests` (ORD-3).
+- [x] **P6** Notification outage does not affect placement. *Proof:* `PlaceOrderOutboxTests.NotificationDown_OrderStillPlaced` (ORD-8).
 - [ ] **P7** `CancelOrderCommand` (before dispatch; after dispatch refused), emits `OrderCancelledEvent` with reason and was-picked flag. *Proof:* `CancelOrderTests` (ORD-9, 10).
 - [ ] **P8** Staff and customer reads paged with constant queries; another customer's order is not found. *Proof:* `OrderQueryTests` incl. query count (ORD-13, 14).
 
@@ -31,10 +31,10 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## checkout (S12)
 
-- [ ] **H1** `GET /api/orders/checkout` summary and `POST /api/orders` with `Idempotency-Key`, origin check, saved address ownership via `ICustomerAddressQueries`, city and province validation. *Proof:* `CheckoutEndpointsTests` (CHK-1 to 4, 7, 8, 12), `AnotherCustomersAddress_IsNotFound` (SEC-05).
-- [ ] **H2** Nothing ever blocks an order on account state. *Proof:* `CheckoutNeverBlockedTests` (unverified email, unverified mobile, guest: CHK-6).
-- [ ] **H3** Session expiry and Back-and-resubmit. *Proof:* `CheckoutSessionTests` (CHK-5, 10).
-- [ ] **H4** Storefront `features/orders/checkout` (single page per the design system `CheckoutPage`, saved address picker, city fee shown, payment methods, WhatsApp opt-in checkbox, discount code box, one generated key per page load, disabled button on press), order-placed page, payment-return page, pass-through routes, `noindex`/`no-store`/`robots.txt`. *Proof:* store and component specs, `checkout.e2e.spec.ts` with axe (CHK-1 to 4, 9, 11).
+- [x] **H1** `GET /api/orders/checkout` summary and `POST /api/orders` with `Idempotency-Key`, origin check, saved address ownership via `ICustomerAddressQueries`, city and province validation. *Proof:* `CheckoutEndpointsTests` (CHK-1 to 4, 7, 8, 12), `AnotherCustomersAddress_IsNotFound` (SEC-05).
+- [x] **H2** Nothing ever blocks an order on account state. *Proof:* `CheckoutNeverBlockedTests` (unverified email, unverified mobile, guest: CHK-6).
+- [x] **H3** Session expiry and Back-and-resubmit. *Proof:* `CheckoutSessionTests` (CHK-5, 10).
+- [x] **H4** Storefront `features/orders/checkout` (single page per the design system `CheckoutPage`, saved address picker, city fee shown, payment methods, WhatsApp opt-in checkbox, discount code box, one generated key per page load, disabled button on press), order-placed page, payment-return page, pass-through routes, `noindex`/`no-store`/`robots.txt`. *Proof:* store and component specs, `checkout.e2e.spec.ts` with axe (CHK-1 to 4, 9, 11). (Built: checkout and order-placed pages; the old "Terms and Privacy" links point at routes the content pages supply; discount code box is on the bag, not repeated on checkout.)
 - [ ] **H5** Placeholder Terms and Privacy pages until the business supplies text. *Proof:* route spec; noted in the spec "As built".
 
 ## cod-confirmation (S12)

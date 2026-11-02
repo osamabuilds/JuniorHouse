@@ -75,6 +75,6 @@ public sealed class CartPricer(IVariantSalesQueries catalog, IStockAvailabilityQ
         return new PricedLine(
             line.VariantId, sale.ProductId, sale.ProductName, sale.Path, sale.ColourName, sale.SizeName, sale.SkuCode, sale.Price, sale.CompareAtPrice,
             line.Quantity, decimal.Round(sale.Price.Value * line.Quantity, 2, MidpointRounding.AwayFromZero), onHand, previous, flags,
-            thumb?.WebpUrl, thumb?.JpegUrl, altText) { CategoryId = sale.CategoryId };
+            thumb?.WebpUrl, thumb?.JpegUrl, altText) { CategoryId = sale.CategoryId, StockVariantId = sale.LabellingVariantId };
     }
 }

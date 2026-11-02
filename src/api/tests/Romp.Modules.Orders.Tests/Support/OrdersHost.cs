@@ -29,7 +29,7 @@ internal sealed class FakePricing : ICheckoutPricing
     public static CheckoutPricing Basket(decimal discount = 0m, string? cartRef = "7", params (long Variant, int Quantity, decimal Price)[] lines)
     {
         var items = (lines.Length == 0 ? [(11L, 2, 1200m), (12L, 1, 500m)] : lines)
-            .Select(l => new CheckoutLine(l.Variant, 500 + l.Variant, $"Dress {l.Variant}", "/girls/dresses/dress", $"ROMP-S{l.Variant}", "Red", "2-3Y", l.Price, l.Quantity, l.Price * l.Quantity))
+            .Select(l => new CheckoutLine(l.Variant, 500 + l.Variant, $"Dress {l.Variant}", "/girls/dresses/dress", $"ROMP-S{l.Variant}", "Red", "2-3Y", l.Price, l.Quantity, l.Price * l.Quantity, 9000 + l.Variant))
             .ToList();
         var subtotal = items.Sum(i => i.LineTotal);
         return new CheckoutPricing(items, subtotal, discount, 250m, true, subtotal - discount + 250m, cartRef, true, []);

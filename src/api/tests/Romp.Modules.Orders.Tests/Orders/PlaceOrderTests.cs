@@ -99,7 +99,7 @@ public sealed class PlaceOrderTests(OrdersPostgres postgres) : IClassFixture<Ord
     {
         using var host = new OrdersHost(postgres);
         host.Redemptions.Hold = new DiscountHold(true, "WELCOME10", 0m, null);
-        host.Reservations.Result = new ReservationResult(ReservationOutcome.Shortage, null, [new ShortageLine(11, 2, 1)]);
+        host.Reservations.Result = new ReservationResult(ReservationOutcome.Shortage, null, [new ShortageLine(9011, 2, 1)]);
         var key = NewKey();
 
         var result = await host.SendAsync(Place(key));
@@ -123,7 +123,7 @@ public sealed class PlaceOrderTests(OrdersPostgres postgres) : IClassFixture<Ord
 
         var order = await LoadAsync(result.OrderNumber!);
         Assert.Equal((999m, 1249m), (order.Subtotal, order.Total));
-        Assert.Equal(21L, Assert.Single(host.Reservations.Reserved[0].Lines).VariantId);
+        Assert.Equal(9021L, Assert.Single(host.Reservations.Reserved[0].Lines).VariantId);
     }
 
     [Fact]

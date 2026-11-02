@@ -34,7 +34,7 @@ internal sealed class CheckoutPricing(CartOwnerAccessor owners, ISender sender) 
         }
 
         var lines = result.Cart.Lines.Where(l => l.IsOrderable && l.UnitPrice is not null).Select(l => new CheckoutLine(
-            l.VariantId, l.ProductId, l.Name, l.Path, l.Sku, l.Colour, l.Size, l.UnitPrice!.Value, l.Quantity, l.LineTotal)).ToList();
+            l.VariantId, l.ProductId, l.Name, l.Path, l.Sku, l.Colour, l.Size, l.UnitPrice!.Value, l.Quantity, l.LineTotal, l.StockVariantId ?? 0)).ToList();
         var a = result.Amounts;
         return new Contracts.CheckoutPricing(
             lines, a.Subtotal, a.Discount, a.Shipping, a.ShippingKnown, a.Total, result.Cart.CartId?.ToString(System.Globalization.CultureInfo.InvariantCulture),

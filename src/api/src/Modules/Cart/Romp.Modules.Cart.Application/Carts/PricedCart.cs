@@ -41,6 +41,9 @@ public sealed record PricedLine(
     /// <summary>The catalogue category, so a discount code scoped to categories can tell which lines it covers (DSC-7).</summary>
     public short CategoryId { get; init; }
 
+    /// <summary>The id the warehouse knows this variant by (Labelling's variant id), so a stock reservation can name it; null when the variant is not labelled.</summary>
+    public long? StockVariantId { get; init; }
+
     /// <summary>The line carries a struck-through full price, so a code that leaves sale items out skips it (Q-DSC-4).</summary>
     public bool IsOnSale => UnitPrice is { } price && CompareAtPrice is { } was && was > price;
 }

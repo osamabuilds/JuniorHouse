@@ -202,7 +202,7 @@ public sealed class CheckoutEndpointsTests(ProductionApiFixture api)
         using var client = Guest(factory);
         await Send(client, HttpMethod.Post, "/api/cart/lines", new { variantId = variant, quantity = 2 });
         var place = await AnyCityAsync(client);
-        reservations.Refuse = new ReservationResult(ReservationOutcome.Shortage, null, [new ShortageLine(variant, 2, 1)]);
+        reservations.Refuse = new ReservationResult(ReservationOutcome.Shortage, null, [new ShortageLine(variant + 2, 2, 1)]);
 
         var response = await Send(client, HttpMethod.Post, "/api/orders", OrderIn(place), NewKey());
 

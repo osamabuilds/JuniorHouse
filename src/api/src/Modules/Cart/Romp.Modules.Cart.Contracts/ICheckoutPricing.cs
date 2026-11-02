@@ -2,7 +2,8 @@ namespace Romp.Modules.Cart.Contracts;
 
 /// <summary>One basket line as checkout and the order see it: the server's price, never anything the client sent (SEC-09).</summary>
 public sealed record CheckoutLine(
-    long VariantId, long ProductId, string Name, string Path, string? Sku, string Colour, string Size, decimal UnitPrice, int Quantity, decimal LineTotal);
+    long VariantId, long ProductId, string Name, string Path, string? Sku, string Colour, string Size, decimal UnitPrice, int Quantity, decimal LineTotal,
+    long StockVariantId = 0);
 
 /// <summary>
 /// The caller's basket priced for checkout. <see cref="CanOrder"/> is false when the basket is empty or any line is unavailable or short of

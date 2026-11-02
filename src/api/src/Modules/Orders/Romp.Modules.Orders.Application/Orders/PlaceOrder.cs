@@ -171,16 +171,16 @@ public sealed partial class PlaceOrderCommandHandler(
         }
 
         // 5. The stock reservation, all lines or none (ORD-2, ORD-3).
-        var reserved = await reservations.ReserveAsync(placementKey, [.. priced.Lines.Select(l => new ReservationLineRequest(l.VariantId, l.Quantity))], cancellationToken);
+        var reserved = await reservations.ReserveAsync(placementKey, [.. priced.Lines.Select(l => new ReservationLineRequest(l.StockVariantId, l.Quantity))], cancellationToken);
         if (reserved.Outcome != ReservationOutcome.Reserved)
         {
             await TryReleaseDiscountAsync(placementKey);
             var names = reserved.Shortages
-                .Select(s => priced.Lines.FirstOrDefault(l => l.VariantId == s.VariantId) is { } line
+                .Select(s => priced.Lines.FirstOrDefault(l => l.StockVariantId == s.VariantId) is { } line
                     ? (s.Available <= 0 ? $"{line.Name} ({line.Colour}, {line.Size}) is out of stock." : $"Only {s.Available} of {line.Name} ({line.Colour}, {line.Size}) are left.")
                     : "An item in your bag is no longer available.")
                 .ToList();
-            return PlaceOrderResult.Refused(PlaceOrderRefusal.OutOfStock, names.Count > 0 ? names : ["Some items are no longer available."], [.. reserved.Shortages.Select(s => s.VariantId)]);
+            return PlaceOrderResult.Refused(PlaceOrderRefusal.OutOfStock, names.Count > 0 ? names : ["Some items are no longer available."], [.. reserved.Shortages.Select(s => priced.Lines.FirstOrDefault(l => l.StockVariantId == s.VariantId)?.VariantId ?? 0).Where(id => id != 0)]);
         }
 
         // 6. The order, in one transaction of its own (ORD-7). A twin that won the race returns its order; any other failure gives everything back.
