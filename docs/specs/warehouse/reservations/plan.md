@@ -3,7 +3,7 @@
 - **Spec:** [spec.md](spec.md) · **Module plan:** [../plan.md](../plan.md) · **Consumer:** [orders plan](../../orders/plan.md)
 - **ADRs:** [0025 placement and reservation](../../../adr/0025-order-placement-and-stock-reservation.md) (the design; this plan implements its Warehouse half) · [0012 stock ledger](../../../adr/0012-stock-ledger-and-balances.md) · [0018 storefront read model](../../../adr/0018-storefront-module-read-model-and-edge.md) · [0004 outbox](../../../adr/0004-postgres-transactional-outbox.md)
 - **Module:** `Warehouse`, schema `WHSE`, feature folder `Reservations/` (API), tests in `Romp.Modules.Warehouse.Tests`
-- **Status:** Draft, awaiting owner approval. Owner answers (2026-11-02): reserve at order placement only; card window 30 minutes; COD holds as long as the confirmation workflow; the ADR answers Q-RSV-4.
+- **Status:** Plan approved (2026-11-02); tasks written. Owner answers (2026-11-02): reserve at order placement only; card window 30 minutes; COD holds as long as the confirmation workflow; the ADR answers Q-RSV-4.
 
 ## Domain model (no EF, no ASP.NET)
 

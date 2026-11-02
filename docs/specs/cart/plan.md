@@ -2,7 +2,7 @@
 
 - **Specs:** [carts](carts/spec.md) · [totals](totals/spec.md) · [discount-codes](discount-codes/spec.md) · **Module README:** [README.md](README.md)
 - **ADRs:** [0024 three modules](../../adr/0024-cart-orders-notifications-modules.md) · [0025 placement and reservation](../../adr/0025-order-placement-and-stock-reservation.md) (the discount hold) · [0011 security baseline](../../adr/0011-security-and-coupling-baseline.md) · [0004 outbox](../../adr/0004-postgres-transactional-outbox.md) · [0023 customer sign-in](../../adr/0023-customer-sign-in-sessions-and-methods.md)
-- **Status:** Draft, awaiting owner approval. Owner answers (2026-11-02): reserve at placement, not at add-to-cart; shipping fee varies by city and is computed on the order placement page; all recommendations approved. **Still open:** the city rate table and COD fee (Q-TOT-1), the per-line maximum (Q-CRT-3; the plan assumes 10, configurable).
+- **Status:** Plan approved by the owner with all recommendations (2026-11-02); tasks written. Owner answers (2026-11-02): reserve at placement, not at add-to-cart; shipping fee varies by city and is computed on the order placement page; all recommendations approved. **Still open:** the city rate table and COD fee (Q-TOT-1), the per-line maximum (Q-CRT-3; the plan assumes 10, configurable).
 
 ## Module layout
 
