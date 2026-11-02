@@ -39,6 +39,7 @@ public sealed class CartModule : IModule
 
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<Application.Carts.CartPricer>();
+        services.AddScoped<Application.Carts.CartCommandSupport>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CartTransactionBehavior<,>));
 
