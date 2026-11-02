@@ -19,6 +19,14 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(c => c.FirstName).HasColumnName("FRST_NAME").HasMaxLength(Customer.NameMaxLength).IsRequired();
         builder.Property(c => c.LastName).HasColumnName("LAST_NAME").HasMaxLength(Customer.NameMaxLength).IsRequired();
         builder.Property(c => c.Phone).HasColumnName("PHON").HasMaxLength(Customer.PhoneMaxLength);
+        builder.Property(c => c.PasswordHash).HasColumnName("PWD_HASH").HasMaxLength(255);
+        builder.Property(c => c.EmailVerifiedAt).HasColumnName("EML_VRFY_DTE");
+        builder.Property(c => c.LastSignedInAt).HasColumnName("LAST_LGIN_DTE");
+
+        // Not unique while the mobile is unverified (ACT-29, Q-ACT-13): anyone could otherwise take a stranger's number.
+        builder.HasIndex(c => c.Phone);
+        builder.Ignore(c => c.HasPassword);
+        builder.Ignore(c => c.EmailIsVerified);
         builder.Ignore(c => c.DomainEvents);
 
         builder.HasAuditColumns();

@@ -357,3 +357,12 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | postcode | PCDE | | recipient | RCPT |
 | province | PROV | | two | TWO |
 | one | ONE | | | |
+
+### Added with customer sign-in (Customers, accounts)
+
+`PWD`, `HASH`, `SESS`, `ACSS`, `RFSH`, `TOKN`, `EXPY`, `STRT`, `ROTD`, `RVKD`, `RSN`, `CLNT`, `AGNT`, `ABS`, `USED`, `ATMP`, `OTCM`, `LGIN`, `PREV`, `IP`, `LAST`, `EML` and `DTE` already existed (the staff sign-in uses them) and keep their abbreviation. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| reset | RSET | | verified (verify) | VRFY |
+| keep (keep me signed in) | KEEP | | issued | ISSD |

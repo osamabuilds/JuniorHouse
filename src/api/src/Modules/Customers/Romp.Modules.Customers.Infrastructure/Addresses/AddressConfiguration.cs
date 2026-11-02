@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.Modules.Customers.Domain.Accounts;
+using Romp.Modules.Customers.Domain;
 using Romp.Modules.Customers.Domain.Addresses;
 
 namespace Romp.Modules.Customers.Infrastructure.Addresses;

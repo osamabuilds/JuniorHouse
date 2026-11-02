@@ -17,6 +17,14 @@ public sealed class CustDbContext(DbContextOptions<CustDbContext> options) : DbC
 
     public DbSet<CustomerAddress> Addresses => Set<CustomerAddress>();
 
+    public DbSet<CustomerSession> Sessions => Set<CustomerSession>();
+
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
+    public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+
+    public DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
+
     async Task ICustomerDbContext.LockCustomerAsync(long customerId, CancellationToken cancellationToken) =>
         await Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM \"CUST\".\"CUST_MAIN\" WHERE \"ID\" = {customerId} FOR UPDATE", cancellationToken);
 

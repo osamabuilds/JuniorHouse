@@ -1,4 +1,4 @@
-using Romp.Modules.Customers.Domain.Addresses;
+using Romp.Modules.Customers.Domain;
 
 namespace Romp.Modules.Customers.Tests.Addresses;
 

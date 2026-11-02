@@ -1,4 +1,4 @@
-namespace Romp.Modules.Customers.Domain.Addresses;
+namespace Romp.Modules.Customers.Domain;
 
 /// <summary>
 /// One stored form for a Pakistani phone number: <c>+92</c> followed by ten digits (a mobile such as 3001234567, or a landline's area code

@@ -1,4 +1,5 @@
 using FluentValidation;
+using Romp.Modules.Customers.Domain;
 using Romp.Modules.Customers.Domain.Addresses;
 using Romp.Modules.Reference.Contracts;
 
