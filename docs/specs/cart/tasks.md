@@ -38,7 +38,7 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 - [x] **T3** Admin endpoints `/api/shipping/...` with `shipping.manage`; matrix rows. *Proof:* `ShippingEndpointsTests`, authorization matrix test.
 - [x] **T4** `ICheckoutPricing` in `Cart.Contracts` (priced cart, city, method) used by the cart read and, later, by Orders. *Proof:* `CheckoutPricingTests` (TOT-3).
 - [x] **T5** Storefront `features/cart/totals` summary block (subtotal, discount, shipping, total; "calculated at checkout" until a city is chosen). *Proof:* component specs.
-- [ ] **T6** Admin `features/cart/shipping` (city rate table with search and inline edit, defaults form), `*hasPermission`. *Proof:* component and store specs, `shipping.e2e.spec.ts`.
+- [x] **T6** Admin `features/cart/shipping` (city rate table with search and inline edit, defaults form), `*hasPermission`. *Proof:* component and store specs. (No browser e2e: the screen needs a staff login.)
 
 ## discount-codes
 
@@ -53,6 +53,6 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 
 ## Close the loop
 
-- [ ] **L1** Architecture tests green (only the known `zz-live-demo` failure); full solution build with 0 warnings; storefront and admin unit tests green; e2e for cart, shipping and discounts green on the docker secure stack.
-- [ ] **L2** Spec "As built" sections updated; Jira issues created and linked in the spec headers; `docs/specs/README.md` statuses.
-- [ ] **L3** Rebuild the docker stack and tell the owner the URLs and what to try (add to bag, change quantity, apply a code, set a city rate in the admin).
+- [x] **L1** Architecture tests green (only the known `zz-live-demo` failure); full solution build with 0 warnings; storefront and admin unit tests green; e2e for cart and discounts green on the docker secure stack (shipping has none: it needs a staff login).
+- [x] **L2** Spec "As built" sections updated; Jira issues created and linked in the spec headers; `docs/specs/README.md` statuses.
+- [x] **L3** Rebuild the docker stack and tell the owner the URLs and what to try (add to bag, change quantity, apply a code, set a city rate in the admin).

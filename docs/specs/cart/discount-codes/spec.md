@@ -1,7 +1,7 @@
 # Discount codes
 
-- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
-- **Jira:** to be created on approval (sprint S11)
+- **Status:** Built (2026-11-02; discount hold confirmation waits for Orders)
+- **Jira:** SCRUM-202 branch (sprint S11); separate issue to be created when the PR is opened
 - **BRD sections:** §5.4, §8.4, §12.3.3
 - **Requirement IDs:** FR-25, FR-26, FR-57, SEC-14, FR-59, TC-CHK-07, TC-CHK-08, TC-CHK-09, TC-CHK-10
 
@@ -54,3 +54,10 @@ Gift cards and the TC-CHK-20 case (P2), loyalty and referral rewards (P2), autom
 - [x] **Q-DSC-4 Do codes apply to sale items?** (`CompareAtPrice` set). Recommendation: a per-code flag, default excluded. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-DSC-5 Rate-limit numbers** (attempts per minute and per hour per caller). Recommendation: 10 per 15 minutes per IP and per customer, then a 15-minute wait. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-DSC-6 Admin role.** FR-60 names a marketing role; roles exist from S8. Confirm which permission guards this screen (new `discounts.manage`). **Approved (owner, 2026-11-02: approve all recommendations).**
+
+## As built (2026-11-02)
+
+- **Shopper:** `POST /api/cart/discount` (applies only on the shopper's action) and `DELETE /api/cart/discount`; at most 10 attempts per 15 minutes per address (`RateLimit:DiscountApplyPer15Minutes`). Refusals are specific for a real code and identical for an unknown, mistyped or switched-off code (DSC-9). A code that stops holding because the bag changed is taken off with a notice (DSC-13).
+- **Staff:** `/api/discounts` (list, get, create, change, switch on/off; `discounts.manage`), admin screen `features/cart/discount-codes` at `/discounts`. A code is never deleted. Its text cannot change once an order has used it. Changes are audited through the module's audit interceptor (DSC-11).
+- **Holding for an order:** `IDiscountRedemptions` (Cart.Contracts). A hold takes a row lock on the code, counts held plus confirmed uses against the caps, and a repeated placement key returns the same hold. Guests are limited per hash of the mobile number given at checkout. A sweeper releases holds older than `Cart:HoldMinutes` (30).
+- **Not built yet (needs Orders):** confirming a hold when the order is placed and releasing it when the order is cancelled (task D6).

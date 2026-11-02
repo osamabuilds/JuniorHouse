@@ -1,7 +1,7 @@
 # Totals and shipping
 
-- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
-- **Jira:** to be created on approval (sprint S11)
+- **Status:** Built (2026-11-02; discount hold confirmation waits for Orders)
+- **Jira:** SCRUM-202 branch (sprint S11); separate issue to be created when the PR is opened
 - **BRD sections:** §5.4, §12.3.3, §12.8
 - **Requirement IDs:** FR-34, SEC-09, TC-CHK-22
 
@@ -39,3 +39,9 @@ Tax calculation engines, multi-currency, per-courier rate tables (the fee is per
 - [x] **Q-TOT-2 Tax.** TC-CHK-22 says "shipping fee/tax calculation". Are prices tax-inclusive (GST/sales tax already in the price), so no tax line is shown? Recommendation: inclusive, no tax line. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-TOT-3 Rounding.** FR-34 says "full currency-unit precision" and TC-CHK-22 says "to the paisa/rupee". Do prices carry paisa, or are all amounts whole rupees? Recommendation: store `numeric(12,2)`, round half away from zero to 2 decimals, display whole rupees only if every price is whole. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-TOT-4 Who edits the policy,** and is a history of changes needed beyond the audit trail? Recommendation: audit trail only. **Approved (owner, 2026-11-02: approve all recommendations).**
+
+## As built (2026-11-02)
+
+- One pure routine, `OrderTotals.Calculate`, with `ShippingPolicy.FeeFor`, is used by the bag, `ICheckoutPricing` (for Orders) and the order, so no second copy can drift. Money is rounded half away from zero to 2 decimals.
+- Staff set the default fee, the free-delivery amount and the Cash on Delivery fee, and a fee per city, in the admin (`/shipping`, permission `shipping.manage`, `features/cart/totals`). Until a city is known, delivery reads "Calculated at checkout".
+- There is no browser e2e for the admin screen (it needs a staff login); the screen is covered by store/reducer specs and the endpoint integration tests.

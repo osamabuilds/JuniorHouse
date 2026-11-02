@@ -1,7 +1,7 @@
 # Carts
 
-- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
-- **Jira:** to be created on approval (sprint S11)
+- **Status:** Built (2026-11-02; discount hold confirmation waits for Orders)
+- **Jira:** SCRUM-202 branch (sprint S11); separate issue to be created when the PR is opened
 - **BRD sections:** §5.2, §5.4, §12.3.3, §12.7
 - **Requirement IDs:** FR-10, FR-22, FR-35, SEC-09, NFR-08, TC-CHK-01, TC-CHK-02, TC-CHK-21
 
@@ -59,3 +59,11 @@ Checkout, payment, stock reservation (S12), gift wrap and gift cards (P2), aband
 - [ ] **Q-CRT-3 Per-line maximum quantity** (stock level only, or a cap such as 10 per line)? *Plan assumes a configurable per-line maximum, default 10, never above available stock; the owner has not answered.*
 - [x] **Q-CRT-4 Merge when a variant is in both carts:** add the quantities (capped at stock) or keep the larger? Recommendation: add, capped at available stock, with a notice. **Approved (owner, 2026-11-02: approve all recommendations).** **Revised (owner, 2026-11-02): nothing is removed when a guest signs in; the merge adds quantities and a line asking for more than is available shows as low stock instead of being cut.**
 - [x] **Q-CRT-5 Where guest identity lives:** a guest-session cookie on the storefront origin (consistent with Q-ACT-5, SameSite=Lax). Confirm. **Approved (owner, 2026-11-02: approve all recommendations).**
+
+## As built (2026-11-02)
+
+- Public routes `GET /api/cart`, `POST /api/cart/lines`, `PUT` and `DELETE /api/cart/lines/{variantId}`; the owner is the signed-in customer or the `romp-guest` cookie, never an id from the request. Every answer is `no-store`.
+- The basket stores only the variant and the quantity; price, stock and the picture are read fresh each time through the Catalog, Warehouse and Storefront contracts (no N+1).
+- **Owner decision (replaces the approved "capped at stock with a notice" wording):** when a guest signs in, the guest bag is merged into the account bag and nothing is removed or cut. A line that now asks for more than is in stock is kept and flagged "low stock" in words; the shopper fixes it before checkout.
+- The bag shows the real product picture, the header bag button shows the item count, Remove is a trash icon, and the minus button at quantity 1 removes the line.
+- Storefront: `features/cart/carts` (NgRx store, bag page, right-hand drawer); e2e `e2e/cart/carts.e2e.spec.ts`.
