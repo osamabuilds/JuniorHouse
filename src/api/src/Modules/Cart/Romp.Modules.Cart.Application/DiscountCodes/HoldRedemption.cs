@@ -55,14 +55,14 @@ public sealed class HoldRedemptionCommandHandler(ICartDbContext dbContext, CartP
     }
 }
 
-/// <summary>Gives a held code's place back (the order failed or was never created). Confirmed uses are untouched here: cancellation has its own path.</summary>
+/// <summary>Gives a code place back: the order failed, was never created, or was cancelled. Held and confirmed uses both come back; a repeat changes nothing.</summary>
 public sealed record ReleaseRedemptionCommand(string PlacementKey) : IRequest, ICartCommand;
 
 public sealed class ReleaseRedemptionCommandHandler(ICartDbContext dbContext) : IRequestHandler<ReleaseRedemptionCommand>
 {
     public async Task Handle(ReleaseRedemptionCommand request, CancellationToken cancellationToken)
     {
-        var held = await dbContext.Redemptions.FirstOrDefaultAsync(r => r.PlacementKey == request.PlacementKey && r.Status == RedemptionStatus.Held, cancellationToken);
+        var held = await dbContext.Redemptions.FirstOrDefaultAsync(r => r.PlacementKey == request.PlacementKey && r.Status != RedemptionStatus.Released, cancellationToken);
         held?.Release();
     }
 }

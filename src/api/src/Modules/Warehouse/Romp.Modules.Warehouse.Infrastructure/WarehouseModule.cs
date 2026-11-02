@@ -81,6 +81,10 @@ public sealed class WarehouseModule : IModule
         services.AddScoped<IOutboxMessageHandler<VariantGtinAssignedEvent>, VariantGtinAssignedPutawayConsumer>();
         services.AddScoped<IOutboxMessageHandler<GtinVoidedEvent>, GtinVoidedConsumer>();
 
+        // Orders' events keep stock holds in step with orders: confirm on placement, release on cancellation (ADR 0025).
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderPlacedEvent>, Reservations.OrderPlacedReservationConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderCancelledEvent>, Reservations.OrderCancelledReservationConsumer>();
+
         // Putaway: QC's accepted batches become items waiting to be shelved (FR-SC-08).
         services.AddScoped<IPoStyleLookup, ContractsPoStyleLookup>();
         services.AddScoped<IPutawayRowLocks, PutawayRowLocks>();

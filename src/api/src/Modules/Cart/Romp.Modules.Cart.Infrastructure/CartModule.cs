@@ -55,6 +55,8 @@ public sealed class CartModule : IModule
         services.AddScoped<Romp.Modules.Cart.Contracts.ICheckoutPricing, Totals.CheckoutPricing>();
         services.AddHostedService<Carts.CartPurgeWorker>();
         services.AddHostedService<DiscountCodes.DiscountHoldSweeper>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderPlacedEvent>, DiscountCodes.OrderPlacedCartConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderCancelledEvent>, DiscountCodes.OrderCancelledCartConsumer>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CartTransactionBehavior<,>));
 

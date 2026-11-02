@@ -158,6 +158,28 @@ public sealed class StockReservation : AggregateRoot<long>, IAuditable
         }
     }
 
+    /// <summary>
+    /// A late order-placed event found its hold already released and the stock was reserved again: the reservation is firm once more.
+    /// Only a released reservation can be reinstated.
+    /// </summary>
+    public ReservationTransition Reinstate(string orderNumber)
+    {
+        if (string.IsNullOrWhiteSpace(orderNumber))
+        {
+            throw new DomainException("Reinstating a reservation needs the order number.");
+        }
+
+        if (StatusId != ReservationStatuses.Released)
+        {
+            return ReservationTransition.NotAllowed;
+        }
+
+        StatusId = ReservationStatuses.Confirmed;
+        OrderNumber = orderNumber;
+        HeldUntil = null;
+        return ReservationTransition.Changed;
+    }
+
     /// <summary>The pick was confirmed and the ledger decremented (RSV-9, built in S14).</summary>
     public ReservationTransition Convert()
     {

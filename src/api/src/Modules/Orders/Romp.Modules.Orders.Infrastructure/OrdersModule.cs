@@ -9,6 +9,7 @@ using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Orders.Application.Abstractions;
+using Romp.Modules.Orders.Contracts;
 using Romp.Modules.Orders.Infrastructure.Orders;
 using Romp.Modules.Orders.Infrastructure.Persistence;
 
@@ -40,7 +41,10 @@ public sealed class OrdersModule : IModule
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(OrdersTransactionBehavior<,>));
 
         // Orders' events go to the shared dispatcher; every event without a real consumer gets the placeholder logging handler.
-        services.AddOutboxModule("ORDR");
+        services.AddOutboxModule(
+            "ORDR",
+            typeof(Contracts.OrderPlacedEvent), typeof(Contracts.OrderPaidEvent), typeof(Contracts.OrderCancelledEvent),
+            typeof(Contracts.CodConfirmationRequestedEvent), typeof(Contracts.OrderConfirmedEvent), typeof(Contracts.OrderPaymentSuspectEvent));
         services.TryAdd(ServiceDescriptor.Scoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>)));
     }
 
