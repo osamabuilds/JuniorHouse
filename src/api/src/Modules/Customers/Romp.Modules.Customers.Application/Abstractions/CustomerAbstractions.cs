@@ -14,6 +14,13 @@ public interface ICustomerDbContext
 
     DbSet<CustomerAddress> Addresses { get; }
 
+    DbSet<CustomerSession> Sessions { get; }
+
+    DbSet<LoginAttempt> LoginAttempts { get; }
+
+    /// <summary>Forgets a tracked entity after a failed save, so the change is dropped and not retried by a later save.</summary>
+    void Discard(object entity);
+
     /// <summary>Takes a row lock on the customer until the transaction ends, so changes to that customer's owned lists run one at a time.</summary>
     Task LockCustomerAsync(long customerId, CancellationToken cancellationToken);
 

@@ -14,6 +14,7 @@ using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Customers.Application.Abstractions;
+using Romp.Modules.Customers.Application.Accounts;
 using Romp.Modules.Customers.Infrastructure.Accounts;
 using Romp.Modules.Customers.Infrastructure.Addresses;
 using Romp.Modules.Customers.Infrastructure.Persistence;
@@ -45,17 +46,18 @@ public sealed class CustomersModule : IModule
             .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50.").ValidateOnStart();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentCustomer, HttpContextCurrentCustomer>();
+        services.AddCustomerAccounts();
         services.AddScoped<Contracts.ICustomerAddressQueries, Addresses.CustomerAddressQueries>();
 
         // Sign-in ports (accounts S4). The fake captcha is for Development and Testing only; anywhere else Turnstile needs its secret
         // (checked when the verifier is first used) and the email sender needs SMTP settings (Romp.BuildingBlocks.Email).
         services.AddOptions<Argon2Options>().Bind(configuration.GetSection(Argon2Options.Section)).ValidateOnStart();
         services.TryAddSingleton<IValidateOptions<Argon2Options>, Argon2OptionsValidator>();
-        services.AddSingleton<Application.Accounts.IPasswordHasher, Argon2PasswordHasher>();
+        services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
         services.AddOptions<TurnstileOptions>().Bind(configuration.GetSection(TurnstileOptions.Section));
         services.AddHttpClient<TurnstileCaptchaVerifier>(client => client.Timeout = TimeSpan.FromSeconds(5));
         services.AddSingleton<FakeCaptchaVerifier>();
-        services.AddScoped<Application.Accounts.ICaptchaVerifier>(sp =>
+        services.AddScoped<ICaptchaVerifier>(sp =>
         {
             if (RompAuthorizationExtensions.IsDevelopmentLike(sp.GetRequiredService<IHostEnvironment>()))
             {
