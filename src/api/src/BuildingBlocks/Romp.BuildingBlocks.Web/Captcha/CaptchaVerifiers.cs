@@ -1,13 +1,17 @@
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Romp.Modules.Customers.Application.Accounts;
+using Romp.BuildingBlocks.Application.Captcha;
 
-namespace Romp.Modules.Customers.Infrastructure.Accounts;
+namespace Romp.BuildingBlocks.Web.Captcha;
 
-/// <summary><c>Customers:Turnstile:*</c>. The secret key comes from secrets, never from the repository.</summary>
+/// <summary><c>Captcha:Turnstile:*</c>. The secret key comes from secrets, never from the repository.</summary>
 public sealed class TurnstileOptions
 {
-    public const string Section = "Customers:Turnstile";
+    public const string Section = "Captcha:Turnstile";
 
     public string SecretKey { get; set; } = string.Empty;
 }
@@ -59,5 +63,40 @@ public sealed class TurnstileCaptchaVerifier(HttpClient http, IOptions<Turnstile
         {
             return false;
         }
+    }
+}
+
+public static class CaptchaServiceCollectionExtensions
+{
+    /// <summary>
+    /// Registers <see cref="ICaptchaVerifier"/>. The fake (accepts only <see cref="FakeCaptchaVerifier.PassToken"/>) is for Development and
+    /// Testing only; anywhere else Turnstile needs <c>Captcha:Turnstile:SecretKey</c>, checked when the verifier is first used. Safe to call
+    /// from several modules: the first registration wins.
+    /// </summary>
+    public static IServiceCollection AddCaptcha(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<TurnstileOptions>().Bind(configuration.GetSection(TurnstileOptions.Section));
+        services.TryAddSingleton<FakeCaptchaVerifier>();
+        if (services.Any(d => d.ServiceType == typeof(TurnstileCaptchaVerifier)))
+        {
+            return services;
+        }
+
+        services.AddHttpClient<TurnstileCaptchaVerifier>(client => client.Timeout = TimeSpan.FromSeconds(5));
+        services.TryAddScoped<ICaptchaVerifier>(sp =>
+        {
+            if (RompAuthorizationExtensions.IsDevelopmentLike(sp.GetRequiredService<IHostEnvironment>()))
+            {
+                return sp.GetRequiredService<FakeCaptchaVerifier>();
+            }
+
+            if (string.IsNullOrWhiteSpace(sp.GetRequiredService<IOptions<TurnstileOptions>>().Value.SecretKey))
+            {
+                throw new InvalidOperationException("Captcha:Turnstile:SecretKey is required outside Development and Testing.");
+            }
+
+            return sp.GetRequiredService<TurnstileCaptchaVerifier>();
+        });
+        return services;
     }
 }

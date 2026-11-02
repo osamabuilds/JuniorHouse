@@ -554,6 +554,60 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                             IsActive = true,
                             Name = "View the audit trail",
                             SortSeq = (short)19
+                        },
+                        new
+                        {
+                            Id = (short)20,
+                            Code = "orders.view",
+                            Description = "Read the order queue, order details and COD flags",
+                            IsActive = true,
+                            Name = "View orders",
+                            SortSeq = (short)20
+                        },
+                        new
+                        {
+                            Id = (short)21,
+                            Code = "orders.manage",
+                            Description = "Record COD outcomes, cancel orders and clear COD flags",
+                            IsActive = true,
+                            Name = "Manage orders",
+                            SortSeq = (short)21
+                        },
+                        new
+                        {
+                            Id = (short)22,
+                            Code = "discounts.manage",
+                            Description = "Create, change and deactivate discount codes",
+                            IsActive = true,
+                            Name = "Manage discount codes",
+                            SortSeq = (short)22
+                        },
+                        new
+                        {
+                            Id = (short)23,
+                            Code = "shipping.manage",
+                            Description = "Set the shipping fee per city, the default fee and the free-shipping threshold",
+                            IsActive = true,
+                            Name = "Manage shipping rates",
+                            SortSeq = (short)23
+                        },
+                        new
+                        {
+                            Id = (short)24,
+                            Code = "notifications.view",
+                            Description = "Read the delivery log and dead letters",
+                            IsActive = true,
+                            Name = "View notifications",
+                            SortSeq = (short)24
+                        },
+                        new
+                        {
+                            Id = (short)25,
+                            Code = "notifications.resend",
+                            Description = "Resend a notification from the delivery log",
+                            IsActive = true,
+                            Name = "Resend notifications",
+                            SortSeq = (short)25
                         });
                 });
 
@@ -711,6 +765,26 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         },
                         new
                         {
+                            RoleId = (short)3,
+                            PermissionId = (short)20
+                        },
+                        new
+                        {
+                            RoleId = (short)3,
+                            PermissionId = (short)21
+                        },
+                        new
+                        {
+                            RoleId = (short)3,
+                            PermissionId = (short)24
+                        },
+                        new
+                        {
+                            RoleId = (short)3,
+                            PermissionId = (short)25
+                        },
+                        new
+                        {
                             RoleId = (short)4,
                             PermissionId = (short)1
                         },
@@ -721,6 +795,21 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         },
                         new
                         {
+                            RoleId = (short)4,
+                            PermissionId = (short)20
+                        },
+                        new
+                        {
+                            RoleId = (short)4,
+                            PermissionId = (short)24
+                        },
+                        new
+                        {
+                            RoleId = (short)4,
+                            PermissionId = (short)25
+                        },
+                        new
+                        {
                             RoleId = (short)5,
                             PermissionId = (short)1
                         },
@@ -728,6 +817,11 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         {
                             RoleId = (short)5,
                             PermissionId = (short)3
+                        },
+                        new
+                        {
+                            RoleId = (short)5,
+                            PermissionId = (short)22
                         });
                 });
 

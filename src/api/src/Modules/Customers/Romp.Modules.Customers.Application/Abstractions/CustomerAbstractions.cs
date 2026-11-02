@@ -36,10 +36,8 @@ public interface ICustomerDbContext
 /// may take a customer id from a route, query string or body. Until real sign-in exists the implementation is a development-only
 /// stand-in.
 /// </summary>
-public interface ICurrentCustomer
+public interface ICurrentCustomer : Contracts.ICurrentCustomerAccessor
 {
-    long? CustomerId { get; }
-
     bool IsSignedIn => CustomerId is not null;
 
     /// <summary>The signed-in customer id, or an <see cref="UnauthorizedAccessException"/> for a guest (the web layer answers 401).</summary>

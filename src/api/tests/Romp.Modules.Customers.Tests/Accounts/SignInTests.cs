@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Web.Captcha;
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Customers.Application.Accounts;
 using Romp.Modules.Customers.Domain.Accounts;

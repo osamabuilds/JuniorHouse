@@ -1,3 +1,4 @@
+using Romp.Modules.Customers.Contracts;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,8 @@ using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.Modules.Customers.Application;
 using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Application.Accounts;
+using Romp.BuildingBlocks.Application.Captcha;
+using Romp.BuildingBlocks.Web.Captcha;
 using Romp.Modules.Customers.Domain.Accounts;
 using Romp.Modules.Customers.Infrastructure.Accounts;
 using Romp.Modules.Customers.Infrastructure.Persistence;

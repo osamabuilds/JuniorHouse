@@ -1,5 +1,7 @@
+using Romp.BuildingBlocks.Domain;
 using FluentValidation;
 using MediatR;
+using Romp.BuildingBlocks.Application.Captcha;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Romp.BuildingBlocks.Application;

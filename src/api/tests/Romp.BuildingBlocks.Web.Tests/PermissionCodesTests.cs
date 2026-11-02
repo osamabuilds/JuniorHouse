@@ -17,7 +17,8 @@ public sealed partial class PermissionCodesTests
     [
         "ref.read", "ref.write", "catalog.read", "catalog.write", "procurement.read", "procurement.write", "production.read",
         "production.write", "qc.read", "qc.write", "labelling.read", "labelling.write", "warehouse.read", "warehouse.write",
-        "inventory.read", "inventory.write", "ops.admin", "staff.manage", "audit.read",
+        "inventory.read", "inventory.write", "ops.admin", "staff.manage", "audit.read", "orders.view", "orders.manage", "discounts.manage",
+        "shipping.manage", "notifications.view", "notifications.resend",
     ];
 
     private static IEnumerable<string> Declared() =>

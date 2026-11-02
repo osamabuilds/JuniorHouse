@@ -1,3 +1,4 @@
+using Romp.Modules.Customers.Contracts;
 using Microsoft.Extensions.Logging;
 using Romp.Modules.Customers.Domain.Accounts;
 
@@ -14,17 +15,6 @@ public interface ICustomerMailer
     Task SendPasswordResetAsync(string toEmail, string firstName, SecretString token, CancellationToken cancellationToken);
 }
 
-/// <summary>Who has just signed in or registered, and the guest session (cart, wishlist) they brought, if any.</summary>
-public sealed record SignedInContext(long CustomerId, string? GuestSessionId);
-
-/// <summary>
-/// Called after a successful sign-in or registration so other modules can merge what the customer built as a guest (ACT-14, FR-35, FR-17).
-/// The cart (S11) and the wishlist register their own implementation. A hook that fails never stops the sign-in.
-/// </summary>
-public interface ICustomerSignedInHook
-{
-    Task OnSignedInAsync(SignedInContext context, CancellationToken cancellationToken);
-}
 
 internal static partial class AccountLog
 {

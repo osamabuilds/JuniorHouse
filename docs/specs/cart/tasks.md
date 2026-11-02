@@ -6,12 +6,12 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 
 ## Foundations (shared by Cart, Orders, Notifications; no behaviour change, existing tests are the proof)
 
-- [ ] **F1** Move `ICaptchaVerifier` and its Turnstile and development adapters to `Romp.BuildingBlocks.Captcha`; Customers uses it from there. *Proof:* existing `Romp.Modules.Customers.Tests` and the customer endpoint tests stay green; `ModuleBoundaryTests`.
-- [ ] **F2** Move `PhoneNumber` to `Romp.BuildingBlocks.Domain`; Customers references it from there. *Proof:* `PhoneNumberTests` moved with it and green; Customers tests green.
-- [ ] **F3** Move the origin check to `Romp.BuildingBlocks.Web` as `OriginCheckFilter` (allowed origin from `Site:PublicBaseUrl`, else the module's public URL, else the request host); `CustomerOriginCheckFilter` becomes a thin use of it. *Proof:* existing `CustomerAuthEndpointsTests` (origin cases) green; new `OriginCheckFilterTests`.
-- [ ] **F4** Add `SignedLink` (purpose-bound HMAC-SHA256 token, expiry optional, constant-time compare, base64url) to `Romp.BuildingBlocks.Web`. *Proof:* `SignedLinkTests` (valid, wrong purpose, tampered, expired, truncated).
-- [ ] **F5** Move `ICustomerSignedInHook` to `Customers.Contracts`; add `ICurrentCustomerAccessor` there. *Proof:* sign-in tests and `SignedInHooksTests` green; `ModuleBoundaryTests`.
-- [ ] **F6** Identity migration seeds permissions `orders.view`, `orders.manage`, `discounts.manage`, `shipping.manage`, `notifications.view`, `notifications.resend` (additive); roles screen shows them. *Proof:* `PermissionSeedTests`, existing roles tests.
+- [x] **F1** (as built: interface in `Romp.BuildingBlocks.Application/Captcha`, adapters and `AddCaptcha` in `Romp.BuildingBlocks.Web/Captcha`, config section `Captcha:Turnstile`, tests moved to `Romp.BuildingBlocks.Web.Tests`) Move `ICaptchaVerifier` and its Turnstile and development adapters to a shared building block; Customers uses it from there. *Proof:* existing `Romp.Modules.Customers.Tests` and the customer endpoint tests stay green; `ModuleBoundaryTests`.
+- [x] **F2** Move `PhoneNumber` to `Romp.BuildingBlocks.Domain`; Customers references it from there. *Proof:* `PhoneNumberTests` moved with it and green; Customers tests green.
+- [x] **F3** Move the origin check to `Romp.BuildingBlocks.Web` as `OriginCheckFilter` (allowed origin from `Site:PublicBaseUrl`, else the module's public URL, else the request host); `CustomerOriginCheckFilter` becomes a thin use of it. *Proof:* existing `CustomerAuthEndpointsTests` (origin cases) green; new `OriginCheckFilterTests`.
+- [x] **F4** Add `SignedLink` (purpose-bound HMAC-SHA256 token, expiry optional, constant-time compare, base64url) to `Romp.BuildingBlocks.Web`. *Proof:* `SignedLinkTests` (valid, wrong purpose, tampered, expired, truncated).
+- [x] **F5** Move `ICustomerSignedInHook` to `Customers.Contracts`; add `ICurrentCustomerAccessor` there. *Proof:* sign-in tests and `SignedInHooksTests` green; `ModuleBoundaryTests`.
+- [x] **F6** Identity migration seeds permissions `orders.view`, `orders.manage`, `discounts.manage`, `shipping.manage`, `notifications.view`, `notifications.resend` (additive); roles screen shows them. *Proof:* `PermissionSeedTests`, existing roles tests.
 - [ ] **F7** `Cart`, `Orders`, `Notifications` added to `ModuleNames`, the constitution table and `docs/db/naming.md` section 4 (schemas `CART`, `ORDR`, `NTFY`). *Proof:* `ModuleBoundaryTests`, `StructureSyncTests`, `GlossaryTests`.
 
 ## Cart module skeleton

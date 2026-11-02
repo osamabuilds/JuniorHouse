@@ -230,41 +230,10 @@ public sealed class CustomerCsrfFilter(CustomerCsrfTokens tokens) : IEndpointFil
 }
 
 /// <summary>
-/// For the routes that have no session yet (register, sign-in, reset): when the browser says where the request came from, that origin must
-/// be this site's (<c>Site:PublicBaseUrl</c>, or the request's own origin when none is configured). A request with no <c>Origin</c> header
-/// is not a cross-site browser request, so it is left to the other defences.
+/// For the routes that have no session yet (register, sign-in, reset): the browser's <c>Origin</c> must be the site's (the rule lives in
+/// <see cref="OriginCheckFilterBase"/>). The customer module's fallback is the storefront address its mail links use.
 /// </summary>
-public sealed class CustomerOriginCheckFilter(IOptions<SiteOptions> site, IOptions<CustomersOptions> customers) : IEndpointFilter
+public sealed class CustomerOriginCheckFilter(IOptions<SiteOptions> site, IOptions<CustomersOptions> customers) : OriginCheckFilterBase(site)
 {
-    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(next);
-
-        var request = context.HttpContext.Request;
-        if (CustomerCsrfFilter.IsSafe(request.Method) || !request.Headers.TryGetValue("Origin", out var origin) || origin.Count == 0)
-        {
-            return await next(context);
-        }
-
-        return IsAllowed(origin.ToString(), request)
-            ? await next(context)
-            : Results.Problem(statusCode: StatusCodes.Status403Forbidden, title: "Forbidden");
-    }
-
-    private bool IsAllowed(string origin, HttpRequest request)
-    {
-        if (!Uri.TryCreate(origin, UriKind.Absolute, out var presented)
-            || presented.AbsolutePath != "/" || presented.Query.Length > 0 || presented.Fragment.Length > 0 || presented.UserInfo.Length > 0)
-        {
-            return false; // "null", junk, or something with a path in it
-        }
-
-        // Site:PublicBaseUrl when set; otherwise the storefront address the customer mail links use (the browser talks to the storefront, not the API host).
-        var baseUrl = string.IsNullOrWhiteSpace(site.Value.PublicBaseUrl) ? customers.Value.PublicBaseUrl : site.Value.PublicBaseUrl;
-        var allowed = !string.IsNullOrWhiteSpace(baseUrl) && Uri.TryCreate(baseUrl, UriKind.Absolute, out var configured)
-            ? configured.GetLeftPart(UriPartial.Authority)
-            : $"{request.Scheme}://{request.Host}";
-        return string.Equals(presented.GetLeftPart(UriPartial.Authority), allowed, StringComparison.OrdinalIgnoreCase);
-    }
+    protected override string? FallbackBaseUrl => customers.Value.PublicBaseUrl;
 }

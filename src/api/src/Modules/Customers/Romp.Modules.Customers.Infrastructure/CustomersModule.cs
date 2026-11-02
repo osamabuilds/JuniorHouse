@@ -14,6 +14,7 @@ using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.BuildingBlocks.Web;
+using Romp.BuildingBlocks.Web.Captcha;
 using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Application.Accounts;
 using Romp.Modules.Customers.Infrastructure.Accounts;
@@ -47,6 +48,7 @@ public sealed class CustomersModule : IModule
             .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50 and Customers:PublicBaseUrl must be an http or https address.").ValidateOnStart();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentCustomer, HttpContextCurrentCustomer>();
+        services.AddScoped<Contracts.ICurrentCustomerAccessor>(sp => sp.GetRequiredService<ICurrentCustomer>());
         services.AddCustomerAccounts();
         services.AddScoped<Contracts.ICustomerAddressQueries, Addresses.CustomerAddressQueries>();
 
@@ -55,23 +57,7 @@ public sealed class CustomersModule : IModule
         services.AddOptions<Argon2Options>().Bind(configuration.GetSection(Argon2Options.Section)).ValidateOnStart();
         services.TryAddSingleton<IValidateOptions<Argon2Options>, Argon2OptionsValidator>();
         services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
-        services.AddOptions<TurnstileOptions>().Bind(configuration.GetSection(TurnstileOptions.Section));
-        services.AddHttpClient<TurnstileCaptchaVerifier>(client => client.Timeout = TimeSpan.FromSeconds(5));
-        services.AddSingleton<FakeCaptchaVerifier>();
-        services.AddScoped<ICaptchaVerifier>(sp =>
-        {
-            if (RompAuthorizationExtensions.IsDevelopmentLike(sp.GetRequiredService<IHostEnvironment>()))
-            {
-                return sp.GetRequiredService<FakeCaptchaVerifier>();
-            }
-
-            if (string.IsNullOrWhiteSpace(sp.GetRequiredService<IOptions<TurnstileOptions>>().Value.SecretKey))
-            {
-                throw new InvalidOperationException("Customers:Turnstile:SecretKey is required outside Development and Testing.");
-            }
-
-            return sp.GetRequiredService<TurnstileCaptchaVerifier>();
-        });
+        services.AddCaptcha(configuration);
         services.AddEmail(configuration);
         services.AddScoped<ICustomerMailer, EmailCustomerMailer>();
 

@@ -14,7 +14,7 @@ namespace Romp.Modules.Identity.Tests.Roles;
 [Collection(IdentityPostgresFixtureDefinition.Name)]
 public sealed class EffectivePermissionsTests(IdentityPostgres postgres)
 {
-    private static readonly string[] OrderOpsPermissions = ["ref.read", "catalog.read", "warehouse.read", "inventory.read"];
+    private static readonly string[] OrderOpsPermissions = ["ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend"];
     private static readonly string[] CataloguePermissions = ["ref.read", "catalog.read", "catalog.write", "warehouse.read"];
 
     private static async Task<long> UserWithAsync(IdentityHost host, params string[] roleCodes)
@@ -83,7 +83,11 @@ public sealed class EffectivePermissionsTests(IdentityPostgres postgres)
         foreach (var role in new[] { RoleCodes.Support, RoleCodes.Marketing })
         {
             var permissions = await PermissionsAsync(host, await UserWithAsync(host, role));
-            Assert.Equal(["catalog.read", "ref.read"], permissions.Order(StringComparer.Ordinal));
+            string[] expected = role == RoleCodes.Support
+                ? ["catalog.read", "notifications.resend", "notifications.view", "orders.view", "ref.read"]
+                : ["catalog.read", "discounts.manage", "ref.read"];
+            Assert.Equal(expected, permissions.Order(StringComparer.Ordinal));
+            Assert.DoesNotContain(permissions, c => c.EndsWith(".write", StringComparison.Ordinal));
         }
     }
 

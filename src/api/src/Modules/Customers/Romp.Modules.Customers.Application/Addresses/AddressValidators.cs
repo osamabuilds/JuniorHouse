@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Domain;
 using FluentValidation;
 using Romp.Modules.Customers.Domain;
 using Romp.Modules.Customers.Domain.Addresses;

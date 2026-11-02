@@ -1,3 +1,4 @@
+using Romp.BuildingBlocks.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Romp.BuildingBlocks.Persistence.Auditing;

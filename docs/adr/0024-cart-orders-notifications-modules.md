@@ -29,7 +29,7 @@ Sprints 11 to 13 add the basket, checkout and orders, and customer notifications
 3. **Events carry ids only** (ADR 0011): never a name, address, phone, email or message body. The consumer loads what it needs through the owning module's contract at the time it acts. Each consumer reads the foreign event through one mapper file, so a change to the event has one place to fix.
 
 4. **Shared pieces move to building blocks**, so that no module references another module's `Application` or `Infrastructure` project:
-   - `Romp.BuildingBlocks.Captcha`: `ICaptchaVerifier` and the Turnstile and development adapters, moved out of `Customers.Application` (Customers keeps its behaviour; its tests move with the code).
+   - `ICaptchaVerifier` (in `Romp.BuildingBlocks.Application`) and the Turnstile and development adapters (in `Romp.BuildingBlocks.Web`), moved out of `Customers` (Customers keeps its behaviour; its tests move with the code).
    - `Romp.BuildingBlocks.Web`: `OriginCheckFilter` (the rule in today's `CustomerOriginCheckFilter`, parameterised by the site address) and `SignedLink` (purpose-bound HMAC-SHA256 token with constant-time comparison, used for order links and the COD confirm link).
    - `Romp.BuildingBlocks.Domain` gains `PhoneNumber` (the Pakistani mobile normaliser, moved out of `Customers.Domain`), so checkout, COD tracking and look-up compare numbers in exactly the format accounts store.
    - `Customers.Contracts` gains `ICustomerSignedInHook` (moved from `Customers.Application`) so `Cart` can implement it, and `ICurrentCustomerAccessor` (the signed-in customer id from the session principal, nothing else).
