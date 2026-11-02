@@ -28,7 +28,7 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 - [x] **C6** Guest identity: `romp-guest` cookie (random, hashed in the table, `HttpOnly`, `SameSite=Lax`, 30 days) and the owner accessor `ICartOwnerAccessor`. *Proof:* `CartOwnerAccessorTests` (CRT-9).
 - [x] **C7** Endpoints `GET /api/cart`, `POST/PUT/DELETE /api/cart/lines...` with origin check and size limit; matrix rows. *Proof:* `CartEndpointsTests` incl. "prices in the body are ignored" (CRT-6), authorization matrix test.
 - [x] **C8** (as built: the merge adds quantities up to the per-line maximum but does not cut lines to the stock on hand; a line asking for more than is available shows as low stock with the count on the next read, so nothing is lost. Spec Q-CRT-4 said "capped at stock with a notice": raise with the owner) `MergeGuestCartCommand` registered as `ICustomerSignedInHook`; sign-in clears the guest cookie. *Proof:* `CartMergeHookTests`, `CustomerAuthEndpointsTests.SignIn_MergesGuestCart` (CRT-3).
-- [ ] **C9** Expiry: purge job for expired carts. *Proof:* `CartPurgeJobTests` (CRT-10).
+- [x] **C9** Expiry: purge job for expired carts. *Proof:* `CartPurgeJobTests` (CRT-10).
 - [ ] **C10** Storefront `features/cart/carts` (NgRx store, cart page, mini-cart drawer, quantity stepper, empty state, live region), real Add to bag on the product page, same-origin `/customer-api/cart/**` pass-through in `server.ts`, `noindex` and `no-store`, `robots.txt`. *Proof:* store and component specs, `cart.e2e.spec.ts` with axe (CRT-1, 2, 4, 7).
 
 ## totals
