@@ -26,7 +26,7 @@ Ordered, checkable steps. Each names the test that proves it. Test-first: write 
 
 ## accounts: real sign-in
 
-From the "Real sign-in" section of [accounts/plan.md](accounts/plan.md) and [ADR 0023](../../adr/0023-customer-sign-in-sessions-and-methods.md) (accepted 2026-11-02). Scope: email and password only, SMS code to verify the mobile at sign-up, email verified by link, nothing ever blocks an order. No Google, Facebook or mobile-only sign-in. Real Twilio and Turnstile credentials are needed only for S11; everything before it runs against fakes. Wishlist resumes after S6.
+From the "Real sign-in" section of [accounts/plan.md](accounts/plan.md) and [ADR 0023](../../adr/0023-customer-sign-in-sessions-and-methods.md) (accepted 2026-11-02). Scope: email and password only, SMS code to verify the mobile at sign-up, email verified by link, nothing ever blocks an order. No Google, Facebook or mobile-only sign-in. A Pakistani SMS gateway account (owner to choose after quotes) and Turnstile keys are needed only for S11; everything before it runs against fakes. Wishlist resumes after S6.
 
 - [x] **S1** Pure rules: `PasswordRule` (8..128, capital, small, digit, no spaces, specials allowed; returns each rule met or not), `SignInThrottle` (delay and CAPTCHA from the 3rd failure, never a lock), phone normalisation to `+923xxxxxxxxx`. *Proof:* `PasswordRuleTests`, `SignInThrottleTests`, `PhoneNumberTests` (ACT-2, ACT-9, ACT-29).
 - [ ] **S2** Entities: `CustomerSession` (rotate, revoke, reuse detection), `PhoneChallenge`, `PasswordResetToken`, `EmailVerificationToken`; `Customer` gains phone, password hash, email-verified date. *Proof:* `CustomerSessionTests`, `TokenTests`, `CustomerTests` (ACT-11..13, 27, 28).
