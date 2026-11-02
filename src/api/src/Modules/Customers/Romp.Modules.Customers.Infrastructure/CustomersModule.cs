@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Romp.BuildingBlocks.Email;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
@@ -44,6 +46,30 @@ public sealed class CustomersModule : IModule
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentCustomer, HttpContextCurrentCustomer>();
         services.AddScoped<Contracts.ICustomerAddressQueries, Addresses.CustomerAddressQueries>();
+
+        // Sign-in ports (accounts S4). The fake captcha is for Development and Testing only; anywhere else Turnstile needs its secret
+        // (checked when the verifier is first used) and the email sender needs SMTP settings (Romp.BuildingBlocks.Email).
+        services.AddOptions<Argon2Options>().Bind(configuration.GetSection(Argon2Options.Section)).ValidateOnStart();
+        services.TryAddSingleton<IValidateOptions<Argon2Options>, Argon2OptionsValidator>();
+        services.AddSingleton<Application.Accounts.IPasswordHasher, Argon2PasswordHasher>();
+        services.AddOptions<TurnstileOptions>().Bind(configuration.GetSection(TurnstileOptions.Section));
+        services.AddHttpClient<TurnstileCaptchaVerifier>(client => client.Timeout = TimeSpan.FromSeconds(5));
+        services.AddSingleton<FakeCaptchaVerifier>();
+        services.AddScoped<Application.Accounts.ICaptchaVerifier>(sp =>
+        {
+            if (RompAuthorizationExtensions.IsDevelopmentLike(sp.GetRequiredService<IHostEnvironment>()))
+            {
+                return sp.GetRequiredService<FakeCaptchaVerifier>();
+            }
+
+            if (string.IsNullOrWhiteSpace(sp.GetRequiredService<IOptions<TurnstileOptions>>().Value.SecretKey))
+            {
+                throw new InvalidOperationException("Customers:Turnstile:SecretKey is required outside Development and Testing.");
+            }
+
+            return sp.GetRequiredService<TurnstileCaptchaVerifier>();
+        });
+        services.AddEmail(configuration);
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CustTransactionBehavior<,>));

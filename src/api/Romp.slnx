@@ -5,6 +5,7 @@
   <Folder Name="/src/BuildingBlocks/">
     <Project Path="src/BuildingBlocks/Romp.BuildingBlocks/Romp.BuildingBlocks.csproj" />
     <Project Path="src/BuildingBlocks/Romp.BuildingBlocks.Application/Romp.BuildingBlocks.Application.csproj" />
+    <Project Path="src/BuildingBlocks/Romp.BuildingBlocks.Email/Romp.BuildingBlocks.Email.csproj" />
     <Project Path="src/BuildingBlocks/Romp.BuildingBlocks.Persistence/Romp.BuildingBlocks.Persistence.csproj" />
     <Project Path="src/BuildingBlocks/Romp.BuildingBlocks.Storage/Romp.BuildingBlocks.Storage.csproj" />
     <Project Path="src/BuildingBlocks/Romp.BuildingBlocks.Web/Romp.BuildingBlocks.Web.csproj" />
