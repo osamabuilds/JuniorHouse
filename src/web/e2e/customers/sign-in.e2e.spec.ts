@@ -7,6 +7,8 @@ import { uniqueSuffix } from '../support';
  * Run: `docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build`, then
  * `STOREFRONT_BASE_URL=http://localhost:4000 npx playwright test e2e/customers/sign-in`.
  * Mail is read from Mailpit (MAILPIT_URL, default http://localhost:8025).
+ * Each run makes one deliberate wrong-password attempt (ACT-9); about three of those from one address within 15 minutes start the sign-in
+ * throttle (SEC-02), which then delays later sign-ins. When re-running locally many times, wait 15 minutes between batches.
  */
 const BASE = process.env['STOREFRONT_BASE_URL'] ?? 'http://localhost:4000';
 const MAILPIT = process.env['MAILPIT_URL'] ?? 'http://localhost:8025';

@@ -46,11 +46,8 @@ internal static class CustomerAuthEndpoints
             .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(MaxBodyBytes))
             .AddEndpointFilter<CustomerNoStoreFilter>();
 
-        open.MapGet("/password-rules", () => Results.Ok(PasswordRule.Check(null).Select(c => new PasswordRuleResponse(c.Code, c.Message))));
         open.MapPost("/register", Register).AddEndpointFilter<CustomerOriginCheckFilter>();
         open.MapPost("/sign-in", SignIn).AddEndpointFilter<CustomerOriginCheckFilter>();
-        open.MapPost("/refresh", Refresh).AddEndpointFilter<CustomerOriginCheckFilter>();
-        open.MapPost("/sign-out", SignOut).AddEndpointFilter<CustomerOriginCheckFilter>();
         open.MapPost("/email/verify", VerifyEmail).AddEndpointFilter<CustomerOriginCheckFilter>();
         open.MapPost("/password-reset/request", RequestReset).AddEndpointFilter<CustomerOriginCheckFilter>();
         open.MapPost("/password-reset/confirm", ConfirmReset).AddEndpointFilter<CustomerOriginCheckFilter>();
@@ -61,10 +58,25 @@ internal static class CustomerAuthEndpoints
             .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(MaxBodyBytes))
             .AddEndpointFilter<CustomerNoStoreFilter>();
 
-        mine.MapGet("/session", Session);
         mine.MapPost("/email/resend", ResendVerification).AddEndpointFilter<CustomerCsrfFilter>();
         mine.MapPost("/email/change", ChangeEmail).AddEndpointFilter<CustomerCsrfFilter>();
         mine.MapPost("/password/change", ChangePassword).AddEndpointFilter<CustomerCsrfFilter>();
+
+        // Called on every page view (who is signed in, renew cookies) or cheap and harmless: they stay under the host-wide limit only, so a few
+        // visitors behind one address never use up the strict allowance that guards register, sign-in and reset.
+        var light = endpoints.MapSecuredGroup(Prefix, Policies.Public)
+            .WithTags("Customers")
+            .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(MaxBodyBytes))
+            .AddEndpointFilter<CustomerNoStoreFilter>();
+
+        light.MapGet("/password-rules", () => Results.Ok(PasswordRule.Check(null).Select(c => new PasswordRuleResponse(c.Code, c.Message))));
+        light.MapPost("/refresh", Refresh).AddEndpointFilter<CustomerOriginCheckFilter>();
+        light.MapPost("/sign-out", SignOut).AddEndpointFilter<CustomerOriginCheckFilter>();
+
+        var session = endpoints.MapSecuredGroup(Prefix, Policies.Customer)
+            .WithTags("Customers")
+            .AddEndpointFilter<CustomerNoStoreFilter>();
+        session.MapGet("/session", Session);
     }
 
     private static async Task<IResult> Register(
