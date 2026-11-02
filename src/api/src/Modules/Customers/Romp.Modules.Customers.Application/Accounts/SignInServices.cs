@@ -95,6 +95,29 @@ public sealed class CustomerSessionIssuer(ICustomerDbContext dbContext, TimeProv
         return new StartedSession(session.Id, customer.Id, tokens, session.AccessExpiresAt, session.RefreshExpiresAt);
     }
 
+    /// <summary>Ends every open session of the customer except <paramref name="exceptSessionId"/> (ACT-13: password change or reset).</summary>
+    public async Task RevokeAllAsync(long customerId, long? exceptSessionId, CustomerSessionRevokeReason reason, CancellationToken cancellationToken)
+    {
+        var now = clock.GetUtcNow();
+        var open = await dbContext.Sessions.Where(s => s.CustomerId == customerId && s.RevokedAt == null && s.Id != exceptSessionId).ToListAsync(cancellationToken);
+        foreach (var session in open)
+        {
+            session.Revoke(reason, now);
+        }
+    }
+
+    /// <summary>The id of the customer's own session behind this access cookie, or null (unknown value, or another customer's).</summary>
+    public async Task<long?> FindAccessSessionIdAsync(long customerId, string? presentedAccessToken, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(presentedAccessToken) || presentedAccessToken.Length > MaxPresentedLength)
+        {
+            return null;
+        }
+
+        var hash = CustomerTokens.Hash(presentedAccessToken);
+        return await dbContext.Sessions.Where(s => s.CustomerId == customerId && s.AccessTokenHash == hash).Select(s => (long?)s.Id).FirstOrDefaultAsync(cancellationToken);
+    }
+
     /// <summary>Whatever session the request carried ends, whoever it belonged to; an unknown or oversized value is ignored.</summary>
     private async Task RevokePresentedAsync(string? presented, DateTimeOffset now, CancellationToken cancellationToken)
     {
@@ -130,6 +153,9 @@ public static class AccountsServiceCollectionExtensions
     {
         services.AddScoped<SignInGate>();
         services.AddScoped<CustomerSessionIssuer>();
+        services.AddScoped<AccountMail>();
+        services.AddScoped<SignedInHooks>();
+        services.AddScoped<EmailVerificationIssuer>();
         services.AddSingleton<SignInDummyHash>();
         return services;
     }

@@ -18,6 +18,10 @@ public interface ICustomerDbContext
 
     DbSet<LoginAttempt> LoginAttempts { get; }
 
+    DbSet<PasswordResetToken> PasswordResetTokens { get; }
+
+    DbSet<EmailVerificationToken> EmailVerificationTokens { get; }
+
     /// <summary>Forgets a tracked entity after a failed save, so the change is dropped and not retried by a later save.</summary>
     void Discard(object entity);
 

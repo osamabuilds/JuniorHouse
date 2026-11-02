@@ -84,6 +84,9 @@ public sealed class EmailVerificationToken : OneTimeToken
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromHours(24);
 
+    /// <summary>How many new links one customer may ask for in an hour (ACT-28).</summary>
+    public const int MaxPerHour = 5;
+
     private EmailVerificationToken()
     {
         Email = string.Empty;

@@ -30,7 +30,7 @@ public sealed record RegisterResult(RegisterStatus Status, IReadOnlyList<string>
 /// number is format-checked and stored, not verified.
 /// </summary>
 public sealed record RegisterCommand(
-    string Email, string FirstName, string LastName, string Mobile, SecretString Password, bool KeepSignedIn, string? ClientIp, string? UserAgent, string? PresentedAccessToken)
+    string Email, string FirstName, string LastName, string Mobile, SecretString Password, bool KeepSignedIn, string? ClientIp, string? UserAgent, string? PresentedAccessToken, string? GuestSessionId = null)
     : IRequest<RegisterResult>, ICustomerCommand;
 
 public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
@@ -61,7 +61,8 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
     }
 }
 
-public sealed class RegisterCommandHandler(ICustomerDbContext dbContext, IPasswordHasher hasher, CustomerSessionIssuer sessions)
+public sealed class RegisterCommandHandler(
+    ICustomerDbContext dbContext, IPasswordHasher hasher, CustomerSessionIssuer sessions, EmailVerificationIssuer verification, SignedInHooks hooks)
     : IRequestHandler<RegisterCommand, RegisterResult>
 {
     public async Task<RegisterResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -83,6 +84,8 @@ public sealed class RegisterCommandHandler(ICustomerDbContext dbContext, IPasswo
         await dbContext.SaveChangesAsync(cancellationToken); // the session needs the new id
 
         var session = await sessions.IssueAsync(customer, request.KeepSignedIn, request.PresentedAccessToken, request.ClientIp, request.UserAgent, cancellationToken);
+        await verification.IssueAndSendAsync(customer, cancellationToken);
+        await hooks.RunAsync(customer.Id, request.GuestSessionId, cancellationToken);
         return new RegisterResult(RegisterStatus.Registered, [], session);
     }
 }
@@ -116,7 +119,7 @@ public sealed record SignInResult(SignInStatus Status, int? RetryAfterSeconds, S
 /// is revoked when a session is issued (ACT-11).
 /// </summary>
 public sealed record SignInCommand(
-    string Email, SecretString Password, bool KeepSignedIn, string? CaptchaToken, string ClientIp, string? PresentedAccessToken, string? UserAgent)
+    string Email, SecretString Password, bool KeepSignedIn, string? CaptchaToken, string ClientIp, string? PresentedAccessToken, string? UserAgent, string? GuestSessionId = null)
     : IRequest<SignInResult>, ICustomerCommand;
 
 public sealed class SignInCommandValidator : AbstractValidator<SignInCommand>
@@ -137,6 +140,7 @@ public sealed class SignInCommandHandler(
     ICaptchaVerifier captcha,
     SignInGate gate,
     CustomerSessionIssuer sessions,
+    SignedInHooks hooks,
     TimeProvider clock,
     ILoggerFactory loggers) : IRequestHandler<SignInCommand, SignInResult>
 {
@@ -180,6 +184,7 @@ public sealed class SignInCommandHandler(
 
         customer.RecordSignIn(now);
         var session = await sessions.IssueAsync(customer, request.KeepSignedIn, request.PresentedAccessToken, request.ClientIp, request.UserAgent, cancellationToken);
+        await hooks.RunAsync(customer.Id, request.GuestSessionId, cancellationToken);
         return new SignInResult(SignInStatus.SignedIn, null, session);
     }
 

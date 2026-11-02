@@ -43,7 +43,7 @@ public sealed class CustomersModule : IModule
 
         services.AddScoped<ICustomerDbContext>(sp => sp.GetRequiredService<CustDbContext>());
         services.AddOptions<Application.CustomersOptions>().Bind(configuration.GetSection(Application.CustomersOptions.SectionName))
-            .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50.").ValidateOnStart();
+            .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50 and Customers:PublicBaseUrl must be an http or https address.").ValidateOnStart();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentCustomer, HttpContextCurrentCustomer>();
         services.AddCustomerAccounts();
@@ -72,6 +72,7 @@ public sealed class CustomersModule : IModule
             return sp.GetRequiredService<TurnstileCaptchaVerifier>();
         });
         services.AddEmail(configuration);
+        services.AddScoped<ICustomerMailer, EmailCustomerMailer>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CustTransactionBehavior<,>));
