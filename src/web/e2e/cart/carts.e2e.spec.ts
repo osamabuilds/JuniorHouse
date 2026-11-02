@@ -114,6 +114,6 @@ test.describe('cart', () => {
 
     // Leave nothing behind.
     await openHydrated(page, '/cart');
-    await page.getByRole('button', { name: /Remove/ }).click();
+    await page.locator('.rp-line__remove').click();
   });
 });
