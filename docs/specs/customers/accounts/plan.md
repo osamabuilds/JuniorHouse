@@ -57,7 +57,8 @@ Alternatives and risks are in ADR 0021. The main risk is that the stand-in lulls
 
 # Real sign-in (revised 2026-10-29): technical plan
 
-- **Covers:** ACT-1..13, 15, 16, 19..26 · **ADR:** [0023](../../../adr/0023-customer-sign-in-sessions-and-methods.md) · supersedes the Sprint 10 slice above wherever they differ (the stand-in stays for Development/Testing only).
+- **Scope note (owner, 2026-11-02): no Google, Facebook or other social sign-in, and no sign-in by mobile number alone. Ignore every row, table, endpoint, port and step below that mentions an external provider (`ExternalLogin`, `CUST_XLGN`, `AUTH_PRVD_LKP`, `StartExternalSignInQuery`, `CompleteExternalSignInCommand`, `IExternalIdentityProvider`, `external/*` routes, step 5, the Meta items). The SMS code stays only to verify the mobile at sign-up (ACT-29).**
+- **Covers:** ACT-1..13, 15, 16, 23, 25..32 · **ADR:** [0023](../../../adr/0023-customer-sign-in-sessions-and-methods.md) · supersedes the Sprint 10 slice above wherever they differ (the stand-in stays for Development/Testing only).
 
 ## Domain model
 - `Customer` gains `Phone` (unique, Pakistani mobile, normalised to `+923xxxxxxxxx`), `PasswordHash` (nullable: a Google, Facebook or SMS-only customer has none), `LastSignedInAt`.
