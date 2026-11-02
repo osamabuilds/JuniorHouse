@@ -9,6 +9,12 @@ namespace Romp.Modules.Cart.Infrastructure.Totals;
 /// <summary>The Cart side of <see cref="ICheckoutPricing"/>: the caller's basket, priced and totalled by the one routine (TOT-3, ORD-4).</summary>
 internal sealed class CheckoutPricing(CartOwnerAccessor owners, ISender sender) : ICheckoutPricing
 {
+    public async Task<string?> GetCallerKeyAsync(CancellationToken cancellationToken)
+    {
+        var owner = await owners.ReadAsync(cancellationToken);
+        return owner is not { } o ? null : o.CustomerId is { } id ? $"C{id}" : $"G{o.GuestKeyHash}";
+    }
+
     public async Task<Contracts.CheckoutPricing> PriceCurrentCartAsync(int? cityId, bool isCashOnDelivery, CancellationToken cancellationToken)
     {
         var owner = await owners.ReadAsync(cancellationToken);

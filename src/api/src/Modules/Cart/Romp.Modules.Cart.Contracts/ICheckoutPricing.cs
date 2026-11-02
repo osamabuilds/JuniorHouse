@@ -26,4 +26,10 @@ public sealed record CheckoutPricing(
 public interface ICheckoutPricing
 {
     Task<CheckoutPricing> PriceCurrentCartAsync(int? cityId, bool isCashOnDelivery, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// An opaque, stable key for who owns the current basket ("C" and the customer id, or "G" and a hash of the guest cookie), or null when the
+    /// caller has no basket yet. It stays the same after the basket is emptied, so Orders can tell a repeat of the same submit from a new one (ADR 0025).
+    /// </summary>
+    Task<string?> GetCallerKeyAsync(CancellationToken cancellationToken);
 }
