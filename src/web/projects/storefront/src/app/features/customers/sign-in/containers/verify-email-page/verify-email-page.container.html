@@ -1,36 +1,36 @@
 <rp-auth-layout>
   @if (!hasToken) {
-    <h1 #heading class="rp-display-lg" tabindex="-1">Verify your email</h1>
-    <p class="t-body">Open the link in the email we sent you. It looks like this page was opened without one.</p>
+    <h1 #heading class="rp-display-md" tabindex="-1">Verify your email</h1>
+    <p class="rp-lead" style="font-size: 16px; line-height: 26px">Open the link in the email we sent you. It looks like this page was opened without one.</p>
   } @else {
     @switch (status()) {
       @case ('ok') {
-        <h1 #heading class="rp-display-lg" tabindex="-1">Email verified</h1>
-        <p class="t-body" role="status">Thank you. Your email address is confirmed.</p>
-        <a rpBtn routerLink="/account">Go to my account</a>
+        <h1 #heading class="rp-display-md" tabindex="-1">Email verified</h1>
+        <p class="rp-lead" style="font-size: 16px; line-height: 26px" role="status">Thank you. Your email address is confirmed.</p>
+        <a rpBtn="action" routerLink="/account">Go to my account</a>
       }
       @case ('invalid') {
-        <h1 #heading class="rp-display-lg" tabindex="-1">This link has expired</h1>
-        <p class="t-body" role="status">Verification links work once and last 24 hours. You can keep shopping meanwhile: nothing is blocked.</p>
+        <h1 #heading class="rp-display-md" tabindex="-1">This link has expired</h1>
+        <p class="rp-lead" style="font-size: 16px; line-height: 26px" role="status">Verification links work once and last 24 hours. You can keep shopping meanwhile: nothing is blocked.</p>
         @if (signedIn() === 'signedIn') {
           @if (resend() === 'sent') {
-            <p class="t-body" role="status">A new link is on its way.</p>
+            <p class="rp-lead" style="font-size: 16px; line-height: 26px" role="status">A new link is on its way.</p>
           } @else if (resend() === 'tooMany') {
-            <p class="t-body" role="status">You asked for several links recently. Please try again in a little while.</p>
+            <p class="rp-lead" style="font-size: 16px; line-height: 26px" role="status">You asked for several links recently. Please try again in a little while.</p>
           } @else {
-            <button rpBtn type="button" [disabled]="resend() === 'busy'" (click)="sendAnother()">Send me a new link</button>
+            <button rpBtn="action" type="button" [disabled]="resend() === 'busy'" (click)="sendAnother()">Send me a new link</button>
           }
         } @else {
-          <a rpBtn routerLink="/account/sign-in" [queryParams]="{ returnUrl: '/account' }">Sign in to ask for a new link</a>
+          <a rpBtn="action" routerLink="/account/sign-in" [queryParams]="{ returnUrl: '/account' }">Sign in to ask for a new link</a>
         }
       }
       @case ('error') {
-        <h1 #heading class="rp-display-lg" tabindex="-1">We could not verify your email</h1>
-        <p class="t-body" role="alert">Something went wrong on our side. Please open the link again in a moment.</p>
+        <h1 #heading class="rp-display-md" tabindex="-1">We could not verify your email</h1>
+        <p class="rp-lead" style="font-size: 16px; line-height: 26px" role="alert">Something went wrong on our side. Please open the link again in a moment.</p>
       }
       @default {
-        <h1 class="rp-display-lg">Verifying your email…</h1>
-        <p class="t-body" role="status">One moment.</p>
+        <h1 class="rp-display-md">Verifying your email…</h1>
+        <p class="rp-lead" style="font-size: 16px; line-height: 26px" role="status">One moment.</p>
       }
     }
   }

@@ -46,11 +46,11 @@ export const routes: Routes = [
       import('./features/storefront/product-pages/containers/product-page/product-page.container').then((m) => m.ProductPageContainer),
   },
   // Sign-in screens (accounts S9). Signed-in customers are sent on to their account; the screens are noindex (ACT-16).
-  { path: 'account/sign-in', canActivate: [signedOutGuard], loadComponent: () => import('./features/customers/sign-in/containers/sign-in-page/sign-in-page.container').then((m) => m.SignInPageContainer) },
-  { path: 'account/register', canActivate: [signedOutGuard], loadComponent: () => import('./features/customers/sign-in/containers/register-page/register-page.container').then((m) => m.RegisterPageContainer) },
-  { path: 'account/forgot-password', loadComponent: () => import('./features/customers/sign-in/containers/forgot-password-page/forgot-password-page.container').then((m) => m.ForgotPasswordPageContainer) },
-  { path: 'account/reset-password', loadComponent: () => import('./features/customers/sign-in/containers/reset-password-page/reset-password-page.container').then((m) => m.ResetPasswordPageContainer) },
-  { path: 'account/verify-email', loadComponent: () => import('./features/customers/sign-in/containers/verify-email-page/verify-email-page.container').then((m) => m.VerifyEmailPageContainer) },
+  { path: 'account/sign-in', data: { shell: 'slim' }, canActivate: [signedOutGuard], loadComponent: () => import('./features/customers/sign-in/containers/sign-in-page/sign-in-page.container').then((m) => m.SignInPageContainer) },
+  { path: 'account/register', data: { shell: 'slim' }, canActivate: [signedOutGuard], loadComponent: () => import('./features/customers/sign-in/containers/register-page/register-page.container').then((m) => m.RegisterPageContainer) },
+  { path: 'account/forgot-password', data: { shell: 'slim' }, loadComponent: () => import('./features/customers/sign-in/containers/forgot-password-page/forgot-password-page.container').then((m) => m.ForgotPasswordPageContainer) },
+  { path: 'account/reset-password', data: { shell: 'slim' }, loadComponent: () => import('./features/customers/sign-in/containers/reset-password-page/reset-password-page.container').then((m) => m.ResetPasswordPageContainer) },
+  { path: 'account/verify-email', data: { shell: 'slim' }, loadComponent: () => import('./features/customers/sign-in/containers/verify-email-page/verify-email-page.container').then((m) => m.VerifyEmailPageContainer) },
   {
     path: 'account',
     canActivate: [signedInGuard],

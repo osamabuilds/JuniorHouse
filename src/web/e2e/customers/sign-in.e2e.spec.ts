@@ -59,7 +59,7 @@ test.describe('customer sign-in', () => {
     const email = `e2e-${uniqueSuffix()}@example.com`;
 
     await open(page, '/account/register');
-    await expect(page.getByRole('heading', { level: 1, name: 'Create an account' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Create account' })).toBeVisible();
     await page.getByLabel('First name').fill('Sana');
     await page.getByLabel('Last name').fill('Khan');
     await page.getByLabel('Email').fill(email);
@@ -82,6 +82,7 @@ test.describe('customer sign-in', () => {
     await open(page, localUrl(await mailLink(request, email, '/account/verify-email')));
     await expect(page.getByRole('heading', { level: 1, name: 'Email verified' })).toBeVisible();
 
+    await open(page, '/account');
     await page.getByRole('button', { name: /Sign out/ }).first().click();
     await open(page, '/account/sign-in');
     await page.getByLabel('Email').fill(email);
@@ -112,7 +113,7 @@ test.describe('customer sign-in', () => {
     const next = 'Brand-New-Pass-7';
     await page.getByLabel('New password', { exact: true }).fill(next);
     await page.getByLabel('Confirm new password').fill(next);
-    await page.getByRole('button', { name: 'Set new password' }).click();
+    await page.getByRole('button', { name: 'Update password' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Password updated' })).toBeVisible();
 
     await open(page, '/account/sign-in');

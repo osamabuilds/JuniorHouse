@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { filter, map } from 'rxjs';
 import { NavigationActions } from './features/storefront/navigation';
 import { SiteSettingsActions } from './features/storefront/site-settings';
 import { AnnouncementBarComponent } from './layout/announcement-bar/announcement-bar.component';
@@ -11,16 +13,33 @@ import { SiteFooterComponent } from './layout/site-footer/site-footer.component'
 import { SiteHeaderComponent } from './layout/site-header/site-header.component';
 
 @Component({
-  imports: [RouterOutlet, AnnouncementBarComponent, VerifyEmailBarComponent, SiteHeaderComponent, SiteFooterComponent, MobileMenuComponent, SearchOverlayComponent],
+  imports: [RouterOutlet, RouterLink, AnnouncementBarComponent, VerifyEmailBarComponent, SiteHeaderComponent, SiteFooterComponent, MobileMenuComponent, SearchOverlayComponent],
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'rp-root' },
   templateUrl: './app.html',
 })
 export class App {
+  private readonly router = inject(Router);
+
+  /** The sign-in screens show a slim wordmark header and no footer (design system: AuthScreens); their routes carry `data: { shell: 'slim' }`. */
+  protected readonly slim = toSignal(
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      map(() => this.isSlim()),
+    ),
+    { initialValue: this.isSlim() },
+  );
+
   constructor() {
     const store = inject(Store);
     store.dispatch(SiteSettingsActions.load());
     store.dispatch(NavigationActions.loadMenu());
+  }
+
+  private isSlim(): boolean {
+    let route = this.router.routerState.snapshot.root;
+    while (route.firstChild) route = route.firstChild;
+    return route.data['shell'] === 'slim';
   }
 }

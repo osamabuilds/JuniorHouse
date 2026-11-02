@@ -430,7 +430,18 @@
 .rp-auth__main { display: grid; align-content: center; justify-items: center; padding: var(--space-12) var(--margin-mobile); }
 .rp-auth__box { width: 100%; max-width: 420px; display: grid; gap: var(--space-5); }
 .rp-auth__box > form { display: grid; gap: var(--space-5); }
-@media (min-width: 64rem) { .rp-auth { grid-template-columns: 1fr 1fr; } .rp-auth__media { display: block; background: var(--surface-sunken, var(--line)); } }
+.rp-auth__media .rp-ph { position: absolute; inset: 0; }
+.rp-auth__media .rp-hero__scrim { position: absolute; inset: 0; z-index: 2; }
+.rp-auth__quote { position: absolute; z-index: 3; left: var(--space-8); right: var(--space-8); bottom: var(--space-8); margin: 0; color: var(--on-image); }
+.rp-header--slim { position: static; }
+.rp-header--slim .rp-wrap { display: flex; align-items: center; justify-content: center; height: 64px; }
+.rp-btn--action { color: var(--on-action); background: var(--action); border-color: var(--action); }
+.rp-btn--action:hover { color: var(--on-action); background: var(--action-deep); border-color: var(--action-deep); }
+.rp-formgrid { display: grid; gap: var(--space-4); }
+.rp-formgrid .rp-field { align-content: start; }
+@media (min-width: 40rem) { .rp-formgrid--2 { grid-template-columns: 1fr 1fr; } }
+.rp-auth__row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+@media (min-width: 64rem) { .rp-auth { grid-template-columns: 1fr 1fr; } .rp-auth__media { display: block; } }
 .rp-rules { display: grid; gap: var(--space-1); margin: 0; padding: 0; list-style: none; font: 400 14px/20px var(--font-sans); }
 .rp-rules li { display: flex; gap: var(--space-2); align-items: center; color: var(--ink-muted); }
 .rp-rules li.is-met { color: var(--ink); }
