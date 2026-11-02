@@ -18,6 +18,7 @@ internal sealed class CartConfiguration : IEntityTypeConfiguration<ShoppingCart>
         builder.Property(c => c.CustomerId).HasColumnName("CUST_ID");
         builder.Property(c => c.GuestKeyHash).HasColumnName("GST_KEY_HASH").HasMaxLength(64);
         builder.Property(c => c.AppliedCodeId).HasColumnName("DISC_CODE_ID");
+        builder.HasOne<Domain.DiscountCodes.DiscountCode>().WithMany().HasForeignKey(c => c.AppliedCodeId).HasConstraintName("FK_CART_MAIN_DISC_CODE_ID").OnDelete(DeleteBehavior.SetNull);
         builder.Property(c => c.LastTouchedAt).HasColumnName("LAST_USED_DTE").IsRequired();
         builder.Property(c => c.ExpiresAt).HasColumnName("EXPY_DTE");
 

@@ -243,6 +243,8 @@ namespace Romp.Modules.Cart.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AppliedCodeId");
+
                     b.HasIndex(new[] { "ExpiresAt" }, "IX_CART_MAIN_EXPY_DTE")
                         .HasFilter("\"EXPY_DTE\" IS NOT NULL");
 
@@ -257,6 +259,224 @@ namespace Romp.Modules.Cart.Infrastructure.Migrations
                     b.ToTable("CART_MAIN", "CART", t =>
                         {
                             t.HasCheckConstraint("CK_CART_MAIN_OWNR", "(\"CUST_ID\" IS NULL) <> (\"GST_KEY_HASH\" IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.DiscountCodes.DiscountCode", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("CODE");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("EXPY_DTE");
+
+                    b.Property<bool>("IncludesSaleItems")
+                        .HasColumnType("boolean")
+                        .HasColumnName("SALE_INCL_IND");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<short>("Kind")
+                        .HasColumnType("smallint")
+                        .HasColumnName("DISC_TYPE_ID");
+
+                    b.Property<decimal?>("MinimumSpend")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("MIN_SPND_AMT");
+
+                    b.Property<int?>("PerCustomerCap")
+                        .HasColumnType("integer")
+                        .HasColumnName("CUST_USE_CAP");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<int?>("UsageCap")
+                        .HasColumnType("integer")
+                        .HasColumnName("USE_CAP");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("VAL");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Kind");
+
+                    b.HasIndex(new[] { "Code" }, "UQ_DISC_CODE_CODE")
+                        .IsUnique();
+
+                    b.ToTable("DISC_CODE", "CART", t =>
+                        {
+                            t.HasCheckConstraint("CK_DISC_CODE_LIMITS", "(\"USE_CAP\" IS NULL OR \"USE_CAP\" >= 1) AND (\"CUST_USE_CAP\" IS NULL OR \"CUST_USE_CAP\" >= 1) AND (\"MIN_SPND_AMT\" IS NULL OR \"MIN_SPND_AMT\" >= 0)");
+
+                            t.HasCheckConstraint("CK_DISC_CODE_VAL", "\"VAL\" > 0 AND (\"DISC_TYPE_ID\" <> 1 OR \"VAL\" <= 100)");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.DiscountCodes.DiscountScopeCategory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("CategoryId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CTGY_ID");
+
+                    b.Property<long>("DiscountCodeId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("DISC_CODE_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "DiscountCodeId", "CategoryId" }, "UQ_DISC_SCOP_DISC_CODE_ID_CTGY_ID")
+                        .IsUnique();
+
+                    b.ToTable("DISC_SCOP", "CART");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.DiscountCodes.Redemption", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("AMT");
+
+                    b.Property<string>("CustomerKey")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("character varying(70)")
+                        .HasColumnName("CUST_KEY");
+
+                    b.Property<long>("DiscountCodeId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("DISC_CODE_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("OrderNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("ORDR_NO");
+
+                    b.Property<string>("PlacementKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("PLCE_KEY");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint")
+                        .HasColumnName("RDMP_STS_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "DiscountCodeId", "CustomerKey" }, "IX_DISC_RDMP_DISC_CODE_ID_CUST_KEY");
+
+                    b.HasIndex(new[] { "Status", "InsrDte" }, "IX_DISC_RDMP_RDMP_STS_ID_INSR_DTE");
+
+                    b.HasIndex(new[] { "PlacementKey" }, "UQ_DISC_RDMP_PLCE_KEY")
+                        .IsUnique();
+
+                    b.ToTable("DISC_RDMP", "CART", t =>
+                        {
+                            t.HasCheckConstraint("CK_DISC_RDMP_AMT", "\"AMT\" >= 0");
                         });
                 });
 
@@ -379,6 +599,133 @@ namespace Romp.Modules.Cart.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Cart.Infrastructure.DiscountCodes.DiscountKindRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("DISC_TYPE_LKP", "CART");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "PCT",
+                            Description = "A percentage of the eligible subtotal",
+                            IsActive = true,
+                            Name = "Percentage",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "FIXD",
+                            Description = "A fixed amount in rupees",
+                            IsActive = true,
+                            Name = "Fixed amount",
+                            SortSeq = (short)2
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Infrastructure.DiscountCodes.RedemptionStatusRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("RDMP_STS_LKP", "CART");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "HELD",
+                            Description = "Kept for an order that is being placed",
+                            IsActive = true,
+                            Name = "Held",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "CNFM",
+                            Description = "Used by a placed order",
+                            IsActive = true,
+                            Name = "Confirmed",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "RLSD",
+                            Description = "Given back: the order never came or was cancelled",
+                            IsActive = true,
+                            Name = "Released",
+                            SortSeq = (short)3
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Cart.Domain.Carts.CartLine", b =>
                 {
                     b.HasOne("Romp.Modules.Cart.Domain.Carts.ShoppingCart", null)
@@ -391,7 +738,58 @@ namespace Romp.Modules.Cart.Infrastructure.Migrations
 
             modelBuilder.Entity("Romp.Modules.Cart.Domain.Carts.ShoppingCart", b =>
                 {
+                    b.HasOne("Romp.Modules.Cart.Domain.DiscountCodes.DiscountCode", null)
+                        .WithMany()
+                        .HasForeignKey("AppliedCodeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_CART_MAIN_DISC_CODE_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.DiscountCodes.DiscountCode", b =>
+                {
+                    b.HasOne("Romp.Modules.Cart.Infrastructure.DiscountCodes.DiscountKindRow", null)
+                        .WithMany()
+                        .HasForeignKey("Kind")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_DISC_CODE_DISC_TYPE_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.DiscountCodes.DiscountScopeCategory", b =>
+                {
+                    b.HasOne("Romp.Modules.Cart.Domain.DiscountCodes.DiscountCode", null)
+                        .WithMany("Scope")
+                        .HasForeignKey("DiscountCodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_DISC_SCOP_DISC_CODE_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.DiscountCodes.Redemption", b =>
+                {
+                    b.HasOne("Romp.Modules.Cart.Domain.DiscountCodes.DiscountCode", null)
+                        .WithMany()
+                        .HasForeignKey("DiscountCodeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_DISC_RDMP_DISC_CODE_ID");
+
+                    b.HasOne("Romp.Modules.Cart.Infrastructure.DiscountCodes.RedemptionStatusRow", null)
+                        .WithMany()
+                        .HasForeignKey("Status")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_DISC_RDMP_RDMP_STS_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.Carts.ShoppingCart", b =>
+                {
                     b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.DiscountCodes.DiscountCode", b =>
+                {
+                    b.Navigation("Scope");
                 });
 #pragma warning restore 612, 618
         }

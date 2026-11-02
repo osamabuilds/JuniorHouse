@@ -15,5 +15,9 @@ public interface ICartDbContext
 
     DbSet<Domain.Totals.ShippingSettings> ShippingSettings { get; }
 
+    DbSet<Domain.DiscountCodes.DiscountCode> DiscountCodes { get; }
+
+    DbSet<Domain.DiscountCodes.Redemption> Redemptions { get; }
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

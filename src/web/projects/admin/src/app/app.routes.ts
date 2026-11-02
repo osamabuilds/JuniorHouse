@@ -15,7 +15,7 @@ const staffRoutes: Routes = [
   {
     path: 'shipping',
     canActivate: [permissionGuard('shipping.manage')],
-    loadChildren: () => import('@features/cart/shipping/shipping.routes').then((m) => m.SHIPPING_ROUTES),
+    loadChildren: () => import('@features/cart/totals/shipping.routes').then((m) => m.SHIPPING_ROUTES),
   },
   {
     path: 'staff',

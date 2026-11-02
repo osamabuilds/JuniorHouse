@@ -42,8 +42,8 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 
 ## discount-codes
 
-- [ ] **D1** `DiscountCode` and `DiscountRule.Evaluate` with every rejection reason (generic `Unknown` for unknown, mistyped, deactivated). *Proof:* `DiscountRuleTests` (DSC-1 to 7, 9, 12).
-- [ ] **D2** `DSCT_CODE`, `DSCT_SCOP`, `DSCT_RDMP`, lookups and migration. *Proof:* `DiscountMigrationTests`, naming and glossary tests.
+- [x] **D1** `DiscountCode` and `DiscountRule.Evaluate` with every rejection reason (generic `Unknown` for unknown, mistyped, deactivated). *Proof:* `DiscountRuleTests` (DSC-1 to 7, 9, 12).
+- [x] **D2** `DSCT_CODE`, `DSCT_SCOP`, `DSCT_RDMP`, lookups and migration. *Proof:* `DiscountMigrationTests`, naming and glossary tests.
 - [ ] **D3** Apply and remove on the cart, second code refused, code dropped with a notice when rules stop holding. *Proof:* `ApplyDiscountTests` (DSC-4, 13).
 - [ ] **D4** `discount-apply` rate limiter (10 per 15 minutes per address and per owner). *Proof:* `DiscountRateLimitTests` (DSC-8).
 - [ ] **D5** Redemption `HoldAsync` / `ReleaseAsync` (row lock, caps, per-customer limit, guests by mobile hash) and the sweeper. *Proof:* `RedemptionConcurrencyTests` against PostgreSQL: two holds for the last redemption, one wins (DSC-10); `SweepHeldRedemptionsTests`.
