@@ -96,9 +96,9 @@ public sealed record CartLineResponse(
 /// The basket and what it costs. <c>Delivery</c> is null until a city is known ("calculated at checkout"); <c>Total</c> then excludes it. Every
 /// figure is the server's (SEC-09).
 /// </summary>
-public sealed record CartResponse(IReadOnlyList<CartLineResponse> Lines, int ItemCount, decimal Subtotal, bool HasProblems, decimal Discount, decimal? Delivery, decimal Total)
+public sealed record CartResponse(IReadOnlyList<CartLineResponse> Lines, int ItemCount, decimal Subtotal, bool HasProblems, decimal Discount, decimal? Delivery, decimal Total, string? DiscountCode = null, IReadOnlyList<string>? Notices = null)
 {
-    public static CartResponse From(PricedCart cart, Romp.Modules.Cart.Domain.Totals.OrderAmounts? amounts = null) =>
+    public static CartResponse From(PricedCart cart, Romp.Modules.Cart.Domain.Totals.OrderAmounts? amounts = null, string? discountCode = null, IEnumerable<string>? notices = null) =>
         new(
             [.. cart.Lines.Select(l => new CartLineResponse(
                 l.VariantId, l.ProductId, l.Name, l.Path, l.Colour, l.Size, l.Sku, l.UnitPrice, l.CompareAtPrice, l.Quantity, l.LineTotal, l.Available,
@@ -108,7 +108,9 @@ public sealed record CartResponse(IReadOnlyList<CartLineResponse> Lines, int Ite
             cart.HasProblems,
             amounts?.Discount ?? 0m,
             amounts is { ShippingKnown: true } ? amounts.Shipping : null,
-            amounts?.Total ?? cart.Subtotal);
+            amounts?.Total ?? cart.Subtotal,
+            discountCode,
+            [.. notices ?? []]);
 
     private static string[] Issues(LineIssues issues) =>
     [
@@ -116,4 +118,18 @@ public sealed record CartResponse(IReadOnlyList<CartLineResponse> Lines, int Ite
         .. issues.HasFlag(LineIssues.LowStock) ? ["low-stock"] : Array.Empty<string>(),
         .. issues.HasFlag(LineIssues.PriceChanged) ? ["price-changed"] : Array.Empty<string>(),
     ];
+}
+
+/// <summary>
+/// Answers a basket change with the whole basket as the shopper now sees it: lines, discount, totals, and any notice raised while the
+/// request ran (a code taken off, DSC-13). The one read path, so a change and a plain read can never disagree.
+/// </summary>
+public sealed class CartResponder(MediatR.ISender sender, Romp.Modules.Cart.Application.DiscountCodes.CartNotices notices)
+{
+    public async Task<CartResponse> ReadAsync(CartOwner owner, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new Romp.Modules.Cart.Application.Totals.GetCartWithTotalsQuery(owner, null, false), cancellationToken);
+        var all = result.DiscountNotice is null ? notices.Items : [.. notices.Items, result.DiscountNotice];
+        return CartResponse.From(result.Cart, result.Amounts, result.DiscountCode, all);
+    }
 }

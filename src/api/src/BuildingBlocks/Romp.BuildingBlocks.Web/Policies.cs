@@ -18,4 +18,7 @@ public static class RateLimitPolicies
 {
     /// <summary>For expensive or abuse-prone endpoints (preview, queue creation, resolve).</summary>
     public const string Strict = "strict";
+
+    /// <summary>Guessing discount codes: a handful of tries per client per quarter hour (DSC-8).</summary>
+    public const string DiscountApply = "discount-apply";
 }

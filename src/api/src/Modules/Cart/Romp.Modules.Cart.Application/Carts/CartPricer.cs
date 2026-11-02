@@ -55,7 +55,7 @@ public sealed class CartPricer(IVariantSalesQueries catalog, IStockAvailabilityQ
             return new PricedLine(
                 line.VariantId, sale?.ProductId ?? 0, sale?.ProductName ?? GoneName, sale?.Path ?? string.Empty, sale?.ColourName ?? string.Empty,
                 sale?.SizeName ?? string.Empty, null, null, null, line.Quantity, 0m, 0, null, LineIssues.Unavailable,
-                thumb?.WebpUrl, thumb?.JpegUrl, altText);
+                thumb?.WebpUrl, thumb?.JpegUrl, altText) { CategoryId = sale?.CategoryId ?? 0 };
         }
 
         var onHand = sale.LabellingVariantId is { } labelling && available.TryGetValue(labelling, out var count) ? count : 0;
@@ -75,6 +75,6 @@ public sealed class CartPricer(IVariantSalesQueries catalog, IStockAvailabilityQ
         return new PricedLine(
             line.VariantId, sale.ProductId, sale.ProductName, sale.Path, sale.ColourName, sale.SizeName, sale.SkuCode, sale.Price, sale.CompareAtPrice,
             line.Quantity, decimal.Round(sale.Price.Value * line.Quantity, 2, MidpointRounding.AwayFromZero), onHand, previous, flags,
-            thumb?.WebpUrl, thumb?.JpegUrl, altText);
+            thumb?.WebpUrl, thumb?.JpegUrl, altText) { CategoryId = sale.CategoryId };
     }
 }

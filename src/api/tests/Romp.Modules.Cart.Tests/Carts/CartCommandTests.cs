@@ -26,7 +26,7 @@ public sealed class CartCommandTests(CartPostgres postgres) : IClassFixture<Cart
     private readonly MovableClock _clock = new(Start);
 
     private CartCommandSupport Support(CartDbContextHolder holder) =>
-        new(holder.Db, _catalog, _stock, new CartPricer(_catalog, _stock, _images), Options.Create(new CartOptions()), _clock);
+        new(holder.Db, _catalog, _stock, new CartPricer(_catalog, _stock, _images), Options.Create(new CartOptions()), _clock, new Romp.Modules.Cart.Application.DiscountCodes.DiscountService(holder.Db), new Romp.Modules.Cart.Application.DiscountCodes.CartNotices());
 
     private sealed class CartDbContextHolder(Romp.Modules.Cart.Infrastructure.Persistence.CartDbContext db) : IAsyncDisposable
     {

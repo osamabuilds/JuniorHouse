@@ -23,7 +23,8 @@ public sealed record RemoveLineCommand(CartOwner Owner, long VariantId) : IReque
 
 /// <summary>What the three commands share: finding the basket, the live stock and sellable checks (CRT-4, CRT-5), and pricing the answer.</summary>
 public sealed class CartCommandSupport(
-    ICartDbContext dbContext, IVariantSalesQueries catalog, IStockAvailabilityQueries stock, CartPricer pricer, IOptions<CartOptions> options, TimeProvider clock)
+    ICartDbContext dbContext, IVariantSalesQueries catalog, IStockAvailabilityQueries stock, CartPricer pricer, IOptions<CartOptions> options, TimeProvider clock,
+    DiscountCodes.DiscountService discounts, DiscountCodes.CartNotices notices)
 {
     public CartOptions Options => options.Value;
 
@@ -77,10 +78,19 @@ public sealed class CartCommandSupport(
         }
     }
 
-    public async Task<PricedCart> PriceAsync(ShoppingCart cart, CancellationToken cancellationToken)
+    public async Task<PricedCart> PriceAsync(ShoppingCart cart, CartOwner owner, CancellationToken cancellationToken)
     {
         var priced = await pricer.PriceAsync(cart, cancellationToken);
         cart.NotePrices(priced.Lines.Where(l => l.UnitPrice is not null).ToDictionary(l => l.VariantId, l => l.UnitPrice!.Value));
+
+        // A code that no longer holds because the basket changed is taken off, with a notice (DSC-13).
+        var applied = await DiscountCodes.DiscountOutcome.ResolveAsync(discounts, cart, priced, Now, DiscountCodes.DiscountService.CustomerKey(owner), cancellationToken);
+        if (applied.Notice is not null)
+        {
+            cart.RemoveCode(Now, Options.GuestLifetime);
+            notices.Add(applied.Notice);
+        }
+
         return priced;
     }
 
@@ -104,7 +114,7 @@ public sealed class AddLineCommandHandler(CartCommandSupport support) : IRequest
         }
 
         cart.AddLine(request.VariantId, request.Quantity, options.MaxPerLine, options.MaxLines, support.Now, options.GuestLifetime);
-        return await support.PriceAsync(cart, cancellationToken);
+        return await support.PriceAsync(cart, request.Owner, cancellationToken);
     }
 }
 
@@ -121,7 +131,7 @@ public sealed class SetQuantityCommandHandler(CartCommandSupport support) : IReq
         }
 
         cart.SetQuantity(request.VariantId, request.Quantity, options.MaxPerLine, support.Now, options.GuestLifetime);
-        return await support.PriceAsync(cart, cancellationToken);
+        return await support.PriceAsync(cart, request.Owner, cancellationToken);
     }
 }
 
@@ -131,6 +141,6 @@ public sealed class RemoveLineCommandHandler(CartCommandSupport support) : IRequ
     {
         var cart = await support.FindOrCreateAsync(request.Owner, cancellationToken);
         cart.RemoveLine(request.VariantId, support.Now, support.Options.GuestLifetime);
-        return await support.PriceAsync(cart, cancellationToken);
+        return await support.PriceAsync(cart, request.Owner, cancellationToken);
     }
 }

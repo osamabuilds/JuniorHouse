@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Cart.Application.Carts;
+using Romp.Modules.Cart.Application.DiscountCodes;
 using Romp.Modules.Cart.Application.Totals;
 using Romp.Modules.Cart.Domain.Carts;
 
@@ -17,6 +18,9 @@ public sealed record AddLineRequest(long VariantId, int Quantity);
 
 /// <summary>Set a line's quantity.</summary>
 public sealed record SetQuantityRequest(int Quantity);
+
+/// <summary>Apply a code typed by the shopper.</summary>
+public sealed record ApplyCodeRequest(string? Code);
 
 /// <summary>
 /// The shopper's basket (cart plan, "API endpoints"). Open to guests by design: the owner is the signed-in customer or the guest cookie,
@@ -39,26 +43,43 @@ internal static class CartEndpoints
             // A read never creates a basket or a cookie: a guest with none sees an empty one.
             var owner = await owners.ReadAsync(cancellationToken);
             var result = await sender.Send(new GetCartWithTotalsQuery(owner, cityId, string.Equals(method, "cod", StringComparison.OrdinalIgnoreCase)), cancellationToken);
-            return Results.Ok(CartResponse.From(result.Cart, result.Amounts));
+            return Results.Ok(CartResponse.From(result.Cart, result.Amounts, result.DiscountCode, result.DiscountNotice is null ? null : [result.DiscountNotice]));
         });
 
-        cart.MapPost("/lines", async (AddLineRequest body, CartOwnerAccessor owners, ISender sender, IServiceScopeFactory scopes, CancellationToken cancellationToken) =>
+        cart.MapPost("/lines", async (AddLineRequest body, CartOwnerAccessor owners, ISender sender, IServiceScopeFactory scopes, CartResponder responder, CancellationToken cancellationToken) =>
         {
             var owner = await owners.ReadOrCreateAsync(cancellationToken);
             var request = new AddLineCommand(owner, body.VariantId, body.Quantity);
-            return Results.Ok(CartResponse.From(await SendOnceMoreOnRace(sender, scopes, request, cancellationToken)));
+            await SendOnceMoreOnRace(sender, scopes, request, cancellationToken);
+            return Results.Ok(await responder.ReadAsync(owner, cancellationToken));
         }).AddEndpointFilter<CartOriginCheckFilter>();
 
-        cart.MapPut("/lines/{variantId:long}", async (long variantId, SetQuantityRequest body, CartOwnerAccessor owners, ISender sender, CancellationToken cancellationToken) =>
+        cart.MapPut("/lines/{variantId:long}", async (long variantId, SetQuantityRequest body, CartOwnerAccessor owners, ISender sender, CartResponder responder, CancellationToken cancellationToken) =>
         {
             var owner = await owners.ReadOrCreateAsync(cancellationToken);
-            return Results.Ok(CartResponse.From(await sender.Send(new SetQuantityCommand(owner, variantId, body.Quantity), cancellationToken)));
+            await sender.Send(new SetQuantityCommand(owner, variantId, body.Quantity), cancellationToken);
+            return Results.Ok(await responder.ReadAsync(owner, cancellationToken));
         }).AddEndpointFilter<CartOriginCheckFilter>();
 
-        cart.MapDelete("/lines/{variantId:long}", async (long variantId, CartOwnerAccessor owners, ISender sender, CancellationToken cancellationToken) =>
+        cart.MapDelete("/lines/{variantId:long}", async (long variantId, CartOwnerAccessor owners, ISender sender, CartResponder responder, CancellationToken cancellationToken) =>
         {
             var owner = await owners.ReadOrCreateAsync(cancellationToken);
-            return Results.Ok(CartResponse.From(await sender.Send(new RemoveLineCommand(owner, variantId), cancellationToken)));
+            await sender.Send(new RemoveLineCommand(owner, variantId), cancellationToken);
+            return Results.Ok(await responder.ReadAsync(owner, cancellationToken));
+        }).AddEndpointFilter<CartOriginCheckFilter>();
+
+        cart.MapPost("/discount", async (ApplyCodeRequest body, CartOwnerAccessor owners, ISender sender, CartResponder responder, CancellationToken cancellationToken) =>
+        {
+            var owner = await owners.ReadOrCreateAsync(cancellationToken);
+            await sender.Send(new ApplyDiscountCommand(owner, body.Code ?? string.Empty), cancellationToken);
+            return Results.Ok(await responder.ReadAsync(owner, cancellationToken));
+        }).AddEndpointFilter<CartOriginCheckFilter>().RequireRateLimiting(RateLimitPolicies.DiscountApply);
+
+        cart.MapDelete("/discount", async (CartOwnerAccessor owners, ISender sender, CartResponder responder, CancellationToken cancellationToken) =>
+        {
+            var owner = await owners.ReadOrCreateAsync(cancellationToken);
+            await sender.Send(new RemoveDiscountCommand(owner), cancellationToken);
+            return Results.Ok(await responder.ReadAsync(owner, cancellationToken));
         }).AddEndpointFilter<CartOriginCheckFilter>();
     }
 

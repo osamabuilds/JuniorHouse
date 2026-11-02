@@ -65,7 +65,7 @@ public sealed class PermissionArchitectureTests
 
         // The policy class itself names nothing but the explicit "open to everyone" and the customer policy (a different kind of caller, ADR 0021).
         var policies = File.ReadAllText(Path.Combine(RepositoryRoot(), "src", "api", "src", "BuildingBlocks", "Romp.BuildingBlocks.Web", "Policies.cs"));
-        Assert.Equal(["Customer", "Public"], Regex.Matches(policies, @"public const string (\w+) = ""[^""]+"";").Where(m => !m.Value.Contains("strict", StringComparison.Ordinal)).Select(m => m.Groups[1].Value).Order(StringComparer.Ordinal));
+        Assert.Equal(["Customer", "Public"], Regex.Matches(policies, @"public const string (\w+) = ""[^""]+"";").Where(m => !m.Value.Contains("strict", StringComparison.Ordinal) && !m.Value.Contains("discount-apply", StringComparison.Ordinal)).Select(m => m.Groups[1].Value).Order(StringComparer.Ordinal));
     }
 
     [Fact]

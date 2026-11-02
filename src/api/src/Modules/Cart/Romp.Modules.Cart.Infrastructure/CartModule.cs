@@ -42,6 +42,9 @@ public sealed class CartModule : IModule
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<Application.Carts.CartPricer>();
         services.AddScoped<Application.Carts.CartCommandSupport>();
+        services.AddScoped<Application.DiscountCodes.DiscountService>();
+        services.AddScoped<Application.DiscountCodes.CartNotices>();
+        services.AddScoped<Carts.CartResponder>();
         services.AddScoped<Application.Totals.ShippingPolicyLoader>();
         services.AddScoped<Romp.Modules.Customers.Contracts.ICustomerSignedInHook, Application.Carts.GuestCartMergeHook>();
         services.AddHttpContextAccessor();

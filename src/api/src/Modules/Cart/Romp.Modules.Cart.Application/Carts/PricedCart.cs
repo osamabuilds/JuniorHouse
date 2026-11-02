@@ -37,6 +37,12 @@ public sealed record PricedLine(
     string? ImageAlt)
 {
     public bool IsOrderable => Issues is LineIssues.None or LineIssues.PriceChanged;
+
+    /// <summary>The catalogue category, so a discount code scoped to categories can tell which lines it covers (DSC-7).</summary>
+    public short CategoryId { get; init; }
+
+    /// <summary>The line carries a struck-through full price, so a code that leaves sale items out skips it (Q-DSC-4).</summary>
+    public bool IsOnSale => UnitPrice is { } price && CompareAtPrice is { } was && was > price;
 }
 
 /// <summary>

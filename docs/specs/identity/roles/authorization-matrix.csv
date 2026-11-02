@@ -34,6 +34,8 @@ POST,/api/auth/sign-in,anonymous
 POST,/api/auth/sign-out,anonymous
 POST,/api/auth/sign-out-all,session
 GET,/api/cart/,anonymous
+POST,/api/cart/discount,anonymous
+DELETE,/api/cart/discount,anonymous
 POST,/api/cart/lines,anonymous
 DELETE,/api/cart/lines/{variantId:long},anonymous
 PUT,/api/cart/lines/{variantId:long},anonymous

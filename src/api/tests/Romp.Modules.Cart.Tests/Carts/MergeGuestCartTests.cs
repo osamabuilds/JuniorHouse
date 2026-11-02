@@ -32,7 +32,7 @@ public sealed class MergeGuestCartTests(CartPostgres postgres) : IClassFixture<C
         await using var db = postgres.NewContext();
         var catalog = new FakeCatalog();
         var stock = new FakeStock();
-        var support = new CartCommandSupport(db, catalog, stock, new CartPricer(catalog, stock, new FakeImages()), Options.Create(new CartOptions()), new FixedClock(at ?? Now));
+        var support = new CartCommandSupport(db, catalog, stock, new CartPricer(catalog, stock, new FakeImages()), Options.Create(new CartOptions()), new FixedClock(at ?? Now), new Romp.Modules.Cart.Application.DiscountCodes.DiscountService(db), new Romp.Modules.Cart.Application.DiscountCodes.CartNotices());
         await new MergeGuestCartCommandHandler(support, db).Handle(new MergeGuestCartCommand(customerId, guestKey), CancellationToken.None);
         await db.SaveChangesAsync();
     }
