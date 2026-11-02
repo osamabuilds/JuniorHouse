@@ -80,7 +80,7 @@
 .rp-menu-btn { justify-self: start; margin-left: -10px; }
 .rp-left { display: flex; align-items: center; }
 .rp-hide-sm { display: none; }
-.rp-count { position: absolute; top: 6px; right: 3px; min-width: 16px; height: 16px; padding: 0 4px; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--accent); color: var(--surface-dark); font: 500 10px/1 var(--font-sans); }
+.rp-count { position: absolute; top: 4px; right: 0; min-width: 18px; height: 18px; padding: 0 5px; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--ink); color: var(--surface); font: 600 11px/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 .rp-nav > li > a, .rp-nav > li > button { position: relative; display: inline-flex; align-items: center; min-height: var(--tap); padding: 0; border: 0; background: transparent; cursor: pointer; font: 500 13px/16px var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; }
 .rp-nav > li > a::after, .rp-nav > li > button::after { content: ""; position: absolute; left: 0; right: 0; bottom: 8px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: 0 50%; transition: transform var(--dur-base) var(--ease-out); }
 .rp-nav > li > a:hover::after, .rp-nav > li > button:hover::after, .rp-nav a[aria-current="page"]::after, .rp-nav button[aria-expanded="true"]::after { transform: scaleX(1); }
@@ -465,7 +465,7 @@
 .rp-sumrow dd { margin: 0; }
 .rp-sumrow--total { margin-top: var(--space-3); padding-top: var(--space-4); border-top: var(--border-line) solid var(--line); font: 600 18px/26px var(--font-sans); }
 .rp-sumrow--total dt { color: var(--ink); }
-.rp-lineprice { margin: 0; text-align: right; font: 500 15px/22px var(--font-sans); font-variant-numeric: tabular-nums; }
+.rp-lineprice { margin: 0; white-space: nowrap; text-align: right; font: 500 15px/22px var(--font-sans); font-variant-numeric: tabular-nums; }
 .rp-lineprice s { display: block; font-weight: 400; color: var(--ink-muted); }
 .rp-bag-lines { list-style: none; margin: 0; padding: 0; }
 .rp-bag-lines > li { border-top: var(--border-line) solid var(--line); padding-block: var(--space-6); }
