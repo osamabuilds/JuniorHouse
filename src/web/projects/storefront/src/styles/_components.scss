@@ -491,3 +491,24 @@
 .rp-line__pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .rp-line__remove { color: var(--ink-muted); }
 .rp-line__remove:hover { color: var(--danger-text); }
+.rp-option { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); border: var(--border-line) solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface-raised); cursor: pointer; }
+.rp-option:hover { border-color: var(--ink); }
+.rp-option:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.rp-option input[type="radio"], .rp-option input[type="checkbox"] { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--ink); }
+.rp-option__body { flex: 1; display: grid; gap: 2px; }
+.rp-option__body b { font-weight: 500; }
+.rp-option__body span { font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+.rp-option .rp-ico { width: 24px; height: 24px; flex: none; }
+.rp-step { padding-block: var(--space-6); border-top: var(--border-line) solid var(--line); }
+.rp-step__h { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); font: 600 clamp(20px, 2cqw, 24px)/1.2 var(--font-display); letter-spacing: -0.01em; }
+.rp-step__n { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border: var(--border-line) solid var(--ink); border-radius: var(--radius-pill); font: 500 14px/1 var(--font-sans); }
+.rp-checkout__bar { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: space-between; padding-block: var(--space-4); }
+.rp-optgroup { display: grid; gap: var(--space-3); border: 0; padding: 0; margin: 0; }
+.rp-optgroup legend { padding: 0; margin-bottom: var(--space-3); }
+.rp-sumlist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.rp-sumlist li { display: flex; justify-content: space-between; gap: var(--space-4); font: 400 14px/20px var(--font-sans); }
+.rp-sumlist small { color: var(--ink-muted); }
+.rp-placed { display: grid; gap: var(--space-6); max-width: 40rem; margin-inline: auto; padding-block: var(--space-10); }
+.rp-placed__check { display: grid; place-items: center; width: 56px; height: 56px; border: var(--border-line) solid var(--success-text); border-radius: var(--radius-pill); color: var(--success-text); }
+.rp-placed__box { display: grid; gap: var(--space-4); padding: var(--space-6); border: var(--border-line) solid var(--line); border-radius: var(--radius-sm); }
+.rp-placed__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }

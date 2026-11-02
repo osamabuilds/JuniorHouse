@@ -64,8 +64,12 @@
         @if (cart().hasProblems) {
           <p class="rp-help" id="bag-fix">Fix the items marked above to continue.</p>
         }
-        <button rpBtn="action" type="button" [block]="true" disabled reasonId="bag-checkout-note">Checkout</button>
-        <p class="rp-help" id="bag-checkout-note">Checkout opens in the next release. Your bag is saved until then.</p>
+        @if (cart().hasProblems) {
+          <button rpBtn="action" type="button" [block]="true" disabled reasonId="bag-fix">Checkout</button>
+        } @else {
+          <a rpBtn="action" [block]="true" routerLink="/checkout">Checkout</a>
+        }
+        <p class="rp-help">Check out as a guest or sign in. Delivery is worked out when you choose a city.</p>
       </aside>
     </div>
   }

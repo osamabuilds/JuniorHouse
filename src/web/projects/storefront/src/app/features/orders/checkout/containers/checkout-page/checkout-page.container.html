@@ -1,0 +1,171 @@
+<div class="rp-wrap">
+  <div class="rp-checkout__bar">
+    <h1 class="rp-display-lg">Checkout</h1>
+    <a class="rp-link" routerLink="/cart">Back to bag</a>
+  </div>
+
+  @if (status() === 'idle' || status() === 'loading') {
+    <p role="status">Loading your order…</p>
+  } @else if (status() === 'error') {
+    <div class="rp-notice rp-notice--error" role="alert">
+      <rp-icon name="alert" />
+      <div><b>We could not load checkout</b><br />Please try again in a moment. <a class="rp-link" routerLink="/cart">Back to bag</a></div>
+    </div>
+  } @else if (summary(); as s) {
+    @if (s.lines.length === 0) {
+      <div class="rp-bag-empty">
+        <rp-icon name="bag" />
+        <h2 class="rp-display-lg">Your bag is empty</h2>
+        <p class="rp-lead">Add something to your bag to check out.</p>
+        <a rpBtn="action" routerLink="/new-in">Start shopping</a>
+      </div>
+    } @else {
+      @if (refusal().length > 0) {
+        <div class="rp-notice rp-notice--error" role="alert" tabindex="-1">
+          <rp-icon name="alert" />
+          <div>
+            @for (message of refusal(); track message) {
+              <p>{{ message }}</p>
+            }
+            <a class="rp-link" routerLink="/cart">Review your bag</a>
+          </div>
+        </div>
+      }
+      @if (!s.canOrder) {
+        <div class="rp-notice rp-notice--error" role="alert" tabindex="-1">
+          <rp-icon name="alert" />
+          <div>
+            @for (problem of s.problems; track problem) {
+              <p>{{ problem }}</p>
+            }
+            <a class="rp-link" routerLink="/cart">Fix these in your bag</a>
+          </div>
+        </div>
+      }
+
+      <form class="rp-split2" (submit)="place($event)" novalidate>
+        <div>
+          <section class="rp-step" aria-labelledby="co-contact">
+            <h2 class="rp-step__h" id="co-contact"><span class="rp-step__n" aria-hidden="true">1</span>Contact</h2>
+            <div class="rp-formgrid rp-formgrid--2">
+              <rp-field #name label="Your name" [error]="shown().name ?? ''">
+                <input class="rp-input" type="text" autocomplete="name" maxlength="100" [id]="name.controlId" [attr.aria-describedby]="name.describedBy()" [attr.aria-invalid]="name.invalid()" [value]="form().name" (input)="setText('name', $event)" />
+              </rp-field>
+              <rp-field #mobile label="Mobile number" hint="We send order updates here." [error]="shown().mobile ?? ''">
+                <input class="rp-input" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" [id]="mobile.controlId" [attr.aria-describedby]="mobile.describedBy()" [attr.aria-invalid]="mobile.invalid()" [value]="form().mobile" (input)="setText('mobile', $event)" />
+              </rp-field>
+              <rp-field #email label="Email (optional)" hint="For your receipt." [error]="shown().email ?? ''">
+                <input class="rp-input" type="email" autocomplete="email" maxlength="254" [id]="email.controlId" [attr.aria-describedby]="email.describedBy()" [attr.aria-invalid]="email.invalid()" [value]="form().email" (input)="setText('email', $event)" />
+              </rp-field>
+            </div>
+            <label class="rp-option">
+              <input type="checkbox" [checked]="form().whatsAppOptIn" (change)="setChecked('whatsAppOptIn', $event)" />
+              <span class="rp-option__body"><b>Send my order updates on WhatsApp</b><span>We may also ask you there to confirm a cash on delivery order. You can say stop at any time.</span></span>
+            </label>
+            <p class="rp-help">Have an account? <a class="rp-link" routerLink="/account/sign-in" [queryParams]="{ returnUrl: '/checkout' }">Sign in</a>. You can also check out as a guest.</p>
+          </section>
+
+          <section class="rp-step" aria-labelledby="co-address">
+            <h2 class="rp-step__h" id="co-address"><span class="rp-step__n" aria-hidden="true">2</span>Delivery address</h2>
+            @if (savedAddresses().length > 0) {
+              <fieldset class="rp-optgroup">
+                <legend class="t-eyebrow">Your saved addresses</legend>
+                @for (a of savedAddresses(); track a.id) {
+                  <label class="rp-option">
+                    <input type="radio" name="saved-address" [checked]="form().savedAddressId === a.id" (change)="chooseSaved(a.id)" />
+                    <span class="rp-option__body"><b>{{ a.recipientName }}</b><span>{{ a.lineOne }}{{ a.lineTwo ? ', ' + a.lineTwo : '' }}</span></span>
+                  </label>
+                }
+                <label class="rp-option">
+                  <input type="radio" name="saved-address" [checked]="!usingSaved()" (change)="chooseSaved(null)" />
+                  <span class="rp-option__body"><b>Use a different address</b></span>
+                </label>
+              </fieldset>
+            }
+            @if (!usingSaved()) {
+              <div class="rp-formgrid rp-formgrid--2">
+                <rp-field #rname label="Full name" [error]="shown().recipientName ?? ''">
+                  <input class="rp-input" type="text" autocomplete="shipping name" maxlength="100" [id]="rname.controlId" [attr.aria-describedby]="rname.describedBy()" [attr.aria-invalid]="rname.invalid()" [value]="form().recipientName" (input)="setText('recipientName', $event)" />
+                </rp-field>
+                <rp-field #rphone label="Phone for the courier" [error]="shown().recipientPhone ?? ''">
+                  <input class="rp-input" type="tel" inputmode="tel" autocomplete="shipping tel" maxlength="20" [id]="rphone.controlId" [attr.aria-describedby]="rphone.describedBy()" [attr.aria-invalid]="rphone.invalid()" [value]="form().recipientPhone" (input)="setText('recipientPhone', $event)" />
+                </rp-field>
+                <rp-field #line1 label="Address" [error]="shown().lineOne ?? ''">
+                  <input class="rp-input" type="text" autocomplete="shipping address-line1" maxlength="200" [id]="line1.controlId" [attr.aria-describedby]="line1.describedBy()" [attr.aria-invalid]="line1.invalid()" [value]="form().lineOne" (input)="setText('lineOne', $event)" />
+                </rp-field>
+                <rp-field #line2 label="Apartment, landmark (optional)">
+                  <input class="rp-input" type="text" autocomplete="shipping address-line2" maxlength="200" [id]="line2.controlId" [value]="form().lineTwo" (input)="setText('lineTwo', $event)" />
+                </rp-field>
+                <rp-field #prov label="Province" [error]="shown().provinceId ?? ''">
+                  <select class="rp-select" autocomplete="shipping address-level1" [id]="prov.controlId" [attr.aria-describedby]="prov.describedBy()" [attr.aria-invalid]="prov.invalid()" (change)="chooseProvince($event)">
+                    <option value="0" [selected]="form().provinceId === 0">Choose a province</option>
+                    @for (p of provinces(); track p.id) {
+                      <option [value]="p.id" [selected]="form().provinceId === p.id">{{ p.name }}</option>
+                    }
+                  </select>
+                </rp-field>
+                <rp-field #city label="City" [error]="shown().cityId ?? serverErrors()['cityId'] ?? ''">
+                  <select class="rp-select" autocomplete="shipping address-level2" [id]="city.controlId" [attr.aria-describedby]="city.describedBy()" [attr.aria-invalid]="city.invalid()" [disabled]="cities().length === 0" (change)="chooseCity($event)">
+                    <option value="0" [selected]="form().cityId === 0">Choose a city</option>
+                    @for (c of cities(); track c.id) {
+                      <option [value]="c.id" [selected]="form().cityId === c.id">{{ c.name }}</option>
+                    }
+                  </select>
+                </rp-field>
+                <rp-field #pcode label="Postal code (optional)">
+                  <input class="rp-input" type="text" inputmode="numeric" autocomplete="shipping postal-code" maxlength="10" [id]="pcode.controlId" [value]="form().postcode" (input)="setText('postcode', $event)" />
+                </rp-field>
+              </div>
+            }
+            <rp-field #note label="Delivery note (optional)" hint="For example, a landmark or a time that suits you.">
+              <input class="rp-input" type="text" maxlength="200" [id]="note.controlId" [attr.aria-describedby]="note.describedBy()" [value]="form().note" (input)="setText('note', $event)" />
+            </rp-field>
+          </section>
+
+          <section class="rp-step" aria-labelledby="co-payment">
+            <h2 class="rp-step__h" id="co-payment"><span class="rp-step__n" aria-hidden="true">3</span>Payment</h2>
+            <fieldset class="rp-optgroup">
+              <legend class="sr-only">Payment method</legend>
+              @for (m of s.paymentMethods; track m.code) {
+                <label class="rp-option">
+                  <input type="radio" name="payment-method" [checked]="form().paymentMethod === m.code" (change)="chooseMethod(m.code)" />
+                  <span class="rp-option__body">
+                    <b>{{ m.name }}</b>
+                    @if (m.isOnline) {
+                      <span>You pay on a secure page of our payment provider. We never see or store your card details.</span>
+                    } @else {
+                      <span>Pay the courier when your parcel arrives. We may call you to confirm your order first.</span>
+                    }
+                  </span>
+                </label>
+              }
+            </fieldset>
+          </section>
+        </div>
+
+        <aside class="rp-bag-summary" aria-label="Order summary">
+          <h2 class="rp-display-sm">Order summary</h2>
+          <ul class="rp-sumlist">
+            @for (line of s.lines; track line.variantId) {
+              <li>
+                <span>{{ line.name }} <small>({{ line.colour }}, {{ line.size }}) × {{ line.quantity }}</small></span>
+                <span>Rs. {{ line.lineTotal | number }}</span>
+              </li>
+            }
+          </ul>
+          <dl aria-live="polite" aria-atomic="true">
+            <div class="rp-sumrow"><dt>Subtotal</dt><dd>Rs. {{ s.subtotal | number }}</dd></div>
+            @if (s.discount > 0) {
+              <div class="rp-sumrow rp-sumrow--sale"><dt>Discount</dt><dd>&minus; Rs. {{ s.discount | number }}</dd></div>
+            }
+            <div class="rp-sumrow"><dt>Delivery</dt><dd>{{ s.shipping === null ? 'Calculated when you choose a city' : s.shipping === 0 ? 'Free' : 'Rs. ' + (s.shipping | number) }}</dd></div>
+            <div class="rp-sumrow rp-sumrow--total"><dt>Total</dt><dd>Rs. {{ s.total | number }}</dd></div>
+          </dl>
+          <p class="rp-help">The final total is calculated again when you place the order.</p>
+          <button rpBtn="action" type="submit" [block]="true" [disabled]="placing()" [attr.aria-busy]="placing()">Place order</button>
+          <p class="rp-help">By placing your order you agree to our <a class="rp-link" routerLink="/terms">Terms</a> and <a class="rp-link" routerLink="/privacy">Privacy Policy</a>.</p>
+        </aside>
+      </form>
+    }
+  }
+</div>

@@ -44,7 +44,7 @@ app.get('/api/storefront/{*splat}', async (req, res) => {
 const addressBook = /^\/customer-api\/addresses(\/[0-9]+(\/default)?)?$/;
 
 app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res, next) => {
-  if (req.path === '/customer-api/config' || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/')) {
+  if (req.path === '/customer-api/config' || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/') || req.path === '/customer-api/orders' || req.path.startsWith('/customer-api/orders/')) {
     next(); // the sign-in routes below
     return;
   }
@@ -163,6 +163,53 @@ app.all('/customer-api/cart{/*splat}', express.json({ limit: '2kb' }), async (re
     const sendsJson = (req.method === 'POST' || req.method === 'PUT') && req.body && Object.keys(req.body).length > 0;
     if (sendsJson) headers['content-type'] = 'application/json';
     const upstream = await fetch(new URL(req.path.replace('/customer-api/cart', '/api/cart'), apiBaseUrl), {
+      method: req.method,
+      headers,
+      body: sendsJson ? JSON.stringify(req.body) : undefined,
+      redirect: 'manual',
+    });
+    res.status(upstream.status);
+    const type = upstream.headers.get('content-type');
+    if (type) res.setHeader('content-type', type);
+    const cookies = upstream.headers.getSetCookie();
+    if (cookies.length > 0) res.setHeader('set-cookie', cookies);
+    res.setHeader('cache-control', 'private, no-store');
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
+
+/**
+ * Checkout (orders H1). The browser asks this origin (`/customer-api/orders...`) and the server forwards to `/api/orders...`, carrying the
+ * cookies, the browser's `Origin` and the `Idempotency-Key` header, and the query string of the summary. Only the routes below are reachable,
+ * each with the methods it accepts. Answers are never cached.
+ */
+const ordersMethods: Readonly<Record<string, readonly string[]>> = {
+  '/customer-api/orders/checkout': ['GET'],
+  '/customer-api/orders/payment-methods': ['GET'],
+  '/customer-api/orders': ['POST'],
+};
+
+app.all('/customer-api/orders{/*splat}', express.json({ limit: '9kb' }), async (req, res) => {
+  const allowed = ordersMethods[req.path] ?? [];
+  if (!allowed.includes(req.method)) {
+    res.status(404).end();
+    return;
+  }
+  try {
+    const headers: Record<string, string> = {};
+    for (const name of ['cookie', 'origin', 'user-agent', 'idempotency-key']) {
+      const value = req.header(name);
+      if (value) headers[name] = value;
+    }
+    const forwardedFor = [req.header('x-forwarded-for'), req.socket.remoteAddress].filter(Boolean).join(', ');
+    if (forwardedFor) headers['x-forwarded-for'] = forwardedFor;
+    const sendsJson = req.method === 'POST' && req.body && Object.keys(req.body).length > 0;
+    if (sendsJson) headers['content-type'] = 'application/json';
+    const target = new URL(req.path.replace('/customer-api/orders', '/api/orders'), apiBaseUrl);
+    target.search = new URL(req.originalUrl, apiBaseUrl).search;
+    const upstream = await fetch(target, {
       method: req.method,
       headers,
       body: sendsJson ? JSON.stringify(req.body) : undefined,

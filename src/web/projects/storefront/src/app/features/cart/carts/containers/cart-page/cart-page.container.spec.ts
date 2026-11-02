@@ -87,14 +87,21 @@ describe('CartPageContainer', () => {
     expect(el.querySelector('[role="alert"]')!.textContent).toContain('Only 3 are in stock.');
   });
 
-  it('Checkout waits for the next release and says why, in words', () => {
+  it('CHK-1 Checkout is a link to the checkout page when the bag has no problems', () => {
     const { el, show } = render();
     show(cartOf([line(1, 1)]));
+    const link = [...el.querySelectorAll('a')].find((a) => a.textContent?.trim() === 'Checkout') as HTMLAnchorElement;
+
+    expect(link.getAttribute('href')).toBe('/checkout');
+  });
+
+  it('CRT-7 Checkout waits while a line has a problem, and says why', () => {
+    const { el, show } = render();
+    show(cartOf([line(1, 1)], true));
     const button = [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Checkout') as HTMLButtonElement;
 
     expect(button.disabled).toBe(true);
-    expect(button.getAttribute('aria-describedby')).toBe('bag-checkout-note');
-    expect(el.querySelector('#bag-checkout-note')!.textContent).toContain('next release');
+    expect(button.getAttribute('aria-describedby')).toBe('bag-fix');
   });
 
   it('CRT-7 a basket with a problem line tells the shopper to fix it', () => {

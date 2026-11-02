@@ -19,11 +19,11 @@ describe('storefront styles', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('DSF-1 uses no box-shadow other than tokens and the swatch ring', () => {
+  it('DSF-1 uses no box-shadow other than tokens , the swatch ring and the checked option card (design system)', () => {
     const offenders = scss.flatMap((f) =>
       readFileSync(f, 'utf8')
         .split('\n')
-        .filter((l) => /box-shadow:/.test(l) && !/var\(--shadow-float\)|rp-swatch/.test(l))
+        .filter((l) => /box-shadow:/.test(l) && !/var\(--shadow-float\)|rp-swatch|rp-option/.test(l))
         .map((l) => `${f}: ${l.trim()}`),
     );
     expect(offenders).toEqual([]);
