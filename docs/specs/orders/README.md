@@ -2,7 +2,7 @@
 
 Turning a cart into a paid or confirmed order (Sprint 12, "Sell: checkout") and the staff queue that handles it (S13): guest and registered checkout, Cash on Delivery and card payment, idempotent order placement, verified payment webhooks and reconciliation, the COD confirmation workflow, cancellation, and the admin order queue. Picking, packing, courier booking and tracking are S14/S15.
 
-**Status:** Draft specs, awaiting owner approval (2026-11-02) · **Schema:** `ORDR` (proposed) · **Code:** `src/api/src/Modules/Orders/` (planned) · **Web:** `features/orders/` in the storefront app (checkout, confirmation) and the admin app (queue) (planned) · **Jira:** created on approval · **Rules:** [constitution](../../CONSTITUTION.md), [CONVENTIONS](../../CONVENTIONS.md), [CLAUDE.md](../../../CLAUDE.md) · **Design:** `docs/design-system/` (storefront only)
+**Status:** Specs approved by the owner with all recommendations (2026-11-02); [plan](plan.md) drafted and awaiting approval (then tasks) · **Schema:** `ORDR` (proposed) · **Code:** `src/api/src/Modules/Orders/` (planned) · **Web:** `features/orders/` in the storefront app (checkout, confirmation) and the admin app (queue) (planned) · **Jira:** created on approval · **Rules:** [constitution](../../CONSTITUTION.md), [CONVENTIONS](../../CONVENTIONS.md), [CLAUDE.md](../../../CLAUDE.md) · **Design:** `docs/design-system/` (storefront only)
 
 ## Features
 

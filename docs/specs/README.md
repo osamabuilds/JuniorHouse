@@ -18,8 +18,8 @@ Each feature folder has a `README.md` card (what it is, status, where the code i
 
 | [storefront](storefront/README.md) | Public server-rendered shop: read model, navigation, listings, search, product pages, SEO baseline (Sprint 9; design-foundation, site-chrome and storefront-settings implemented) | design-foundation, site-chrome, storefront-settings, pages-redesign, published-catalog, navigation, listings, search, product-pages, seo |
 
-| [cart](cart/README.md) | Basket, discount codes, server-side totals and shipping (Sprint 11, draft specs) | carts, discount-codes, totals |
-| [orders](orders/README.md) | Checkout, orders, payments, COD confirmation, admin queue, guest look-up (Sprints 12-13, draft specs) | checkout, orders, payments, cod-confirmation, order-queue, order-lookup |
-| [notifications](notifications/README.md) | Guaranteed email and WhatsApp delivery, fallback, delivery log and resend (Sprint 13, draft specs) | delivery, channels, order-confirmation, delivery-log |
+| [cart](cart/README.md) | Basket, discount codes, server-side totals and shipping (Sprint 11; specs approved, plan drafted 2026-11-02) | carts, discount-codes, totals |
+| [orders](orders/README.md) | Checkout, orders, payments, COD confirmation, admin queue, guest look-up (Sprints 12-13; specs approved, plan drafted 2026-11-02) | checkout, orders, payments, cod-confirmation, order-queue, order-lookup |
+| [notifications](notifications/README.md) | Guaranteed email and WhatsApp delivery, fallback, delivery log and resend (Sprint 13; specs approved, plan drafted 2026-11-02; WhatsApp in scope) | delivery, channels, order-confirmation, delivery-log |
 
 Later sprints add `fulfilment`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).

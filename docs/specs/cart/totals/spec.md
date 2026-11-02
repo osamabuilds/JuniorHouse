@@ -1,6 +1,6 @@
 # Totals and shipping
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S11)
 - **BRD sections:** §5.4, §12.3.3, §12.8
 - **Requirement IDs:** FR-34, SEC-09, TC-CHK-22
@@ -36,6 +36,6 @@ Tax calculation engines, multi-currency, per-courier rate tables (the fee is per
 
 ## Open questions
 - [ ] **Q-TOT-1 The shipping policy (partly answered, owner 2026-11-02): the fee is calculated on the order placement page and differs by city.** Still open: the rate per city (a table the business supplies), a default for cities without a rate, any free-shipping threshold, and whether COD carries an extra fee. Proposal: a staff-editable city rate table in the admin (lookup-style, keyed to the city lookup), so no code change is needed to add a city or change a rate.
-- [ ] **Q-TOT-2 Tax.** TC-CHK-22 says "shipping fee/tax calculation". Are prices tax-inclusive (GST/sales tax already in the price), so no tax line is shown? Recommendation: inclusive, no tax line.
-- [ ] **Q-TOT-3 Rounding.** FR-34 says "full currency-unit precision" and TC-CHK-22 says "to the paisa/rupee". Do prices carry paisa, or are all amounts whole rupees? Recommendation: store `numeric(12,2)`, round half away from zero to 2 decimals, display whole rupees only if every price is whole.
-- [ ] **Q-TOT-4 Who edits the policy,** and is a history of changes needed beyond the audit trail? Recommendation: audit trail only.
+- [x] **Q-TOT-2 Tax.** TC-CHK-22 says "shipping fee/tax calculation". Are prices tax-inclusive (GST/sales tax already in the price), so no tax line is shown? Recommendation: inclusive, no tax line. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-TOT-3 Rounding.** FR-34 says "full currency-unit precision" and TC-CHK-22 says "to the paisa/rupee". Do prices carry paisa, or are all amounts whole rupees? Recommendation: store `numeric(12,2)`, round half away from zero to 2 decimals, display whole rupees only if every price is whole. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-TOT-4 Who edits the policy,** and is a history of changes needed beyond the audit trail? Recommendation: audit trail only. **Approved (owner, 2026-11-02: approve all recommendations).**

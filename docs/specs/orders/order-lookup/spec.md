@@ -1,6 +1,6 @@
 # Order look-up
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S13; the tracking-number part waits for S15)
 - **BRD sections:** §5.5
 - **Requirement IDs:** FR-37 (guest part), SEC-06, SEC-07. The signed-in history (FR-36) is S15.
@@ -41,5 +41,5 @@ Courier tracking events (S15), order history for accounts (S15), editing or canc
 
 ## Open questions
 - [x] **Q-OLK-1 Timing** (owner, 2026-11-02): order number + mobile look-up ships in S13; the tracking-number part ships in S15.
-- [ ] **Q-OLK-2 Does the emailed link expire?** Recommendation: no expiry, but it shows only status and masked data, and a new link can be requested.
-- [ ] **Q-OLK-3 Failed lookups before the CAPTCHA and the rate limit numbers** (recommendation: 3 failures, then CAPTCHA; 20 attempts per hour per IP).
+- [x] **Q-OLK-2 Does the emailed link expire?** Recommendation: no expiry, but it shows only status and masked data, and a new link can be requested. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-OLK-3 Failed lookups before the CAPTCHA and the rate limit numbers** (recommendation: 3 failures, then CAPTCHA; 20 attempts per hour per IP). **Approved (owner, 2026-11-02: approve all recommendations).**

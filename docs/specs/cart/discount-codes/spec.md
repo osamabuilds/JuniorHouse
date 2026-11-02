@@ -1,6 +1,6 @@
 # Discount codes
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S11)
 - **BRD sections:** §5.4, §8.4, §12.3.3
 - **Requirement IDs:** FR-25, FR-26, FR-57, SEC-14, FR-59, TC-CHK-07, TC-CHK-08, TC-CHK-09, TC-CHK-10
@@ -48,9 +48,9 @@ SEC-14 rate limit on apply; SEC-08 role check server-side on every admin endpoin
 Gift cards and the TC-CHK-20 case (P2), loyalty and referral rewards (P2), automatic (code-less) promotions, stacking.
 
 ## Open questions
-- [ ] **Q-DSC-1 Second code behaviour.** TC-CHK-10 allows "enforce one-code-per-order or explicitly support stacking". Recommendation: reject the second with a message telling the shopper to remove the first.
-- [ ] **Q-DSC-2 Types.** Percentage and fixed amount; free shipping as a type? Recommendation: percentage and fixed amount only.
-- [ ] **Q-DSC-3 Per-customer limit.** §12.3.3 has a unique index on (code, user) for one redemption per user. Is that always the rule, or configurable per code? A guest has no user id: limit by mobile or email? Recommendation: configurable per-customer limit, default 1, guests counted by normalised mobile.
-- [ ] **Q-DSC-4 Do codes apply to sale items?** (`CompareAtPrice` set). Recommendation: a per-code flag, default excluded.
-- [ ] **Q-DSC-5 Rate-limit numbers** (attempts per minute and per hour per caller). Recommendation: 10 per 15 minutes per IP and per customer, then a 15-minute wait.
-- [ ] **Q-DSC-6 Admin role.** FR-60 names a marketing role; roles exist from S8. Confirm which permission guards this screen (new `discounts.manage`).
+- [x] **Q-DSC-1 Second code behaviour.** TC-CHK-10 allows "enforce one-code-per-order or explicitly support stacking". Recommendation: reject the second with a message telling the shopper to remove the first. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DSC-2 Types.** Percentage and fixed amount; free shipping as a type? Recommendation: percentage and fixed amount only. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DSC-3 Per-customer limit.** §12.3.3 has a unique index on (code, user) for one redemption per user. Is that always the rule, or configurable per code? A guest has no user id: limit by mobile or email? Recommendation: configurable per-customer limit, default 1, guests counted by normalised mobile. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DSC-4 Do codes apply to sale items?** (`CompareAtPrice` set). Recommendation: a per-code flag, default excluded. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DSC-5 Rate-limit numbers** (attempts per minute and per hour per caller). Recommendation: 10 per 15 minutes per IP and per customer, then a 15-minute wait. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DSC-6 Admin role.** FR-60 names a marketing role; roles exist from S8. Confirm which permission guards this screen (new `discounts.manage`). **Approved (owner, 2026-11-02: approve all recommendations).**

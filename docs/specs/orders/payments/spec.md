@@ -1,6 +1,6 @@
 # Payments
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S12)
 - **BRD sections:** §5.4, §8.4, §9.2, §12.3.4
 - **Requirement IDs:** FR-27, FR-30, SEC-10, SEC-21, NFR-09, SEC-25, TC-CHK-11, TC-CHK-12, TC-CHK-13
@@ -46,8 +46,8 @@ PCI scope stays at SAQ-A: hosted payment page only, no card data touches Romp. W
 Refunds (S17), saved cards, BNPL (post-launch), gift cards (P2). Bank transfer is covered by Q-PAY-2.
 
 ## Open questions
-- [ ] **Q-PAY-1 Which provider(s)?** Options researched 2026-11-02 (vendor pages, verify terms directly): (a) one aggregator (Safepay, PayFast) covering cards plus both wallets under one merchant account and one integration; (b) direct JazzCash and Easypaisa merchant gateways plus a separate card gateway (bank or aggregator), i.e. three integrations. Recommendation: (a) for launch. The real adapter waits for the merchant account; the port, fake adapter and tests do not.
+- [ ] **Q-PAY-1 Which provider(s)?** *Owner approved the recommendation (2026-11-02): ONE aggregator covering cards, Easypaisa and JazzCash under one merchant account. Which aggregator (Safepay, PayFast or another) is still the owner's choice; the plan builds only the `IPaymentGateway` port and a fake, so the choice does not block the sprint.* Options researched 2026-11-02 (vendor pages, verify terms directly): (a) one aggregator (Safepay, PayFast) covering cards plus both wallets under one merchant account and one integration; (b) direct JazzCash and Easypaisa merchant gateways plus a separate card gateway (bank or aggregator), i.e. three integrations. Recommendation: (a) for launch. The real adapter waits for the merchant account; the port, fake adapter and tests do not.
 - [x] **Q-PAY-2 Methods at launch** (owner, 2026-11-02): Easypaisa, JazzCash, Cash on Delivery, and bank / debit cards. Wallets (Easypaisa, JazzCash) are therefore in scope for S12, not post-launch: each is a payment method behind the same `IPaymentGateway` port, with its own signed callback (SEC-10), reconciliation (FR-30) and circuit breaker (SEC-21). Bank/debit cards: via an aggregator or bank gateway, see Q-PAY-1. Clarified (owner): "bank" means debit and credit cards only, no manual bank transfer.
-- [ ] **Q-PAY-3 Reconciliation schedule** (every 5 minutes for payments older than 10 minutes, for 24 hours)? Recommendation as stated.
-- [ ] **Q-PAY-4 Hosted page or embedded fields** (depends on the gateway). Recommendation: hosted page.
-- [ ] **Q-PAY-5 Circuit breaker thresholds** (open after 5 failures in 1 minute, half-open after 30 seconds)? Recommendation as stated.
+- [x] **Q-PAY-3 Reconciliation schedule** (every 5 minutes for payments older than 10 minutes, for 24 hours)? Recommendation as stated. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-PAY-4 Hosted page or embedded fields** (depends on the gateway). Recommendation: hosted page. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-PAY-5 Circuit breaker thresholds** (open after 5 failures in 1 minute, half-open after 30 seconds)? Recommendation as stated. **Approved (owner, 2026-11-02: approve all recommendations).**

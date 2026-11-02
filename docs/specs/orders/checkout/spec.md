@@ -1,6 +1,6 @@
 # Checkout
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S12)
 - **BRD sections:** §5.4, §12.3.3
 - **Requirement IDs:** FR-23, FR-24, FR-40 (selecting a saved address), SEC-09, TC-CHK-03, TC-CHK-04, TC-CHK-05, TC-CHK-06, TC-CHK-18
@@ -42,8 +42,8 @@ SEC-09 (server totals), SEC-05 (saved addresses belong to the caller), SEC-25 (n
 Gift cards, gift wrap, order notes beyond one optional delivery instruction (Q-CHK-3), saving a new address from checkout into the address book unless the customer ticks a box (included, small).
 
 ## Open questions
-- [ ] **Q-CHK-1 Required guest fields:** name, email, mobile, address line, city, province, postal code? Is postal code mandatory in Pakistan? Recommendation: postal code optional.
-- [ ] **Q-CHK-2 Single page or multi-step?** The design system's checkout page shape decides; check `docs/design-system/Pages.md`. If it has no checkout page, raise it with the owner (do not improvise).
-- [ ] **Q-CHK-3 Delivery instruction field** wanted?
-- [ ] **Q-CHK-4 Serviceable areas.** Does Romp deliver to every city in the city lookup? Recommendation: all, until couriers (S15) say otherwise.
+- [x] **Q-CHK-1 Required guest fields:** name, email, mobile, address line, city, province, postal code? Is postal code mandatory in Pakistan? Recommendation: postal code optional. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-CHK-2 Single page or multi-step?** The design system's checkout page shape decides; check `docs/design-system/Pages.md`. If it has no checkout page, raise it with the owner (do not improvise). **Approved (owner, 2026-11-02: approve all recommendations).**
+- [ ] **Q-CHK-3 Delivery instruction field** wanted? *Plan assumes one optional field of up to 200 characters; the owner has not answered.*
+- [x] **Q-CHK-4 Serviceable areas.** Does Romp deliver to every city in the city lookup? Recommendation: all, until couriers (S15) say otherwise. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [ ] **Q-CHK-5 Terms and Privacy** consent text does not exist (business must supply). Checkout shows a placeholder link until then.

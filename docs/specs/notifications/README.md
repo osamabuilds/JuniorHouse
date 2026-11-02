@@ -2,7 +2,7 @@
 
 Guaranteed customer messages (Sprint 13, "Confirm"): the order confirmation by email and WhatsApp, delivery that survives crashes and provider outages (retry, dead-letter, fallback channel), idempotent consumers, a delivery status per message, and manual resend from the admin. It replaces the small email port of ADR 0022 with the full subsystem.
 
-**Status:** Draft specs, awaiting owner approval (2026-11-02) · **Schema:** `NTFY` (proposed) · **Code:** `src/api/src/Modules/Notifications/` (planned) · **Web:** `features/notifications/` in the admin app (planned) · **Jira:** created on approval · **Rules:** [constitution](../../CONSTITUTION.md), [CONVENTIONS](../../CONVENTIONS.md), [CLAUDE.md](../../../CLAUDE.md)
+**Status:** Specs approved by the owner with all recommendations (2026-11-02); [plan](plan.md) drafted and awaiting approval (then tasks) · **Schema:** `NTFY` (proposed) · **Code:** `src/api/src/Modules/Notifications/` (planned) · **Web:** `features/notifications/` in the admin app (planned) · **Jira:** created on approval · **Rules:** [constitution](../../CONSTITUTION.md), [CONVENTIONS](../../CONVENTIONS.md), [CLAUDE.md](../../../CLAUDE.md)
 
 ## Features
 

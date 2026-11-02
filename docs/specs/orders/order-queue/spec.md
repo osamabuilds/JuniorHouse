@@ -1,6 +1,6 @@
 # Order queue (admin)
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S13)
 - **BRD sections:** §5.8, §7.8
 - **Requirement IDs:** FR-55, FR-59, FR-60, FR-32, FR-33, SEC-08
@@ -42,7 +42,7 @@ Admin app keeps its current look (design system does not apply). SEC-08 server-s
 Dispatch with courier details and tracking (S15), pick/pack (S14), returns queue (S16), reports (S18).
 
 ## Open questions
-- [ ] **Q-OQ-1 Permissions.** Which roles get `orders.view` and `orders.manage` (order-ops yes; support view-only; others none)? Confirm.
-- [ ] **Q-OQ-2 Can staff edit an order** (address, items) or only confirm/cancel? Recommendation: confirm/cancel only; an address correction field for ops is a separate small feature if wanted.
-- [ ] **Q-OQ-3 The dispatch action before S15:** hidden or shown-disabled? Recommendation: hidden.
-- [ ] **Q-OQ-4 Notifications on staff cancel:** always notify the customer? Recommendation: yes, with the reason category only.
+- [x] **Q-OQ-1 Permissions.** Which roles get `orders.view` and `orders.manage` (order-ops yes; support view-only; others none)? Confirm. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-OQ-2 Can staff edit an order** (address, items) or only confirm/cancel? Recommendation: confirm/cancel only; an address correction field for ops is a separate small feature if wanted. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-OQ-3 The dispatch action before S15:** hidden or shown-disabled? Recommendation: hidden. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-OQ-4 Notifications on staff cancel:** always notify the customer? Recommendation: yes, with the reason category only. **Approved (owner, 2026-11-02: approve all recommendations).**

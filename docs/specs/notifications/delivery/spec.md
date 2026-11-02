@@ -1,6 +1,6 @@
 # Notification delivery
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S13)
 - **BRD sections:** §8.3, §9.5, §12.3.7
 - **Requirement IDs:** FR-61, FR-62, FR-65, NFR-FT-01, NFR-FT-02, NFR-FT-03, NFR-FT-04, NFR-FT-05, NFR-FT-08, TC-NOTIF-01, 02, 03, 04, 07
@@ -56,7 +56,7 @@ Built on the existing outbox and dispatcher (ADR 0004), not a new broker. At-lea
 SMS, push, marketing campaigns, a separate message broker.
 
 ## Open questions
-- [ ] **Q-DLV-1 Replacement for Azure Service Bus / Application Insights** (module decision D-2): confirm the outbox + dead-letter table + structured alert event until the platform has alerting. Where should the "operational alert" go while there is no pager (log + admin dashboard counter + email to an ops address)?
-- [ ] **Q-DLV-2 Retry schedule numbers.** Recommendation: 6 attempts at about 1 min, 5 min, 30 min, 2 h, 6 h, 12 h with jitter.
-- [ ] **Q-DLV-3 Per-kind expiry** (for example: order confirmation never expires within 7 days; COD cancel notice 24 hours).
-- [ ] **Q-DLV-4 Retention** of notification records and dead letters (they contain no body, only references; recommendation 12 months).
+- [x] **Q-DLV-1 Replacement for Azure Service Bus / Application Insights** (module decision D-2): confirm the outbox + dead-letter table + structured alert event until the platform has alerting. Where should the "operational alert" go while there is no pager (log + admin dashboard counter + email to an ops address)? **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DLV-2 Retry schedule numbers.** Recommendation: 6 attempts at about 1 min, 5 min, 30 min, 2 h, 6 h, 12 h with jitter. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DLV-3 Per-kind expiry** (for example: order confirmation never expires within 7 days; COD cancel notice 24 hours). **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DLV-4 Retention** of notification records and dead letters (they contain no body, only references; recommendation 12 months). **Approved (owner, 2026-11-02: approve all recommendations).**

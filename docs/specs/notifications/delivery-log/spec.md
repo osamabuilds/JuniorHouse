@@ -1,6 +1,6 @@
 # Delivery log and resend (admin)
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S13)
 - **BRD sections:** §8.3, §7.9
 - **Requirement IDs:** FR-63, NFR-FT-07, FR-59, FR-60, SEC-08, TC-NOTIF-06
@@ -38,6 +38,6 @@ SEC-08 permissions `notifications.view` and `notifications.resend` in the S8 rol
 Editing templates, bulk resend, customer-facing history.
 
 ## Open questions
-- [ ] **Q-DLG-1 Roles.** Which roles may resend (support and order-ops yes)? Confirm.
-- [ ] **Q-DLG-2 "Delivered" for email** is rarely knowable without provider webhooks. Accept "Sent" as the final email state for launch?
-- [ ] **Q-DLG-3 Bulk resend of dead letters** after an outage: needed at launch? Recommendation: no, one at a time, revisit if an outage shows the need.
+- [x] **Q-DLG-1 Roles.** Which roles may resend (support and order-ops yes)? Confirm. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DLG-2 "Delivered" for email** is rarely knowable without provider webhooks. Accept "Sent" as the final email state for launch? **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-DLG-3 Bulk resend of dead letters** after an outage: needed at launch? Recommendation: no, one at a time, revisit if an outage shows the need. **Approved (owner, 2026-11-02: approve all recommendations).**

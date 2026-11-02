@@ -2,7 +2,7 @@
 
 The shopper's basket (Sprint 11, "Sell: cart"): add, change and remove lines with live stock checks, merge a guest cart into the account cart on sign-in, apply one discount code, and show server-calculated totals and shipping. Nothing here takes an order or a payment (checkout is S12).
 
-**Status:** Draft specs, awaiting owner approval (2026-11-02) · **Schema:** `CART` (proposed) · **Code:** `src/api/src/Modules/Cart/` (planned) · **Web:** `features/cart/` in the storefront app and `features/cart/discount-codes/` in the admin app (planned) · **Jira:** created on approval · **Rules:** [constitution](../../CONSTITUTION.md), [CONVENTIONS](../../CONVENTIONS.md), [CLAUDE.md](../../../CLAUDE.md) · **Design:** `docs/design-system/` (storefront only)
+**Status:** Specs approved by the owner with all recommendations (2026-11-02); [plan](plan.md) drafted and awaiting approval (then tasks) · **Schema:** `CART` (proposed) · **Code:** `src/api/src/Modules/Cart/` (planned) · **Web:** `features/cart/` in the storefront app and `features/cart/discount-codes/` in the admin app (planned) · **Jira:** created on approval · **Rules:** [constitution](../../CONSTITUTION.md), [CONVENTIONS](../../CONVENTIONS.md), [CLAUDE.md](../../../CLAUDE.md) · **Design:** `docs/design-system/` (storefront only)
 
 ## Features
 

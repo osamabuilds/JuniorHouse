@@ -1,6 +1,6 @@
 # Carts
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S11)
 - **BRD sections:** §5.2, §5.4, §12.3.3, §12.7
 - **Requirement IDs:** FR-10, FR-22, FR-35, SEC-09, NFR-08, TC-CHK-01, TC-CHK-02, TC-CHK-21
@@ -55,7 +55,7 @@ Checkout, payment, stock reservation (S12), gift wrap and gift cards (P2), aband
 
 ## Open questions
 - [x] **Q-CRT-1 Reservation timing** (owner, 2026-11-02): reserve at order placement, no hold on add-to-cart. (BRD §12.3.2 `StockReservations` "on add-to-cart" is overridden; FR-SC-09 stands.)
-- [ ] **Q-CRT-2 Cart lifetime.** How long does a guest cart and an account cart live? Recommendation: guest 30 days, account no expiry.
-- [ ] **Q-CRT-3 Per-line maximum quantity** (stock level only, or a cap such as 10 per line)?
-- [ ] **Q-CRT-4 Merge when a variant is in both carts:** add the quantities (capped at stock) or keep the larger? Recommendation: add, capped at available stock, with a notice.
-- [ ] **Q-CRT-5 Where guest identity lives:** a guest-session cookie on the storefront origin (consistent with Q-ACT-5, SameSite=Lax). Confirm.
+- [x] **Q-CRT-2 Cart lifetime.** How long does a guest cart and an account cart live? Recommendation: guest 30 days, account no expiry. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [ ] **Q-CRT-3 Per-line maximum quantity** (stock level only, or a cap such as 10 per line)? *Plan assumes a configurable per-line maximum, default 10, never above available stock; the owner has not answered.*
+- [x] **Q-CRT-4 Merge when a variant is in both carts:** add the quantities (capped at stock) or keep the larger? Recommendation: add, capped at available stock, with a notice. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-CRT-5 Where guest identity lives:** a guest-session cookie on the storefront origin (consistent with Q-ACT-5, SameSite=Lax). Confirm. **Approved (owner, 2026-11-02: approve all recommendations).**

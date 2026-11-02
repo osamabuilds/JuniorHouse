@@ -1,6 +1,6 @@
 # Orders
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S12)
 - **BRD sections:** §5.4, §9.1, §12.3.3, §12.8
 - **Requirement IDs:** FR-28, FR-29, FR-33, FR-31 (order number), NFR-08, NFR-09, SEC-09, FR-SC-09, TC-CHK-16, TC-CHK-17, TC-CHK-19
@@ -55,8 +55,8 @@ Pick/pack/dispatch statuses beyond a placeholder for "dispatched" (S14/S15), ret
 
 ## Open questions
 - [x] **Q-ORD-1 Cancellation window** (owner, 2026-11-02): a customer may cancel after pick is confirmed but before dispatch. Cancelling a picked order releases the reservation and creates a put-back task for the warehouse (S14 picks up the task; until then the order simply shows Cancelled and staff are notified).
-- [ ] **Q-ORD-2 Can a signed-in customer cancel by themselves** from their account, or must they contact support? Recommendation: yes for COD-pending and unpicked orders; card-paid cancellations create a refund task (refund money flow is S17).
-- [ ] **Q-ORD-3 Order number format.** ADR 0006 covers business numbers; confirm a prefix and shape (for example `RMP-` plus a sequence with a check digit) and that guessing the next number is harmless because look-up needs a second factor.
-- [ ] **Q-ORD-4 Status set.** Proposed lookup: Pending Confirmation, Confirmed, Cancelled, Payment Pending, Paid, Dispatched, Delivered (later sprints add the rest). Confirm names.
-- [ ] **Q-ORD-5 Stock decrement vs reservation.** Does placement decrement on-hand or only reserve (available = on-hand − reserved) until pick? Recommendation: reserve only; on-hand decreases at pick/dispatch in the ledger (S14). See [reservations](../../warehouse/reservations/spec.md).
-- [ ] **Q-ORD-6 Partition key** for the orders table: confirm placement date by month (BRD §12.6).
+- [x] **Q-ORD-2 Can a signed-in customer cancel by themselves** from their account, or must they contact support? Recommendation: yes for COD-pending and unpicked orders; card-paid cancellations create a refund task (refund money flow is S17). **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-ORD-3 Order number format.** ADR 0006 covers business numbers; confirm a prefix and shape (for example `RMP-` plus a sequence with a check digit) and that guessing the next number is harmless because look-up needs a second factor. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-ORD-4 Status set.** Proposed lookup: Pending Confirmation, Confirmed, Cancelled, Payment Pending, Paid, Dispatched, Delivered (later sprints add the rest). Confirm names. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-ORD-5 Stock decrement vs reservation.** Does placement decrement on-hand or only reserve (available = on-hand − reserved) until pick? Recommendation: reserve only; on-hand decreases at pick/dispatch in the ledger (S14). See [reservations](../../warehouse/reservations/spec.md). **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-ORD-6 Partition key** for the orders table: confirm placement date by month (BRD §12.6). **Approved (owner, 2026-11-02: approve all recommendations).**

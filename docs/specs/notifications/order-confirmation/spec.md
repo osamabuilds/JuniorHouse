@@ -1,6 +1,6 @@
 # Order confirmation
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S13)
 - **BRD sections:** §5.4, §8.3
 - **Requirement IDs:** FR-31, FR-61, TC-NOTIF-01, TC-CHK-03
@@ -37,4 +37,4 @@ Dispatch, delivery, return and exchange notices (later sprints reuse this framew
 
 ## Open questions
 - [ ] **Q-OCF-1 Copy and branding** for the email and WhatsApp template: the business supplies the text; placeholders are used until then.
-- [ ] **Q-OCF-2 Should the account holder's confirmation use the account email or the checkout email** if they differ? Recommendation: the checkout email on the order.
+- [x] **Q-OCF-2 Should the account holder's confirmation use the account email or the checkout email** if they differ? Recommendation: the checkout email on the order. **Approved (owner, 2026-11-02: approve all recommendations).**

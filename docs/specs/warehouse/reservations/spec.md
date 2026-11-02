@@ -1,6 +1,6 @@
 # Stock reservations
 
-- **Status:** Draft
+- **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
 - **Jira:** to be created on approval (sprint S12)
 - **BRD sections:** §5.4, §12.3.2, §12.7, warehouse §5.13
 - **Requirement IDs:** FR-SC-09, FR-28, FR-10, NFR-08, TC-CHK-17
@@ -40,6 +40,6 @@ Holds at add-to-cart (see Q-RSV-1), allocation to bins and FIFO (S14), partial f
 
 ## Open questions
 - [x] **Q-RSV-1** (owner, 2026-11-02): reserve at order placement only.
-- [ ] **Q-RSV-2 Card payment window.** How long may a card order hold stock while the shopper completes 3-D Secure? Recommendation: 30 minutes, then release and mark the order Payment Expired.
-- [ ] **Q-RSV-3 COD pending window.** The reservation lasts as long as the COD confirmation workflow (see [cod-confirmation](../../orders/cod-confirmation/spec.md)); confirm no separate expiry.
+- [x] **Q-RSV-2 Card payment window.** How long may a card order hold stock while the shopper completes 3-D Secure? Recommendation: 30 minutes, then release and mark the order Payment Expired. **Approved (owner, 2026-11-02: approve all recommendations).**
+- [x] **Q-RSV-3 COD pending window.** The reservation lasts as long as the COD confirmation workflow (see [cod-confirmation](../../orders/cod-confirmation/spec.md)); confirm no separate expiry. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [ ] **Q-RSV-4 ADR needed:** the Orders-to-Warehouse call and its failure/compensation design (plan step).
