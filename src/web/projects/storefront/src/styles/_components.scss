@@ -512,3 +512,17 @@
 .rp-placed__check { display: grid; place-items: center; width: 56px; height: 56px; border: var(--border-line) solid var(--success-text); border-radius: var(--radius-pill); color: var(--success-text); }
 .rp-placed__box { display: grid; gap: var(--space-4); padding: var(--space-6); border: var(--border-line) solid var(--line); border-radius: var(--radius-sm); }
 .rp-placed__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* Checkout and order-placed polish: steady vertical rhythm, headings that do not collide, buttons of one size side by side. */
+.rp-step .rp-step__h { margin: 0 0 var(--space-5); line-height: 1.2; }
+.rp-step > * + * { margin-top: var(--space-4); }
+.rp-step .rp-help { margin-top: var(--space-3); }
+.rp-placed > * { margin: 0; }
+.rp-placed h1 { margin: var(--space-2) 0 var(--space-4); font-size: clamp(2.25rem, 6vw, 3.25rem); line-height: 1.1; }
+.rp-placed .rp-lead { margin: 0; max-width: 34rem; }
+.rp-placed__actions { align-items: stretch; }
+.rp-placed__actions .rp-btn { flex: 1 1 13rem; min-width: 13rem; justify-content: center; text-align: center; }
+.rp-placed__box dl { margin: 0; }
+rp-cod-response { display: grid; gap: var(--space-4); }
+.rp-placed { padding-top: var(--space-12); }
+.rp-sumlist li > span:last-child { white-space: nowrap; }
