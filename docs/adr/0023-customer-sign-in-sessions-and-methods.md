@@ -1,6 +1,6 @@
 # 0023 — Customer sign-in: sessions, and the four ways to sign in
 
-- Status: Proposed. Scope narrowed by the owner on 2026-11-02: **no Google or Facebook sign-in**; email and password only, with an SMS code to verify the mobile number at sign-up. Decisions 6 and the provider parts of 10 are not built (kept for the record).
+- Status: Accepted (owner, 2026-11-02, "go with your recommendation"). Scope narrowed by the owner on 2026-11-02: **no Google or Facebook sign-in**; email and password only, with an SMS code to verify the mobile number at sign-up. Decisions 6 and the provider parts of 10 are not built (kept for the record).
 - Date: 2026-10-29
 - Amends: [0021](0021-customers-module-and-stand-in-customer.md) decisions 2 and 4 (the stand-in stays only in Development/Testing; the pass-through now carries cookies)
 

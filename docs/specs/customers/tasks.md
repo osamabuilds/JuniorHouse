@@ -24,6 +24,22 @@ Ordered, checkable steps. Each names the test that proves it. Test-first: write 
 - [x] **A6** `ICustomerAddressQueries` in `Customers.Contracts`. *Proof:* `AddressContractTests`.
 - [x] **A7** Storefront `features/customers/addresses` (labels, dependent selects, focus trap), account shell, `noindex`, `no-store`. *Proof:* component and store specs, `AddressesPage` e2e (ADD-8).
 
+## accounts: real sign-in
+
+From the "Real sign-in" section of [accounts/plan.md](accounts/plan.md) and [ADR 0023](../../adr/0023-customer-sign-in-sessions-and-methods.md) (accepted 2026-11-02). Scope: email and password only, SMS code to verify the mobile at sign-up, email verified by link, nothing ever blocks an order. No Google, Facebook or mobile-only sign-in. Real Twilio and Turnstile credentials are needed only for S11; everything before it runs against fakes. Wishlist resumes after S6.
+
+- [ ] **S1** Pure rules: `PasswordRule` (8..128, capital, small, digit, no spaces, specials allowed; returns each rule met or not), `SignInThrottle` (delay and CAPTCHA from the 3rd failure, never a lock), phone normalisation to `+923xxxxxxxxx`. *Proof:* `PasswordRuleTests`, `SignInThrottleTests`, `PhoneNumberTests` (ACT-2, ACT-9, ACT-29).
+- [ ] **S2** Entities: `CustomerSession` (rotate, revoke, reuse detection), `PhoneChallenge`, `PasswordResetToken`, `EmailVerificationToken`; `Customer` gains phone, password hash, email-verified date. *Proof:* `CustomerSessionTests`, `TokenTests`, `CustomerTests` (ACT-11..13, 27, 28).
+- [ ] **S3** Migration and glossary: `CUST_SESN`, `CUST_PHCH`, `CUST_PWRT`, `CUST_EVRT`, `CUST_LGIN_ATMP` (partitioned by date), `CUST_MAIN` new columns with unique phone. *Proof:* `CustomerAuthMigrationTests`, `NamingConventionTests`, `GlossaryTests`.
+- [ ] **S4** Ports and fakes: `ICaptchaVerifier`, `ISmsSender`, `IPasswordHasher` (Argon2id), email port (ADR 0022). *Proof:* `FakeAdapterTests`.
+- [ ] **S5** Register in two steps (send code, then verify code and create the account), sign in, refresh with rotation, sign out, attempt log, CSRF header, cookies `HttpOnly`, `Secure`, `SameSite=Lax`. *Proof:* `RegisterTests`, `SignInTests`, `RefreshTests`, `AttemptLogTests` (ACT-1..5, 9..12, 23, 25, 29).
+- [ ] **S6** Email verification (send, verify, resend, change email) and password reset (identical answers, single use, revoke other sessions); `ICustomerSignedInHook` called after sign-in and registration. *Proof:* `EmailVerificationTests`, `PasswordResetTests`, `SignedInHookTests` (ACT-6..8, 13, 14, 27, 28).
+- [ ] **S7** Endpoints under `/api/auth`, rate limits, matrix rows, start-up checks (production refuses the stand-in handler). *Proof:* `AuthEndpointsTests`, `AuthorizationMatrixTests`, `StartupGateTests` (ACT-15, 26).
+- [ ] **S8** `Policies.Customer` backed by the session handler (the stand-in stays for Development/Testing); ownership tests unchanged. *Proof:* `CustomerEndpointsTests`, `CustomerOwnershipArchitectureTests` (ACT-18).
+- [ ] **S9** Storefront `core/customer-auth` store and `features/customers/sign-in`: sign-in, register with live password checklist and code step, forgot and set-new-password, verify-email result page; Turnstile widget; `/account` guard; header account link and sign out. *Proof:* component and store specs (ACT-2, 16, 29).
+- [ ] **S10** Unverified-email notice bar with "Verify my email" button (design system; raise it if no component fits). *Proof:* component spec (ACT-31).
+- [ ] **S11** `server.ts` pass-through grows to the auth routes with cookies; e2e journeys (register, verify, sign in, reset, throttle) and axe; spec "As built"; rebuild docker; real Twilio and Turnstile check once the owner has the accounts. *Proof:* `sign-in.e2e.spec.ts`.
+
 ## wishlist
 
 From [wishlist/plan.md](wishlist/plan.md). Two things the plan assumes do not exist yet: `IStorefrontCatalogQueries` (Storefront.Contracts has only `IStorefrontPageQueries`) and an `ICustomerSignedInHook` (sign-in is parked). W2 adds the first; W7 builds the merge endpoint only and the hook waits for the auth sprint.
