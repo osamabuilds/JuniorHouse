@@ -10,7 +10,7 @@ import { selectCart, selectCartBusy, selectCartDrawerOpen, selectCartItemCount, 
 
 const line = (variantId: number, quantity: number): CartLine => ({
   variantId, productId: 1, name: 'Dress', path: '/girls/dresses/dress', colour: 'Red', size: '2-3Y', sku: 'S', unitPrice: 1000, compareAtPrice: null,
-  quantity, lineTotal: 1000 * quantity, available: 9, previousPrice: null, issues: [], imageKey: null, imageAlt: null, imageWidth: null, imageHeight: null,
+  quantity, lineTotal: 1000 * quantity, available: 9, previousPrice: null, issues: [], imageUrl: null, imageFallbackUrl: null, imageAlt: null,
 });
 
 const cartOf = (...lines: CartLine[]): Cart => ({ lines, itemCount: lines.reduce((n, l) => n + l.quantity, 0), subtotal: lines.reduce((n, l) => n + l.lineTotal, 0), hasProblems: false });

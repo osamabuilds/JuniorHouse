@@ -14,7 +14,8 @@ export type RpIconName =
   | 'swap'
   | 'chat'
   | 'cash'
-  | 'pin';
+  | 'pin'
+  | 'trash';
 
 /** Thin outline icons on a 24px grid (design system). `chat` is a stand-in: the previews do not draw it. */
 @Component({
@@ -45,6 +46,9 @@ export type RpIconName =
         }
         @case ('menu') {
           <path d="M4 8h16M4 16h16" />
+        }
+        @case ('trash') {
+          <path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 11v5M13.5 11v5" />
         }
         @case ('close') {
           <path d="m6 6 12 12M18 6 6 18" />

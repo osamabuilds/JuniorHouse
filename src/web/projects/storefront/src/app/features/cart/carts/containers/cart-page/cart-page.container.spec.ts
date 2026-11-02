@@ -13,7 +13,7 @@ import { CartPageContainer } from './cart-page.container';
 
 const line = (variantId: number, quantity: number, over: Partial<CartLine> = {}): CartLine => ({
   variantId, productId: 1, name: `Dress ${variantId}`, path: '/girls/dresses/dress', colour: 'Red', size: '2-3Y', sku: 'S', unitPrice: 1000, compareAtPrice: null,
-  quantity, lineTotal: 1000 * quantity, available: 9, previousPrice: null, issues: [], imageKey: null, imageAlt: null, imageWidth: null, imageHeight: null, ...over,
+  quantity, lineTotal: 1000 * quantity, available: 9, previousPrice: null, issues: [], imageUrl: null, imageFallbackUrl: null, imageAlt: null, ...over,
 });
 
 const cartOf = (lines: CartLine[], hasProblems = false): Cart => ({ lines, itemCount: lines.reduce((n, l) => n + l.quantity, 0), subtotal: lines.reduce((n, l) => n + l.lineTotal, 0), hasProblems });
@@ -71,7 +71,7 @@ describe('CartPageContainer', () => {
     const dispatch = vi.spyOn(store, 'dispatch');
 
     (el.querySelector('button[aria-label="Increase quantity"]') as HTMLButtonElement).click();
-    [...el.querySelectorAll('button')].find((b) => b.textContent?.includes('Remove'))!.click();
+    [...el.querySelectorAll('button')].find((b) => b.getAttribute('aria-label')?.startsWith('Remove'))!.click();
 
     expect(dispatch).toHaveBeenCalledWith(CartActions.setQuantity({ variantId: 1, quantity: 3 }));
     expect(dispatch).toHaveBeenCalledWith(CartActions.remove({ variantId: 1 }));

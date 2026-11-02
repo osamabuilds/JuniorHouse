@@ -11,8 +11,9 @@ public sealed class CartPricerTests
 
     private readonly FakeCatalog _catalog = new();
     private readonly FakeStock _stock = new();
+    private readonly FakeImages _images = new();
 
-    private CartPricer Pricer() => new(_catalog, _stock);
+    private CartPricer Pricer() => new(_catalog, _stock, _images);
 
     private static ShoppingCart Cart(params (long Variant, int Quantity)[] lines)
     {
@@ -161,6 +162,40 @@ public sealed class CartPricerTests
         Assert.All(priced.Lines, l => Assert.False(l.Issues.HasFlag(LineIssues.PriceChanged)));
     }
 
+
+    [Fact]
+    [Trait("Spec", "CRT-1")]
+    public async Task ALineShowsItsProductPicture_WhenStorefrontHasOne_AndNoneWhenItDoesNot()
+    {
+        _catalog.Add(1);
+        _catalog.Add(2);
+        _stock.Available[9001] = 5;
+        _stock.Available[9002] = 5;
+        _images.Thumbnails[7001] = new Romp.Modules.Storefront.Contracts.ImageThumbnail(7001, "/media/a-320.webp", "/media/a-320.jpg", 320);
+
+        var priced = await Pricer().PriceAsync(Cart((1, 1), (2, 1)), CancellationToken.None);
+
+        var withPicture = priced.Lines.Single(l => l.VariantId == 1);
+        Assert.Equal("/media/a-320.webp", withPicture.ImageUrl);
+        Assert.Equal("/media/a-320.jpg", withPicture.ImageFallbackUrl);
+        Assert.Equal("A red dress", withPicture.ImageAlt);
+        Assert.Null(priced.Lines.Single(l => l.VariantId == 2).ImageUrl);
+    }
+
+    [Fact]
+    [Trait("Spec", "CRT-1")]
+    public async Task PicturesCostOneStorefrontCall_HoweverManyLines()
+    {
+        for (var v = 1; v <= 15; v++)
+        {
+            _catalog.Add(v);
+            _stock.Available[9000 + v] = 5;
+        }
+
+        await Pricer().PriceAsync(Cart(Enumerable.Range(1, 15).Select(v => ((long)v, 1)).ToArray()), CancellationToken.None);
+
+        Assert.Equal(1, _images.Calls);
+    }
     [Fact]
     [Trait("Spec", "TOT-2")]
     public async Task LineTotals_AreRoundedToTwoDecimals_HalfAwayFromZero()

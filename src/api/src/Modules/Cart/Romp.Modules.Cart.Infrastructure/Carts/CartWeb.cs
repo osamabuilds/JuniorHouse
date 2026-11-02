@@ -88,10 +88,9 @@ public sealed record CartLineResponse(
     int Available,
     decimal? PreviousPrice,
     IReadOnlyList<string> Issues,
-    string? ImageKey,
-    string? ImageAlt,
-    int? ImageWidth,
-    int? ImageHeight);
+    string? ImageUrl,
+    string? ImageFallbackUrl,
+    string? ImageAlt);
 
 public sealed record CartResponse(IReadOnlyList<CartLineResponse> Lines, int ItemCount, decimal Subtotal, bool HasProblems)
 {
@@ -99,7 +98,7 @@ public sealed record CartResponse(IReadOnlyList<CartLineResponse> Lines, int Ite
         new(
             [.. cart.Lines.Select(l => new CartLineResponse(
                 l.VariantId, l.ProductId, l.Name, l.Path, l.Colour, l.Size, l.Sku, l.UnitPrice, l.CompareAtPrice, l.Quantity, l.LineTotal, l.Available,
-                l.PreviousPrice, Issues(l.Issues), l.ImageKey, l.ImageAlt, l.ImageWidth, l.ImageHeight))],
+                l.PreviousPrice, Issues(l.Issues), l.ImageUrl, l.ImageFallbackUrl, l.ImageAlt))],
             cart.ItemCount,
             cart.Subtotal,
             cart.HasProblems);

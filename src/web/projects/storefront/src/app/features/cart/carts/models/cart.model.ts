@@ -17,10 +17,10 @@ export interface CartLine {
   readonly available: number;
   readonly previousPrice: number | null;
   readonly issues: readonly LineIssue[];
-  readonly imageKey: string | null;
+  /** The resized product picture (WebP) and its JPEG fallback, site-relative; null when the product has no finished picture yet. */
+  readonly imageUrl: string | null;
+  readonly imageFallbackUrl: string | null;
   readonly imageAlt: string | null;
-  readonly imageWidth: number | null;
-  readonly imageHeight: number | null;
 }
 
 export interface Cart {

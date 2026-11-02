@@ -14,7 +14,7 @@ internal sealed class FakeCatalog : IVariantSalesQueries
     {
         var sale = new VariantSale(
             variantId, 500 + variantId, name, "/girls/dresses/floral-dress", "Red", "2-3Y", sellable ? $"ROMP-S{variantId}" : null,
-            sellable ? labellingId ?? 9000 + variantId : null, price, compareAt, sellable, 3, "images/a.jpg", "A red dress", 40, 60);
+            sellable ? labellingId ?? 9000 + variantId : null, price, compareAt, sellable, 3, 7000 + variantId, "images/a.jpg", "A red dress", 40, 60);
         Variants[variantId] = sale;
         return sale;
     }
@@ -44,4 +44,18 @@ internal sealed class FakeStock : IStockAvailabilityQueries
         throw new NotSupportedException();
 
     public Task<StockAvailability?> GetAsync(long variantId, CancellationToken cancellationToken) => throw new NotSupportedException();
+}
+
+/// <summary>Storefront's thumbnail contract held in memory: an image has a picture only when a test gives it one, and calls are counted.</summary>
+internal sealed class FakeImages : Romp.Modules.Storefront.Contracts.IStorefrontImageQueries
+{
+    public Dictionary<long, Romp.Modules.Storefront.Contracts.ImageThumbnail> Thumbnails { get; } = [];
+
+    public int Calls { get; private set; }
+
+    public Task<IReadOnlyList<Romp.Modules.Storefront.Contracts.ImageThumbnail>> GetThumbnailsAsync(IReadOnlyCollection<long> imageIds, int minWidth, CancellationToken cancellationToken)
+    {
+        Calls++;
+        return Task.FromResult<IReadOnlyList<Romp.Modules.Storefront.Contracts.ImageThumbnail>>([.. imageIds.Where(Thumbnails.ContainsKey).Select(id => Thumbnails[id])]);
+    }
 }

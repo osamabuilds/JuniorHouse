@@ -5,7 +5,7 @@ import { CartLineComponent } from './cart-line.component';
 
 const base: CartLine = {
   variantId: 5, productId: 1, name: 'Floral Dress', path: '/girls/dresses/floral-dress', colour: 'Red', size: '2-3Y', sku: 'S5', unitPrice: 1250, compareAtPrice: null,
-  quantity: 2, lineTotal: 2500, available: 9, previousPrice: null, issues: [], imageKey: null, imageAlt: 'A red dress', imageWidth: null, imageHeight: null,
+  quantity: 2, lineTotal: 2500, available: 9, previousPrice: null, issues: [], imageUrl: null, imageFallbackUrl: null, imageAlt: 'A red dress',
 };
 
 function render(over: Partial<CartLine> = {}, busy = false) {
@@ -30,6 +30,25 @@ describe('CartLineComponent', () => {
     expect(el.textContent).toContain('Size 2-3Y');
     expect(el.textContent).toContain('Rs. 1,250 each');
     expect(el.querySelector('.rp-lineprice')!.textContent).toContain('Rs. 2,500');
+  });
+
+  it('CRT-1 shows the real product picture, WebP with a JPEG fallback, named by its alt text', () => {
+    const { el } = render({ imageUrl: '/media/a-320.webp', imageFallbackUrl: '/media/a-320.jpg', imageAlt: 'A red floral dress' });
+
+    expect(el.querySelector('picture source')!.getAttribute('srcset')).toBe('/media/a-320.webp');
+    const img = el.querySelector('picture img') as HTMLImageElement;
+    expect(img.getAttribute('src')).toBe('/media/a-320.jpg');
+    expect(img.getAttribute('alt')).toBe('A red floral dress');
+    expect(el.querySelector('.rp-ph')).toBeNull();
+  });
+
+  it('Remove is a trash icon with an accessible name that says which item', () => {
+    const { el } = render();
+    const remove = el.querySelector('.rp-line__remove') as HTMLButtonElement;
+
+    expect(remove.getAttribute('aria-label')).toBe('Remove Floral Dress');
+    expect(remove.querySelector('svg')).not.toBeNull();
+    expect(remove.textContent?.trim()).toBe('');
   });
 
   it('the picture is named for assistive technology', () => {
@@ -62,7 +81,7 @@ describe('CartLineComponent', () => {
 
     expect(el.querySelector('.rp-bag-note')!.textContent).toContain('no longer available');
     expect(el.querySelector('rp-quantity-stepper')).toBeNull();
-    expect([...el.querySelectorAll('button')].some((b) => b.textContent?.includes('Remove'))).toBe(true);
+    expect([...el.querySelectorAll('button')].some((b) => b.getAttribute('aria-label')?.startsWith('Remove'))).toBe(true);
   });
 
   it('CRT-8 a changed price is pointed out with the old and the new figure', () => {
@@ -82,7 +101,7 @@ describe('CartLineComponent', () => {
 
     (el.querySelector('button[aria-label="Increase quantity"]') as HTMLButtonElement).click();
     (el.querySelector('button[aria-label="Decrease quantity"]') as HTMLButtonElement).click();
-    [...el.querySelectorAll('button')].find((b) => b.textContent?.includes('Remove'))!.click();
+    [...el.querySelectorAll('button')].find((b) => b.getAttribute('aria-label')?.startsWith('Remove'))!.click();
 
     expect(changes).toEqual([3, 1]);
     expect(removed).toBe(1);

@@ -22,10 +22,11 @@ public sealed class CartCommandTests(CartPostgres postgres) : IClassFixture<Cart
 
     private readonly FakeCatalog _catalog = new();
     private readonly FakeStock _stock = new();
+    private readonly FakeImages _images = new();
     private readonly MovableClock _clock = new(Start);
 
     private CartCommandSupport Support(CartDbContextHolder holder) =>
-        new(holder.Db, _catalog, _stock, new CartPricer(_catalog, _stock), Options.Create(new CartOptions()), _clock);
+        new(holder.Db, _catalog, _stock, new CartPricer(_catalog, _stock, _images), Options.Create(new CartOptions()), _clock);
 
     private sealed class CartDbContextHolder(Romp.Modules.Cart.Infrastructure.Persistence.CartDbContext db) : IAsyncDisposable
     {
@@ -236,7 +237,7 @@ public sealed class CartCommandTests(CartPostgres postgres) : IClassFixture<Cart
         _catalog.Add(1, 1300m);
         _stock.Available[9001] = 50;
 
-        var priced = await new GetCartQueryHandler(postgres.NewContext(), new CartPricer(_catalog, _stock), _clock)
+        var priced = await new GetCartQueryHandler(postgres.NewContext(), new CartPricer(_catalog, _stock, _images), _clock)
             .Handle(new GetCartQuery(owner), CancellationToken.None);
 
         var line = Assert.Single(priced.Lines);

@@ -32,10 +32,9 @@ public sealed record PricedLine(
     int Available,
     decimal? PreviousPrice,
     LineIssues Issues,
-    string? ImageKey,
-    string? ImageAlt,
-    int? ImageWidth,
-    int? ImageHeight)
+    string? ImageUrl,
+    string? ImageFallbackUrl,
+    string? ImageAlt)
 {
     public bool IsOrderable => Issues is LineIssues.None or LineIssues.PriceChanged;
 }

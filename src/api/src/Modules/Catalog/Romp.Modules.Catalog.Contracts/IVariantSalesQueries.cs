@@ -18,6 +18,7 @@ public sealed record VariantSale(
     decimal? CompareAtPrice,
     bool IsSellable,
     short CategoryId,
+    long? ImageId,
     string? ImageKey,
     string? ImageAlt,
     int? ImageWidth,

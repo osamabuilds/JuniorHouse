@@ -17,7 +17,7 @@ public sealed class GetCartQueryTests(CartPostgres postgres) : IClassFixture<Car
     private async Task<PricedCart> QueryAsync(CartOwner owner, FakeCatalog catalog, FakeStock stock, DateTimeOffset? at = null)
     {
         await using var db = postgres.NewContext();
-        var handler = new GetCartQueryHandler(db, new CartPricer(catalog, stock), new FixedClock(at ?? Now));
+        var handler = new GetCartQueryHandler(db, new CartPricer(catalog, stock, new FakeImages()), new FixedClock(at ?? Now));
         return await handler.Handle(new GetCartQuery(owner), CancellationToken.None);
     }
 

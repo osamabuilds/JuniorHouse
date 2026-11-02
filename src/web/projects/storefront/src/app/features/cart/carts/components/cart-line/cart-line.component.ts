@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { IconComponent } from '../../../../../shared/ui/icon/icon.component';
 import { CartLine } from '../../models/cart.model';
 import { QuantityStepperComponent } from '../quantity-stepper/quantity-stepper.component';
 
@@ -10,12 +11,19 @@ import { QuantityStepperComponent } from '../quantity-stepper/quantity-stepper.c
  */
 @Component({
   selector: 'rp-cart-line',
-  imports: [DecimalPipe, RouterLink, QuantityStepperComponent],
+  imports: [DecimalPipe, RouterLink, IconComponent, QuantityStepperComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let l = line();
     <div class="rp-line" [class.rp-line--page]="!compact()">
-      <div class="rp-ph rp-ph--oat" role="img" [attr.aria-label]="l.imageAlt || l.name"></div>
+      @if (l.imageUrl) {
+        <picture class="rp-line__pic">
+          <source type="image/webp" [attr.srcset]="l.imageUrl" />
+          <img [src]="l.imageFallbackUrl || l.imageUrl" [alt]="l.imageAlt || l.name" loading="lazy" decoding="async" />
+        </picture>
+      } @else {
+        <div class="rp-ph rp-ph--oat" role="img" [attr.aria-label]="l.imageAlt || l.name"></div>
+      }
       <div class="rp-line__info">
         <div class="rp-line__head">
           @if (l.path) {
@@ -48,7 +56,7 @@ import { QuantityStepperComponent } from '../quantity-stepper/quantity-stepper.c
           } @else {
             <rp-quantity-stepper [value]="l.quantity" [label]="l.name" [disabled]="busy()" (changed)="quantityChange.emit($event)" />
           }
-          <button type="button" class="rp-link" [disabled]="busy()" (click)="remove.emit()">Remove<span class="sr-only"> {{ l.name }}</span></button>
+          <button type="button" class="rp-icon-btn rp-line__remove" [attr.aria-label]="'Remove ' + l.name" [disabled]="busy()" (click)="remove.emit()"><rp-icon name="trash" /></button>
         </div>
       </div>
     </div>

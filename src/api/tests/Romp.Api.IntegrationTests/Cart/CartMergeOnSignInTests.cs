@@ -59,7 +59,7 @@ public sealed class CartMergeOnSignInTests(ProductionApiFixture api)
     {
         var id = Random.Shared.NextInt64(1_000_000, 900_000_000);
         sales.Variants[id] = new VariantSale(
-            id, id + 1, "Floral Dress", "/girls/dresses/floral-dress", "Red", "2-3Y", $"ROMP-S{id}", id + 2, price, null, true, 3, "images/a.jpg", "A red dress", 40, 60);
+            id, id + 1, "Floral Dress", "/girls/dresses/floral-dress", "Red", "2-3Y", $"ROMP-S{id}", id + 2, price, null, true, 3, id + 3, "images/a.jpg", "A red dress", 40, 60);
         stock.Available[id + 2] = 10;
         return id;
     }

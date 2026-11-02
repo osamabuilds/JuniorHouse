@@ -81,6 +81,7 @@ public sealed class VariantSalesQueries(ICatalogDbContext dbContext, ICatalogLoo
                     view.CompareAtPrice,
                     view.IsSellable,
                     product.CategoryId,
+                    image?.Id,
                     image?.FileKey,
                     image?.AltText,
                     image?.Width,
