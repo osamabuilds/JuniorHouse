@@ -49,10 +49,10 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## order-queue (S13)
 
-- [ ] **Q1** `ListOrdersQuery` and `GetOrderQuery` with filters (status, method, date, COD due now), paged, constant queries, notification status linked. *Proof:* `OrderQueueQueryTests` incl. query count (OQ-1, 7, 9).
-- [ ] **Q2** Staff actions (record outcome, cancel with reason, clear flag) with `xmin` conflicts and audit. *Proof:* `OrderQueueCommandTests` (OQ-2, 3, 4, 5, 8).
-- [ ] **Q3** Endpoints with `orders.view` / `orders.manage`; phone visible only to those roles and never logged. *Proof:* `OrderQueueEndpointsTests`, authorization matrix (OQ-6, 10).
-- [ ] **Q4** Admin `features/orders/order-queue` and `cod-due` screens (dispatch action hidden until S15), `*hasPermission`. *Proof:* component and store specs, `order-queue.e2e.spec.ts`.
+- [x] **Q1** `ListOrdersQuery` and `GetOrderQuery` with filters (status, method, date, COD due now), paged, constant queries, notification status linked. *Proof:* `OrderQueueQueryTests` incl. query count (OQ-1, 7, 9).
+- [x] **Q2** Staff actions (record outcome, cancel with reason, clear flag) with `xmin` conflicts and audit. *Proof:* `OrderQueueCommandTests` (OQ-2, 3, 4, 5, 8).
+- [x] **Q3** Endpoints with `orders.view` / `orders.manage`; phone visible only to those roles and never logged. *Proof:* `OrderQueueEndpointsTests`, authorization matrix (OQ-6, 10).
+- [x] **Q4** Admin `features/orders/order-queue` and `cod-due` screens (dispatch action hidden until S15), `*hasPermission`. *Proof:* component and store specs, `order-queue.e2e.spec.ts`. (Built as one `order-queue` feature: list and detail screens; the "due now" filter is on the list. No browser e2e: it needs a staff login.)
 
 ## order-lookup (S13)
 

@@ -18,6 +18,11 @@ const staffRoutes: Routes = [
     loadChildren: () => import('@features/cart/discount-codes/discount-codes.routes').then((m) => m.DISCOUNT_CODES_ROUTES),
   },
   {
+    path: 'orders',
+    canActivate: [permissionGuard('orders.view')],
+    loadChildren: () => import('@features/orders/order-queue/order-queue.routes').then((m) => m.ORDER_QUEUE_ROUTES),
+  },
+  {
     path: 'shipping',
     canActivate: [permissionGuard('shipping.manage')],
     loadChildren: () => import('@features/cart/totals/shipping.routes').then((m) => m.SHIPPING_ROUTES),
