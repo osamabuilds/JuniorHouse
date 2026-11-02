@@ -13,6 +13,8 @@ services:
       Customers__Auth__UseRealSignIn: "true"
       Customers__Auth__AllowInsecureCookies: "true"
       Customers__PublicBaseUrl: http://localhost:4000
+      # The storefront address: the basket and sign-in writes check the browser Origin against it (cart C7).
+      Site__PublicBaseUrl: http://localhost:4000
       Email__Smtp__Host: mailpit
       Email__Smtp__Port: "1025"
       Email__Smtp__FromAddress: no-reply@romp.local

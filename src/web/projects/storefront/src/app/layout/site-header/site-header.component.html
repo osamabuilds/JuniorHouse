@@ -44,6 +44,12 @@
           }
         }
       </nav>
+      <button type="button" class="rp-icon-btn rp-bag-btn" [attr.aria-label]="'Bag, ' + bagCount() + (bagCount() === 1 ? ' item' : ' items')" (click)="openBag()">
+        <rp-icon name="bag" />
+        @if (bagCount() > 0) {
+          <span class="rp-count" aria-hidden="true">{{ bagCount() }}</span>
+        }
+      </button>
       <form class="rp-search" role="search" action="/search" method="get">
         <rp-icon name="search" />
         <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off" (focus)="searchOpen.emit()" />

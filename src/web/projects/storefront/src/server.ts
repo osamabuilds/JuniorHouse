@@ -44,7 +44,7 @@ app.get('/api/storefront/{*splat}', async (req, res) => {
 const addressBook = /^\/customer-api\/addresses(\/[0-9]+(\/default)?)?$/;
 
 app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res, next) => {
-  if (req.path === '/customer-api/config' || req.path.startsWith('/customer-api/auth/')) {
+  if (req.path === '/customer-api/config' || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/')) {
     next(); // the sign-in routes below
     return;
   }
@@ -131,6 +131,53 @@ app.all('/customer-api/auth/{*splat}', express.json({ limit: '4kb' }), async (re
   }
 });
 
+
+/**
+ * The shopper's basket (cart C7, C10). The browser asks this origin (`/customer-api/cart...`) and the server forwards to `/api/cart...`,
+ * carrying the cookies both ways, so the `romp-guest` cookie and the customer session belong to the storefront origin. Only the routes
+ * below are reachable, each with the methods it accepts. The browser's `Origin` goes through unchanged (the API checks it); the real client
+ * address goes in `x-forwarded-for`. Answers are never cached.
+ */
+const cartRoute = /^\/customer-api\/cart(\/lines(\/[0-9]+)?)?$/;
+const cartMethods: Readonly<Record<string, readonly string[]>> = {
+  '/customer-api/cart': ['GET'],
+  '/customer-api/cart/lines': ['POST'],
+};
+
+app.all('/customer-api/cart{/*splat}', express.json({ limit: '2kb' }), async (req, res) => {
+  const withId = /^\/customer-api\/cart\/lines\/[0-9]+$/.test(req.path);
+  const allowed = withId ? ['PUT', 'DELETE'] : (cartMethods[req.path] ?? []);
+  if (!cartRoute.test(req.path) || !allowed.includes(req.method)) {
+    res.status(404).end();
+    return;
+  }
+  try {
+    const headers: Record<string, string> = {};
+    for (const name of ['cookie', 'origin', 'user-agent']) {
+      const value = req.header(name);
+      if (value) headers[name] = value;
+    }
+    const forwardedFor = [req.header('x-forwarded-for'), req.socket.remoteAddress].filter(Boolean).join(', ');
+    if (forwardedFor) headers['x-forwarded-for'] = forwardedFor;
+    const sendsJson = (req.method === 'POST' || req.method === 'PUT') && req.body && Object.keys(req.body).length > 0;
+    if (sendsJson) headers['content-type'] = 'application/json';
+    const upstream = await fetch(new URL(req.path.replace('/customer-api/cart', '/api/cart'), apiBaseUrl), {
+      method: req.method,
+      headers,
+      body: sendsJson ? JSON.stringify(req.body) : undefined,
+      redirect: 'manual',
+    });
+    res.status(upstream.status);
+    const type = upstream.headers.get('content-type');
+    if (type) res.setHeader('content-type', type);
+    const cookies = upstream.headers.getSetCookie();
+    if (cookies.length > 0) res.setHeader('set-cookie', cookies);
+    res.setHeader('cache-control', 'private, no-store');
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
 /**
  * What the sign-in pages need to know at run time: the public Cloudflare Turnstile site key (empty in local runs, where the API accepts a
  * fixed development token instead). The site key is public by design; the secret key stays in the API.

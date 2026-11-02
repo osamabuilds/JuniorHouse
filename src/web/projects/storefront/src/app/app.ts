@@ -1,19 +1,21 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, afterNextRender, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs';
+import { CartActions } from './features/cart/carts/store/cart.actions';
 import { NavigationActions } from './features/storefront/navigation';
 import { SiteSettingsActions } from './features/storefront/site-settings';
 import { AnnouncementBarComponent } from './layout/announcement-bar/announcement-bar.component';
 import { VerifyEmailBarComponent } from './layout/verify-email-bar/verify-email-bar.component';
+import { MiniCartContainer } from './features/cart/carts/containers/mini-cart/mini-cart.container';
 import { MobileMenuComponent } from './layout/mobile-menu/mobile-menu.component';
 import { SearchOverlayComponent } from './layout/search-overlay/search-overlay.component';
 import { SiteFooterComponent } from './layout/site-footer/site-footer.component';
 import { SiteHeaderComponent } from './layout/site-header/site-header.component';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, AnnouncementBarComponent, VerifyEmailBarComponent, SiteHeaderComponent, SiteFooterComponent, MobileMenuComponent, SearchOverlayComponent],
+  imports: [RouterOutlet, RouterLink, MiniCartContainer, AnnouncementBarComponent, VerifyEmailBarComponent, SiteHeaderComponent, SiteFooterComponent, MobileMenuComponent, SearchOverlayComponent],
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'rp-root' },
@@ -35,6 +37,8 @@ export class App {
     const store = inject(Store);
     store.dispatch(SiteSettingsActions.load());
     store.dispatch(NavigationActions.loadMenu());
+    // The bag count in the header comes from the browser's own cookies, so the basket is read there.
+    afterNextRender(() => store.dispatch(CartActions.load()));
   }
 
   private isSlim(): boolean {

@@ -1,0 +1,39 @@
+<dialog rpDialog class="rp-drawer-r" aria-label="Your bag" (closed)="close()">
+  <div class="rp-drawer__head">
+    <h2 class="rp-display-sm">Your bag <span class="rp-muted">({{ cart().itemCount }})</span></h2>
+    <button type="button" class="rp-icon-btn" aria-label="Close bag" (click)="close()"><rp-icon name="close" /></button>
+  </div>
+
+  <div class="rp-drawer__body">
+    @if (message(); as text) {
+      <div class="rp-notice rp-notice--error" role="alert"><rp-icon name="alert" /><div>{{ text }}</div></div>
+    }
+    @if (empty()) {
+      <p class="rp-lead">Your bag is empty.</p>
+      <a rpBtn="action" routerLink="/new-in" (click)="close()">Start shopping</a>
+    } @else {
+      @for (line of cart().lines; track line.variantId) {
+        <rp-cart-line
+          [line]="line"
+          [compact]="true"
+          [busy]="busy()"
+          (quantityChange)="setQuantity(line.variantId, $event)"
+          (remove)="remove(line.variantId)"
+          (navigate)="close()"
+        />
+      }
+    }
+  </div>
+
+  @if (!empty()) {
+    <div class="rp-drawer__foot">
+      <div class="rp-total" aria-live="polite">
+        <span class="rp-eyebrow">Subtotal</span>
+        <span class="rp-display-xs">Rs. {{ cart().subtotal | number }}</span>
+      </div>
+      <a rpBtn="ghost" [block]="true" routerLink="/cart" (click)="close()">View bag</a>
+      <button rpBtn="action" type="button" [block]="true" disabled reasonId="drawer-note">Checkout</button>
+      <p class="rp-help" id="drawer-note" style="text-align: center">Checkout opens in the next release. Delivery is calculated there.</p>
+    </div>
+  }
+</dialog>

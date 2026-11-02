@@ -1,3 +1,5 @@
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideCart } from './features/cart/carts/cart.providers';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideStore } from '@ngrx/store';
@@ -15,7 +17,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([]), provideHttpClient(), provideStore({}), provideEffects(), provideSiteSettings(), provideNavigation(), provideSearch(), { provide: NavigationApi, useValue: { getMenu: () => of(sampleMenu) } }],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), provideStore({}), provideEffects(), provideCart(), provideSiteSettings(), provideNavigation(), provideSearch(), { provide: NavigationApi, useValue: { getMenu: () => of(sampleMenu) } }],
     }).compileComponents();
   });
 

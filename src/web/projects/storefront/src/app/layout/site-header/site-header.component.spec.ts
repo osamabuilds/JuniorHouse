@@ -1,3 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideCart } from '../../features/cart/carts/cart.providers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideStore } from '@ngrx/store';
@@ -12,7 +15,7 @@ import { Store } from '@ngrx/store';
 
 function render(menu: Menu = sampleMenu): ComponentFixture<SiteHeaderComponent> {
   TestBed.configureTestingModule({
-    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings(), provideNavigation()],
+    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings(), provideNavigation(), provideHttpClient(), provideHttpClientTesting(), provideCart()],
   });
   const store = TestBed.inject(Store);
   store.dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));
@@ -135,10 +138,11 @@ describe('SiteHeaderComponent', () => {
     expect(q(f, '.rp-search-btn').getAttribute('aria-label')).toBe('Search');
   });
 
-  it('CR-5 has no account or bag control and no newsletter form until those features exist', () => {
+  it('CR-5 has a bag button that names its count, no account control and no newsletter form until those features exist', () => {
     const f = render();
     const labels = qa(f, 'button, a').map((e) => (e.getAttribute('aria-label') ?? '').toLowerCase());
-    expect(labels.some((l) => l.includes('account') || l.includes('bag'))).toBe(false);
+    expect(labels.some((l) => l.includes('account'))).toBe(false);
+    expect(labels).toContain('bag, 0 items');
     expect(q(f, 'input[type="email"]')).toBeNull();
   });
 });

@@ -12,6 +12,7 @@ import { provideNavigation } from './features/storefront/navigation';
 import { provideSearch } from './features/storefront/search';
 import { provideSiteSettings } from './features/storefront/site-settings';
 import { customerRefreshInterceptor, provideCustomerAuth, serverCookieInterceptor } from './core/customer-auth';
+import { provideCart } from './features/cart/carts/cart.providers';
 import { provideRpImageLoader } from './shared/ui/image/image-loader';
 
 export const appConfig: ApplicationConfig = {
@@ -29,6 +30,7 @@ export const appConfig: ApplicationConfig = {
     provideListings(),
     provideProductPages(),
     provideSearch(),
+    provideCart(),
     providePage(),
     provideRpImageLoader(),
   ],

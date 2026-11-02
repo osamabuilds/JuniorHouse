@@ -91,7 +91,7 @@ public sealed class GetProductPageQueryHandler(
         var sizes = selection is null
             ? []
             : facts.Where(f => f.Row.ColourId == selection.ColourId).Select(f => new SizeOptionDto(
-                CodeSegment.Of(f.Row.SizeCode), f.Row.SizeName, f.Fact.Availability.ToString(), f.Fact.Availability.IsPurchasable())).ToList();
+                CodeSegment.Of(f.Row.SizeCode), f.Row.SizeName, f.Fact.Availability.ToString(), f.Fact.Availability.IsPurchasable(), f.Row.Id)).ToList();
         var price = selection is null ? null : ProductPricing.For(factList, selection);
         var selectedVariant = selection?.SizeCode is null
             ? null
