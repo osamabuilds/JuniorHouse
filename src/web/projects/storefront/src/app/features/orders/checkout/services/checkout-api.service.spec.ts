@@ -47,7 +47,7 @@ describe('CheckoutApi', () => {
   });
 
   it('CHK-1 a created order is a placed result with its number', () => {
-    expect(placeWith(201, { orderNumber: 'RMP-2026-00001-4', wasRepeat: false })).toEqual({ status: 'placed', orderNumber: 'RMP-2026-00001-4', wasRepeat: false });
+    expect(placeWith(201, { orderNumber: 'RMP-2026-00001-4', wasRepeat: false })).toEqual({ status: 'placed', orderNumber: 'RMP-2026-00001-4', wasRepeat: false, confirmToken: null });
   });
 
   it('ORD-3 a 409 carries the reason, the words and the short variants', () => {

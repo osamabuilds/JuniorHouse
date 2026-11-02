@@ -139,6 +139,7 @@ public static class CodRiskBook
 /// </summary>
 public sealed record CustomerRespondsToCodCommand(string? Token, bool Confirm) : IRequest<CustomerCodResult>, IOrdersCommand;
 
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
 public enum CustomerCodOutcome
 {
     /// <summary>The link is not one of ours, has expired or is for no order.</summary>

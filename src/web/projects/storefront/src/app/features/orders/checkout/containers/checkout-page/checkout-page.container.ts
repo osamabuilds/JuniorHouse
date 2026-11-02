@@ -134,7 +134,7 @@ export class CheckoutPageContainer {
       if (!r) return;
       untracked(() => {
         if (r.status === 'placed') {
-          this.finish(r.orderNumber);
+          this.finish(r.orderNumber, r.confirmToken);
         } else {
           if (r.status === 'refused') this.store.dispatch(CartActions.load());
           this.focusFirstProblem();
@@ -195,11 +195,12 @@ export class CheckoutPageContainer {
     this.store.dispatch(CheckoutActions.submitted({ form: this.form(), key: this.key }));
   }
 
-  private finish(orderNumber: string): void {
+  private finish(orderNumber: string, confirmToken: string | null): void {
     const s = this.summary();
     const f = this.form();
     const saved = this.savedAddresses().find((a) => a.id === f.savedAddressId);
     const placed: PlacedOrder = {
+      confirmToken,
       orderNumber,
       total: s?.total ?? 0,
       paymentMethodName: this.selectedMethod()?.name ?? 'Cash on Delivery',

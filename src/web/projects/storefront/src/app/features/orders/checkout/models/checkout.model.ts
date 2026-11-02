@@ -97,7 +97,7 @@ export type FieldErrors = Readonly<Record<string, string>>;
 
 /** Every way placing an order can end, so a page never has to catch anything. */
 export type PlaceResult =
-  | { readonly status: 'placed'; readonly orderNumber: string; readonly wasRepeat: boolean }
+  | { readonly status: 'placed'; readonly orderNumber: string; readonly wasRepeat: boolean; readonly confirmToken: string | null }
   | { readonly status: 'refused'; readonly reason: string; readonly messages: readonly string[]; readonly shortVariantIds: readonly number[] }
   | { readonly status: 'invalid'; readonly errors: FieldErrors; readonly message: string | null }
   | { readonly status: 'error' };
@@ -106,6 +106,8 @@ export type SummaryResult = { readonly status: 'ok'; readonly summary: CheckoutS
 
 /** What the order-placed page needs to show, carried from the checkout page in the navigation state (reload still shows the number). */
 export interface PlacedOrder {
+  /** The signed link for the Confirm my order button (cash on delivery only). */
+  readonly confirmToken: string | null;
   readonly orderNumber: string;
   readonly total: number;
   readonly paymentMethodName: string;
