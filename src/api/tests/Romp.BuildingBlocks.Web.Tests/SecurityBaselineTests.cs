@@ -31,6 +31,7 @@ public sealed class SecurityBaselineTests
         var group = app.MapSecuredGroup("/secured", Permissions.CatalogRead);
         group.MapGet("/ping", () => Results.Ok("pong"));
         group.MapGet("/strict", () => Results.Ok("strict")).RequireRateLimiting(RateLimitPolicies.Strict);
+        group.MapGet("/discount", () => Results.Ok("discount")).RequireRateLimiting(RateLimitPolicies.DiscountApply);
         app.MapSecuredGroup("/admin", Permissions.OpsAdmin).MapGet("/ping", () => Results.Ok("admin"));
         app.MapGet("/open", () => Results.Ok("open"));
         return app;
@@ -146,6 +147,24 @@ public sealed class SecurityBaselineTests
         for (var i = 0; i < 5; i++)
         {
             statuses.Add((await client.GetAsync("/secured/strict")).StatusCode);
+        }
+
+        Assert.Equal([HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests, HttpStatusCode.TooManyRequests], statuses);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/secured/ping")).StatusCode);
+    }
+
+    [Fact]
+    [Trait("Spec", "DSC-8")]
+    public async Task TheDiscountPolicy_StopsCodeGuessing_AfterTheAllowedAttempts_AndLeavesOtherEndpointsAlone()
+    {
+        await using var app = Build("Development", new Dictionary<string, string?> { ["RateLimit:DiscountApplyPer15Minutes"] = "3", ["RateLimit:PerMinute"] = "1000" });
+        await app.StartAsync();
+        var client = app.GetTestClient();
+
+        var statuses = new List<HttpStatusCode>();
+        for (var i = 0; i < 5; i++)
+        {
+            statuses.Add((await client.GetAsync("/secured/discount")).StatusCode);
         }
 
         Assert.Equal([HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests, HttpStatusCode.TooManyRequests], statuses);
