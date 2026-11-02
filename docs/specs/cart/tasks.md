@@ -34,8 +34,8 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 ## totals
 
 - [x] **T1** (as built: the amounts type is `OrderAmounts`; `ShippingPolicy.FeeFor` takes city, subtotal after discount and the COD flag) `ShippingPolicy`, `DiscountRule`-free `OrderTotals.Calculate` as one pure function (rounding half away from zero, never negative, shipping once per order, deterministic). *Proof:* `OrderTotalsTests` incl. property-style cases (TOT-1, 2, 4, 6, 7).
-- [ ] **T2** `SHIP_CITY_RATE` and `SHIP_SETG` tables, seed (zero default), commands and queries, health warning while the default is zero in production. *Proof:* `ShippingRateTests`, `ShippingMigrationTests` (TOT-5).
-- [ ] **T3** Admin endpoints `/api/shipping/...` with `shipping.manage`; matrix rows. *Proof:* `ShippingEndpointsTests`, authorization matrix test.
+- [x] **T2** `SHIP_CITY_RATE` and `SHIP_SETG` tables, seed (zero default), commands and queries, health warning while the default is zero in production. *Proof:* `ShippingRateTests`, `ShippingMigrationTests` (TOT-5).
+- [x] **T3** Admin endpoints `/api/shipping/...` with `shipping.manage`; matrix rows. *Proof:* `ShippingEndpointsTests`, authorization matrix test.
 - [ ] **T4** `ICheckoutPricing` in `Cart.Contracts` (priced cart, city, method) used by the cart read and, later, by Orders. *Proof:* `CheckoutPricingTests` (TOT-3).
 - [ ] **T5** Storefront `features/cart/totals` summary block (subtotal, discount, shipping, total; "calculated at checkout" until a city is chosen). *Proof:* component specs.
 - [ ] **T6** Admin `features/cart/shipping` (city rate table with search and inline edit, defaults form), `*hasPermission`. *Proof:* component and store specs, `shipping.e2e.spec.ts`.

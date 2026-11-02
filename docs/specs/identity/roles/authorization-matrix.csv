@@ -218,6 +218,11 @@ GET,/api/ref/vendor-specialisations/,ref.read
 POST,/api/ref/vendor-specialisations/,ref.write
 PUT,/api/ref/vendor-specialisations/{id},ref.write
 POST,/api/ref/vendor-specialisations/{id}/retire,ref.write
+GET,/api/shipping/rates,shipping.manage
+PUT,/api/shipping/rates/{cityId:int},shipping.manage
+DELETE,/api/shipping/rates/{cityId:int},shipping.manage
+GET,/api/shipping/settings,shipping.manage
+PUT,/api/shipping/settings,shipping.manage
 GET,/api/storefront/home,anonymous
 GET,/api/storefront/listings/,anonymous
 GET,/api/storefront/listings/empty,anonymous

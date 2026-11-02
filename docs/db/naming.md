@@ -375,4 +375,6 @@ Reused as they are: `DISC` (discount), `EXPY` (expiry), `RATE`, `THRS` (threshol
 | Word | Abbr. | | Word | Abbr. |
 |---|---|---|---|---|
 | cart | CART | | guest | GST |
-| seen | SEEN | | | |
+| seen | SEEN | | shipping | SHPG |
+| settings | SETG | | fee | FEE |
+| cash on delivery | COD | | | |

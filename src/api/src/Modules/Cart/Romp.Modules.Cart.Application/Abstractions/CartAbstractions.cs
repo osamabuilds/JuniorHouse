@@ -11,5 +11,9 @@ public interface ICartDbContext
 {
     DbSet<ShoppingCart> Carts { get; }
 
+    DbSet<Domain.Totals.ShippingCityRate> ShippingRates { get; }
+
+    DbSet<Domain.Totals.ShippingSettings> ShippingSettings { get; }
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

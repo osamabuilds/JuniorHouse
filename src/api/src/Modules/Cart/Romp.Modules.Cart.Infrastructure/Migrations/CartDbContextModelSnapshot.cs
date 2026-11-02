@@ -260,6 +260,125 @@ namespace Romp.Modules.Cart.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.Totals.ShippingCityRate", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("CityId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CITY_ID");
+
+                    b.Property<decimal>("Fee")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("FEE_AMT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "CityId" }, "UQ_SHPG_CITY_RATE_CITY_ID")
+                        .IsUnique();
+
+                    b.ToTable("SHPG_CITY_RATE", "CART", t =>
+                        {
+                            t.HasCheckConstraint("CK_SHPG_CITY_RATE_FEE", "\"FEE_AMT\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Cart.Domain.Totals.ShippingSettings", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    b.Property<decimal?>("CodFee")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("COD_FEE_AMT");
+
+                    b.Property<decimal>("DefaultFee")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("DFLT_FEE_AMT");
+
+                    b.Property<decimal?>("FreeThreshold")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("FREE_THRS_AMT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SHPG_SETG", "CART", t =>
+                        {
+                            t.HasCheckConstraint("CK_SHPG_SETG_FEES", "\"DFLT_FEE_AMT\" >= 0 AND (\"COD_FEE_AMT\" IS NULL OR \"COD_FEE_AMT\" >= 0) AND (\"FREE_THRS_AMT\" IS NULL OR \"FREE_THRS_AMT\" > 0)");
+
+                            t.HasCheckConstraint("CK_SHPG_SETG_ONE", "\"ID\" = 1");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            DefaultFee = 0m,
+                            InsrBy = "migration",
+                            InsrDte = new DateTimeOffset(new DateTime(2026, 11, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Cart.Domain.Carts.CartLine", b =>
                 {
                     b.HasOne("Romp.Modules.Cart.Domain.Carts.ShoppingCart", null)

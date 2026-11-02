@@ -5,7 +5,7 @@ import { uniqueSuffix } from '../support';
 /**
  * Customer sign-in journeys (ACT-1 to ACT-16, ACT-29, ACT-31) in the storefront container with real sign-in.
  * Run: `docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build`, then
- * `STOREFRONT_BASE_URL=http://localhost:4000 npx playwright test e2e/customers/sign-in`.
+ * `STOREFRONT_BASE_URL=http://localhost:4000 npx playwright test e2e/customers/accounts`.
  * Mail is read from Mailpit (MAILPIT_URL, default http://localhost:8025).
  * Each run makes one deliberate wrong-password attempt (ACT-9); about three of those from one address within 15 minutes start the sign-in
  * throttle (SEC-02), which then delays later sign-ins. When re-running locally many times, wait 15 minutes between batches.

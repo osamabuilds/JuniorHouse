@@ -3,6 +3,7 @@ using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Cart.Application.Abstractions;
 using Romp.Modules.Cart.Domain.Carts;
+using Romp.Modules.Cart.Domain.Totals;
 
 namespace Romp.Modules.Cart.Infrastructure.Persistence;
 
@@ -13,6 +14,10 @@ namespace Romp.Modules.Cart.Infrastructure.Persistence;
 public sealed class CartDbContext(DbContextOptions<CartDbContext> options) : DbContext(options), ICartDbContext
 {
     public DbSet<ShoppingCart> Carts => Set<ShoppingCart>();
+
+    public DbSet<ShippingCityRate> ShippingRates => Set<ShippingCityRate>();
+
+    public DbSet<ShippingSettings> ShippingSettings => Set<ShippingSettings>();
 
     async Task ICartDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
