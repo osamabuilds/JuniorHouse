@@ -377,4 +377,9 @@ Reused as they are: `DISC` (discount), `EXPY` (expiry), `RATE`, `THRS` (threshol
 | cart | CART | | guest | GST |
 | seen | SEEN | | shipping | SHPG |
 | settings | SETG | | fee | FEE |
-| cash on delivery | COD | | | |
+| cash on delivery | COD | | spend | SPND |
+| inclusive | INCL | | sale | SALE |
+| cap | CAP | | scope | SCOP |
+| redemption | RDMP | | placement | PLCE |
+| held | HELD | | released | RLSD |
+| use | USE | | | |
