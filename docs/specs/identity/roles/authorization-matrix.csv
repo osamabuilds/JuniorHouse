@@ -262,3 +262,15 @@ GET,/dev/customer,anonymous
 ANY,/health/live,anonymous
 ANY,/health/ready,anonymous
 GET,/media/{name},anonymous
+GET,/api/customers/auth/password-rules,anonymous
+POST,/api/customers/auth/register,anonymous
+POST,/api/customers/auth/sign-in,anonymous
+POST,/api/customers/auth/refresh,anonymous
+POST,/api/customers/auth/sign-out,anonymous
+POST,/api/customers/auth/email/verify,anonymous
+POST,/api/customers/auth/password-reset/request,anonymous
+POST,/api/customers/auth/password-reset/confirm,anonymous
+GET,/api/customers/auth/session,customer
+POST,/api/customers/auth/email/resend,customer
+POST,/api/customers/auth/email/change,customer
+POST,/api/customers/auth/password/change,customer

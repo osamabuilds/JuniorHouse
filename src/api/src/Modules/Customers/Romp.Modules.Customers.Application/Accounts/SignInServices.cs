@@ -6,7 +6,9 @@ using Romp.Modules.Customers.Domain.Accounts;
 namespace Romp.Modules.Customers.Application.Accounts;
 
 /// <summary>A session just started: the cookie values (shown once) and when each part ends.</summary>
-public sealed record StartedSession(long SessionId, long CustomerId, IssuedTokens Tokens, DateTimeOffset AccessExpiresAt, DateTimeOffset RefreshExpiresAt);
+public sealed record StartedSession(
+    long SessionId, long CustomerId, IssuedTokens Tokens, DateTimeOffset AccessExpiresAt, DateTimeOffset RefreshExpiresAt,
+    string FirstName = "", bool EmailVerified = false);
 
 /// <summary>What the throttle says about the next attempt: how long it must still wait, and whether it needs the CAPTCHA.</summary>
 public sealed record SignInGateDecision(TimeSpan? Wait, bool CaptchaRequired);
@@ -92,7 +94,7 @@ public sealed class CustomerSessionIssuer(ICustomerDbContext dbContext, TimeProv
         dbContext.Sessions.Add(session);
         await dbContext.SaveChangesAsync(cancellationToken); // the caller needs the new session id
 
-        return new StartedSession(session.Id, customer.Id, tokens, session.AccessExpiresAt, session.RefreshExpiresAt);
+        return new StartedSession(session.Id, customer.Id, tokens, session.AccessExpiresAt, session.RefreshExpiresAt, customer.FirstName, customer.EmailIsVerified);
     }
 
     /// <summary>Ends every open session of the customer except <paramref name="exceptSessionId"/> (ACT-13: password change or reset).</summary>

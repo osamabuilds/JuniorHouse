@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -77,12 +78,21 @@ public sealed class CustomersModule : IModule
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CustTransactionBehavior<,>));
 
+        // Customer sign-in: cookies, anti-forgery value and the session scheme (accounts S7, S8). Outside Development and Testing the real
+        // session scheme alone decides who a customer is; the stand-in exists only where the host adds it.
+        services.AddOptions<CustomerAuthOptions>().Bind(configuration.GetSection(CustomerAuthOptions.Section)).ValidateOnStart();
+        services.TryAddSingleton<IValidateOptions<CustomerAuthOptions>, CustomerAuthOptionsValidator>();
+        services.AddSingleton<CustomerCookies>();
+        services.AddSingleton<CustomerCsrfTokens>();
+        services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, CustomerSessionAuthenticationHandler>(CustomerSessionPrincipal.Scheme, _ => { });
+
         // The customer policy: a signed-in customer, as decided by the customer scheme alone (never the staff session).
-        services.AddAuthorizationBuilder().AddPolicy(Policies.Customer, policy =>
-        {
-            policy.AddAuthenticationSchemes(StandInCustomer.Scheme);
-            policy.RequireAuthenticatedUser();
-        });
+        services.AddOptions<AuthorizationOptions>().Configure<IOptions<CustomerAuthOptions>, IHostEnvironment>((authorization, auth, environment) =>
+            authorization.AddPolicy(Policies.Customer, policy =>
+            {
+                policy.AddAuthenticationSchemes(CustomerAuthOptions.IsReal(auth.Value, environment) ? CustomerSessionPrincipal.Scheme : StandInCustomer.Scheme);
+                policy.RequireAuthenticatedUser();
+            }));
 
         // Customers' events go to the shared dispatcher; every event without a real consumer gets the placeholder logging handler.
         services.AddOutboxModule("CUST");
@@ -97,6 +107,7 @@ public sealed class CustomersModule : IModule
             StandInCustomer.MapSwitch(endpoints);
         }
 
+        endpoints.MapCustomerAuthEndpoints();
         endpoints.MapAccountEndpoints();
         endpoints.MapAddressEndpoints();
     }

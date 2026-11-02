@@ -69,6 +69,12 @@ public sealed class CustomerEndpointsTests(ProductionApiFixture api)
         foreach (var route in routes)
         {
             var policies = route.Metadata.GetOrderedMetadata<IAuthorizeData>().Select(a => a.Policy).ToList();
+            // The sign-in routes (register, sign-in, reset ...) are public by nature: they have no session yet. Every other route is customer-only.
+            if (route.RoutePattern.RawText!.StartsWith("/api/customers/auth", StringComparison.OrdinalIgnoreCase) && policies.Contains(Policies.Public))
+            {
+                continue;
+            }
+
             Assert.Contains(Policies.Customer, policies);
 
             var text = route.RoutePattern.RawText!;

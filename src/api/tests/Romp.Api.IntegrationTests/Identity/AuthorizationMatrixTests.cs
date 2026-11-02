@@ -25,6 +25,14 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "POST /api/auth/mfa/verify",
         "POST /api/auth/refresh",
         "POST /api/auth/sign-out",
+        "GET /api/customers/auth/password-rules", // customer sign-in (customers/accounts S7): the routes that have no customer session yet
+        "POST /api/customers/auth/register",
+        "POST /api/customers/auth/sign-in",
+        "POST /api/customers/auth/refresh",
+        "POST /api/customers/auth/sign-out",
+        "POST /api/customers/auth/email/verify",
+        "POST /api/customers/auth/password-reset/request",
+        "POST /api/customers/auth/password-reset/confirm",
         "GET /dev/customer", // Development and Testing only: switches the stand-in customer off and on (ADR 0021)
     ];
 

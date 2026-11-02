@@ -91,14 +91,15 @@ internal sealed class StandInCustomerHandler(
     }
 }
 
-/// <summary>Reads the customer from the authenticated principal (never from the route or body). Only an identity made by the customer scheme counts.</summary>
+/// <summary>Reads the customer from the authenticated principal (never from the route or body). Only an identity made by a customer scheme (the real session or the development stand-in) counts.</summary>
 internal sealed class HttpContextCurrentCustomer(IHttpContextAccessor accessor) : ICurrentCustomer
 {
     public long? CustomerId
     {
         get
         {
-            var identity = accessor.HttpContext?.User.Identities.FirstOrDefault(i => i.IsAuthenticated && i.AuthenticationType == StandInCustomer.Scheme);
+            var identity = accessor.HttpContext?.User.Identities.FirstOrDefault(
+                i => i.IsAuthenticated && i.AuthenticationType is StandInCustomer.Scheme or CustomerSessionPrincipal.Scheme);
             var value = identity?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return long.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var id) && id > 0 ? id : null;
         }
