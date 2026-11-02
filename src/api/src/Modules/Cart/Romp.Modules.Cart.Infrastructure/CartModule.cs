@@ -10,6 +10,7 @@ using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Cart.Application.Abstractions;
 using Romp.Modules.Cart.Infrastructure.Carts;
+using Romp.Modules.Cart.Infrastructure.DiscountCodes;
 using Romp.Modules.Cart.Infrastructure.Totals;
 using Romp.Modules.Cart.Infrastructure.Persistence;
 
@@ -66,5 +67,6 @@ public sealed class CartModule : IModule
     {
         endpoints.MapCartEndpoints();
         endpoints.MapShippingEndpoints();
+        endpoints.MapDiscountEndpoints();
     }
 }

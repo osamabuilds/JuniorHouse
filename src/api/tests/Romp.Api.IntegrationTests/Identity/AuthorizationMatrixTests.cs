@@ -35,6 +35,8 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "POST /api/customers/auth/password-reset/confirm",
         "GET /api/cart/", // the basket is open to guests by design (cart plan): the owner is the customer session or the romp-guest cookie, writes check the Origin
         "POST /api/cart/lines",
+        "POST /api/cart/discount",
+        "DELETE /api/cart/discount",
         "PUT /api/cart/lines/{variantId:long}",
         "DELETE /api/cart/lines/{variantId:long}",
         "GET /dev/customer", // Development and Testing only: switches the stand-in customer off and on (ADR 0021)

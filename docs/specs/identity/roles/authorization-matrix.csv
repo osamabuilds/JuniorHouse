@@ -225,6 +225,11 @@ PUT,/api/shipping/rates/{cityId:int},shipping.manage
 DELETE,/api/shipping/rates/{cityId:int},shipping.manage
 GET,/api/shipping/settings,shipping.manage
 PUT,/api/shipping/settings,shipping.manage
+GET,/api/discounts/,discounts.manage
+POST,/api/discounts/,discounts.manage
+GET,/api/discounts/{id:long},discounts.manage
+PUT,/api/discounts/{id:long},discounts.manage
+PUT,/api/discounts/{id:long}/active,discounts.manage
 GET,/api/storefront/home,anonymous
 GET,/api/storefront/listings/,anonymous
 GET,/api/storefront/listings/empty,anonymous
