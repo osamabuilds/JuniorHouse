@@ -297,3 +297,8 @@ GET,/api/customers/auth/session,customer
 POST,/api/customers/auth/email/resend,customer
 POST,/api/customers/auth/email/change,customer
 POST,/api/customers/auth/password/change,customer
+GET,/api/admin/orders/,orders.view
+GET,/api/admin/orders/{id:long},orders.view
+POST,/api/admin/orders/{id:long}/cod-outcome,orders.manage
+POST,/api/admin/orders/{id:long}/cancel,orders.manage
+POST,/api/admin/orders/{id:long}/clear-flag,orders.manage

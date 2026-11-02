@@ -12,6 +12,7 @@ using Romp.Modules.Orders.Application.Abstractions;
 using Romp.Modules.Orders.Application.Checkout;
 using Romp.Modules.Orders.Contracts;
 using Romp.Modules.Orders.Infrastructure.Checkout;
+using Romp.Modules.Orders.Infrastructure.OrderQueue;
 using Romp.Modules.Orders.Infrastructure.Orders;
 using Romp.Modules.Orders.Infrastructure.Persistence;
 
@@ -59,5 +60,6 @@ public sealed class OrdersModule : IModule
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapCheckoutEndpoints();
+        endpoints.MapOrderQueueEndpoints();
     }
 }
