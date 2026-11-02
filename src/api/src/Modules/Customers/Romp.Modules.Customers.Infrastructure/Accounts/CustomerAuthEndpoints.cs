@@ -100,6 +100,7 @@ internal static class CustomerAuthEndpoints
         {
             case RegisterStatus.Registered:
                 cookies.WriteSession(http.Response, result.Session!);
+                CustomerCookies.ClearGuest(http.Response);
                 return Results.Json(Response(result.Session!, csrf), statusCode: StatusCodes.Status201Created);
 
             case RegisterStatus.PasswordRejected:
@@ -132,6 +133,7 @@ internal static class CustomerAuthEndpoints
         {
             case SignInStatus.SignedIn:
                 cookies.WriteSession(http.Response, result.Session!);
+                CustomerCookies.ClearGuest(http.Response);
                 return Results.Ok(Response(result.Session!, csrf));
 
             case SignInStatus.Throttled:
@@ -165,6 +167,7 @@ internal static class CustomerAuthEndpoints
         {
             case Domain.Accounts.RefreshOutcome.Rotated:
                 cookies.WriteSession(http.Response, result.Session!);
+                CustomerCookies.ClearGuest(http.Response);
                 return Results.NoContent();
 
             case Domain.Accounts.RefreshOutcome.ConcurrentRefresh: // another request just rotated it: the browser already holds the new pair, so retry once

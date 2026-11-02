@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -22,8 +21,6 @@ internal sealed class CartOwnerAccessor(
     /// <summary>The cookie name. The customer sign-in reads the same cookie to hand a guest basket to the hook (ADR 0023).</summary>
     public const string GuestCookie = "romp-guest";
 
-    private const int CookieLength = 43; // 32 bytes, base64url, no padding
-
     /// <summary>The caller's owner identity, or null for a guest who has no cookie yet (so nothing is created by a read).</summary>
     public async Task<CartOwner?> ReadAsync(CancellationToken cancellationToken)
     {
@@ -33,7 +30,7 @@ internal sealed class CartOwnerAccessor(
         }
 
         var raw = accessor.HttpContext?.Request.Cookies[GuestCookie];
-        return IsWellFormed(raw) ? CartOwner.ForGuest(Hash(raw!)) : null;
+        return CartOwner.TryHashGuestKey(raw, out var hash) ? CartOwner.ForGuest(hash) : null;
     }
 
     /// <summary>The caller's owner identity, giving a new guest a cookie the first time they write to a basket.</summary>
@@ -56,14 +53,11 @@ internal sealed class CartOwnerAccessor(
             IsEssential = true,
             Expires = DateTimeOffset.UtcNow.AddDays(options.Value.GuestCartDays),
         });
-        return CartOwner.ForGuest(Hash(raw));
+        CartOwner.TryHashGuestKey(raw, out var created);
+        return CartOwner.ForGuest(created);
     }
-
-    private static bool IsWellFormed(string? raw) =>
-        raw is { Length: CookieLength } && raw.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_');
-
-    internal static string Hash(string raw) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(raw)));
 }
+
 
 /// <summary>A basket is personal: no shared cache or browser history may keep a response (SEC-25, SEO-05).</summary>
 internal sealed class CartNoStoreFilter : IEndpointFilter

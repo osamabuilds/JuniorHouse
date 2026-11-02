@@ -103,6 +103,13 @@ public sealed class CustomerCookies(IOptions<CustomerAuthOptions> options)
         return string.IsNullOrEmpty(value) || value.Length > 128 ? null : value;
     }
 
+    /// <summary>Forgets the guest cookie once its basket has been handed to the account on sign-in or registration (FR-35).</summary>
+    public static void ClearGuest(HttpResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+        response.Cookies.Delete(GuestCookie, new CookieOptions { Path = "/" });
+    }
+
     public void Clear(HttpResponse response)
     {
         ArgumentNullException.ThrowIfNull(response);

@@ -304,7 +304,7 @@ public sealed class CustomerAuthEndpointsTests(ProductionApiFixture api)
     }
 
     /// <summary>Lets a test choose the address the host sees for a request, because the test server has none.</summary>
-    private sealed class TestClientIpStartupFilter : IStartupFilter
+    internal sealed class TestClientIpStartupFilter : IStartupFilter
     {
         public const string Header = "X-Test-Client-Ip";
 
