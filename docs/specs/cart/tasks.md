@@ -12,17 +12,17 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 - [x] **F4** Add `SignedLink` (purpose-bound HMAC-SHA256 token, expiry optional, constant-time compare, base64url) to `Romp.BuildingBlocks.Web`. *Proof:* `SignedLinkTests` (valid, wrong purpose, tampered, expired, truncated).
 - [x] **F5** Move `ICustomerSignedInHook` to `Customers.Contracts`; add `ICurrentCustomerAccessor` there. *Proof:* sign-in tests and `SignedInHooksTests` green; `ModuleBoundaryTests`.
 - [x] **F6** Identity migration seeds permissions `orders.view`, `orders.manage`, `discounts.manage`, `shipping.manage`, `notifications.view`, `notifications.resend` (additive); roles screen shows them. *Proof:* `PermissionSeedTests`, existing roles tests.
-- [ ] **F7** `Cart`, `Orders`, `Notifications` added to `ModuleNames`, the constitution table and `docs/db/naming.md` section 4 (schemas `CART`, `ORDR`, `NTFY`). *Proof:* `ModuleBoundaryTests`, `StructureSyncTests`, `GlossaryTests`.
+- [x] **F7** `Cart`, `Orders`, `Notifications` added to `ModuleNames`, the constitution table and `docs/db/naming.md` section 4 (schemas `CART`, `ORDR`, `NTFY`). *Proof:* `ModuleBoundaryTests`, `StructureSyncTests`, `GlossaryTests`.
 
 ## Cart module skeleton
 
-- [ ] **K1** Projects `Romp.Modules.Cart.{Domain,Application,Infrastructure,Contracts}` and `Romp.Modules.Cart.Tests`, `CartModule : IModule`, solution entries, `Program.cs` registration, `CartDbContext` (schema `CART`), outbox and inbox, first migration. *Proof:* `CartMigrationTests` (Testcontainers), architecture tests.
+- [x] **K1** Projects `Romp.Modules.Cart.{Domain,Application,Infrastructure,Contracts}` and `Romp.Modules.Cart.Tests`, `CartModule : IModule`, solution entries, `Program.cs` registration, `CartDbContext` (schema `CART`), outbox and inbox, first migration. *Proof:* `CartMigrationTests` (Testcontainers), architecture tests.
 
 ## carts
 
-- [ ] **C1** `Cart` aggregate and `CartOwner`: add, set quantity, remove, one line per variant, `MaxPerLine`, merge with notices. *Proof:* `CartTests`, `CartMergeTests` (CRT-3, CRT-11).
+- [x] **C1** `Cart` aggregate and `CartOwner`: add, set quantity, remove, one line per variant, `MaxPerLine`, merge with notices. *Proof:* `CartTests`, `CartMergeTests` (CRT-3, CRT-11).
 - [ ] **C2** Contracts `Catalog.Contracts.IVariantSalesQueries.GetManyAsync` (published data only, max 100 ids) and `Warehouse.Contracts.IStockAvailabilityQueries.GetManyAsync`. *Proof:* `VariantSalesQueriesTests` and `StockAvailabilityManyTests` with query-count assertions (no N+1).
-- [ ] **C3** `CART_MAIN` and `CART_LINE` mappings and migration (exactly-one-owner check, unique indexes, expiry index). *Proof:* `CartMigrationTests`, `NamingConventionTests`, `GlossaryTests`.
+- [x] **C3** `CART_MAIN` and `CART_LINE` mappings and migration (exactly-one-owner check, unique indexes, expiry index). *Proof:* `CartMigrationTests`, `NamingConventionTests`, `GlossaryTests`.
 - [ ] **C4** Pricing read: `GetCartQuery` builds the priced cart (flags `PriceChanged`, `LowStock`, `Unavailable`) with a constant number of queries. *Proof:* `GetCartQueryTests` incl. query count (CRT-1, 7, 8).
 - [ ] **C5** Commands `AddLine`, `SetQuantity`, `RemoveLine` with stock and sellable checks. *Proof:* `CartCommandTests` (CRT-2, 4, 5, 6).
 - [ ] **C6** Guest identity: `romp-guest` cookie (random, hashed in the table, `HttpOnly`, `SameSite=Lax`, 30 days) and the owner accessor `ICartOwnerAccessor`. *Proof:* `CartOwnerAccessorTests` (CRT-9).

@@ -1,3 +1,4 @@
+using Romp.Modules.Cart.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Romp.Modules.Customers.Infrastructure.Persistence;
@@ -45,6 +46,7 @@ public sealed partial class NamingConventionTests
             { "STFR", BuildModel<StfrDbContext>(options => new StfrDbContext(options)) },
             { "IDNT", BuildModel<IdntDbContext>(options => new IdntDbContext(options)) },
             { "CUST", BuildModel<CustDbContext>(options => new CustDbContext(options)) },
+            { "CART", BuildModel<CartDbContext>(options => new CartDbContext(options)) },
         };
 
         return data;

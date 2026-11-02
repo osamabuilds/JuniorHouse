@@ -82,6 +82,7 @@ Note: there is no `_AT` suffix in this convention — every timestamp column, au
 | Quality Control | `QC` |
 | SKU & Barcode | `SKU` |
 | Warehouse | `WHSE` |
+| Cart (basket, discount codes, shipping rates) | `CART` |
 | Orders | `ORDR` |
 | Payments | `PAYM` |
 | Customers (storefront accounts) | `CUST` |
@@ -366,3 +367,11 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 |---|---|---|---|---|
 | reset | RSET | | verified (verify) | VRFY |
 | keep (keep me signed in) | KEEP | | issued | ISSD |
+
+### Added in Sprint 11 (SCRUM-202, cart, orders, notifications)
+
+Reused as they are: `DISC` (discount), `EXPY` (expiry), `RATE`, `THRS` (threshold), `CNFM` (confirmed), `TYP`, `HASH`, `KEY`, `LAST`, `USED`, `CODE`, `LINE`, `QTY`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| cart | CART | | guest | GST |

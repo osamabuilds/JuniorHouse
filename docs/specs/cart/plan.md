@@ -84,19 +84,19 @@ Both consumed events enter through one mapper, `Orders/OrderEventMapper.cs`; eac
 
 | Table | Notes |
 |---|---|
-| `CART_MAIN` | `CUST_ID` (plain reference) or `GST_KEY_HASH`; `DSCT_CODE_ID` nullable FK; `EXPR_DTE`; check constraint: exactly one of `CUST_ID`, `GST_KEY_HASH`; partial unique index per customer and unique on guest hash; index on `EXPR_DTE` for the purge job |
+| `CART_MAIN` | `CUST_ID` (plain reference) or `GST_KEY_HASH`; `DISC_CODE_ID` nullable FK; `EXPY_DTE`; check constraint: exactly one of `CUST_ID`, `GST_KEY_HASH`; partial unique index per customer and unique on guest hash; index on `EXPY_DTE` for the purge job |
 | `CART_LINE` | `CART_ID` FK, `VRNT_ID` (plain), `QTY`; unique `(CART_ID, VRNT_ID)`; check `QTY > 0` |
-| `DSCT_CODE` | normalised unique `CODE`; `DSCT_TYPE_ID` lookup (`PCT`, `FIXD`); `VAL numeric(12,2)`; `MIN_SPND_AMT`; `EXPR_DTE`; `USE_CAP`; `CUST_USE_CAP` default 1; `SALE_INCL_IND`; `ACT_IND` |
-| `DSCT_SCOP` | `(DSCT_CODE_ID, CTGY_ID)` for category scope; FK indexed |
-| `DSCT_RDMP` | `DSCT_CODE_ID` FK, `PLCE_KEY` unique, `ORDR_NO` nullable, `CUST_KEY` (customer id or SHA-256 of the normalised mobile for guests), `RDMP_STS_ID` lookup (`HELD`, `CONF`, `RLSD`), `AMT`; index `(DSCT_CODE_ID, CUST_KEY)` |
-| `DSCT_TYPE_LKP`, `RDMP_STS_LKP` | standard lookup shape, seeded in the migration |
+| `DISC_CODE` | normalised unique `CODE`; `DISC_TYPE_ID` lookup (`PCT`, `FIXD`); `VAL numeric(12,2)`; `MIN_SPND_AMT`; `EXPY_DTE`; `USE_CAP`; `CUST_USE_CAP` default 1; `SALE_INCL_IND`; `ACT_IND` |
+| `DISC_SCOP` | `(DISC_CODE_ID, CTGY_ID)` for category scope; FK indexed |
+| `DISC_RDMP` | `DISC_CODE_ID` FK, `PLCE_KEY` unique, `ORDR_NO` nullable, `CUST_KEY` (customer id or SHA-256 of the normalised mobile for guests), `RDMP_STS_ID` lookup (`HELD`, `CONF`, `RLSD`), `AMT`; index `(DISC_CODE_ID, CUST_KEY)` |
+| `DISC_TYPE_LKP`, `RDMP_STS_LKP` | standard lookup shape, seeded in the migration |
 | `SHIP_CITY_RATE` | `CITY_ID` (plain reference to Reference), `FEE_AMT numeric(12,2)`; unique `CITY_ID`; `ACT_IND` |
 | `SHIP_SETG` | one row: `DFLT_FEE_AMT`, `FREE_THR_AMT` null, `COD_FEE_AMT` null; row seeded with a zero default that a health warning flags in production until the business sets it |
 | `OUTB_MSG`, `INBX` | module |
 
 Audit columns and `xmin` on every transactional table; foreign keys declared and indexed inside the schema; no cross-schema foreign keys. Cap enforcement (DSC-10): `HoldRedemption` locks the code row (`SELECT … FOR UPDATE`), counts `Held + Confirmed` for the code and for the customer key, and inserts the hold in the same transaction. No table is large enough to need partitioning at launch volume (carts are purged by the expiry job).
 
-**New glossary words** (added to `docs/db/naming.md` with the migration; the naming test enforces): `CART`, `DSCT`, `RDMP`, `SCOP`, `SHIP`, `RATE`, `SETG`, `GST`, `HLD`/`HELD` (as `HELD`), `RLSD`, `CONF` (check existing), `THR`, `SPND`, `INCL`, `SALE`, `CAP`, `TOUC`. Reused: `CUST`, `ID`, `QTY`, `AMT`, `VAL`, `EXPR`, `DTE`, `ACT`, `IND`, `CITY`, `PRDT`, `VRNT`, `CTGY`, `STS`, `LKP`.
+**New glossary words** (added to `docs/db/naming.md` with the migration; the naming test enforces): `CART`, `DISC`, `RDMP`, `SCOP`, `SHIP`, `RATE`, `SETG`, `GST`, `HLD`/`HELD` (as `HELD`), `RLSD`, `CONF` (check existing), `THRS`, `SPND`, `INCL`, `SALE`, `CAP`, `TOUC`. Reused: `CUST`, `ID`, `QTY`, `AMT`, `VAL`, `EXPR`, `DTE`, `ACT`, `IND`, `CITY`, `PRDT`, `VRNT`, `CTGY`, `STS`, `LKP`.
 
 ## Policies, configuration and the web edge
 
