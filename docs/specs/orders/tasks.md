@@ -4,13 +4,13 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## Skeleton
 
-- [ ] **O1** Projects `Romp.Modules.Orders.{Domain,Application,Infrastructure,Contracts}` and `Romp.Modules.Orders.Tests`, `OrdersModule : IModule`, `OrdrDbContext` (schema `ORDR`), outbox and inbox, solution and `Program.cs` entries. *Proof:* `OrdersMigrationTests`, architecture tests.
+- [x] **O1** Projects `Romp.Modules.Orders.{Domain,Application,Infrastructure,Contracts}` and `Romp.Modules.Orders.Tests`, `OrdersModule : IModule`, `OrdrDbContext` (schema `ORDR`), outbox and inbox, solution and `Program.cs` entries. *Proof:* `OrdersMigrationTests`, architecture tests.
 
 ## orders (S12)
 
-- [ ] **P1** `Order` aggregate, status transition table, history rows, snapshots, order number with check digit (ADR 0006 shape, prefix `RMP`). *Proof:* `OrderTests`, `OrderStatusTransitionTests` (exhaustive), `OrderNumberTests` (ORD-5, 6, 10).
-- [ ] **P2** `ORDR_MAIN`, `ORDR_LINE`, `ORDR_HIST` (append-only trigger), `ORDR_NO_SEQ`, lookups; migration. *Proof:* `OrdersMigrationTests`, `OrderHistoryAppendOnlyTests`, naming and glossary tests.
-- [ ] **P3** Contracts: `Orders.Contracts` events (`OrderPlacedEvent`, `OrderPaidEvent`, `OrderCancelledEvent`, `CodConfirmationRequestedEvent`, `OrderConfirmedEvent`, `OrderPaymentSuspectEvent`), `IOrderNotificationQueries`, `ICodCustomerResponses`. *Proof:* `OrdersContractShapeTests` (ids only, no personal data fields).
+- [x] **P1** `Order` aggregate, status transition table, history rows, snapshots, order number with check digit (ADR 0006 shape, prefix `RMP`). *Proof:* `OrderTests`, `OrderStatusTransitionTests` (exhaustive), `OrderNumberTests` (ORD-5, 6, 10).
+- [x] **P2** `ORDR_MAIN`, `ORDR_LINE`, `ORDR_HIST` (append-only trigger), `ORDR_NO_SEQ`, lookups; migration. *Proof:* `OrdersMigrationTests`, `OrderHistoryAppendOnlyTests`, naming and glossary tests.
+- [x] **P3** Contracts: `Orders.Contracts` events (`OrderPlacedEvent`, `OrderPaidEvent`, `OrderCancelledEvent`, `CodConfirmationRequestedEvent`, `OrderConfirmedEvent`, `OrderPaymentSuspectEvent`), `IOrderNotificationQueries` (done; `ICodCustomerResponses` comes with the COD confirmation work). *Proof:* `OrdersContractShapeTests` (ids only, no personal data fields).
 - [ ] **P4** `PlaceOrderCommand` following ADR 0025: key lookup, `ICheckoutPricing`, discount hold, stock reserve, one transaction, outbox event, compensation. *Proof:* `PlaceOrderTests` (ORD-1, 4, 7, 11, 12), `PlaceOrderFailureTests` (failure after reserve releases both), `PlaceOrderConcurrencyTests` (double submit gives one order, last unit gives one winner: ORD-1, ORD-2, TC-CHK-16, 17, 19).
 - [ ] **P5** Out-of-stock and code-rejected refusals keep the cart and name the short variants. *Proof:* `PlaceOrderRefusalTests` (ORD-3).
 - [ ] **P6** Notification outage does not affect placement. *Proof:* `PlaceOrderOutboxTests.NotificationDown_OrderStillPlaced` (ORD-8).

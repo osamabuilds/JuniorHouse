@@ -72,6 +72,7 @@ public sealed class ProductionApiFixture : IAsyncLifetime
         var customers = scope.ServiceProvider.GetRequiredService<Romp.Modules.Customers.Infrastructure.Persistence.CustDbContext>();
         await customers.Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Cart.Infrastructure.Persistence.CartDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Orders.Infrastructure.Persistence.OrdrDbContext>().Database.MigrateAsync();
         await Romp.Modules.Customers.Infrastructure.Accounts.StandInCustomer.SeedAsync(customers, CancellationToken.None);
 
         var style = new Style("STY-IT-001", "Integration Dress", "Test", categoryId: 3, genderId: 2, ageBracketId: 3, fabricId: 1, targetUnitCost: 450m, targetRetailPrice: 1200m);

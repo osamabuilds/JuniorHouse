@@ -18,6 +18,8 @@ using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure;
 using Romp.Modules.Cart.Infrastructure;
 using Romp.Modules.Cart.Infrastructure.Persistence;
+using Romp.Modules.Orders.Infrastructure;
+using Romp.Modules.Orders.Infrastructure.Persistence;
 using Romp.Modules.Customers.Infrastructure;
 using Romp.Modules.Customers.Infrastructure.Accounts;
 using Romp.Modules.Customers.Infrastructure.Persistence;
@@ -50,7 +52,7 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule(), new CustomersModule(), new CartModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule(), new CustomersModule(), new CartModule(), new OrdersModule()];
 
 builder.Services.AddSharedPersistence();
 builder.Services.AddHttpContextCurrentActor();
@@ -72,7 +74,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(Romp.Modules.Storefront.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Identity.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Customers.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Cart.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Cart.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Orders.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -191,7 +194,8 @@ if (app.Environment.IsDevelopment())
         scope.ServiceProvider.GetRequiredService<StfrDbContext>().Database.MigrateAsync(),
         scope.ServiceProvider.GetRequiredService<IdntDbContext>().Database.MigrateAsync(),
         scope.ServiceProvider.GetRequiredService<CustDbContext>().Database.MigrateAsync(),
-        scope.ServiceProvider.GetRequiredService<CartDbContext>().Database.MigrateAsync());
+        scope.ServiceProvider.GetRequiredService<CartDbContext>().Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<OrdrDbContext>().Database.MigrateAsync());
 
     if (RompAuthorizationExtensions.IsDevelopmentLike(app.Environment))
     {

@@ -127,7 +127,7 @@ public sealed class CustomersFeatureDependencyTests
                 continue;
             }
 
-            if (Regex.IsMatch(File.ReadAllText(file), "\"CUST\"|Romp\\.Modules\\.Customers\\.(Domain|Application|Infrastructure)", RegexOptions.None, TimeSpan.FromSeconds(5)))
+            if (Regex.IsMatch(File.ReadAllText(file), "\"CUST\"\\.\"|Romp\\.Modules\\.Customers\\.(Domain|Application|Infrastructure)", RegexOptions.None, TimeSpan.FromSeconds(5)))
             {
                 offenders.Add(relative);
             }

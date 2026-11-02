@@ -384,3 +384,14 @@ Reused as they are: `DISC` (discount), `EXPY` (expiry), `RATE`, `THRS` (threshol
 | held | HELD | | released | RLSD |
 | use | USE | | | |
 | reservation | RSRV | | until | UNTL |
+
+### Added in Sprint 12 (SCRUM-202, orders, warehouse reservations)
+
+Reused as they are: `CNTC` (contact), `PAYM` (payment), `PRDT` (product), `CLR`, `PRIC`, `RCPT`, `LINE_ONE`, `LINE_TWO`, `PCDE`, `CNCL`, `HIST`, `ACTR`, `KIND`. The orders plan wrote `CONT` and `PYMT`; the glossary's `CNTC` and `PAYM` win.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| subtotal | SUBT | | whatsapp | WHTS |
+| opt-in | OPTN | | method | METH |
+| webhook | WBHK | | | |
+| risk | RISK | | look-up | LOOK |

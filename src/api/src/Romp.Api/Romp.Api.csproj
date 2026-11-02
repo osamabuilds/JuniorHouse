@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Modules\Identity\Romp.Modules.Identity.Infrastructure\Romp.Modules.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Customers\Romp.Modules.Customers.Infrastructure\Romp.Modules.Customers.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Cart\Romp.Modules.Cart.Infrastructure\Romp.Modules.Cart.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Orders\Romp.Modules.Orders.Infrastructure\Romp.Modules.Orders.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Storefront\Romp.Modules.Storefront.Infrastructure\Romp.Modules.Storefront.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Production\Romp.Modules.Production.Infrastructure\Romp.Modules.Production.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Quality\Romp.Modules.Quality.Infrastructure\Romp.Modules.Quality.Infrastructure.csproj" />
