@@ -33,7 +33,7 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 - [x] **H1** `GET /api/orders/checkout` summary and `POST /api/orders` with `Idempotency-Key`, origin check, saved address ownership via `ICustomerAddressQueries`, city and province validation. *Proof:* `CheckoutEndpointsTests` (CHK-1 to 4, 7, 8, 12), `AnotherCustomersAddress_IsNotFound` (SEC-05).
 - [x] **H2** Nothing ever blocks an order on account state. *Proof:* `CheckoutNeverBlockedTests` (unverified email, unverified mobile, guest: CHK-6).
-- [x] **H3** Session expiry and Back-and-resubmit. *Proof:* `CheckoutSessionTests` (CHK-5, 10).
+- [ ] **H3** Session expiry and Back-and-resubmit. *Proof:* `CheckoutSessionTests` (CHK-5, 10).
 - [x] **H4** Storefront `features/orders/checkout` (single page per the design system `CheckoutPage`, saved address picker, city fee shown, payment methods, WhatsApp opt-in checkbox, discount code box, one generated key per page load, disabled button on press), order-placed page, payment-return page, pass-through routes, `noindex`/`no-store`/`robots.txt`. *Proof:* store and component specs, `checkout.e2e.spec.ts` with axe (CHK-1 to 4, 9, 11). (Built: checkout and order-placed pages; the old "Terms and Privacy" links point at routes the content pages supply; discount code box is on the bag, not repeated on checkout.)
 - [ ] **H5** Placeholder Terms and Privacy pages until the business supplies text. *Proof:* route spec; noted in the spec "As built".
 
