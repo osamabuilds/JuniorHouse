@@ -116,4 +116,42 @@ test.describe('checkout', () => {
     await expect(page.getByText(`Order ${number}`)).toBeVisible();
     expect(sql(`SELECT count(*) FROM "ORDR"."ORDR_MAIN" WHERE "ORDR_NO" = '${number}'`)).toBe('1');
   });
+
+  test('COD-12, COD-19 the customer confirms with the button; the same order cannot be answered twice; a bad link is neutral', async ({ page }) => {
+    await addFirstProduct(page);
+    await openHydrated(page, '/checkout');
+    await page.getByLabel('Your name').fill('E2E Shopper');
+    await page.getByLabel('Mobile number').fill('0300 7654321');
+    await page.getByLabel('Full name').fill('E2E Shopper');
+    await page.getByLabel('Phone for the courier').fill('0300 7654321');
+    await page.getByLabel('Address', { exact: true }).fill('House 9, Street 3');
+    await page.getByLabel('Province').selectOption({ index: 1 });
+    await expect(page.getByLabel('City')).toBeEnabled();
+    await page.getByLabel('City').selectOption({ index: 1 });
+    await page.getByRole('button', { name: 'Place order' }).click();
+    await expect(page).toHaveURL(/\/order-placed\/RMP-\d{4}-\d{5}-\d$/);
+    const number = page.url().split('/').pop()!;
+
+    // Opening the page changes nothing: the order is still waiting and the two buttons are there.
+    const confirm = page.getByRole('button', { name: 'Confirm my order' });
+    await expect(confirm).toBeVisible();
+    expect(sql(`SELECT "ORDR_STS_ID" FROM "ORDR"."ORDR_MAIN" WHERE "ORDR_NO" = '${number}'`)).toBe('1');
+    const axe = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+    expect(axe.violations.map((v) => v.id)).toEqual([]);
+
+    await confirm.click();
+    await expect(page.getByText('your order is confirmed')).toBeVisible();
+    expect(sql(`SELECT "ORDR_STS_ID" FROM "ORDR"."ORDR_MAIN" WHERE "ORDR_NO" = '${number}'`)).toBe('2');
+    expect(sql(`SELECT a."COD_OTCM_ID" FROM "ORDR"."COD_ATMP" a JOIN "ORDR"."ORDR_MAIN" o ON o."ID" = a."ORDR_ID" WHERE o."ORDR_NO" = '${number}'`)).toBe('5');
+
+    // The same signed link, opened again, says it has been dealt with and offers no buttons.
+    const token = sql(`SELECT 1`) && (await page.evaluate(() => (history.state as { placed?: { confirmToken?: string } } | null)?.placed?.confirmToken ?? ''));
+    expect(token).not.toBe('');
+    await openHydrated(page, `/cod/confirm?token=${encodeURIComponent(token as string)}`);
+    await expect(page.getByText('already been dealt with')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Confirm my order' })).toHaveCount(0);
+
+    await openHydrated(page, '/cod/confirm?token=not-a-real-link');
+    await expect(page.getByText('could not use this link')).toBeVisible();
+  });
 });

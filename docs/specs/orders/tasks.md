@@ -14,7 +14,7 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 - [x] **P4** `PlaceOrderCommand` following ADR 0025: key lookup, `ICheckoutPricing`, discount hold, stock reserve, one transaction, outbox event, compensation. *Proof:* `PlaceOrderTests` (ORD-1, 4, 7, 11, 12), `PlaceOrderFailureTests` (failure after reserve releases both), `PlaceOrderConcurrencyTests` (double submit gives one order, last unit gives one winner: ORD-1, ORD-2, TC-CHK-16, 17, 19).
 - [x] **P5** Out-of-stock and code-rejected refusals keep the cart and name the short variants. *Proof:* `PlaceOrderRefusalTests` (ORD-3).
 - [x] **P6** Notification outage does not affect placement. *Proof:* `PlaceOrderOutboxTests.NotificationDown_OrderStillPlaced` (ORD-8).
-- [ ] **P7** `CancelOrderCommand` (before dispatch; after dispatch refused), emits `OrderCancelledEvent` with reason and was-picked flag. *Proof:* `CancelOrderTests` (ORD-9, 10).
+- [x] **P7** `CancelOrderCommand` (before dispatch; after dispatch refused), emits `OrderCancelledEvent` with reason and was-picked flag. *Proof:* `CancelOrderTests` (ORD-9, 10).
 - [ ] **P8** Staff and customer reads paged with constant queries; another customer's order is not found. *Proof:* `OrderQueryTests` incl. query count (ORD-13, 14).
 
 ## payments (S12)
@@ -39,13 +39,13 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## cod-confirmation (S12)
 
-- [ ] **D1** `CodPolicy` and `CodRisk` (pure): due times, attempts, auto-cancel rule, flags, reminder timing. *Proof:* `CodPolicyTests`, `CodRiskTests` (COD-2, 5, 6, 9).
-- [ ] **D2** `COD_ATMP`, `COD_RISK`, lookups migration. *Proof:* `CodMigrationTests`.
-- [ ] **D3** `RecordCodOutcomeCommand` (confirmed, no answer, refused), audited, refusal counts. *Proof:* `RecordCodOutcomeTests` (COD-3, 4, 8, 10).
-- [ ] **D4** `CodConfirmationJob`: auto-cancel after the final wait, raises `CodConfirmationRequestedEvent` once per eligible order (opted in, unconfirmed, after the wait). *Proof:* `CodConfirmationJobTests` (COD-2, 13, 17).
-- [ ] **D5** Customer confirm and cancel by signed token (page and email button) and by `ICodCustomerResponses` (WhatsApp): once only, "already handled" afterwards, link opens a page and only the button confirms, cancel is not a refusal. *Proof:* `CustomerCodResponseTests` (COD-12, 14, 15, 19), `CodLinkTests` (tampered, wrong purpose, finished order).
-- [ ] **D6** Storefront `features/orders/cod-confirm` page. *Proof:* component spec, `cod-confirm.e2e.spec.ts`.
-- [ ] **D7** First-order and high-value flags set at placement; cleared when S15 data shows a delivery. *Proof:* `CodFlagsTests` (COD-6, 7).
+- [x] **D1** `CodPolicy` and `CodRisk` (pure): due times, attempts, auto-cancel rule, flags, reminder timing. *Proof:* `CodPolicyTests`, `CodRiskTests` (COD-2, 5, 6, 9).
+- [x] **D2** `COD_ATMP`, `COD_RISK`, lookups migration. *Proof:* `CodMigrationTests`.
+- [x] **D3** `RecordCodOutcomeCommand` (confirmed, no answer, refused), audited, refusal counts. *Proof:* `RecordCodOutcomeTests` (COD-3, 4, 8, 10).
+- [x] **D4** `CodConfirmationJob`: auto-cancel after the final wait, raises `CodConfirmationRequestedEvent` once per eligible order (opted in, unconfirmed, after the wait). *Proof:* `CodConfirmationJobTests` (COD-2, 13, 17).
+- [x] **D5** Customer confirm and cancel by signed token (page and email button) and by `ICodCustomerResponses` (WhatsApp): once only, "already handled" afterwards, link opens a page and only the button confirms, cancel is not a refusal. *Proof:* `CustomerCodResponseTests` (COD-12, 14, 15, 19), `CodLinkTests` (tampered, wrong purpose, finished order). (Built: page and email link; the WhatsApp reply path comes with the Notifications module.)
+- [x] **D6** Storefront `features/orders/cod-confirm` page. *Proof:* component spec, `cod-confirm.e2e.spec.ts`. (Built inside checkout.e2e.spec.ts, which covers the order-placed button and the signed page.)
+- [x] **D7** First-order and high-value flags set at placement; cleared when S15 data shows a delivery. *Proof:* `CodFlagsTests` (COD-6, 7).
 
 ## order-queue (S13)
 
