@@ -136,6 +136,9 @@ internal sealed class FakeProducers :
         return Task.FromResult(Stock.GetValueOrDefault(variantId));
     }
 
+    public Task<IReadOnlyList<Romp.Modules.Warehouse.Contracts.StockAvailability>> GetManyAsync(IReadOnlyCollection<long> variantIds, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Romp.Modules.Warehouse.Contracts.StockAvailability>>([.. variantIds.Where(Stock.ContainsKey).Select(id => Stock[id])]);
+
     public Task<IReadOnlyList<PublishedProductVersion>> ListVersionsAsync(long afterProductId, int take, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<PublishedProductVersion>>([.. Products.Values.Where(p => p.ProductId > afterProductId).OrderBy(p => p.ProductId).Take(take).Select(p => new PublishedProductVersion(p.ProductId, p.Version))]);
 

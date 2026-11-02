@@ -21,7 +21,7 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 ## carts
 
 - [x] **C1** `Cart` aggregate and `CartOwner`: add, set quantity, remove, one line per variant, `MaxPerLine`, merge with notices. *Proof:* `CartTests`, `CartMergeTests` (CRT-3, CRT-11).
-- [ ] **C2** Contracts `Catalog.Contracts.IVariantSalesQueries.GetManyAsync` (published data only, max 100 ids) and `Warehouse.Contracts.IStockAvailabilityQueries.GetManyAsync`. *Proof:* `VariantSalesQueriesTests` and `StockAvailabilityManyTests` with query-count assertions (no N+1).
+- [x] **C2** (as built: `VariantSale` carries the planned variant id the product page shows, the SKU and `LabellingVariantId`, which is the id Warehouse keys stock by) Contracts `Catalog.Contracts.IVariantSalesQueries.GetManyAsync` (published data only, max 100 ids) and `Warehouse.Contracts.IStockAvailabilityQueries.GetManyAsync`. *Proof:* `VariantSalesQueriesTests` and `StockAvailabilityManyTests` with query-count assertions (no N+1).
 - [x] **C3** `CART_MAIN` and `CART_LINE` mappings and migration (exactly-one-owner check, unique indexes, expiry index). *Proof:* `CartMigrationTests`, `NamingConventionTests`, `GlossaryTests`.
 - [ ] **C4** Pricing read: `GetCartQuery` builds the priced cart (flags `PriceChanged`, `LowStock`, `Unavailable`) with a constant number of queries. *Proof:* `GetCartQueryTests` incl. query count (CRT-1, 7, 8).
 - [ ] **C5** Commands `AddLine`, `SetQuantity`, `RemoveLine` with stock and sellable checks. *Proof:* `CartCommandTests` (CRT-2, 4, 5, 6).

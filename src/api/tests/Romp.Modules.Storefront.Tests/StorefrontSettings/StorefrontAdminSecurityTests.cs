@@ -183,10 +183,10 @@ public sealed class StorefrontAdminSecurityTests
 
     [Fact]
     [Trait("Spec", "SEC-08")]
-    public void OnlyThePublicPolicyRemains()
+    public void OnlyThePublicAndCustomerPoliciesRemain()
     {
         Assert.Equal("Public", Policies.Public);
-        Assert.Single(typeof(Policies).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static));
+        Assert.Equal(["Customer", "Public"], typeof(Policies).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Select(f => f.Name).Order());
     }
 
     /// <summary>Signs a caller in with the permissions named in the <c>X-Permissions</c> header (comma separated); no header means no user (401).</summary>

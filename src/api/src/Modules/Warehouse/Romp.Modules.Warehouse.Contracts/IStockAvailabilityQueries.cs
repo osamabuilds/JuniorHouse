@@ -19,4 +19,10 @@ public interface IStockAvailabilityQueries
 
     /// <summary>The availability of one variant, or null when it has never had a stock posting.</summary>
     Task<StockAvailability?> GetAsync(long variantId, CancellationToken cancellationToken);
+
+    /// <summary>The most variants one <see cref="GetManyAsync"/> call accepts.</summary>
+    public const int MaxIds = 100;
+
+    /// <summary>Availability of many variants in one statement (cart and checkout). A variant that has had no stock posting yet is absent.</summary>
+    Task<IReadOnlyList<StockAvailability>> GetManyAsync(IReadOnlyCollection<long> variantIds, CancellationToken cancellationToken);
 }
