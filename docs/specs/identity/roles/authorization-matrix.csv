@@ -40,6 +40,9 @@ POST,/api/cart/lines,anonymous
 GET,/api/orders/checkout,anonymous
 GET,/api/orders/payment-methods,anonymous
 POST,/api/orders/,anonymous
+GET,/api/orders/cod/status,anonymous
+POST,/api/orders/cod/confirm,anonymous
+POST,/api/orders/cod/cancel,anonymous
 DELETE,/api/cart/lines/{variantId:long},anonymous
 PUT,/api/cart/lines/{variantId:long},anonymous
 DELETE,/api/catalog/images/{imageId:long},catalog.write

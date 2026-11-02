@@ -10,6 +10,9 @@ using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Cart.Contracts;
 using Romp.Modules.Customers.Contracts;
+using Microsoft.Extensions.Options;
+using Romp.Modules.Orders.Application.Checkout;
+using Romp.Modules.Orders.Application.Orders;
 using Romp.Modules.Orders.Application;
 using Romp.Modules.Orders.Application.Abstractions;
 using Romp.Modules.Orders.Infrastructure.Orders;
@@ -145,6 +148,9 @@ internal sealed class OrdersHost : IDisposable
         services.AddScoped<OutboxMessageContext>();
         services.AddScoped<InboxGuard>();
         services.AddSingleton<TimeProvider>(Time);
+        Options = new OrdersOptions();
+        services.AddSingleton<IOptions<OrdersOptions>>(Microsoft.Extensions.Options.Options.Create(Options));
+        services.AddSingleton<ICodLinks>(new FakeCodLinks());
         services.AddSingleton<ICheckoutPricing>(Pricing);
         services.AddSingleton<IDiscountRedemptions>(Redemptions);
         services.AddSingleton<IStockReservations>(Reservations);
@@ -170,6 +176,8 @@ internal sealed class OrdersHost : IDisposable
         });
         _root = services.BuildServiceProvider();
     }
+
+    public OrdersOptions Options { get; }
 
     public FakePricing Pricing { get; }
 
@@ -197,4 +205,12 @@ internal sealed class FixedTime(DateTimeOffset now) : TimeProvider
     public DateTimeOffset Now { get; set; } = now;
 
     public override DateTimeOffset GetUtcNow() => Now;
+}
+
+/// <summary>Links made without a secret: a token is just the order number behind a prefix, so a test can build and break one.</summary>
+internal sealed class FakeCodLinks : ICodLinks
+{
+    public string Create(string orderNumber, DateTimeOffset now) => $"tok-{orderNumber}";
+
+    public string? TryRead(string? token, DateTimeOffset now) => token is not null && token.StartsWith("tok-", StringComparison.Ordinal) ? token[4..] : null;
 }

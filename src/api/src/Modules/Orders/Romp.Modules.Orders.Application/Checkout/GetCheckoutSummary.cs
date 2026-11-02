@@ -17,8 +17,39 @@ public sealed class OrdersOptions
     /// </summary>
     public string[] EnabledOnlineMethods { get; set; } = [];
 
+    /// <summary>First confirmation call is due this long after placing (COD-1). Default 60.</summary>
+    public int CodFirstCallDelayMinutes { get; set; } = 60;
+
+    public int CodRetryGapMinutes { get; set; } = 120;
+
+    public int CodMaxAttempts { get; set; } = 2;
+
+    public int CodFinalWaitHours { get; set; } = 24;
+
+    public int WhatsAppConfirmAfterMinutes { get; set; } = 60;
+
+    /// <summary>Refusals from one mobile before staff see a flag (COD-5). Default 2. Flags only, never a block.</summary>
+    public int RefusalFlagThreshold { get; set; } = 2;
+
+    /// <summary>A cash on delivery total at or above this is flagged high value for staff (COD-6); 0 turns the flag off.</summary>
+    public decimal HighValueFlagAmount { get; set; }
+
+    /// <summary>How long a confirm or cancel link from the page or email works. Default 7 days.</summary>
+    public int CodLinkDays { get; set; } = 7;
+
+    /// <summary>The secret that signs confirm and view links (at least 32 characters). A development default is used only in Development.</summary>
+    public string LinkSigningKey { get; set; } = string.Empty;
+
+    public CodPolicy CodPolicy => new(
+        TimeSpan.FromMinutes(CodFirstCallDelayMinutes), TimeSpan.FromMinutes(CodRetryGapMinutes), CodMaxAttempts, TimeSpan.FromHours(CodFinalWaitHours),
+        TimeSpan.FromMinutes(WhatsAppConfirmAfterMinutes));
+
     public static bool IsValid(OrdersOptions options) =>
-        options.EnabledOnlineMethods.All(c => c is "EASY" or "JAZZ" or "CARD");
+        options.EnabledOnlineMethods.All(c => c is "EASY" or "JAZZ" or "CARD")
+        && options.CodFirstCallDelayMinutes is >= 1 and <= 1440 && options.CodRetryGapMinutes is >= 1 and <= 1440
+        && options.CodMaxAttempts is >= 1 and <= 5 && options.CodFinalWaitHours is >= 1 and <= 168
+        && options.WhatsAppConfirmAfterMinutes is >= 1 and <= 1440 && options.RefusalFlagThreshold is >= 1 and <= 20
+        && options.HighValueFlagAmount >= 0 && options.CodLinkDays is >= 1 and <= 30;
 }
 
 public sealed record PaymentMethodDto(string Code, short Id, string Name, bool IsOnline);

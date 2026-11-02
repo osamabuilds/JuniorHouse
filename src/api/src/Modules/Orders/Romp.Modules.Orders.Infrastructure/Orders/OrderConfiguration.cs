@@ -42,6 +42,13 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.Total).HasColumnName("TOT_AMT").HasPrecision(12, 2).IsRequired();
         builder.Property(o => o.DiscountCode).HasColumnName("DISC_CODE").HasMaxLength(32);
         builder.Property(o => o.PlacedAt).HasColumnName("PLCD_DTE").IsRequired();
+        builder.Property(o => o.CodNextDueAt).HasColumnName("COD_DUE_DTE");
+        builder.Property(o => o.CodAutoCancelAt).HasColumnName("COD_CNCL_DTE");
+        builder.Property(o => o.CodAttemptCount).HasColumnName("COD_ATMP_CNT").IsRequired();
+        builder.Property(o => o.CodWhatsAppAskedAt).HasColumnName("COD_WHTS_DTE");
+        builder.Property(o => o.IsFirstOrder).HasColumnName("FRST_ORDR_IND").IsRequired();
+        builder.Property(o => o.IsHighValue).HasColumnName("HI_VAL_IND").IsRequired();
+        builder.Property(o => o.IsRefusalFlagged).HasColumnName("RFSL_FLG_IND").IsRequired();
         builder.Ignore(o => o.DomainEvents);
 
         builder.HasIndex(o => o.OrderNumber).IsUnique().HasDatabaseName("UQ_ORDR_MAIN_ORDR_NO");
@@ -50,12 +57,16 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasIndex(o => o.CustomerId).HasDatabaseName("IX_ORDR_MAIN_CUST_ID");
         builder.HasIndex(o => o.ContactMobile).HasDatabaseName("IX_ORDR_MAIN_CNTC_PHON");
         builder.HasIndex(o => o.PaymentMethodId).HasDatabaseName("IX_ORDR_MAIN_PAYM_METH_ID");
+        // The staff "due now" list and the jobs look for pending orders by due time.
+        builder.HasIndex(o => o.CodNextDueAt).HasDatabaseName("IX_ORDR_MAIN_COD_DUE_DTE").HasFilter("\"COD_DUE_DTE\" IS NOT NULL");
+        builder.HasIndex(o => o.CodAutoCancelAt).HasDatabaseName("IX_ORDR_MAIN_COD_CNCL_DTE").HasFilter("\"COD_CNCL_DTE\" IS NOT NULL");
         builder.HasAuditColumns();
 
         builder.HasOne<OrderStatusLookup>().WithMany().HasForeignKey(o => o.StatusId).HasConstraintName("FK_ORDR_MAIN_ORDR_STS_LKP").OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<PaymentMethodLookup>().WithMany().HasForeignKey(o => o.PaymentMethodId).HasConstraintName("FK_ORDR_MAIN_PAYM_METH_LKP").OnDelete(DeleteBehavior.Restrict);
         builder.Metadata.FindNavigation(nameof(Order.Lines))!.SetPropertyAccessMode(PropertyAccessMode.Field);
         builder.Metadata.FindNavigation(nameof(Order.History))!.SetPropertyAccessMode(PropertyAccessMode.Field);
+        builder.Metadata.FindNavigation(nameof(Order.CodAttempts))!.SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }
 

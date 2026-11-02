@@ -61,9 +61,10 @@ public sealed record PlaceOrderResult(
     bool WasRepeat,
     PlaceOrderRefusal Refusal,
     IReadOnlyList<string> Messages,
-    IReadOnlyList<long> ShortVariantIds)
+    IReadOnlyList<long> ShortVariantIds,
+    string? ConfirmToken = null)
 {
-    public static PlaceOrderResult Placed(long id, string number, bool repeat) => new(PlaceOrderOutcome.Placed, id, number, repeat, PlaceOrderRefusal.None, [], []);
+    public static PlaceOrderResult Placed(long id, string number, bool repeat, string? confirmToken = null) => new(PlaceOrderOutcome.Placed, id, number, repeat, PlaceOrderRefusal.None, [], [], confirmToken);
 
     public static PlaceOrderResult Refused(PlaceOrderRefusal why, IReadOnlyList<string> messages, IReadOnlyList<long>? shortVariants = null) =>
         new(PlaceOrderOutcome.Refused, null, null, false, why, messages, shortVariants ?? []);
@@ -108,6 +109,8 @@ public sealed partial class PlaceOrderCommandHandler(
     ICheckoutPricing pricing,
     IDiscountRedemptions redemptions,
     IStockReservations reservations,
+    ICodLinks links,
+    TimeProvider clock,
     ICurrentCustomerAccessor customers,
     ICustomerAddressQueries savedAddresses,
     IGeographyQueries geography,
@@ -126,7 +129,7 @@ public sealed partial class PlaceOrderCommandHandler(
         var earlier = await FindAsync(placementKey, cancellationToken);
         if (earlier is not null)
         {
-            return PlaceOrderResult.Placed(earlier.Value.Id, earlier.Value.Number, repeat: true);
+            return PlaceOrderResult.Placed(earlier.Value.Id, earlier.Value.Number, repeat: true, TokenFor(request, earlier.Value.Number));
         }
 
         // The address: a saved one (the caller's own, SEC-05) or the typed one, always checked against the geography lookups (CHK-8).
@@ -189,14 +192,14 @@ public sealed partial class PlaceOrderCommandHandler(
             var data = new CreateOrderCommand(
                 placementKey, customerId, contact, address.Value!, priced, hold.Applied ? hold.Code : null, request.PaymentMethodId);
             var created = await sender.Send(data, cancellationToken);
-            return PlaceOrderResult.Placed(created.OrderId, created.OrderNumber, repeat: false);
+            return PlaceOrderResult.Placed(created.OrderId, created.OrderNumber, repeat: false, TokenFor(request, created.OrderNumber));
         }
         catch (DbUpdateException)
         {
             var twin = await FindAsync(placementKey, cancellationToken);
             if (twin is not null)
             {
-                return PlaceOrderResult.Placed(twin.Value.Id, twin.Value.Number, repeat: true);
+                return PlaceOrderResult.Placed(twin.Value.Id, twin.Value.Number, repeat: true, TokenFor(request, twin.Value.Number));
             }
 
             await CompensateAsync(placementKey);
@@ -208,6 +211,10 @@ public sealed partial class PlaceOrderCommandHandler(
             throw;
         }
     }
+
+    /// <summary>A cash on delivery order gets a signed confirm link for its page button and email (COD-12); other orders get none.</summary>
+    private string? TokenFor(PlaceOrderCommand request, string orderNumber) =>
+        PaymentMethods.IsCashOnDelivery(request.PaymentMethodId) ? links.Create(orderNumber, clock.GetUtcNow()) : null;
 
     /// <summary>The same person sending the same key gets the same placement key; a different person never collides with it (ADR 0025).</summary>
     public static string DerivePlacementKey(string callerKey, string idempotencyKey) =>

@@ -19,7 +19,10 @@ public sealed record PlaceOrderRequest(CheckoutContact? Contact, CheckoutAddress
 /// <summary>What the browser gets for a refused order: why, in words, and which variants were short so the bag can point at them.</summary>
 public sealed record OrderRefusedResponse(string Reason, IReadOnlyList<string> Messages, IReadOnlyList<long> ShortVariantIds);
 
-public sealed record OrderPlacedResponse(string OrderNumber, bool WasRepeat);
+public sealed record OrderPlacedResponse(string OrderNumber, bool WasRepeat, string? ConfirmToken);
+
+/// <summary>The signed link from the confirmation page or email. It carries only the token; the order is inside it.</summary>
+public sealed record CodResponseRequest(string? Token);
 
 /// <summary>Writes with a cookie and no anti-forgery token need the browser <c>Origin</c> to be the site's (the rule in <see cref="OriginCheckFilterBase"/>).</summary>
 internal sealed class OrdersOriginCheckFilter(IOptions<SiteOptions> site) : OriginCheckFilterBase(site);
@@ -75,9 +78,30 @@ internal static class CheckoutEndpoints
                     new PlaceOrderCommand(key ?? string.Empty, body.Contact ?? new CheckoutContact(null, null, null, false), body.Address, body.SavedAddressId, methodId),
                     cancellationToken);
                 return result.Outcome == PlaceOrderOutcome.Placed
-                    ? Results.Json(new OrderPlacedResponse(result.OrderNumber!, result.WasRepeat), statusCode: result.WasRepeat ? StatusCodes.Status200OK : StatusCodes.Status201Created)
+                    ? Results.Json(new OrderPlacedResponse(result.OrderNumber!, result.WasRepeat, result.ConfirmToken), statusCode: result.WasRepeat ? StatusCodes.Status200OK : StatusCodes.Status201Created)
                     : Results.Json(new OrderRefusedResponse(result.Refusal.ToString(), result.Messages, result.ShortVariantIds), statusCode: StatusCodes.Status409Conflict);
             })
+            .AddEndpointFilter<OrdersOriginCheckFilter>()
+            .RequireRateLimiting(RateLimitPolicies.Strict);
+
+        // Cash on delivery confirmation by the customer (COD-12, COD-15, COD-19). Opening the link only reads (GET); a button press sends the
+        // POST. The token names one order and nothing else, so no order id is ever taken from the request.
+        var cod = endpoints.MapSecuredGroup("/api/orders/cod", Policies.Public)
+            .WithTags("Orders")
+            .WithMetadata(new RequestSizeLimitAttribute(2 * 1024))
+            .AddEndpointFilter<OrdersNoStoreFilter>();
+
+        cod.MapGet("/status", async (string? token, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new GetCodLinkStatusQuery(token), cancellationToken)))
+            .RequireRateLimiting(RateLimitPolicies.Strict);
+
+        cod.MapPost("/confirm", async (CodResponseRequest body, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new CustomerRespondsToCodCommand(body.Token, Confirm: true), cancellationToken)))
+            .AddEndpointFilter<OrdersOriginCheckFilter>()
+            .RequireRateLimiting(RateLimitPolicies.Strict);
+
+        cod.MapPost("/cancel", async (CodResponseRequest body, ISender sender, CancellationToken cancellationToken) =>
+            Results.Ok(await sender.Send(new CustomerRespondsToCodCommand(body.Token, Confirm: false), cancellationToken)))
             .AddEndpointFilter<OrdersOriginCheckFilter>()
             .RequireRateLimiting(RateLimitPolicies.Strict);
     }

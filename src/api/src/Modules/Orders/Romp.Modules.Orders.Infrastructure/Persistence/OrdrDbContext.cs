@@ -18,6 +18,8 @@ public sealed class OrdrDbContext(DbContextOptions<OrdrDbContext> options) : DbC
 
     public DbSet<OrderHistory> OrderHistory => Set<OrderHistory>();
 
+    public DbSet<CodRisk> CodRisks => Set<CodRisk>();
+
     async Task IOrdersDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 

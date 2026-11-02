@@ -15,6 +15,10 @@ services:
       Customers__PublicBaseUrl: http://localhost:4000
       # The storefront address: the basket and sign-in writes check the browser Origin against it (cart C7).
       Site__PublicBaseUrl: http://localhost:4000
+      # The admin app address: staff sign-in checks the browser Origin against it, not the storefront's.
+      Site__AdminBaseUrl: http://localhost:4201
+      # Signs the confirm links of cash on delivery orders (orders D5). A local demo value only: real deployments set a secret.
+      Orders__LinkSigningKey: local-demo-orders-link-signing-key-0123456789
       Email__Smtp__Host: mailpit
       Email__Smtp__Port: "1025"
       Email__Smtp__FromAddress: no-reply@romp.local

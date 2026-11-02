@@ -296,6 +296,266 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.CodAttempt", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("ActorKindId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ACTR_KIND_ID");
+
+                    b.Property<string>("ActorRef")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("ACTR_REF");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("OCCR_DTE");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("NOTE");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("ATMP_NO");
+
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ORDR_ID");
+
+                    b.Property<short>("OutcomeId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("COD_OTCM_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorKindId")
+                        .HasDatabaseName("IX_COD_ATMP_ACTR_KIND_ID");
+
+                    b.HasIndex("OutcomeId")
+                        .HasDatabaseName("IX_COD_ATMP_COD_OTCM_ID");
+
+                    b.HasIndex("OrderId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_COD_ATMP_ORDR_ID_ATMP_NO");
+
+                    b.ToTable("COD_ATMP", "ORDR");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.CodOutcomeLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("COD_OTCM_LKP", "ORDR");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "CONF",
+                            Description = "Staff reached the customer and the order is confirmed",
+                            IsActive = true,
+                            Name = "Confirmed by staff",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "NOAN",
+                            Description = "Nobody answered the call",
+                            IsActive = true,
+                            Name = "No answer",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "REFU",
+                            Description = "The customer refused the order",
+                            IsActive = true,
+                            Name = "Refused",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "CWAP",
+                            Description = "The customer confirmed with the WhatsApp button",
+                            IsActive = true,
+                            Name = "Confirmed on WhatsApp",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "CWEB",
+                            Description = "The customer confirmed with the button on the page or in the email",
+                            IsActive = true,
+                            Name = "Confirmed on the page",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "CCAN",
+                            Description = "The customer cancelled with the WhatsApp button",
+                            IsActive = true,
+                            Name = "Cancelled on WhatsApp",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "CWCN",
+                            Description = "The customer cancelled from the page or the email",
+                            IsActive = true,
+                            Name = "Cancelled on the page",
+                            SortSeq = (short)7
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.CodRisk", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset?>("ClearedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CLRD_DTE");
+
+                    b.Property<string>("ClearedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("CLRD_BY");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsFlagged")
+                        .HasColumnType("boolean")
+                        .HasColumnName("FLG_IND");
+
+                    b.Property<string>("Mobile")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("CNTC_PHON");
+
+                    b.Property<int>("NoAnswerCancelCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("NOAN_CNCL_CNT");
+
+                    b.Property<int>("RefusalCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("RFSL_CNT");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsFlagged")
+                        .HasDatabaseName("IX_COD_RISK_FLG_IND")
+                        .HasFilter("\"FLG_IND\"");
+
+                    b.HasIndex("Mobile")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_COD_RISK_CNTC_PHON");
+
+                    b.ToTable("COD_RISK", "ORDR", t =>
+                        {
+                            t.HasCheckConstraint("CK_COD_RISK_CNTS", "\"RFSL_CNT\" >= 0 AND \"NOAN_CNCL_CNT\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.Order", b =>
                 {
                     b.Property<long>("Id")
@@ -330,6 +590,22 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("CITY_NAME");
+
+                    b.Property<int>("CodAttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("COD_ATMP_CNT");
+
+                    b.Property<DateTimeOffset?>("CodAutoCancelAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("COD_CNCL_DTE");
+
+                    b.Property<DateTimeOffset?>("CodNextDueAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("COD_DUE_DTE");
+
+                    b.Property<DateTimeOffset?>("CodWhatsAppAskedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("COD_WHTS_DTE");
 
                     b.Property<string>("ContactEmail")
                         .HasMaxLength(254)
@@ -376,6 +652,18 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("InsrDte")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("INSR_DTE");
+
+                    b.Property<bool>("IsFirstOrder")
+                        .HasColumnType("boolean")
+                        .HasColumnName("FRST_ORDR_IND");
+
+                    b.Property<bool>("IsHighValue")
+                        .HasColumnType("boolean")
+                        .HasColumnName("HI_VAL_IND");
+
+                    b.Property<bool>("IsRefusalFlagged")
+                        .HasColumnType("boolean")
+                        .HasColumnName("RFSL_FLG_IND");
 
                     b.Property<string>("OrderNumber")
                         .IsRequired()
@@ -467,6 +755,14 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                         .HasColumnName("xmin");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CodAutoCancelAt")
+                        .HasDatabaseName("IX_ORDR_MAIN_COD_CNCL_DTE")
+                        .HasFilter("\"COD_CNCL_DTE\" IS NOT NULL");
+
+                    b.HasIndex("CodNextDueAt")
+                        .HasDatabaseName("IX_ORDR_MAIN_COD_DUE_DTE")
+                        .HasFilter("\"COD_DUE_DTE\" IS NOT NULL");
 
                     b.HasIndex("ContactMobile")
                         .HasDatabaseName("IX_ORDR_MAIN_CNTC_PHON");
@@ -871,6 +1167,30 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                     b.ToTable("ORDR_NO_SEQ", "ORDR");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.CodAttempt", b =>
+                {
+                    b.HasOne("Romp.Modules.Orders.Domain.Orders.ActorKindLookup", null)
+                        .WithMany()
+                        .HasForeignKey("ActorKindId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_COD_ATMP_ACTR_KIND");
+
+                    b.HasOne("Romp.Modules.Orders.Domain.Orders.Order", null)
+                        .WithMany("CodAttempts")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_COD_ATMP_ORDR_MAIN");
+
+                    b.HasOne("Romp.Modules.Orders.Domain.Orders.CodOutcomeLookup", null)
+                        .WithMany()
+                        .HasForeignKey("OutcomeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_COD_ATMP_COD_OTCM");
+                });
+
             modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.Order", b =>
                 {
                     b.HasOne("Romp.Modules.Orders.Domain.Orders.PaymentMethodLookup", null)
@@ -936,6 +1256,8 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
 
             modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.Order", b =>
                 {
+                    b.Navigation("CodAttempts");
+
                     b.Navigation("History");
 
                     b.Navigation("Lines");

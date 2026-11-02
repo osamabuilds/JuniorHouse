@@ -160,7 +160,18 @@ public sealed record PlaceOrderData(
     string? DiscountCode,
     short PaymentMethodId,
     string? CartRef,
-    DateTimeOffset PlacedAt);
+    DateTimeOffset PlacedAt)
+{
+    /// <summary>When the first confirmation call is due, for a cash on delivery order (COD-1); null otherwise.</summary>
+    public DateTimeOffset? CodFirstCallDueAt { get; init; }
+
+    /// <summary>Flags for staff only, never a block (COD-5, COD-6): a first order, a high value, a mobile past the refusal threshold.</summary>
+    public bool IsFirstOrder { get; init; }
+
+    public bool IsHighValue { get; init; }
+
+    public bool IsRefusalFlagged { get; init; }
+}
 
 /// <summary>
 /// A placed order (ORDR.ORDR_MAIN). Contact, address and lines are snapshots (ORD-6). Totals are checked here against the lines, so an order
@@ -173,6 +184,7 @@ public sealed class Order : AggregateRoot<long>, IAuditable
 
     private readonly List<OrderLine> _lines = [];
     private readonly List<OrderHistory> _history = [];
+    private readonly List<CodAttempt> _codAttempts = [];
 
     private Order()
     {
@@ -245,6 +257,25 @@ public sealed class Order : AggregateRoot<long>, IAuditable
     public IReadOnlyList<OrderLine> Lines => _lines;
 
     public IReadOnlyList<OrderHistory> History => _history;
+
+    public IReadOnlyList<CodAttempt> CodAttempts => _codAttempts;
+
+    /// <summary>When the next confirmation call is due (cash on delivery, still pending); null when none is waiting.</summary>
+    public DateTimeOffset? CodNextDueAt { get; private set; }
+
+    /// <summary>After the last unanswered call: when the order is cancelled if the customer still has not confirmed.</summary>
+    public DateTimeOffset? CodAutoCancelAt { get; private set; }
+
+    public int CodAttemptCount { get; private set; }
+
+    /// <summary>When the WhatsApp confirmation request was raised for this order, so it goes out once (COD-13).</summary>
+    public DateTimeOffset? CodWhatsAppAskedAt { get; private set; }
+
+    public bool IsFirstOrder { get; private set; }
+
+    public bool IsHighValue { get; private set; }
+
+    public bool IsRefusalFlagged { get; private set; }
 
     public DateTimeOffset InsrDte { get; set; }
 
@@ -323,6 +354,10 @@ public sealed class Order : AggregateRoot<long>, IAuditable
             Total = subtotal - data.Discount + data.Shipping,
             DiscountCode = data.DiscountCode,
             PlacedAt = data.PlacedAt,
+            CodNextDueAt = PaymentMethods.IsCashOnDelivery(data.PaymentMethodId) ? data.CodFirstCallDueAt : null,
+            IsFirstOrder = data.IsFirstOrder,
+            IsHighValue = data.IsHighValue,
+            IsRefusalFlagged = data.IsRefusalFlagged,
             StatusId = PaymentMethods.IsCashOnDelivery(data.PaymentMethodId) ? OrderStatuses.PendingConfirmation : OrderStatuses.PaymentPending,
         };
         order._lines.AddRange(lines);
@@ -390,5 +425,80 @@ public sealed class Order : AggregateRoot<long>, IAuditable
         return result;
     }
 
+
+    /// <summary>
+    /// Records how a cash on delivery confirmation ended (COD-3, COD-4, COD-8, COD-12 to COD-15). A confirmation moves the order to Confirmed and
+    /// raises <see cref="OrderConfirmedEvent"/>; a refusal or a customer cancellation cancels it; a no-answer schedules the next call or, after
+    /// the last, the automatic cancel. Only a pending cash on delivery order can be answered: anything else is <see cref="OrderTransition.NotAllowed"/>,
+    /// so a repeated tap or a late link changes nothing (COD-19).
+    /// </summary>
+    public OrderTransition RecordCodOutcome(short outcomeId, short actorKindId, string? actorRef, string? note, DateTimeOffset at, CodPolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        if (!CodOutcomes.IsKnown(outcomeId))
+        {
+            throw new DomainException("Unknown confirmation outcome.");
+        }
+
+        if (!PaymentMethods.IsCashOnDelivery(PaymentMethodId) || StatusId != OrderStatuses.PendingConfirmation)
+        {
+            return OrderTransition.NotAllowed;
+        }
+
+        _codAttempts.Add(new CodAttempt(Id, _codAttempts.Count + 1, outcomeId, actorKindId, actorRef, note, at));
+        if (CodOutcomes.IsConfirmation(outcomeId))
+        {
+            MoveTo(OrderStatuses.Confirmed, actorKindId, actorRef, null, note, at);
+            CodNextDueAt = null;
+            CodAutoCancelAt = null;
+            Raise(new OrderConfirmedEvent(Id, OrderNumber));
+        }
+        else if (outcomeId == CodOutcomes.NoAnswer)
+        {
+            CodAttemptCount++;
+            (CodNextDueAt, CodAutoCancelAt) = policy.AfterNoAnswer(CodAttemptCount, at);
+        }
+        else
+        {
+            var reason = outcomeId == CodOutcomes.Refused ? CancelReasons.CodRefused : CancelReasons.Customer;
+            Cancel(reason, actorKindId, actorRef, note, wasPicked: false, at);
+            CodNextDueAt = null;
+            CodAutoCancelAt = null;
+        }
+
+        return OrderTransition.Changed;
+    }
+
+    /// <summary>The final wait has passed with no confirmation: cancel with the no-answer reason (COD-2). Does nothing before the time, or when the order moved on.</summary>
+    public OrderTransition AutoCancelIfDue(DateTimeOffset now)
+    {
+        if (StatusId != OrderStatuses.PendingConfirmation || CodAutoCancelAt is not { } at || now < at)
+        {
+            return OrderTransition.Unchanged;
+        }
+
+        var result = Cancel(CancelReasons.CodNoAnswer, ActorKinds.System, null, "No answer to the confirmation calls", wasPicked: false, now);
+        CodNextDueAt = null;
+        CodAutoCancelAt = null;
+        return result;
+    }
+
+    /// <summary>Raises the WhatsApp confirmation request once, when it is due (COD-13). Returns true when it was raised.</summary>
+    public bool RequestWhatsAppConfirmation(CodPolicy policy, DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        if (!PaymentMethods.IsCashOnDelivery(PaymentMethodId) || StatusId != OrderStatuses.PendingConfirmation
+            || !policy.WhatsAppRequestDue(WhatsAppOptIn, CodWhatsAppAskedAt, PlacedAt, now))
+        {
+            return false;
+        }
+
+        CodWhatsAppAskedAt = now;
+        Raise(new CodConfirmationRequestedEvent(Id, OrderNumber, now));
+        return true;
+    }
+
+    /// <summary>Staff cleared the refusal flag on this order after review (COD-10).</summary>
+    public void ClearRefusalFlag() => IsRefusalFlagged = false;
     public const string CannotCancelAfterDispatch = "This order has already been dispatched, so it cannot be cancelled. Please start a return once it arrives.";
 }

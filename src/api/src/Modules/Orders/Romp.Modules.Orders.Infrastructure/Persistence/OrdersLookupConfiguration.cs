@@ -35,6 +35,15 @@ internal static class OrdersLookupConfiguration
             (CancelReasons.PaymentFailed, "PYFL", "Payment failed", "The online payment failed"),
             (CancelReasons.PaymentExpired, "PYEX", "Payment expired", "The payment window passed without payment"));
 
+        Configure<CodOutcomeLookup>(modelBuilder, "COD_OTCM_LKP",
+            (CodOutcomes.Confirmed, "CONF", "Confirmed by staff", "Staff reached the customer and the order is confirmed"),
+            (CodOutcomes.NoAnswer, "NOAN", "No answer", "Nobody answered the call"),
+            (CodOutcomes.Refused, "REFU", "Refused", "The customer refused the order"),
+            (CodOutcomes.ConfirmedByCustomerOnWhatsApp, "CWAP", "Confirmed on WhatsApp", "The customer confirmed with the WhatsApp button"),
+            (CodOutcomes.ConfirmedByCustomerOnPage, "CWEB", "Confirmed on the page", "The customer confirmed with the button on the page or in the email"),
+            (CodOutcomes.CancelledByCustomerOnWhatsApp, "CCAN", "Cancelled on WhatsApp", "The customer cancelled with the WhatsApp button"),
+            (CodOutcomes.CancelledByCustomerOnPage, "CWCN", "Cancelled on the page", "The customer cancelled from the page or the email"));
+
         Configure<ActorKindLookup>(modelBuilder, "ACTR_KIND_LKP",
             (ActorKinds.Staff, "STAF", "Staff", "A member of staff"),
             (ActorKinds.Customer, "CUST", "Customer", "The customer"),

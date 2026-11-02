@@ -15,6 +15,8 @@ public interface IOrdersDbContext
 
     DbSet<OrderHistory> OrderHistory { get; }
 
+    DbSet<CodRisk> CodRisks { get; }
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
 

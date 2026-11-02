@@ -188,6 +188,9 @@ app.all('/customer-api/cart{/*splat}', express.json({ limit: '2kb' }), async (re
 const ordersMethods: Readonly<Record<string, readonly string[]>> = {
   '/customer-api/orders/checkout': ['GET'],
   '/customer-api/orders/payment-methods': ['GET'],
+  '/customer-api/orders/cod/status': ['GET'],
+  '/customer-api/orders/cod/confirm': ['POST'],
+  '/customer-api/orders/cod/cancel': ['POST'],
   '/customer-api/orders': ['POST'],
 };
 
