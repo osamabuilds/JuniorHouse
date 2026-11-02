@@ -33,6 +33,7 @@ async function mailLink(request: import('@playwright/test').APIRequestContext, t
 async function open(page: import('@playwright/test').Page, path: string): Promise<void> {
   await page.goto(path);
   await page.waitForLoadState('networkidle');
+  await page.waitForFunction(() => document.querySelector('app-root') !== null && document.querySelector('[ngh]') === null); // hydrated: Angular removes the server's ngh markers
 }
 
 function localUrl(link: string): string {

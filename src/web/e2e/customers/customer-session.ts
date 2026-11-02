@@ -7,6 +7,7 @@ export const CUSTOMER_PASSWORD = 'Sunny-Day-42';
 export async function openHydrated(page: Page, path: string): Promise<void> {
   await page.goto(path);
   await page.waitForLoadState('networkidle');
+  await page.waitForFunction(() => document.querySelector('app-root') !== null && document.querySelector('[ngh]') === null); // hydrated: Angular removes the server's ngh markers
 }
 
 /** Creates a fresh customer through the register page; the browser is left signed in. Returns the email used. */

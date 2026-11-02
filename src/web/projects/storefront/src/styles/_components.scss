@@ -440,6 +440,8 @@
 .rp-formgrid { display: grid; gap: var(--space-4); }
 .rp-formgrid .rp-field { align-content: start; }
 @media (min-width: 40rem) { .rp-formgrid--2 { grid-template-columns: 1fr 1fr; } }
+.rp-auth__alt { display: grid; gap: var(--space-2); justify-items: center; padding-top: var(--space-5); border-top: var(--border-line) solid var(--line); }
+.rp-auth__alt .rp-btn { width: 100%; }
 .rp-auth__row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
 @media (min-width: 64rem) { .rp-auth { grid-template-columns: 1fr 1fr; } .rp-auth__media { display: block; } }
 .rp-rules { display: grid; gap: var(--space-1); margin: 0; padding: 0; list-style: none; font: 400 14px/20px var(--font-sans); }

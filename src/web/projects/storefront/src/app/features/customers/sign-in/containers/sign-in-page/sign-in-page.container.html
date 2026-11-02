@@ -1,7 +1,6 @@
 <rp-auth-layout>
   <p class="rp-eyebrow">Welcome back</p>
   <h1 class="rp-display-md">Sign in</h1>
-  <p class="rp-help">New here? <a class="rp-link" routerLink="/account/register" [queryParams]="{ returnUrl: returnUrl() }">Create an account</a></p>
 
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate aria-label="Sign in">
     @if (state().failed || state().error) {
@@ -43,4 +42,8 @@
 
     <button rpBtn="action" type="submit" [block]="true" [disabled]="state().busy">{{ state().busy ? 'Signing in…' : 'Sign in' }}</button>
   </form>
+  <div class="rp-auth__alt">
+    <p class="rp-help">New here?</p>
+    <a rpBtn="ghost" [block]="true" routerLink="/account/register" [queryParams]="{ returnUrl: returnUrl() }">Create an account</a>
+  </div>
 </rp-auth-layout>

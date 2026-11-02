@@ -1,6 +1,5 @@
 <rp-auth-layout>
   <h1 class="rp-display-md">Create account</h1>
-  <p class="rp-help">Already have one? <a class="rp-link" routerLink="/account/sign-in">Sign in</a></p>
 
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate aria-label="Create account">
     @if (anyError()) {
@@ -52,4 +51,8 @@
 
     <button rpBtn="action" type="submit" [block]="true" [disabled]="state().busy">{{ state().busy ? 'Creating your account…' : 'Create account' }}</button>
   </form>
+  <div class="rp-auth__alt">
+    <p class="rp-help">Already have an account?</p>
+    <a rpBtn="ghost" [block]="true" routerLink="/account/sign-in">Sign in</a>
+  </div>
 </rp-auth-layout>
