@@ -383,3 +383,4 @@ Reused as they are: `DISC` (discount), `EXPY` (expiry), `RATE`, `THRS` (threshol
 | redemption | RDMP | | placement | PLCE |
 | held | HELD | | released | RLSD |
 | use | USE | | | |
+| reservation | RSRV | | until | UNTL |

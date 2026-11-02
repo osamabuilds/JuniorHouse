@@ -29,6 +29,13 @@ public sealed class StockVariantReader(IWarehouseDbContext dbContext) : IStockVa
     public async Task<int> GetOnHandAsync(long variantRefId, CancellationToken cancellationToken) =>
         await dbContext.Balances.AsNoTracking().Where(b => b.VariantRefId == variantRefId).SumAsync(b => b.Quantity, cancellationToken);
 
+    public async Task<int> GetAvailableAsync(long variantRefId, CancellationToken cancellationToken)
+    {
+        var onHand = await GetOnHandAsync(variantRefId, cancellationToken);
+        var reserved = await dbContext.ReservedBalances.AsNoTracking().Where(r => r.Id == variantRefId).Select(r => r.Quantity).FirstOrDefaultAsync(cancellationToken);
+        return Math.Max(0, onHand - reserved);
+    }
+
     public async Task<bool> HasEverHeldStockAsync(long variantRefId, CancellationToken cancellationToken) =>
         await dbContext.Movements.AsNoTracking().AnyAsync(m => m.VariantRefId == variantRefId, cancellationToken);
 

@@ -13,6 +13,12 @@ public sealed class SiteOptions
     public const string Section = "Site";
 
     public string? PublicBaseUrl { get; set; }
+
+    /// <summary>
+    /// The address staff open the admin app from, when it differs from the storefront. Staff sign-in checks the browser Origin against
+    /// it instead of <see cref="PublicBaseUrl"/>. Unset means the staff routes keep using <see cref="PublicBaseUrl"/>.
+    /// </summary>
+    public string? AdminBaseUrl { get; set; }
 }
 
 /// <summary><c>Network:*</c> - the proxies whose forwarded headers are believed (sessions AC-15).</summary>

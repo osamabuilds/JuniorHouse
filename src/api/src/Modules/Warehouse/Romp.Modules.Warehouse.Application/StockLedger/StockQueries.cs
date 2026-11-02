@@ -53,15 +53,19 @@ public sealed class SearchStockQueryHandler(IWarehouseDbContext dbContext) : IRe
                 select new { b.VariantRefId, b.BinId, bin.BinCode, b.GradeId, b.Quantity })
             .ToListAsync(cancellationToken);
 
+        var reservedByVariant = await dbContext.ReservedBalances.AsNoTracking().Where(r => ids.Contains(r.Id)).ToDictionaryAsync(r => r.Id, r => r.Quantity, cancellationToken);
+
         var rows = page.Items.Select(i =>
         {
             var v = variants[i.VariantRefId];
             var onHand = i.Accepted + i.Concession;
+            var reserved = reservedByVariant.GetValueOrDefault(i.VariantRefId);
             return new StockVariantRowDto(
-                v.Id, v.VariantId, v.SkuCode, v.Gtin, v.GtinRetired, onHand, onHand, i.Accepted, i.Concession,
+                v.Id, v.VariantId, v.SkuCode, v.Gtin, v.GtinRetired, onHand, Math.Max(0, onHand - reserved), i.Accepted, i.Concession,
                 bins.Where(b => b.VariantRefId == i.VariantRefId)
                     .Select(b => new StockBinQuantityDto(b.BinId, b.BinCode, b.GradeId, Grades.CodeOf(b.GradeId), b.Quantity))
-                    .ToList());
+                    .ToList(),
+                reserved);
         }).ToList();
 
         return new PagedResult<StockVariantRowDto>(rows, page.Page, page.PageSize, page.TotalCount);

@@ -139,7 +139,8 @@ public sealed class OriginCheckFilter(IOptions<SiteOptions> site) : IEndpointFil
             return false; // "null", junk, or something with a path in it
         }
 
-        var allowed = !string.IsNullOrWhiteSpace(site.Value.PublicBaseUrl) && Uri.TryCreate(site.Value.PublicBaseUrl, UriKind.Absolute, out var configured)
+        var baseUrl = string.IsNullOrWhiteSpace(site.Value.AdminBaseUrl) ? site.Value.PublicBaseUrl : site.Value.AdminBaseUrl;
+        var allowed = !string.IsNullOrWhiteSpace(baseUrl) && Uri.TryCreate(baseUrl, UriKind.Absolute, out var configured)
             ? configured.GetLeftPart(UriPartial.Authority)
             : $"{request.Scheme}://{request.Host}";
         return string.Equals(presented.GetLeftPart(UriPartial.Authority), allowed, StringComparison.OrdinalIgnoreCase)

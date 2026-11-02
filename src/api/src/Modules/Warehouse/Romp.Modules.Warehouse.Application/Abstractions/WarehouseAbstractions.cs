@@ -4,6 +4,7 @@ using Romp.Modules.Warehouse.Domain.Adjustments;
 using Romp.Modules.Warehouse.Domain.Bins;
 using Romp.Modules.Warehouse.Domain.CycleCounts;
 using Romp.Modules.Warehouse.Domain.Putaway;
+using Romp.Modules.Warehouse.Domain.Reservations;
 using Romp.Modules.Warehouse.Domain.StockAlerts;
 using Romp.Modules.Warehouse.Domain.StockLedger;
 
@@ -39,6 +40,10 @@ public interface IWarehouseDbContext
 
     DbSet<AdjustmentReasonLookup> AdjustmentReasons { get; }
 
+    DbSet<StockReservation> Reservations { get; }
+
+    DbSet<ReservedBalance> ReservedBalances { get; }
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
 
@@ -55,4 +60,7 @@ public sealed class WarehouseOptions
 
     /// <summary>A QC message with more lines than this is refused as malformed (PUT-1, resource limit).</summary>
     public int MaxLinesPerAcceptedBatch { get; set; } = 500;
+
+    /// <summary>How long a reservation waits for its order to be confirmed before the sweeper gives the units back (ADR 0025). Default 30.</summary>
+    public int ReservationHoldMinutes { get; set; } = 30;
 }

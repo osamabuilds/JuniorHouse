@@ -4,6 +4,7 @@ using Romp.Modules.Warehouse.Domain;
 using Romp.Modules.Warehouse.Domain.Adjustments;
 using Romp.Modules.Warehouse.Domain.CycleCounts;
 using Romp.Modules.Warehouse.Domain.Putaway;
+using Romp.Modules.Warehouse.Domain.Reservations;
 using Romp.Modules.Warehouse.Domain.StockAlerts;
 
 namespace Romp.Modules.Warehouse.Infrastructure.Persistence;
@@ -43,6 +44,12 @@ internal static class WarehouseLookupConfiguration
         Configure<AlertLevelLookup>(modelBuilder, "ALRT_LVL_LKP",
             (AlertLevels.Low, "LOW", "Low stock", "Available is at or below the threshold"),
             (AlertLevels.Out, "OUT", "Stock-out", "Nothing available"));
+
+        Configure<ReservationStatusLookup>(modelBuilder, "RSRV_STS_LKP",
+            (ReservationStatuses.Held, "HELD", "Held", "Stock set aside while the order is being placed"),
+            (ReservationStatuses.Confirmed, "CONFIRMED", "Confirmed", "The order exists; the units are promised to it"),
+            (ReservationStatuses.Converted, "CONVERTED", "Converted", "Picked: the ledger has been decremented"),
+            (ReservationStatuses.Released, "RELEASED", "Released", "Given back: the order was cancelled or never came"));
 
         Configure<AlertStatusLookup>(modelBuilder, "ALRT_STS_LKP",
             (AlertStatuses.Open, "OPEN", "Open", "Stock is still low"),

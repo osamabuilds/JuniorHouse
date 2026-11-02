@@ -226,6 +226,21 @@ public sealed class CsrfFilterTests
 
     [Fact]
     [Trait("Spec", "AC-10")]
+    public async Task WhenAnAdminAddressIsSet_StaffSignInChecksThatOrigin_NotTheStorefronts()
+    {
+        var filter = new OriginCheckFilter(Options.Create(new SiteOptions { PublicBaseUrl = "https://romp.pk", AdminBaseUrl = "https://admin.romp.pk" }));
+
+        var admin = Request("POST");
+        admin.Request.Headers.Origin = "https://admin.romp.pk";
+        Assert.True((await RunAsync(filter, admin)).Reached);
+
+        var storefront = Request("POST");
+        storefront.Request.Headers.Origin = "https://romp.pk";
+        Assert.Equal((false, 403), await RunAsync(filter, storefront));
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-10")]
     public async Task WrongOrigin_IsRejected()
     {
         var filter = Origin("https://romp.pk");

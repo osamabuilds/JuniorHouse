@@ -100,11 +100,13 @@ public sealed class StockPosting(WhseDbContext dbContext, TimeProvider timeProvi
                 .ToListAsync(cancellationToken);
 
             var variant = await dbContext.VariantRefs.FirstAsync(v => v.Id == group.Key, cancellationToken);
+            var reserved = await dbContext.ReservedBalances.AsNoTracking().Where(b => b.Id == group.Key).Select(b => b.Quantity).FirstOrDefaultAsync(cancellationToken);
             variant.PublishLevel(
                 totals.Where(t => t.Grade == Grades.Accepted).Sum(t => t.Total),
                 totals.Where(t => t.Grade == Grades.Concession).Sum(t => t.Total),
                 MovementKinds.CodeOf(group.First().KindId),
-                versions[group.Key]);
+                versions[group.Key],
+                reserved);
         }
 
         return posted;

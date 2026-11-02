@@ -7,6 +7,7 @@ using Romp.Modules.Warehouse.Domain.Bins;
 using Romp.Modules.Warehouse.Domain.StockAlerts;
 using Romp.Modules.Warehouse.Domain.CycleCounts;
 using Romp.Modules.Warehouse.Domain.Putaway;
+using Romp.Modules.Warehouse.Domain.Reservations;
 using Romp.Modules.Warehouse.Domain.StockLedger;
 
 namespace Romp.Modules.Warehouse.Infrastructure.Persistence;
@@ -40,6 +41,10 @@ public sealed class WhseDbContext(DbContextOptions<WhseDbContext> options) : DbC
     public DbSet<LowStockThreshold> Thresholds => Set<LowStockThreshold>();
 
     public DbSet<AdjustmentReasonLookup> AdjustmentReasons => Set<AdjustmentReasonLookup>();
+
+    public DbSet<StockReservation> Reservations => Set<StockReservation>();
+
+    public DbSet<ReservedBalance> ReservedBalances => Set<ReservedBalance>();
 
     async Task IWarehouseDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);

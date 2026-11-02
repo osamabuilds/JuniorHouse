@@ -216,12 +216,12 @@ public sealed class VariantRef : AggregateRoot<long>, IAuditable
         }
     }
 
-    /// <summary>Raises <see cref="StockLevelChangedEvent"/> with the new totals. Available equals on-hand until reservations exist (LED-5).</summary>
-    public void PublishLevel(int onHandAccepted, int onHandConcession, string reasonCode, long stockVersion)
+    /// <summary>Raises <see cref="StockLevelChangedEvent"/> with the new totals. Available is on-hand minus the units reserved for orders (LED-5, RSV-7).</summary>
+    public void PublishLevel(int onHandAccepted, int onHandConcession, string reasonCode, long stockVersion, int reserved = 0)
     {
         var onHand = onHandAccepted + onHandConcession;
         Raise(new StockLevelChangedEvent(
-            VariantId, StyleId, ColourId, SizeId, SkuCode, Gtin, onHand, onHand, onHandAccepted, onHandConcession, reasonCode, stockVersion));
+            VariantId, StyleId, ColourId, SizeId, SkuCode, Gtin, onHand, Math.Max(0, onHand - reserved), onHandAccepted, onHandConcession, reasonCode, stockVersion));
     }
 
     /// <summary>Raises <see cref="StockPutawayConfirmedEvent"/> (FR-SC-08): this quantity of this grade is now shelved and available.</summary>
