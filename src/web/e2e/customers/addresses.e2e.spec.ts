@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { registerCustomer } from './customer-session';
 import { uniqueSuffix } from '../support';
 
 /**
@@ -37,6 +38,7 @@ test.describe('addresses', () => {
       await expect(dialog).toBeHidden();
     }
 
+    await registerCustomer(page);
     await page.goto('/account');
     await expect(page).toHaveURL(/\/account\/addresses$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Addresses' })).toBeVisible();

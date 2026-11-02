@@ -9,3 +9,10 @@ services:
     environment:
       Identity__UseRealAuthentication: "true"
       Identity__AllowInsecureCookies: "true"
+      # Customer sign-in (accounts S11): real sessions on the storefront origin; mail goes to Mailpit (UI on :8025).
+      Customers__Auth__UseRealSignIn: "true"
+      Customers__Auth__AllowInsecureCookies: "true"
+      Customers__PublicBaseUrl: http://localhost:4000
+      Email__Smtp__Host: mailpit
+      Email__Smtp__Port: "1025"
+      Email__Smtp__FromAddress: no-reply@romp.local

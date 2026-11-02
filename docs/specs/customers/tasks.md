@@ -38,7 +38,7 @@ From the "Real sign-in" section of [accounts/plan.md](accounts/plan.md) and [ADR
 - [x] **S8** `Policies.Customer` backed by the session handler (the stand-in stays for Development/Testing); ownership tests unchanged. *Proof:* `CustomerEndpointsTests`, `CustomerOwnershipArchitectureTests` (ACT-18). *As built:* `Customers:Auth:UseRealSignIn` switches Development/Testing to the real session scheme; outside them the real scheme is always used and the stand-in does not exist, so no extra start-up gate is needed. `CurrentCustomerDto` gained `EmailVerified`. Proof: `CustomerEndpointsTests`, `AuthorizationMatrixTests`.
 - [x] **S9** Storefront `core/customer-auth` store and `features/customers/sign-in`: sign-in, register with live password checklist and code step, forgot and set-new-password, verify-email result page; Turnstile widget; `/account` guard; header account link and sign out. *Proof:* component and store specs (ACT-2, 16, 29).
 - [x] **S10** Unverified-email notice bar with "Verify my email" button (design system; raise it if no component fits). *Proof:* component spec (ACT-31).
-- [ ] **S11** `server.ts` pass-through grows to the auth routes with cookies; e2e journeys (register, verify, sign in, reset, throttle) and axe; spec "As built"; rebuild docker; real Twilio and Turnstile check once the owner has the accounts. *Proof:* `sign-in.e2e.spec.ts`.
+- [x] **S11** (code, e2e and docker done 2026-11-02; real Turnstile and SMTP check still open) `server.ts` pass-through grows to the auth routes with cookies; e2e journeys (register, verify, sign in, reset, throttle) and axe; spec "As built"; rebuild docker; real Twilio and Turnstile check once the owner has the accounts. *Proof:* `sign-in.e2e.spec.ts`.
 
 ## wishlist
 

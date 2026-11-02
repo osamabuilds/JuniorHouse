@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Romp.BuildingBlocks.Web;
+using Romp.Modules.Customers.Application;
 using Romp.Modules.Customers.Application.Accounts;
 using Romp.Modules.Customers.Domain.Accounts;
 
@@ -233,7 +234,7 @@ public sealed class CustomerCsrfFilter(CustomerCsrfTokens tokens) : IEndpointFil
 /// be this site's (<c>Site:PublicBaseUrl</c>, or the request's own origin when none is configured). A request with no <c>Origin</c> header
 /// is not a cross-site browser request, so it is left to the other defences.
 /// </summary>
-public sealed class CustomerOriginCheckFilter(IOptions<SiteOptions> site) : IEndpointFilter
+public sealed class CustomerOriginCheckFilter(IOptions<SiteOptions> site, IOptions<CustomersOptions> customers) : IEndpointFilter
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
@@ -259,7 +260,9 @@ public sealed class CustomerOriginCheckFilter(IOptions<SiteOptions> site) : IEnd
             return false; // "null", junk, or something with a path in it
         }
 
-        var allowed = !string.IsNullOrWhiteSpace(site.Value.PublicBaseUrl) && Uri.TryCreate(site.Value.PublicBaseUrl, UriKind.Absolute, out var configured)
+        // Site:PublicBaseUrl when set; otherwise the storefront address the customer mail links use (the browser talks to the storefront, not the API host).
+        var baseUrl = string.IsNullOrWhiteSpace(site.Value.PublicBaseUrl) ? customers.Value.PublicBaseUrl : site.Value.PublicBaseUrl;
+        var allowed = !string.IsNullOrWhiteSpace(baseUrl) && Uri.TryCreate(baseUrl, UriKind.Absolute, out var configured)
             ? configured.GetLeftPart(UriPartial.Authority)
             : $"{request.Scheme}://{request.Host}";
         return string.Equals(presented.GetLeftPart(UriPartial.Authority), allowed, StringComparison.OrdinalIgnoreCase);

@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, effect, inject, viewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, PLATFORM_ID, effect, inject, viewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -41,7 +42,8 @@ export class ResetPasswordPageContainer {
   constructor() {
     setUpAuthPage({ title: 'Set a new password', description: 'Choose a new Romp password.', path: '/account/reset-password' });
     this.store.dispatch(CustomerAuthActions.formOpened());
-    if (this.hasToken) void this.router.navigate([], { queryParams: { token: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    // Browser only: on the server a navigation becomes a 302 to the address without the token, and the token is lost.
+    if (this.hasToken && isPlatformBrowser(inject(PLATFORM_ID))) void this.router.navigate([], { queryParams: { token: null }, queryParamsHandling: 'merge', replaceUrl: true });
     effect(() => {
       if (this.state().status !== 'idle' && this.state().status !== 'busy') queueMicrotask(() => this.heading()?.nativeElement.focus());
     });
