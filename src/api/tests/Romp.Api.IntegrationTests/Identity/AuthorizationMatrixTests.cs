@@ -34,6 +34,9 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "POST /api/customers/auth/password-reset/request",
         "POST /api/customers/auth/password-reset/confirm",
         "GET /api/cart/", // the basket is open to guests by design (cart plan): the owner is the customer session or the romp-guest cookie, writes check the Origin
+        "GET /api/orders/checkout",
+        "GET /api/orders/payment-methods",
+        "POST /api/orders/",
         "POST /api/cart/lines",
         "POST /api/cart/discount",
         "DELETE /api/cart/discount",

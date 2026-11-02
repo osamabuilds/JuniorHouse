@@ -9,7 +9,9 @@ using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Orders.Application.Abstractions;
+using Romp.Modules.Orders.Application.Checkout;
 using Romp.Modules.Orders.Contracts;
+using Romp.Modules.Orders.Infrastructure.Checkout;
 using Romp.Modules.Orders.Infrastructure.Orders;
 using Romp.Modules.Orders.Infrastructure.Persistence;
 
@@ -37,6 +39,10 @@ public sealed class OrdersModule : IModule
         services.AddScoped<IOrdersDbContext>(sp => sp.GetRequiredService<OrdrDbContext>());
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IOrderNumberAllocator, OrderNumberAllocator>();
+        services.AddOptions<OrdersOptions>().Bind(configuration.GetSection(OrdersOptions.SectionName))
+            .Validate(OrdersOptions.IsValid, "Orders:EnabledOnlineMethods may only contain EASY, JAZZ or CARD.")
+            .ValidateOnStart();
+        services.AddHttpContextAccessor();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(OrdersTransactionBehavior<,>));
 
@@ -50,5 +56,6 @@ public sealed class OrdersModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapCheckoutEndpoints();
     }
 }

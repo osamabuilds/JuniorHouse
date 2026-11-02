@@ -37,6 +37,9 @@ GET,/api/cart/,anonymous
 POST,/api/cart/discount,anonymous
 DELETE,/api/cart/discount,anonymous
 POST,/api/cart/lines,anonymous
+GET,/api/orders/checkout,anonymous
+GET,/api/orders/payment-methods,anonymous
+POST,/api/orders/,anonymous
 DELETE,/api/cart/lines/{variantId:long},anonymous
 PUT,/api/cart/lines/{variantId:long},anonymous
 DELETE,/api/catalog/images/{imageId:long},catalog.write
