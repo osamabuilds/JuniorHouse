@@ -33,6 +33,17 @@
     <a class="rp-logo" routerLink="/" [attr.aria-label]="brand().name + ', home'">{{ brand().name.toLowerCase() }}<i></i></a>
 
     <div class="rp-tools">
+      <nav class="rp-acct" aria-label="Account">
+        @switch (auth()) {
+          @case ('signedIn') {
+            <a routerLink="/account" class="rp-acct__link">{{ greeting() }}</a>
+            <button type="button" class="rp-acct__link" (click)="signOut()">Sign out</button>
+          }
+          @case ('signedOut') {
+            <a routerLink="/account/sign-in" class="rp-acct__link">Sign in</a>
+          }
+        }
+      </nav>
       <form class="rp-search" role="search" action="/search" method="get">
         <rp-icon name="search" />
         <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off" (focus)="searchOpen.emit()" />

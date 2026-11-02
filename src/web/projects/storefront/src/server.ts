@@ -43,7 +43,11 @@ app.get('/api/storefront/{*splat}', async (req, res) => {
  */
 const addressBook = /^\/customer-api\/addresses(\/[0-9]+(\/default)?)?$/;
 
-app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res) => {
+app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res, next) => {
+  if (req.path === '/customer-api/config' || req.path.startsWith('/customer-api/auth/')) {
+    next(); // the sign-in routes below
+    return;
+  }
   if (!addressBook.test(req.path) || !['GET', 'POST', 'PUT', 'DELETE'].includes(req.method)) {
     res.status(404).end();
     return;
@@ -70,6 +74,70 @@ app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, r
   } catch {
     res.status(502).json({ title: 'The storefront could not reach the API.' });
   }
+});
+
+/**
+ * Customer sign-in (accounts ACT-1 to ACT-14, ACT-27, ACT-28). The browser asks this origin (`/customer-api/auth/...`); the server
+ * forwards to `/api/customers/auth/...` and carries the cookies both ways, so the session cookies belong to the storefront origin
+ * (Q-ACT-5, ADR 0023). Only the routes in the list below are reachable, with the method each accepts. The browser's `Origin` and the
+ * anti-forgery header go through unchanged (the API checks both); the real client address goes in `x-forwarded-for`. Answers are never cached.
+ */
+const authRoutes: Readonly<Record<string, readonly string[]>> = {
+  '/password-rules': ['GET'],
+  '/session': ['GET'],
+  '/register': ['POST'],
+  '/sign-in': ['POST'],
+  '/refresh': ['POST'],
+  '/sign-out': ['POST'],
+  '/email/verify': ['POST'],
+  '/email/resend': ['POST'],
+  '/password-reset/request': ['POST'],
+  '/password-reset/confirm': ['POST'],
+};
+
+app.all('/customer-api/auth/{*splat}', express.json({ limit: '4kb' }), async (req, res) => {
+  const route = req.path.replace('/customer-api/auth', '');
+  if (!authRoutes[route]?.includes(req.method)) {
+    res.status(404).end();
+    return;
+  }
+  try {
+    const headers: Record<string, string> = {};
+    for (const name of ['cookie', 'origin', 'user-agent', 'x-romp-csrf']) {
+      const value = req.header(name);
+      if (value) headers[name] = value;
+    }
+    const forwardedFor = [req.header('x-forwarded-for'), req.socket.remoteAddress].filter(Boolean).join(', ');
+    if (forwardedFor) headers['x-forwarded-for'] = forwardedFor;
+    const sendsJson = req.method === 'POST' && req.body && Object.keys(req.body).length > 0;
+    if (sendsJson) headers['content-type'] = 'application/json';
+    const upstream = await fetch(new URL(`/api/customers/auth${route}`, apiBaseUrl), {
+      method: req.method,
+      headers,
+      body: sendsJson ? JSON.stringify(req.body) : undefined,
+      redirect: 'manual',
+    });
+    res.status(upstream.status);
+    for (const name of ['content-type', 'retry-after']) {
+      const value = upstream.headers.get(name);
+      if (value) res.setHeader(name, value);
+    }
+    const cookies = upstream.headers.getSetCookie();
+    if (cookies.length > 0) res.setHeader('set-cookie', cookies);
+    res.setHeader('cache-control', 'private, no-store');
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
+
+/**
+ * What the sign-in pages need to know at run time: the public Cloudflare Turnstile site key (empty in local runs, where the API accepts a
+ * fixed development token instead). The site key is public by design; the secret key stays in the API.
+ */
+app.get('/customer-api/config', (_req, res) => {
+  res.setHeader('cache-control', 'public, max-age=300');
+  res.json({ turnstileSiteKey: process.env['TURNSTILE_SITE_KEY'] ?? '' });
 });
 
 /** The province and city lists behind the address form: public, anonymous, GET only. */
