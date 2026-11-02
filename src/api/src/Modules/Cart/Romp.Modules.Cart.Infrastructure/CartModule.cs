@@ -46,6 +46,8 @@ public sealed class CartModule : IModule
         services.AddScoped<Romp.Modules.Customers.Contracts.ICustomerSignedInHook, Application.Carts.GuestCartMergeHook>();
         services.AddHttpContextAccessor();
         services.AddScoped<Carts.CartOwnerAccessor>();
+        services.AddScoped<Application.Totals.CartTotalsCalculator>();
+        services.AddScoped<Romp.Modules.Cart.Contracts.ICheckoutPricing, Totals.CheckoutPricing>();
         services.AddHostedService<Carts.CartPurgeWorker>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CartTransactionBehavior<,>));

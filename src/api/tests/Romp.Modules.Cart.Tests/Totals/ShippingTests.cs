@@ -173,3 +173,87 @@ public sealed class ShippingSeedTests(CartPostgres postgres) : IClassFixture<Car
         Assert.True(dto.DefaultFeeIsUnset);
     }
 }
+
+public sealed class CartTotalsCalculatorTests(CartPostgres postgres) : IClassFixture<CartPostgres>
+{
+    private static class Line
+    {
+        public static Romp.Modules.Cart.Application.Carts.PricedLine Make(long variant, decimal unitPrice, int quantity, Romp.Modules.Cart.Application.Carts.LineIssues issues = Romp.Modules.Cart.Application.Carts.LineIssues.None) =>
+            new(variant, 1, "Dress", "/p", "Red", "2Y", "S", issues.HasFlag(Romp.Modules.Cart.Application.Carts.LineIssues.Unavailable) ? null : unitPrice, null, quantity,
+                issues.HasFlag(Romp.Modules.Cart.Application.Carts.LineIssues.Unavailable) ? 0m : unitPrice * quantity, 9, null, issues, null, null, null);
+    }
+
+    private async Task<Romp.Modules.Cart.Domain.Totals.OrderAmounts> CalcAsync(Romp.Modules.Cart.Application.Carts.PricedCart cart, int? city, bool cod, decimal discount = 0m)
+    {
+        await using var db = postgres.NewContext();
+        if (!await db.ShippingRates.AnyAsync(r => r.CityId == 5))
+        {
+            db.ShippingRates.Add(new ShippingCityRate(5, 200m));
+        }
+
+        db.ShippingSettings.Single().Set(500m, 8000m, 100m);
+        await db.SaveChangesAsync();
+        await using var read = postgres.NewContext();
+        return await new Romp.Modules.Cart.Application.Totals.CartTotalsCalculator(new ShippingPolicyLoader(read)).CalculateAsync(cart, city, cod, discount, CancellationToken.None);
+    }
+
+    private static Romp.Modules.Cart.Application.Carts.PricedCart CartOf(params Romp.Modules.Cart.Application.Carts.PricedLine[] lines) =>
+        new(lines, lines.Sum(l => l.Quantity), lines.Where(l => l.UnitPrice is not null).Sum(l => l.LineTotal));
+
+    [Fact]
+    [Trait("Spec", "TOT-1")]
+    public async Task WithACity_DeliveryIsThatCitysRate_ChargedOnce_AndTheTotalIsExact()
+    {
+        var amounts = await CalcAsync(CartOf(Line.Make(1, 1000m, 2), Line.Make(2, 500m, 1)), 5, cod: false);
+
+        Assert.Equal(2500m, amounts.Subtotal);
+        Assert.Equal(200m, amounts.Shipping);
+        Assert.True(amounts.ShippingKnown);
+        Assert.Equal(2700m, amounts.Total);
+    }
+
+    [Fact]
+    [Trait("Spec", "TOT-4")]
+    public async Task WithNoCity_DeliveryIsNotKnown_AndNotInTheTotal()
+    {
+        var amounts = await CalcAsync(CartOf(Line.Make(1, 1000m, 1)), null, cod: false);
+
+        Assert.False(amounts.ShippingKnown);
+        Assert.Equal(1000m, amounts.Total);
+    }
+
+    [Fact]
+    [Trait("Spec", "TOT-1")]
+    public async Task ACityWithNoRate_UsesTheDefault_AndCodAddsItsFee()
+    {
+        var plain = await CalcAsync(CartOf(Line.Make(1, 1000m, 1)), 99, cod: false);
+        var cod = await CalcAsync(CartOf(Line.Make(1, 1000m, 1)), 99, cod: true);
+
+        Assert.Equal(500m, plain.Shipping);
+        Assert.Equal(600m, cod.Shipping);
+    }
+
+    [Fact]
+    [Trait("Spec", "TOT-1")]
+    public async Task DeliveryIsFree_WhenTheSubtotalAfterTheDiscountReachesTheThreshold()
+    {
+        var free = await CalcAsync(CartOf(Line.Make(1, 4500m, 2)), 5, cod: false);
+        var notFree = await CalcAsync(CartOf(Line.Make(1, 4500m, 2)), 5, cod: false, discount: 1500m);
+
+        Assert.Equal(0m, free.Shipping);
+        Assert.Equal(200m, notFree.Shipping);
+        Assert.Equal(7700m, notFree.Total);
+    }
+
+    [Fact]
+    [Trait("Spec", "TOT-4")]
+    public async Task LinesThatCannotBeBought_AreLeftOut_AndAnEmptyBasketIsNotCharged()
+    {
+        var gone = await CalcAsync(CartOf(Line.Make(1, 1000m, 1), Line.Make(2, 0m, 3, Romp.Modules.Cart.Application.Carts.LineIssues.Unavailable)), 5, cod: false);
+        var empty = await CalcAsync(Romp.Modules.Cart.Application.Carts.PricedCart.Empty, 5, cod: false);
+
+        Assert.Equal(1000m, gone.Subtotal);
+        Assert.Equal(new Romp.Modules.Cart.Domain.Totals.OrderAmounts(0m, 0m, 0m, true, 0m), empty with { ShippingKnown = true });
+        Assert.Equal(0m, empty.Total);
+    }
+}

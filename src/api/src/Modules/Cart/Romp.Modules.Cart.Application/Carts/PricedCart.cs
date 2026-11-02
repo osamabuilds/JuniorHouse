@@ -45,6 +45,9 @@ public sealed record PricedLine(
 /// </summary>
 public sealed record PricedCart(IReadOnlyList<PricedLine> Lines, int ItemCount, decimal Subtotal)
 {
+    /// <summary>The basket row this was priced from (null for an empty or missing basket); the order event carries it so the basket is emptied once the order exists (ADR 0025).</summary>
+    public long? CartId { get; init; }
+
     public static PricedCart Empty { get; } = new([], 0, 0m);
 
     public bool IsEmpty => Lines.Count == 0;

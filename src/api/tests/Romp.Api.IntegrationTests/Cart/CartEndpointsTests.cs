@@ -236,6 +236,33 @@ public sealed class CartEndpointsTests(ProductionApiFixture api)
     }
 
     [Fact]
+    [Trait("Spec", "TOT-1")]
+    public async Task WithACityTheBasketShowsDelivery_AndWithoutOneItSaysItIsNotKnownYet()
+    {
+        var (factory, sales, stock) = Shop();
+        var variant = NewVariant(sales, stock, 1000m);
+        using var staff = factory.CreateClient();
+        await staff.PutAsJsonAsync("/api/shipping/settings", new { defaultFee = 300, freeThreshold = (decimal?)null, codFee = (decimal?)null }, Json);
+        var provinces = await BodyAsync(await staff.GetAsync("/api/geography/provinces"));
+        var cities = await BodyAsync(await staff.GetAsync($"/api/geography/provinces/{provinces[0].GetProperty("id").GetInt32()}/cities"));
+        var city = cities[0].GetProperty("id").GetInt32();
+        await staff.PutAsJsonAsync($"/api/shipping/rates/{city}", new { fee = 180 }, Json);
+        using var client = Guest(factory);
+        await Send(client, HttpMethod.Post, "/api/cart/lines", new { variantId = variant, quantity = 2 });
+
+        var without = await BodyAsync(await Send(client, HttpMethod.Get, "/api/cart"));
+        var withCity = await BodyAsync(await Send(client, HttpMethod.Get, $"/api/cart?cityId={city}"));
+        var otherCity = await BodyAsync(await Send(client, HttpMethod.Get, "/api/cart?cityId=32000"));
+
+        Assert.Equal(JsonValueKind.Null, without.GetProperty("delivery").ValueKind);
+        Assert.Equal(2000m, without.GetProperty("total").GetDecimal());
+        Assert.Equal(180m, withCity.GetProperty("delivery").GetDecimal());
+        Assert.Equal(2180m, withCity.GetProperty("total").GetDecimal());
+        Assert.Equal(300m, otherCity.GetProperty("delivery").GetDecimal());
+        await staff.DeleteAsync($"/api/shipping/rates/{city}");
+    }
+
+    [Fact]
     [Trait("Spec", "CRT-9")]
     public async Task TheSignedInCustomer_HasTheirOwnBasket_SeparateFromAnyGuest()
     {

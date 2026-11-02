@@ -41,7 +41,7 @@ public sealed class CartPricer(IVariantSalesQueries catalog, IStockAvailabilityQ
             .Select(line => Price(line, sales.GetValueOrDefault(line.VariantId), available, thumbnails))
             .ToList();
         var subtotal = lines.Where(l => !l.Issues.HasFlag(LineIssues.Unavailable)).Sum(l => l.LineTotal);
-        return new PricedCart(lines, lines.Sum(l => l.Quantity), subtotal);
+        return new PricedCart(lines, lines.Sum(l => l.Quantity), subtotal) { CartId = cart.Id == 0 ? null : cart.Id };
     }
 
     private static PricedLine Price(CartLine line, VariantSale? sale, Dictionary<long, int> available, Dictionary<long, ImageThumbnail> thumbnails)

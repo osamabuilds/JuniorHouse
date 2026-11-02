@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Cart.Application.Carts;
+using Romp.Modules.Cart.Application.Totals;
 using Romp.Modules.Cart.Domain.Carts;
 
 namespace Romp.Modules.Cart.Infrastructure.Carts;
@@ -33,12 +34,12 @@ internal static class CartEndpoints
             .WithMetadata(new Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute(MaxBodyBytes))
             .AddEndpointFilter<CartNoStoreFilter>();
 
-        cart.MapGet("", async (CartOwnerAccessor owners, ISender sender, CancellationToken cancellationToken) =>
+        cart.MapGet("", async (CartOwnerAccessor owners, ISender sender, CancellationToken cancellationToken, int? cityId = null, string? method = null) =>
         {
             // A read never creates a basket or a cookie: a guest with none sees an empty one.
             var owner = await owners.ReadAsync(cancellationToken);
-            var priced = owner is { } o ? await sender.Send(new GetCartQuery(o), cancellationToken) : PricedCart.Empty;
-            return Results.Ok(CartResponse.From(priced));
+            var result = await sender.Send(new GetCartWithTotalsQuery(owner, cityId, string.Equals(method, "cod", StringComparison.OrdinalIgnoreCase)), cancellationToken);
+            return Results.Ok(CartResponse.From(result.Cart, result.Amounts));
         });
 
         cart.MapPost("/lines", async (AddLineRequest body, CartOwnerAccessor owners, ISender sender, IServiceScopeFactory scopes, CancellationToken cancellationToken) =>

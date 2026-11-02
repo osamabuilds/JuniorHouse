@@ -92,16 +92,23 @@ public sealed record CartLineResponse(
     string? ImageFallbackUrl,
     string? ImageAlt);
 
-public sealed record CartResponse(IReadOnlyList<CartLineResponse> Lines, int ItemCount, decimal Subtotal, bool HasProblems)
+/// <summary>
+/// The basket and what it costs. <c>Delivery</c> is null until a city is known ("calculated at checkout"); <c>Total</c> then excludes it. Every
+/// figure is the server's (SEC-09).
+/// </summary>
+public sealed record CartResponse(IReadOnlyList<CartLineResponse> Lines, int ItemCount, decimal Subtotal, bool HasProblems, decimal Discount, decimal? Delivery, decimal Total)
 {
-    public static CartResponse From(PricedCart cart) =>
+    public static CartResponse From(PricedCart cart, Romp.Modules.Cart.Domain.Totals.OrderAmounts? amounts = null) =>
         new(
             [.. cart.Lines.Select(l => new CartLineResponse(
                 l.VariantId, l.ProductId, l.Name, l.Path, l.Colour, l.Size, l.Sku, l.UnitPrice, l.CompareAtPrice, l.Quantity, l.LineTotal, l.Available,
                 l.PreviousPrice, Issues(l.Issues), l.ImageUrl, l.ImageFallbackUrl, l.ImageAlt))],
             cart.ItemCount,
             cart.Subtotal,
-            cart.HasProblems);
+            cart.HasProblems,
+            amounts?.Discount ?? 0m,
+            amounts is { ShippingKnown: true } ? amounts.Shipping : null,
+            amounts?.Total ?? cart.Subtotal);
 
     private static string[] Issues(LineIssues issues) =>
     [
