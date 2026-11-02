@@ -114,6 +114,6 @@ test.describe('cart', () => {
 
     // Leave nothing behind.
     await openHydrated(page, '/cart');
-    await page.locator('.rp-line__remove').click();
+    await page.locator('main .rp-line__remove').click();
   });
 });
