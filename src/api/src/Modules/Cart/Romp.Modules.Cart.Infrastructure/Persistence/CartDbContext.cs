@@ -24,6 +24,9 @@ public sealed class CartDbContext(DbContextOptions<CartDbContext> options) : DbC
 
     public DbSet<Redemption> Redemptions => Set<Redemption>();
 
+    async Task ICartDbContext.LockDiscountCodeAsync(long discountCodeId, CancellationToken cancellationToken) =>
+        await Database.ExecuteSqlInterpolatedAsync($"SELECT \"ID\" FROM \"CART\".\"DISC_CODE\" WHERE \"ID\" = {discountCodeId} FOR UPDATE", cancellationToken);
+
     async Task ICartDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 

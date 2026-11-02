@@ -19,5 +19,8 @@ public interface ICartDbContext
 
     DbSet<Domain.DiscountCodes.Redemption> Redemptions { get; }
 
+    /// <summary>Takes a row lock on the code until the transaction ends, so holds on one code are serialised (DSC-10).</summary>
+    Task LockDiscountCodeAsync(long discountCodeId, CancellationToken cancellationToken);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

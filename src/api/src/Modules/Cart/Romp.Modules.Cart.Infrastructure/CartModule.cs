@@ -45,6 +45,7 @@ public sealed class CartModule : IModule
         services.AddScoped<Application.DiscountCodes.DiscountService>();
         services.AddScoped<Application.DiscountCodes.CartNotices>();
         services.AddScoped<Carts.CartResponder>();
+        services.AddScoped<Romp.Modules.Cart.Contracts.IDiscountRedemptions, DiscountCodes.DiscountRedemptions>();
         services.AddScoped<Application.Totals.ShippingPolicyLoader>();
         services.AddScoped<Romp.Modules.Customers.Contracts.ICustomerSignedInHook, Application.Carts.GuestCartMergeHook>();
         services.AddHttpContextAccessor();
@@ -52,6 +53,7 @@ public sealed class CartModule : IModule
         services.AddScoped<Application.Totals.CartTotalsCalculator>();
         services.AddScoped<Romp.Modules.Cart.Contracts.ICheckoutPricing, Totals.CheckoutPricing>();
         services.AddHostedService<Carts.CartPurgeWorker>();
+        services.AddHostedService<DiscountCodes.DiscountHoldSweeper>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CartTransactionBehavior<,>));
 
