@@ -13,6 +13,11 @@ const staffRoutes: Routes = [
     loadChildren: () => import('@features/reference/lookups/lookups.routes').then((m) => m.LOOKUPS_ROUTES),
   },
   {
+    path: 'shipping',
+    canActivate: [permissionGuard('shipping.manage')],
+    loadChildren: () => import('@features/cart/shipping/shipping.routes').then((m) => m.SHIPPING_ROUTES),
+  },
+  {
     path: 'staff',
     canActivate: [permissionGuard('staff.manage')],
     loadChildren: () => import('@features/identity/staff-accounts/staff-accounts.routes').then((m) => m.STAFF_ACCOUNTS_ROUTES),
