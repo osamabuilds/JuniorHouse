@@ -91,17 +91,38 @@ internal sealed class StandInCustomerHandler(
     }
 }
 
-/// <summary>Reads the customer from the authenticated principal (never from the route or body). Only an identity made by a customer scheme (the real session or the development stand-in) counts.</summary>
-internal sealed class HttpContextCurrentCustomer(IHttpContextAccessor accessor) : ICurrentCustomer
+/// <summary>
+/// Reads the customer from the authenticated principal (never from the route or body). Only an identity made by a customer scheme (the real
+/// session or the development stand-in) counts: a staff session is never a customer. <see cref="ResolveAsync"/> runs the customer scheme for
+/// routes that are open to guests, which the host does not authenticate on its own.
+/// </summary>
+internal sealed class HttpContextCurrentCustomer(IHttpContextAccessor accessor, IOptions<CustomerAuthOptions> auth, IHostEnvironment environment) : ICurrentCustomer
 {
-    public long? CustomerId
+    public long? CustomerId => FromPrincipal(accessor.HttpContext?.User);
+
+    public async Task<long?> ResolveAsync(CancellationToken cancellationToken)
     {
-        get
+        var http = accessor.HttpContext;
+        if (http is null)
         {
-            var identity = accessor.HttpContext?.User.Identities.FirstOrDefault(
-                i => i.IsAuthenticated && i.AuthenticationType is StandInCustomer.Scheme or CustomerSessionPrincipal.Scheme);
-            var value = identity?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return long.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var id) && id > 0 ? id : null;
+            return null;
         }
+
+        if (FromPrincipal(http.User) is { } known)
+        {
+            return known;
+        }
+
+        var scheme = CustomerAuthOptions.IsReal(auth.Value, environment) ? CustomerSessionPrincipal.Scheme : StandInCustomer.Scheme;
+        var result = await http.AuthenticateAsync(scheme);
+        return result.Succeeded ? FromPrincipal(result.Principal) : null;
+    }
+
+    private static long? FromPrincipal(ClaimsPrincipal? user)
+    {
+        var identity = user?.Identities.FirstOrDefault(
+            i => i.IsAuthenticated && i.AuthenticationType is StandInCustomer.Scheme or CustomerSessionPrincipal.Scheme);
+        var value = identity?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return long.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var id) && id > 0 ? id : null;
     }
 }

@@ -25,8 +25,8 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 - [x] **C3** `CART_MAIN` and `CART_LINE` mappings and migration (exactly-one-owner check, unique indexes, expiry index). *Proof:* `CartMigrationTests`, `NamingConventionTests`, `GlossaryTests`.
 - [x] **C4** Pricing read: `GetCartQuery` builds the priced cart (flags `PriceChanged`, `LowStock`, `Unavailable`) with a constant number of queries. *Proof:* `GetCartQueryTests` incl. query count (CRT-1, 7, 8).
 - [x] **C5** Commands `AddLine`, `SetQuantity`, `RemoveLine` with stock and sellable checks. *Proof:* `CartCommandTests` (CRT-2, 4, 5, 6).
-- [ ] **C6** Guest identity: `romp-guest` cookie (random, hashed in the table, `HttpOnly`, `SameSite=Lax`, 30 days) and the owner accessor `ICartOwnerAccessor`. *Proof:* `CartOwnerAccessorTests` (CRT-9).
-- [ ] **C7** Endpoints `GET /api/cart`, `POST/PUT/DELETE /api/cart/lines...` with origin check and size limit; matrix rows. *Proof:* `CartEndpointsTests` incl. "prices in the body are ignored" (CRT-6), authorization matrix test.
+- [x] **C6** Guest identity: `romp-guest` cookie (random, hashed in the table, `HttpOnly`, `SameSite=Lax`, 30 days) and the owner accessor `ICartOwnerAccessor`. *Proof:* `CartOwnerAccessorTests` (CRT-9).
+- [x] **C7** Endpoints `GET /api/cart`, `POST/PUT/DELETE /api/cart/lines...` with origin check and size limit; matrix rows. *Proof:* `CartEndpointsTests` incl. "prices in the body are ignored" (CRT-6), authorization matrix test.
 - [ ] **C8** `MergeGuestCartCommand` registered as `ICustomerSignedInHook`; sign-in clears the guest cookie. *Proof:* `CartMergeHookTests`, `CustomerAuthEndpointsTests.SignIn_MergesGuestCart` (CRT-3).
 - [ ] **C9** Expiry: purge job for expired carts. *Proof:* `CartPurgeJobTests` (CRT-10).
 - [ ] **C10** Storefront `features/cart/carts` (NgRx store, cart page, mini-cart drawer, quantity stepper, empty state, live region), real Add to bag on the product page, same-origin `/customer-api/cart/**` pass-through in `server.ts`, `noindex` and `no-store`, `robots.txt`. *Proof:* store and component specs, `cart.e2e.spec.ts` with axe (CRT-1, 2, 4, 7).

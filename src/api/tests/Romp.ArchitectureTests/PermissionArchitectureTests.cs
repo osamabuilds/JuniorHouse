@@ -76,6 +76,11 @@ public sealed class PermissionArchitectureTests
         var offenders = new List<string>();
         foreach (var file in SourceFiles(Path.Combine("src", "Modules")).Where(f => f.Contains($"{Path.DirectorySeparatorChar}Infrastructure", StringComparison.Ordinal)))
         {
+            if (file.Contains($"Cart{Path.DirectorySeparatorChar}Romp.Modules.Cart.Infrastructure{Path.DirectorySeparatorChar}Carts{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            {
+                continue; // the basket is open to guests by design (Policies.Public); the owner comes from the session or guest cookie and writes check the Origin (cart plan)
+            }
+
             if (file.Contains($"Customers{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
             {
                 continue; // a signed-in customer is not staff: Customers routes sit in a Policies.Customer group; the endpoint-list tests check each one

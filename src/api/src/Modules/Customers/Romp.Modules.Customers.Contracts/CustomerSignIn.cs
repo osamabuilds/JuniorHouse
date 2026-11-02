@@ -20,4 +20,10 @@ public interface ICustomerSignedInHook
 public interface ICurrentCustomerAccessor
 {
     long? CustomerId { get; }
+
+    /// <summary>
+    /// The signed-in customer for a route that is open to guests (so the host has not run the customer scheme for it): authenticates the
+    /// customer scheme now, if it has not run, and returns the id, or null for a guest. Never throws for a guest or a bad cookie.
+    /// </summary>
+    Task<long?> ResolveAsync(CancellationToken cancellationToken) => Task.FromResult(CustomerId);
 }

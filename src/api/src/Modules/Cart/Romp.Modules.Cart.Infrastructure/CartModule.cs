@@ -9,6 +9,7 @@ using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Cart.Application.Abstractions;
+using Romp.Modules.Cart.Infrastructure.Carts;
 using Romp.Modules.Cart.Infrastructure.Persistence;
 
 namespace Romp.Modules.Cart.Infrastructure;
@@ -40,6 +41,8 @@ public sealed class CartModule : IModule
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<Application.Carts.CartPricer>();
         services.AddScoped<Application.Carts.CartCommandSupport>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<Carts.CartOwnerAccessor>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CartTransactionBehavior<,>));
 
@@ -50,6 +53,6 @@ public sealed class CartModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        // Endpoints arrive with their features (tasks C7, T3, D7).
+        endpoints.MapCartEndpoints();
     }
 }
