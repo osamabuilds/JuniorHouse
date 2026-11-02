@@ -6,20 +6,22 @@ import { Cart, CartLine, CartResult } from '../models/cart.model';
 import { CartApi } from '../services/cart-api.service';
 import { provideCart } from '../cart.providers';
 import { CartActions } from './cart.actions';
-import { selectCart, selectCartBusy, selectCartDrawerOpen, selectCartItemCount, selectCartMessage, selectCartStatus } from './cart.selectors';
+import { selectCart, selectCartBusy, selectCartCodeBusy, selectCartCodeError, selectCartDrawerOpen, selectCartItemCount, selectCartMessage, selectCartStatus } from './cart.selectors';
 
 const line = (variantId: number, quantity: number): CartLine => ({
   variantId, productId: 1, name: 'Dress', path: '/girls/dresses/dress', colour: 'Red', size: '2-3Y', sku: 'S', unitPrice: 1000, compareAtPrice: null,
   quantity, lineTotal: 1000 * quantity, available: 9, previousPrice: null, issues: [], imageUrl: null, imageFallbackUrl: null, imageAlt: null,
 });
 
-const cartOf = (...lines: CartLine[]): Cart => ({ lines, itemCount: lines.reduce((n, l) => n + l.quantity, 0), subtotal: lines.reduce((n, l) => n + l.lineTotal, 0), hasProblems: false });
+const cartOf = (...lines: CartLine[]): Cart => ({ lines, itemCount: lines.reduce((n, l) => n + l.quantity, 0), subtotal: lines.reduce((n, l) => n + l.lineTotal, 0), hasProblems: false, discount: 0, delivery: null, total: lines.reduce((n, l) => n + l.lineTotal, 0), discountCode: null, notices: [] });
 
 class FakeApi {
   load: () => Observable<CartResult> = () => of({ status: 'ok', cart: cartOf() });
   add: (v: number, q: number) => Observable<CartResult> = () => of({ status: 'ok', cart: cartOf() });
   setQuantity: (v: number, q: number) => Observable<CartResult> = () => of({ status: 'ok', cart: cartOf() });
   remove: (v: number) => Observable<CartResult> = () => of({ status: 'ok', cart: cartOf() });
+  applyCode: (c: string) => Observable<CartResult> = () => of({ status: 'ok', cart: cartOf() });
+  removeCode: () => Observable<CartResult> = () => of({ status: 'ok', cart: cartOf() });
 }
 
 function setUp(api = new FakeApi()) {
@@ -28,6 +30,45 @@ function setUp(api = new FakeApi()) {
 }
 
 describe('cart store', () => {
+  it('DSC-1 applying a code puts the discounted basket in the store and clears any earlier reason', () => {
+    const api = new FakeApi();
+    api.applyCode = () => of({ status: 'ok', cart: { ...cartOf(line(1, 2)), discount: 200, total: 1800, discountCode: 'WELCOME10' } });
+    const { store } = setUp(api);
+
+    store.dispatch(CartActions.applyCode({ code: 'welcome10' }));
+
+    expect(store.selectSignal(selectCart)().discountCode).toBe('WELCOME10');
+    expect(store.selectSignal(selectCart)().total).toBe(1800);
+    expect(store.selectSignal(selectCartCodeBusy)()).toBe(false);
+    expect(store.selectSignal(selectCartCodeError)()).toBeNull();
+  });
+
+  it('FR-26 a refused code shows the server\'s reason and leaves the basket alone', () => {
+    const api = new FakeApi();
+    api.applyCode = () => of({ status: 'refused', message: 'That code has expired.' });
+    const { store } = setUp(api);
+    store.dispatch(CartActions.load());
+
+    store.dispatch(CartActions.applyCode({ code: 'OLD' }));
+
+    expect(store.selectSignal(selectCartCodeError)()).toBe('That code has expired.');
+    expect(store.selectSignal(selectCart)().discountCode).toBeNull();
+    expect(store.selectSignal(selectCartCodeBusy)()).toBe(false);
+  });
+
+  it('removing a code takes the discount off', () => {
+    const api = new FakeApi();
+    api.applyCode = () => of({ status: 'ok', cart: { ...cartOf(line(1, 2)), discount: 200, discountCode: 'WELCOME10' } });
+    api.removeCode = () => of({ status: 'ok', cart: cartOf(line(1, 2)) });
+    const { store } = setUp(api);
+    store.dispatch(CartActions.applyCode({ code: 'WELCOME10' }));
+
+    store.dispatch(CartActions.removeCode());
+
+    expect(store.selectSignal(selectCart)().discountCode).toBeNull();
+    expect(store.selectSignal(selectCart)().discount).toBe(0);
+  });
+
   it('CRT-1 loading puts the server\'s basket in the store and the count on the header', () => {
     const { store } = setUp(Object.assign(new FakeApi(), { load: () => of<CartResult>({ status: 'ok', cart: cartOf(line(1, 2), line(2, 1)) }) }));
 

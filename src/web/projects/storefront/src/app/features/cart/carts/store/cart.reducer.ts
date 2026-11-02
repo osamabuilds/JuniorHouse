@@ -13,9 +13,13 @@ export interface CartState {
   readonly message: string | null;
   /** The quick-view drawer: opens after Add to bag and from the header bag button. */
   readonly drawerOpen: boolean;
+  /** The promo box is waiting for the server. */
+  readonly codeBusy: boolean;
+  /** Why the last code was refused, shown under the box (FR-26). */
+  readonly codeError: string | null;
 }
 
-export const initialCartState: CartState = { status: 'idle', cart: EMPTY_CART, busy: false, message: null, drawerOpen: false };
+export const initialCartState: CartState = { status: 'idle', cart: EMPTY_CART, busy: false, message: null, drawerOpen: false, codeBusy: false, codeError: null };
 
 export const cartFeature = createFeature({
   name: 'cart',
@@ -37,10 +41,16 @@ export const cartFeature = createFeature({
           return { ...s, busy: false, message: 'Something went wrong on our side. Please try again in a moment.' };
       }
     }),
+    on(CartActions.applyCode, CartActions.removeCode, (s): CartState => ({ ...s, codeBusy: true, codeError: null })),
+    on(CartActions.codeDone, (s, { result }): CartState =>
+      result.status === 'ok'
+        ? { ...s, codeBusy: false, codeError: null, status: 'ready', cart: result.cart }
+        : { ...s, codeBusy: false, codeError: result.status === 'refused' ? result.message : 'We could not check that code just now. Please try again.' },
+    ),
     on(CartActions.openDrawer, (s): CartState => ({ ...s, drawerOpen: true })),
     on(CartActions.closeDrawer, (s): CartState => ({ ...s, drawerOpen: false })),
     on(CartActions.clearMessage, (s): CartState => ({ ...s, message: null })),
   ),
 });
 
-export const { selectStatus: selectCartStatus, selectCart, selectBusy: selectCartBusy, selectMessage: selectCartMessage, selectDrawerOpen: selectCartDrawerOpen } = cartFeature;
+export const { selectStatus: selectCartStatus, selectCart, selectBusy: selectCartBusy, selectMessage: selectCartMessage, selectDrawerOpen: selectCartDrawerOpen, selectCodeBusy: selectCartCodeBusy, selectCodeError: selectCartCodeError } = cartFeature;

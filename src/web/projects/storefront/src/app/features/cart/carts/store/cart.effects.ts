@@ -38,4 +38,19 @@ export class CartEffects {
       concatMap(({ variantId }) => this.api.remove(variantId).pipe(map((result) => CartActions.changeDone({ kind: 'remove', result })))),
     ),
   );
+
+  /** A code is checked by the server alone; the reply is the whole bag with the new total, or the reason it was refused. */
+  readonly applyCode$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CartActions.applyCode),
+      concatMap(({ code }) => this.api.applyCode(code).pipe(map((result) => CartActions.codeDone({ result })))),
+    ),
+  );
+
+  readonly removeCode$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(CartActions.removeCode),
+      concatMap(() => this.api.removeCode().pipe(map((result) => CartActions.codeDone({ result })))),
+    ),
+  );
 }

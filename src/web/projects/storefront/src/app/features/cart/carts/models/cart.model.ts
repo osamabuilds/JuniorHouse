@@ -29,9 +29,18 @@ export interface Cart {
   readonly subtotal: number;
   /** True when a line is unavailable or short of stock: checkout must wait until the shopper fixes the basket. */
   readonly hasProblems: boolean;
+  /** Money off from the applied code, the server's figure; 0 when none. */
+  readonly discount: number;
+  /** Delivery once a city is known; null while it is still "calculated at checkout". */
+  readonly delivery: number | null;
+  /** What the shopper pays, excluding delivery while it is unknown. */
+  readonly total: number;
+  readonly discountCode: string | null;
+  /** Things the server did that the shopper should know (a code taken off because the bag changed, DSC-13). */
+  readonly notices: readonly string[];
 }
 
-export const EMPTY_CART: Cart = { lines: [], itemCount: 0, subtotal: 0, hasProblems: false };
+export const EMPTY_CART: Cart = { lines: [], itemCount: 0, subtotal: 0, hasProblems: false, discount: 0, delivery: null, total: 0, discountCode: null, notices: [] };
 
 /** The most of one item in an order; the server enforces it, this only stops the stepper offering more (CRT-11). */
 export const MAX_PER_LINE = 10;

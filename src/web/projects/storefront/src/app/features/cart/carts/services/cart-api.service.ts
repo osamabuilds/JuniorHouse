@@ -23,6 +23,14 @@ export class CartApi {
     return this.result(this.http.put<Cart>(`${BASE}/lines/${variantId}`, { quantity }));
   }
 
+  applyCode(code: string): Observable<CartResult> {
+    return this.result(this.http.post<Cart>(`${BASE}/discount`, { code }));
+  }
+
+  removeCode(): Observable<CartResult> {
+    return this.result(this.http.delete<Cart>(`${BASE}/discount`));
+  }
+
   remove(variantId: number): Observable<CartResult> {
     return this.result(this.http.delete<Cart>(`${BASE}/lines/${variantId}`));
   }

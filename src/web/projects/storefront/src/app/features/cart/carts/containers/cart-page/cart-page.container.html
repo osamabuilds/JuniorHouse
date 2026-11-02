@@ -26,6 +26,10 @@
       <p class="rp-count-note">{{ cart().itemCount }} {{ cart().itemCount === 1 ? 'item' : 'items' }}</p>
     </div>
 
+    @for (notice of cart().notices; track notice) {
+      <div class="rp-notice" role="status"><rp-icon name="alert" /><div>{{ notice }}</div></div>
+    }
+
     @if (message(); as text) {
       <div class="rp-notice rp-notice--error" role="alert"><rp-icon name="alert" /><div>{{ text }}</div></div>
     }
@@ -48,7 +52,15 @@
 
       <aside class="rp-bag-summary" aria-label="Order summary">
         <h2 class="rp-display-sm">Summary</h2>
-        <rp-cart-summary [subtotal]="cart().subtotal" [itemCount]="cart().itemCount" />
+        <rp-promo-code [appliedCode]="cart().discountCode" [error]="codeError()" [busy]="codeBusy()" (apply)="applyCode($event)" (remove)="removeCode()" />
+        <rp-cart-summary
+          [subtotal]="cart().subtotal"
+          [itemCount]="cart().itemCount"
+          [discount]="cart().discount"
+          [discountCode]="cart().discountCode"
+          [delivery]="cart().delivery"
+          [total]="cart().total"
+        />
         @if (cart().hasProblems) {
           <p class="rp-help" id="bag-fix">Fix the items marked above to continue.</p>
         }

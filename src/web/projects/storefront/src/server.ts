@@ -138,10 +138,11 @@ app.all('/customer-api/auth/{*splat}', express.json({ limit: '4kb' }), async (re
  * below are reachable, each with the methods it accepts. The browser's `Origin` goes through unchanged (the API checks it); the real client
  * address goes in `x-forwarded-for`. Answers are never cached.
  */
-const cartRoute = /^\/customer-api\/cart(\/lines(\/[0-9]+)?)?$/;
+const cartRoute = /^\/customer-api\/cart(\/lines(\/[0-9]+)?|\/discount)?$/;
 const cartMethods: Readonly<Record<string, readonly string[]>> = {
   '/customer-api/cart': ['GET'],
   '/customer-api/cart/lines': ['POST'],
+  '/customer-api/cart/discount': ['POST', 'DELETE'],
 };
 
 app.all('/customer-api/cart{/*splat}', express.json({ limit: '2kb' }), async (req, res) => {

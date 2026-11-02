@@ -16,7 +16,7 @@ const line = (variantId: number, quantity: number, over: Partial<CartLine> = {})
   quantity, lineTotal: 1000 * quantity, available: 9, previousPrice: null, issues: [], imageUrl: null, imageFallbackUrl: null, imageAlt: null, ...over,
 });
 
-const cartOf = (lines: CartLine[], hasProblems = false): Cart => ({ lines, itemCount: lines.reduce((n, l) => n + l.quantity, 0), subtotal: lines.reduce((n, l) => n + l.lineTotal, 0), hasProblems });
+const cartOf = (lines: CartLine[], hasProblems = false): Cart => ({ lines, itemCount: lines.reduce((n, l) => n + l.quantity, 0), subtotal: lines.reduce((n, l) => n + l.lineTotal, 0), hasProblems, discount: 0, delivery: null, total: lines.reduce((n, l) => n + l.lineTotal, 0), discountCode: null, notices: [] });
 
 function render(responseInit?: ResponseInit) {
   TestBed.configureTestingModule({

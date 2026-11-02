@@ -1,0 +1,144 @@
+<h1>Discount codes</h1>
+<p class="page-intro">
+  Codes shoppers type in their bag. A code is never deleted: switch it off and shoppers are told it is not valid, while orders that used it
+  keep their history. The text of a code cannot change once an order has used it.
+</p>
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<form class="card" [formGroup]="form" (ngSubmit)="submit()" aria-labelledby="disc-form-heading" novalidate>
+  <h2 id="disc-form-heading">{{ editing() ? 'Change ' + editing()?.code : 'New code' }}</h2>
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="disc-code">Code</label>
+      <input id="disc-code" type="text" maxlength="32" autocomplete="off" formControlName="code" />
+      <small class="field-hint">3 to 32 letters, digits or dashes. Shoppers can type it in any case.</small>
+      @if (form.controls.code.touched && form.controls.code.invalid) {
+        <small class="field-error" role="alert">Enter 3 to 32 letters, digits or dashes.</small>
+      }
+    </div>
+    <div class="form-field">
+      <label for="disc-kind">Type</label>
+      <select id="disc-kind" formControlName="kind">
+        <option value="percentage">Percentage off</option>
+        <option value="fixed">Fixed amount off</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="disc-value">{{ form.controls.kind.value === 'percentage' ? 'Percent off (1 to 100)' : 'Amount off (Rs.)' }}</label>
+      <input id="disc-value" type="number" inputmode="decimal" min="0.01" step="any" formControlName="value" />
+      @if (form.controls.value.touched && form.controls.value.invalid) {
+        <small class="field-error" role="alert">Enter an amount above 0.</small>
+      }
+    </div>
+    <div class="form-field">
+      <label for="disc-min">Minimum spend (Rs.)</label>
+      <input id="disc-min" type="number" inputmode="decimal" min="0" step="1" formControlName="minimumSpend" />
+      <small class="field-hint">Leave empty for none. Counted before the discount.</small>
+    </div>
+    <div class="form-field">
+      <label for="disc-expiry">Expires</label>
+      <input id="disc-expiry" type="datetime-local" formControlName="expiresAt" />
+      <small class="field-hint">Leave empty for no expiry.</small>
+    </div>
+    <div class="form-field">
+      <label for="disc-cap">Most uses in all</label>
+      <input id="disc-cap" type="number" inputmode="numeric" min="1" step="1" formControlName="usageCap" />
+      <small class="field-hint">Leave empty for no limit.</small>
+    </div>
+    <div class="form-field">
+      <label for="disc-per">Most uses per customer</label>
+      <input id="disc-per" type="number" inputmode="numeric" min="1" step="1" formControlName="perCustomerCap" />
+      <small class="field-hint">Leave empty for no limit.</small>
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label class="checkbox"><input type="checkbox" formControlName="includesSaleItems" /> Also take money off items that are already on sale</label>
+  </div>
+
+  <fieldset class="form-field">
+    <legend>Only for these categories</legend>
+    <small class="field-hint">Choose none to apply to the whole bag.</small>
+    <div class="checkbox-group">
+      @for (category of categories(); track category.id) {
+        <label class="checkbox">
+          <input type="checkbox" [checked]="hasCategory(category.id)" (change)="toggleCategory(category.id, $any($event.target).checked)" />
+          {{ category.name }}
+        </label>
+      }
+    </div>
+  </fieldset>
+
+  <div class="actions">
+    <button *hasPermission="'discounts.manage'" type="submit" class="button button--primary" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : editing() ? 'Save changes' : 'Create code' }}
+    </button>
+    @if (editing()) {
+      <button type="button" class="button" (click)="cancelEdit()">Cancel</button>
+    }
+  </div>
+</form>
+
+<section aria-labelledby="disc-list-heading">
+  <h2 id="disc-list-heading">All codes</h2>
+  @if (loading() && codes().length === 0) {
+    <p role="status">Loading…</p>
+  } @else if (codes().length === 0) {
+    <p>No codes yet. Create the first one above.</p>
+  } @else {
+    <table class="table">
+      <caption class="sr-only">Discount codes</caption>
+      <thead>
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Takes off</th>
+          <th scope="col" class="num">Used</th>
+          <th scope="col">Expires</th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (code of codes(); track code.id) {
+          <tr>
+            <th scope="row">{{ code.code }}</th>
+            <td>
+              {{ valueText(code) }}
+              @if (code.minimumSpend !== null) {
+                <small>over Rs. {{ code.minimumSpend | number }}</small>
+              }
+            </td>
+            <td class="num">{{ code.usedCount }}{{ code.usageCap !== null ? ' of ' + code.usageCap : '' }}</td>
+            <td>{{ code.expiresAt ? (code.expiresAt | date: 'd MMM y, h:mm a') : 'Never' }}</td>
+            <td>{{ code.isActive ? 'On' : 'Off' }}</td>
+            <td>
+              <button *hasPermission="'discounts.manage'" type="button" class="button button--small" (click)="edit(code)">
+                Change<span class="sr-only"> {{ code.code }}</span>
+              </button>
+              <button *hasPermission="'discounts.manage'" type="button" class="button button--small" [disabled]="switchingId() === code.id" (click)="toggle(code)">
+                {{ code.isActive ? 'Switch off' : 'Switch on' }}<span class="sr-only"> {{ code.code }}</span>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>

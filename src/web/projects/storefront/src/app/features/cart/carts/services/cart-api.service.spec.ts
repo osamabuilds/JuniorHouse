@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { Cart, CartResult } from '../models/cart.model';
 import { CartApi } from './cart-api.service';
 
-const cart: Cart = { lines: [], itemCount: 0, subtotal: 0, hasProblems: false };
+const cart: Cart = { lines: [], itemCount: 0, subtotal: 0, hasProblems: false, discount: 0, delivery: null, total: 0, discountCode: null, notices: [] };
 
 describe('CartApi', () => {
   let api: CartApi;

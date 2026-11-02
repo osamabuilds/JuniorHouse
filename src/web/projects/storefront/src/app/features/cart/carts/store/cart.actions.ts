@@ -10,6 +10,10 @@ export const CartActions = createActionGroup({
     Add: props<{ variantId: number; quantity: number }>(),
     'Set Quantity': props<{ variantId: number; quantity: number }>(),
     Remove: props<{ variantId: number }>(),
+    /** The shopper typed a code and pressed Apply (FR-25): never applied on its own. */
+    'Apply Code': props<{ code: string }>(),
+    'Remove Code': emptyProps(),
+    'Code Done': props<{ result: CartResult }>(),
     'Change Done': props<{ kind: CartChange; result: CartResult }>(),
     'Open Drawer': emptyProps(),
     'Close Drawer': emptyProps(),

@@ -49,7 +49,7 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 - [x] **D5** Redemption `HoldAsync` / `ReleaseAsync` (row lock, caps, per-customer limit, guests by mobile hash) and the sweeper. *Proof:* `RedemptionHoldTests` against PostgreSQL: two holds for the last redemption, one wins (DSC-10); the sweeper test in the same class.
 - [ ] **D6** Event handlers `OrderPlacedEvent` (confirm, empty cart) and `OrderCancelledEvent` (release) through `OrderEventMapper`, behind the inbox. *Proof:* `RedemptionEventHandlerTests` incl. redelivery.
 - [x] **D7** Admin endpoints `/api/discounts` create, change, deactivate, list (paged), audited; `discounts.manage`. *Proof:* `DiscountAdminEndpointsTests`, matrix test. Audit (DSC-11) is the Cart context audit interceptor, already proved for the module.
-- [ ] **D8** Storefront code box (cart and checkout) with specific inline reasons; admin `features/cart/discount-codes`. *Proof:* component specs, `discount.e2e.spec.ts`.
+- [x] **D8** Storefront code box (cart and checkout) with specific inline reasons; admin `features/cart/discount-codes`. *Proof:* component specs, `discount.e2e.spec.ts`.
 
 ## Close the loop
 
