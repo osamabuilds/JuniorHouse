@@ -26,6 +26,12 @@ public sealed class CartLine : Entity<long>, IAuditable
 
     public int Quantity { get; internal set; }
 
+    /// <summary>
+    /// The unit price the shopper last saw for this line, kept only so a later price change can be pointed out (CRT-8). It is never used to
+    /// work out money: every total is priced fresh from Catalog (SEC-09, D-2).
+    /// </summary>
+    public decimal? PriceSeen { get; internal set; }
+
     public DateTimeOffset InsrDte { get; set; }
 
     public string InsrBy { get; set; }

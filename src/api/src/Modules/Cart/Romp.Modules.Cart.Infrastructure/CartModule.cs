@@ -37,6 +37,8 @@ public sealed class CartModule : IModule
             .Validate(Application.CartOptions.IsValid, "Cart:MaxPerLine, MaxLines, GuestCartDays or HoldMinutes is outside its allowed range.")
             .ValidateOnStart();
 
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<Application.Carts.CartPricer>();
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CartTransactionBehavior<,>));
 

@@ -162,6 +162,19 @@ public sealed class ShoppingCart : AggregateRoot<long>, IAuditable
         return notices;
     }
 
+    /// <summary>Records the unit prices the shopper has now been shown, for the "price changed" notice (CRT-8). Lines not named are left alone.</summary>
+    public void NotePrices(IReadOnlyDictionary<long, decimal> unitPrices)
+    {
+        ArgumentNullException.ThrowIfNull(unitPrices);
+        foreach (var line in _lines)
+        {
+            if (unitPrices.TryGetValue(line.VariantId, out var price))
+            {
+                line.PriceSeen = price;
+            }
+        }
+    }
+
     public void ApplyCode(long codeId, DateTimeOffset now, TimeSpan guestLifetime)
     {
         if (IsEmpty)

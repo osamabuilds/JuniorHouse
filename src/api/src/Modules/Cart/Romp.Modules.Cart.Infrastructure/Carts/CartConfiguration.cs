@@ -47,6 +47,7 @@ internal sealed class CartLineConfiguration : IEntityTypeConfiguration<CartLine>
         builder.Property(l => l.CartId).HasColumnName("CART_ID").IsRequired();
         builder.Property(l => l.VariantId).HasColumnName("VRNT_ID").IsRequired();
         builder.Property(l => l.Quantity).HasColumnName("QTY").IsRequired();
+        builder.Property(l => l.PriceSeen).HasColumnName("SEEN_PRIC_AMT").HasPrecision(12, 2);
 
         // One line per variant in a cart. The variant id is a plain reference to Catalog and Warehouse (ADR 0002).
         builder.HasIndex(l => new { l.CartId, l.VariantId }, "UQ_CART_LINE_CART_ID_VRNT_ID").IsUnique();

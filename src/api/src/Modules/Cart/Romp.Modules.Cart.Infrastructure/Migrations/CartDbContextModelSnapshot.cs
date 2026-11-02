@@ -147,6 +147,11 @@ namespace Romp.Modules.Cart.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("INSR_DTE");
 
+                    b.Property<decimal?>("PriceSeen")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("SEEN_PRIC_AMT");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer")
                         .HasColumnName("QTY");
