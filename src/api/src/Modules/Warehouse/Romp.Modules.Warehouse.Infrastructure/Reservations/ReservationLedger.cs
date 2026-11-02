@@ -25,6 +25,8 @@ public sealed class ReservationLedger(WhseDbContext dbContext, TimeProvider time
         RETURNING "RSRV_QTY" AS "Value";
         """;
 
+    private const string LockSql = """SELECT "ID" FROM "WHSE"."VRNT_REF" WHERE "ID" = {0} FOR UPDATE""";
+
     private const string ReleaseSql =
         """
         UPDATE "WHSE"."STCK_RSRV_BAL"
@@ -48,6 +50,12 @@ public sealed class ReservationLedger(WhseDbContext dbContext, TimeProvider time
         var transaction = dbContext.Database.CurrentTransaction ?? throw new InvalidOperationException("Reserving stock must run inside a transaction.");
         var now = timeProvider.GetUtcNow();
         var by = currentActor.UserName;
+
+        // The variant row lock comes first, like in the posting port, so a reservation and a stock change of one variant take turns (RSV-8).
+        foreach (var line in lines.OrderBy(l => l.VariantRefId))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync(LockSql, [line.VariantRefId], cancellationToken);
+        }
 
         await transaction.CreateSavepointAsync("reserve", cancellationToken);
         var failed = false;

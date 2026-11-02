@@ -274,6 +274,7 @@ GET,/api/warehouse/stock/,inventory.read
 GET,/api/warehouse/stock/by-bin/{binId:long},inventory.read
 GET,/api/warehouse/stock/consistency,ops.admin
 GET,/api/warehouse/stock/movements,inventory.read
+GET,/api/warehouse/stock/{variantRefId:long}/reservations,inventory.read
 GET,/dev/customer,anonymous
 ANY,/health/live,anonymous
 ANY,/health/ready,anonymous

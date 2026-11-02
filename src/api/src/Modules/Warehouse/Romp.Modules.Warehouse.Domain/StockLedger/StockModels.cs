@@ -234,4 +234,7 @@ public static class StockMessages
 {
     /// <summary>A change would take a bin's balance below zero (LED-3, TC-STK-05).</summary>
     public const string Insufficient = "Not enough stock in the bin for this change.";
+
+    /// <summary>A change would take on-hand below the units promised to orders (RSV-8).</summary>
+    public const string BelowReserved = "This would leave less stock than is promised to orders.";
 }
