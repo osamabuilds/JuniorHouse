@@ -16,6 +16,21 @@ public static class PhoneNumber
             ? normalised
             : throw new ArgumentException("Enter a Pakistani phone number such as 0300 1234567.", nameof(input));
 
+    /// <summary>
+    /// Sign-up takes a mobile only (ACT-29, Q-ACT-7): <c>+92</c> then <c>3</c> and nine more digits. A landline is a valid address phone but not a
+    /// sign-up number, because the SMS code could not reach it.
+    /// </summary>
+    public static bool TryNormaliseMobile(string? input, out string normalised)
+    {
+        if (TryNormalise(input, out normalised) && normalised.StartsWith("+923", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        normalised = string.Empty;
+        return false;
+    }
+
     public static bool TryNormalise(string? input, out string normalised)
     {
         normalised = string.Empty;
