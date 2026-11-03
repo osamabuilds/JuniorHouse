@@ -79,7 +79,7 @@ Build order (README): delivery → channels (email first, WhatsApp behind the fa
 | `NTFY_MAIN` | `NTFY_KIND_ID`, `REF_KIND_ID` and `REF_ID` (plain reference), `EVNT_ID` unique with the kind, `EXPR_DTE`, `PRIO`; **partitioning key noted: `INSR_DTE` by month (BRD §12.6)**, not applied until volume asks |
 | `NTFY_CHNL` | `NTFY_ID` FK, `CHNL_ID` lookup, `CHNL_STS_ID` lookup, `ATMP_CNT`, `NXT_ATMP_DTE`, `LEAS_DTE`, `ERR_CAT_ID` lookup null, `PRVD_MSG_ID` (indexed; used to match replies), `FLBK_OF_ID` null; unique `(NTFY_ID, CHNL_ID)` for the original (idempotency); partial index for due work |
 | `NTFY_ATMP` | append-only attempt history: delivery id, attempt number, outcome, error category, time (no body, no address) |
-| `NTFY_DEAD` | dead letter: delivery id, kind, channel, reason category, attempt count, time, resent-by and when |
+| `NTFY_DEDL` | dead letter: delivery id, kind, channel, reason category, attempt count, time, resent-by and when |
 | `NTFY_TMPL` | versioned templates (kind, channel, language, version, subject, text, HTML, Meta template name, active); unique on kind, channel, language and version |
 | `NTFY_WBHK` | inbound events: provider event id unique, type, `SGNT_VRFD_IND`, body hash, matched delivery id, received and processed times |
 | `NTFY_SUPR` | salted number hash, time; unique |

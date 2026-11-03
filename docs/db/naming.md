@@ -395,3 +395,16 @@ Reused as they are: `CNTC` (contact), `PAYM` (payment), `PRDT` (product), `CLR`,
 | opt-in | OPTN | | method | METH |
 | webhook | WBHK | | | |
 | risk | RISK | | look-up | LOOK |
+
+### Added in Sprint 13 (SCRUM-202, notifications)
+
+Reused as they are: `CHNL`, `ATMP`, `LEAS` (lease), `NXT` (next), `MSG`, `ERR`, `CATG`, `KIND`, `REF`, `EVNT`, `EXPY`, `CNT`, `DAY`, `DT`, `SENT`, `VER`, `NO`, `STS`, `LKP`, `WBHK`, `WHTS`, `DEDL` (dead-letter), `TEXT`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| notification | NTFY | | template | TMPL |
+| provider | PRVD | | fallback | FLBK |
+| priority | PRIO | | language | LANG |
+| subject | SUBJ | | body | BODY |
+| HTML | HTML | | resent | RSND |
+| of (e.g. fallback of) | OF | | | |

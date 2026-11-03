@@ -9,10 +9,10 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 ## delivery
 
 - [x] **V1** Domain: `Notification`, `ChannelDelivery` state machine, `RetryPolicy` (six steps, jitter, floor of 5), `ChannelPlan`. *Proof:* `ChannelDeliveryTests`, `RetryPolicyTests`, `ChannelPlanTests` (DLV-7, 8; CHN-1, 2, 3).
-- [ ] **V2** Migration: `NTFY_MAIN`, `NTFY_CHNL`, `NTFY_ATMP`, `NTFY_DEAD`, `NTFY_TMPL`, `NTFY_DAY_CNT`, lookups. *Proof:* `NotificationsMigrationTests`, naming and glossary tests.
+- [x] **V2** Migration: `NTFY_MAIN`, `NTFY_CHNL`, `NTFY_ATMP`, `NTFY_DEDL`, `NTFY_TMPL`, `NTFY_DAY_CNT`, lookups. *Proof:* `NotificationsMigrationTests`, naming and glossary tests.
 - [ ] **V3** Event handlers through `OrderEventMapper` create notification and deliveries in one transaction, idempotent on event id. *Proof:* `OrderEventHandlerTests` incl. redelivery (DLV-1, 4, 6).
 - [ ] **V4** `DeliveryWorker`: `SKIP LOCKED` claim with lease, render, send, record; two workers never send one delivery twice. *Proof:* `DeliveryWorkerTests`, `DeliveryClaimConcurrencyTests` (DLV-2, 9).
-- [ ] **V5** Exhaustion moves to `NTFY_DEAD` and raises the alert: log event, counter, email to `OpsAlertEmail`. *Proof:* `DeadLetterTests` (DLV-3, 12), `DeadLetterAlertTests`.
+- [ ] **V5** Exhaustion moves to `NTFY_DEDL` and raises the alert: log event, counter, email to `OpsAlertEmail`. *Proof:* `DeadLetterTests` (DLV-3, 12), `DeadLetterAlertTests`.
 - [ ] **V6** Per-kind expiry and queue-age health value. *Proof:* `ExpiryTests`, `QueueAgeHealthTests` (DLV-10, 11).
 - [ ] **V7** The business transaction never fails because of Notifications. *Proof:* `NotificationOutageTests.OrderPlaced_WhenSubsystemDown` against the real outbox (DLV-5, TC-NOTIF-07).
 - [ ] **V8** Purge job (12 months). *Proof:* `PurgeJobTests`.
