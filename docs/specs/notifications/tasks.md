@@ -8,7 +8,7 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## delivery
 
-- [ ] **V1** Domain: `Notification`, `ChannelDelivery` state machine, `RetryPolicy` (six steps, jitter, floor of 5), `ChannelPlan`. *Proof:* `ChannelDeliveryTests`, `RetryPolicyTests`, `ChannelPlanTests` (DLV-7, 8; CHN-1, 2, 3).
+- [x] **V1** Domain: `Notification`, `ChannelDelivery` state machine, `RetryPolicy` (six steps, jitter, floor of 5), `ChannelPlan`. *Proof:* `ChannelDeliveryTests`, `RetryPolicyTests`, `ChannelPlanTests` (DLV-7, 8; CHN-1, 2, 3).
 - [ ] **V2** Migration: `NTFY_MAIN`, `NTFY_CHNL`, `NTFY_ATMP`, `NTFY_DEAD`, `NTFY_TMPL`, `NTFY_DAY_CNT`, lookups. *Proof:* `NotificationsMigrationTests`, naming and glossary tests.
 - [ ] **V3** Event handlers through `OrderEventMapper` create notification and deliveries in one transaction, idempotent on event id. *Proof:* `OrderEventHandlerTests` incl. redelivery (DLV-1, 4, 6).
 - [ ] **V4** `DeliveryWorker`: `SKIP LOCKED` claim with lease, render, send, record; two workers never send one delivery twice. *Proof:* `DeliveryWorkerTests`, `DeliveryClaimConcurrencyTests` (DLV-2, 9).
