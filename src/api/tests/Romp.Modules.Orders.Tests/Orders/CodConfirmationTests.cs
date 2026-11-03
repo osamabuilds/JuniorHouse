@@ -206,6 +206,65 @@ public sealed class CodConfirmationTests(OrdersPostgres postgres) : IClassFixtur
         Assert.False(await db.CodRisks.AnyAsync(r => r.Mobile == expected));
     }
 
+    [Fact]
+    [Trait("Spec", "COD-14")]
+    public async Task AWhatsAppConfirm_ConfirmsOnce_AndALaterTapIsAlreadyHandled()
+    {
+        using var host = new OrdersHost(postgres);
+        var (number, mobile) = await PlacedAsync(host);
+        var id = (await LoadAsync(number)).Id;
+
+        var first = await host.SendAsync(new CustomerRepliesOnWhatsAppCommand(id, mobile, Confirm: true));
+        var again = await host.SendAsync(new CustomerRepliesOnWhatsAppCommand(id, mobile, Confirm: true));
+        var cancelAfter = await host.SendAsync(new CustomerRepliesOnWhatsAppCommand(id, mobile, Confirm: false));
+
+        Assert.Equal((CodReplyOutcome.Confirmed, CodReplyOutcome.AlreadyHandled, CodReplyOutcome.AlreadyHandled), (first, again, cancelAfter));
+        var order = await LoadAsync(number);
+        Assert.Equal(OrderStatuses.Confirmed, order.StatusId);
+        Assert.Equal(CodOutcomes.ConfirmedByCustomerOnWhatsApp, Assert.Single(order.CodAttempts).OutcomeId);
+    }
+
+    [Fact]
+    [Trait("Spec", "COD-15")]
+    public async Task AWhatsAppCancel_CancelsTheOrder_AndIsNotARefusal()
+    {
+        using var host = new OrdersHost(postgres);
+        var (number, mobile) = await PlacedAsync(host);
+        var id = (await LoadAsync(number)).Id;
+
+        var result = await host.SendAsync(new CustomerRepliesOnWhatsAppCommand(id, mobile, Confirm: false));
+
+        Assert.Equal(CodReplyOutcome.Cancelled, result);
+        Assert.Equal(OrderStatuses.Cancelled, (await LoadAsync(number)).StatusId);
+        await using var db = postgres.NewContext();
+        Assert.False(await db.CodRisks.AnyAsync(r => r.Mobile == mobile));
+    }
+
+    [Theory]
+    [Trait("Spec", "COD-16")]
+    [InlineData("+923009999999")]
+    [InlineData("")]
+    public async Task AWhatsAppReplyFromAnotherNumber_ChangesNothing(string sender)
+    {
+        using var host = new OrdersHost(postgres);
+        var (number, _) = await PlacedAsync(host);
+        var id = (await LoadAsync(number)).Id;
+
+        var result = await host.SendAsync(new CustomerRepliesOnWhatsAppCommand(id, sender, Confirm: true));
+
+        Assert.Equal(CodReplyOutcome.Ignored, result);
+        Assert.Equal(OrderStatuses.PendingConfirmation, (await LoadAsync(number)).StatusId);
+    }
+
+    [Fact]
+    [Trait("Spec", "COD-16")]
+    public async Task AWhatsAppReplyForAnUnknownOrder_IsIgnored()
+    {
+        using var host = new OrdersHost(postgres);
+
+        Assert.Equal(CodReplyOutcome.Ignored, await host.SendAsync(new CustomerRepliesOnWhatsAppCommand(long.MaxValue, "+923001234567", Confirm: true)));
+    }
+
     [Theory]
     [Trait("Spec", "COD-19")]
     [InlineData(null)]

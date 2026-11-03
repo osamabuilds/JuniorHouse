@@ -67,6 +67,9 @@ public sealed class NotificationsModule : IModule
         // Inbound WhatsApp: signature-checked webhook, events stored once, routed by type (CHN-11).
         services.AddSingleton(configuration.GetSection(WhatsAppSettings.SectionName).Get<WhatsAppSettings>() ?? new WhatsAppSettings());
         services.AddScoped<WhatsAppWebhookProcessor>();
+        services.AddScoped<ISuppressionList, SuppressionList>();
+        services.AddScoped<IWhatsAppInboundHandler, CodReplyHandler>();
+        services.AddScoped<IWhatsAppInboundHandler, StopHandler>();
         services.AddScoped<DeliveryProcessor>();
         services.AddScoped<QueueHealth>();
         services.AddScoped<PurgeProcessor>();

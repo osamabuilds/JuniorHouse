@@ -84,3 +84,25 @@ public sealed record OrderNotificationView(
     bool WhatsAppOptIn,
     decimal Total,
     IReadOnlyList<OrderNotificationLine> Lines);
+
+/// <summary>How a customer's WhatsApp reply to the COD confirmation request ended (COD-14, COD-15, COD-16).</summary>
+public enum CodReplyOutcome
+{
+    Confirmed,
+    Cancelled,
+
+    /// <summary>The order was already confirmed, cancelled or has moved on: nothing changed (a repeated delivery lands here).</summary>
+    AlreadyHandled,
+
+    /// <summary>No such order, or the number that replied is not the order's mobile: nothing changed.</summary>
+    Ignored,
+}
+
+/// <summary>
+/// Records the customer's tap on Confirm or Cancel in the WhatsApp request (ADR 0026). Notifications has already verified the signature and matched
+/// the reply to the message it answers; Orders still checks that the replying number is the order's mobile, and that the order can still be answered.
+/// </summary>
+public interface ICodCustomerResponses
+{
+    Task<CodReplyOutcome> RecordReplyAsync(long orderId, string senderMobile, bool confirm, CancellationToken cancellationToken);
+}

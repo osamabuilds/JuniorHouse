@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Notifications.Application.Channels;
 using Romp.Modules.Notifications.Application.Delivery;
 using Romp.Modules.Notifications.Domain.Delivery;
 using Romp.Modules.Notifications.Infrastructure.Delivery;
@@ -52,8 +53,8 @@ internal sealed class ScriptedSender(params Exception?[] script) : IChannelSende
 
 internal static class DeliveryTestKit
 {
-    public static DeliveryProcessor Processor(NtfyDbContext db, TestClock clock, IEnumerable<IChannelSender> senders, IOrderNotificationQueries? orders = null) =>
-        new(db, new SkipLockedDeliveryClaimer(db), orders ?? new StubOrders(), new PlainMessageRenderer(), senders, new DeliverySettings(), clock);
+    public static DeliveryProcessor Processor(NtfyDbContext db, TestClock clock, IEnumerable<IChannelSender> senders, IOrderNotificationQueries? orders = null, ISuppressionList? suppression = null) =>
+        new(db, new SkipLockedDeliveryClaimer(db), orders ?? new StubOrders(), new PlainMessageRenderer(), suppression ?? new SuppressionList(db, new WhatsAppSettings()), senders, new DeliverySettings(), clock);
 
     /// <summary>Saves <paramref name="count"/> notifications, each with one queued email delivery; returns the delivery ids.</summary>
     public static async Task<long[]> SeedAsync(NtfyDbContext db, int count, DateTimeOffset now, NotificationKind kind = NotificationKind.OrderConfirmation)

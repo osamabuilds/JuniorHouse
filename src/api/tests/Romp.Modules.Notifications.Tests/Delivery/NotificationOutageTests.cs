@@ -95,6 +95,8 @@ public sealed class NotificationOutageTests : IAsyncLifetime
         services.AddSingleton<IOrderNotificationQueries>(orders);
         services.AddDbContext<NtfyDbContext>(o => o.UseNpgsql(_postgres.GetConnectionString(), n => n.MigrationsHistoryTable("MIG_HIST", "NTFY")));
         services.AddScoped<INotificationsDbContext>(sp => sp.GetRequiredService<NtfyDbContext>());
+        services.AddSingleton(new Romp.Modules.Notifications.Application.Channels.WhatsAppSettings());
+        services.AddScoped<Romp.Modules.Notifications.Application.Channels.ISuppressionList, Romp.Modules.Notifications.Application.Channels.SuppressionList>();
         services.AddScoped<CreateNotification>();
         services.AddScoped<IOutboxMessageHandler<OrderPlacedEvent>, OrderPlacedNotificationConsumer>();
         var provider = services.BuildServiceProvider();

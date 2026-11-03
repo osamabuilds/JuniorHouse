@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Notifications.Application.Abstractions;
+using Romp.Modules.Notifications.Application.Channels;
 using Romp.Modules.Notifications.Domain.Delivery;
 using Romp.Modules.Orders.Contracts;
 
@@ -15,6 +16,7 @@ public sealed class DeliveryProcessor(
     IDeliveryClaimer claimer,
     IOrderNotificationQueries orders,
     IMessageRenderer renderer,
+    ISuppressionList suppression,
     IEnumerable<IChannelSender> senders,
     DeliverySettings settings,
     TimeProvider clock)
@@ -86,6 +88,14 @@ public sealed class DeliveryProcessor(
             if (string.IsNullOrWhiteSpace(recipient))
             {
                 Fail(notification, delivery, ErrorCategory.NoAddress);
+                return;
+            }
+
+            // A number that said STOP since this was planned: no WhatsApp message goes out, and the email is untouched (CHN-6).
+            if (delivery.Channel == NotificationChannel.WhatsApp && await suppression.IsBlockedAsync(recipient, cancellationToken))
+            {
+                delivery.Skip(ErrorCategory.OptedOut);
+                dbContext.Attempts.Add(new DeliveryAttempt(delivery.Id, delivery.AttemptCount, DeliveryStatus.Skipped, ErrorCategory.OptedOut, clock.GetUtcNow()));
                 return;
             }
 

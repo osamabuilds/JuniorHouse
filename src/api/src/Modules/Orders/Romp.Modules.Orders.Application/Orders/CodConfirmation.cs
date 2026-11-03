@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Romp.BuildingBlocks.Application;
 using Romp.Modules.Orders.Application.Abstractions;
 using Romp.Modules.Orders.Application.Checkout;
+using Romp.Modules.Orders.Contracts;
 using Romp.Modules.Orders.Domain.Orders;
 
 namespace Romp.Modules.Orders.Application.Orders;
@@ -179,6 +180,32 @@ public sealed class CustomerRespondsToCodCommandHandler(IOrdersDbContext dbConte
     }
 }
 
+
+/// <summary>
+/// The customer's WhatsApp button reply (COD-14, COD-15, COD-16), arriving from Notifications through <c>ICodCustomerResponses</c>. The replying number
+/// must be the order's mobile; any other number, an unknown order or an order that has moved on changes nothing. A cancel is not a refusal (COD-15).
+/// </summary>
+public sealed record CustomerRepliesOnWhatsAppCommand(long OrderId, string SenderMobile, bool Confirm) : IRequest<CodReplyOutcome>, IOrdersCommand;
+
+public sealed class CustomerRepliesOnWhatsAppCommandHandler(IOrdersDbContext dbContext, TimeProvider clock, IOptions<OrdersOptions> options)
+    : IRequestHandler<CustomerRepliesOnWhatsAppCommand, CodReplyOutcome>
+{
+    public async Task<CodReplyOutcome> Handle(CustomerRepliesOnWhatsAppCommand request, CancellationToken cancellationToken)
+    {
+        var order = await dbContext.Orders.Include(o => o.History).Include(o => o.CodAttempts).FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken);
+        if (order is null || Digits(order.ContactMobile) != Digits(request.SenderMobile) || Digits(request.SenderMobile).Length == 0)
+        {
+            return CodReplyOutcome.Ignored;
+        }
+
+        var outcome = request.Confirm ? CodOutcomes.ConfirmedByCustomerOnWhatsApp : CodOutcomes.CancelledByCustomerOnWhatsApp;
+        return order.RecordCodOutcome(outcome, ActorKinds.Customer, null, null, clock.GetUtcNow(), options.Value.CodPolicy) == OrderTransition.Changed
+            ? (request.Confirm ? CodReplyOutcome.Confirmed : CodReplyOutcome.Cancelled)
+            : CodReplyOutcome.AlreadyHandled;
+    }
+
+    private static string Digits(string value) => new(value.Where(char.IsAsciiDigit).ToArray());
+}
 /// <summary>
 /// The background pass over cash on delivery orders (COD-2, COD-13): cancel those whose final wait passed without a confirmation, and raise
 /// the WhatsApp confirmation request, once, for opted-in orders still unconfirmed after the wait. Every step is idempotent by state, and a

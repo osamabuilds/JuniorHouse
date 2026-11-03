@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Notifications.Application.Abstractions;
+using Romp.Modules.Notifications.Application.Channels;
 using Romp.Modules.Notifications.Domain.Delivery;
 using Romp.Modules.Orders.Contracts;
 
@@ -9,7 +10,7 @@ namespace Romp.Modules.Notifications.Application.Delivery;
 /// Turns an <see cref="NotificationIntent"/> into a <see cref="Notification"/> with its channel deliveries (DLV-1, DLV-4, DLV-6). It only
 /// adds to the context: the caller saves, so the notification commits in the same transaction as the inbox row that records the event.
 /// </summary>
-public sealed class CreateNotification(INotificationsDbContext dbContext, IOrderNotificationQueries orders, TimeProvider clock)
+public sealed class CreateNotification(INotificationsDbContext dbContext, IOrderNotificationQueries orders, ISuppressionList suppression, TimeProvider clock)
 {
     /// <summary>Returns the notification, or null when this event and kind already produced one (a redelivery creates nothing new).</summary>
     public async Task<Notification?> HandleAsync(NotificationIntent intent, CancellationToken cancellationToken)
@@ -33,8 +34,9 @@ public sealed class CreateNotification(INotificationsDbContext dbContext, IOrder
             intent.Kind, ReferenceKinds.Order, intent.OrderId, intent.EventId, now,
             NotificationPolicy.ValidFor(intent.Kind), NotificationPolicy.PriorityOf(intent.Kind));
 
-        // Suppression (STOP) joins the plan with the channels feature (H7); until then no number is suppressed.
-        notification.Plan(ChannelPlan.For(order.WhatsAppOptIn, numberSuppressed: false), now);
+        // A number that said STOP gets no WhatsApp message, whatever the order says about opt-in (CHN-6).
+        var suppressed = order.WhatsAppOptIn && await suppression.IsBlockedAsync(order.ContactMobile, cancellationToken);
+        notification.Plan(ChannelPlan.For(order.WhatsAppOptIn, suppressed), now);
 
         dbContext.Notifications.Add(notification);
         return notification;

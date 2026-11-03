@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.Modules.Notifications.Application.Channels;
 using Romp.Modules.Notifications.Application.Delivery;
 using Romp.Modules.Notifications.Domain.Delivery;
 using Romp.Modules.Notifications.Infrastructure.Delivery;
@@ -27,7 +28,7 @@ public sealed class OrderEventHandlerTests(NotificationsPostgres postgres) : ICl
         public Task Deliver<TEvent>(TEvent evt, long messageId, Func<NtfyDbContext, InboxGuard, CreateNotification, IOutboxMessageHandler<TEvent>> make)
         {
             var guard = new InboxGuard(new OutboxMessageContext { MessageId = messageId, Schema = "NTFY" }, TimeProvider.System);
-            var create = new CreateNotification(Db, new FakeOrders(optedIn, orderExists), TimeProvider.System);
+            var create = new CreateNotification(Db, new FakeOrders(optedIn, orderExists), new SuppressionList(Db, new WhatsAppSettings()), TimeProvider.System);
             return make(Db, guard, create).HandleAsync(evt, CancellationToken.None);
         }
 
