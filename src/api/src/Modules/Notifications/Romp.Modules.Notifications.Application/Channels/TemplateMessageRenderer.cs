@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Notifications.Application.Abstractions;
 using Romp.Modules.Notifications.Application.Delivery;
+using Romp.Modules.Notifications.Application.OrderConfirmation;
 using Romp.Modules.Notifications.Domain.Delivery;
 using Romp.Modules.Orders.Contracts;
 
@@ -14,7 +15,7 @@ namespace Romp.Modules.Notifications.Application.Channels;
 /// Fills a template with values from the order, in one pass (a value that looks like <c>{{Total}}</c> is never expanded again). Every value is
 /// HTML-encoded in the HTML twin, and stripped of control characters everywhere, so a hostile product or customer name cannot inject markup, a
 /// header or a new line into a subject (CHN-9, OCF-7). WhatsApp values are also length-capped.
-/// Placeholders: <c>{{OrderNumber}}</c>, <c>{{CustomerName}}</c>, <c>{{Total}}</c>, <c>{{Lines}}</c>.
+/// Placeholders: <c>{{OrderNumber}}</c>, <c>{{CustomerName}}</c>, <c>{{Total}}</c>, <c>{{Lines}}</c>, <c>{{NextStep}}</c>, <c>{{Reason}}</c>, <c>{{ConfirmLink}}</c>.
 /// </summary>
 public static partial class TemplateEngine
 {
@@ -37,6 +38,9 @@ public static partial class TemplateEngine
             ["CustomerName"] = Plain(order.ContactName),
             ["Total"] = total,
             ["Lines"] = Cap(TextLines(order), whatsApp ? WhatsAppLinesCap : int.MaxValue),
+            ["NextStep"] = OrderWording.NextStep(order.PaymentMethodCode, order.CodConfirmUrl is null ? null : Clean(order.CodConfirmUrl)),
+            ["Reason"] = OrderWording.Reason(order.CancelReasonCode),
+            ["ConfirmLink"] = Plain(order.CodConfirmUrl ?? string.Empty),
         };
 
         var subject = Fill(template.Subject, textValues);
@@ -61,6 +65,9 @@ public static partial class TemplateEngine
                 ["CustomerName"] = WebUtility.HtmlEncode(Clean(order.ContactName)),
                 ["Total"] = WebUtility.HtmlEncode(total),
                 ["Lines"] = HtmlLines(order),
+                ["NextStep"] = WebUtility.HtmlEncode(OrderWording.NextStep(order.PaymentMethodCode, order.CodConfirmUrl is null ? null : Clean(order.CodConfirmUrl))),
+                ["Reason"] = WebUtility.HtmlEncode(OrderWording.Reason(order.CancelReasonCode)),
+                ["ConfirmLink"] = WebUtility.HtmlEncode(Clean(order.CodConfirmUrl ?? string.Empty)),
             };
             html = Fill(template.Html, htmlValues);
         }

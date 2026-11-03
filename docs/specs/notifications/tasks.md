@@ -31,10 +31,10 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## order-confirmation
 
-- [ ] **M1** Confirmation after placement for COD, after payment for online orders; rendered from the stored order at send time. *Proof:* `OrderConfirmationTests` (OCF-1, 2, 3, 5, 6).
-- [ ] **M2** Cancellation notice with the reason category. *Proof:* `OrderCancelledNoticeTests` (OCF-4).
-- [ ] **M3** COD confirmation request (WhatsApp with Confirm and Cancel buttons; page link in the email). *Proof:* `CodRequestMessageTests` (COD-13, 18).
-- [ ] **M4** No deliverable address or number is recorded and visible to staff. *Proof:* `NoAddressTests` (OCF-8).
+- [x] **M1** Confirmation after placement for COD, after payment for online orders; rendered from the stored order at send time. *Proof:* `OrderConfirmationTests` (OCF-1, 2, 3, 5, 6).
+- [x] **M2** Cancellation notice with the reason category. *Proof:* `OrderCancelledNoticeTests` (OCF-4).
+- [x] **M3** COD confirmation request (WhatsApp with Confirm and Cancel buttons; page link in the email). *Proof:* `CodRequestMessageTests` (COD-13, 18).
+- [x] **M4** No deliverable address or number is recorded and visible to staff. *Proof:* `NoAddressTests` (OCF-8). Recorded as a Failed delivery with an attempt row; the staff view of it is G (delivery-log).
 
 ## delivery-log
 
