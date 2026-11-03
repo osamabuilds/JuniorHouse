@@ -11,5 +11,7 @@ public interface INotificationsDbContext
 {
     DbSet<Notification> Notifications { get; }
 
+    DbSet<DeliveryAttempt> Attempts { get; }
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

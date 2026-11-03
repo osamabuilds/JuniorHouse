@@ -18,6 +18,13 @@ public sealed class NotificationsPostgres : IAsyncLifetime
         await context.Database.MigrateAsync();
     }
 
+    /// <summary>Empties the notifications so a test that claims "everything due" sees only its own rows.</summary>
+    public async Task ResetAsync()
+    {
+        await using var context = NewContext();
+        await context.Database.ExecuteSqlRawAsync("TRUNCATE \"NTFY\".\"NTFY_MAIN\" CASCADE");
+    }
+
     public async Task DisposeAsync() => await _postgres.DisposeAsync().AsTask();
 
     internal NtfyDbContext NewContext()

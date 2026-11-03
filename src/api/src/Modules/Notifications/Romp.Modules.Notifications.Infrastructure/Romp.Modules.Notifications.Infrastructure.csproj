@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Romp.Modules.Notifications.Contracts\Romp.Modules.Notifications.Contracts.csproj" />
     <ProjectReference Include="../../Orders/Romp.Modules.Orders.Contracts/Romp.Modules.Orders.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Persistence\Romp.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Email\Romp.BuildingBlocks.Email.csproj" />
   </ItemGroup>
 
 </Project>

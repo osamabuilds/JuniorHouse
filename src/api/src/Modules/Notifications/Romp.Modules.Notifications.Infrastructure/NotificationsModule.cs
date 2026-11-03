@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using Romp.BuildingBlocks.Email;
 using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
@@ -39,6 +41,18 @@ public sealed class NotificationsModule : IModule
 
         services.AddOutboxModule("NTFY");
         services.AddScoped<CreateNotification>();
+
+        // The delivery worker: claim, render, send, record (V4). Email goes through the shared port; WhatsApp joins with the channels feature.
+        services.AddEmail(configuration);
+        services.AddOptions<DeliverySettings>().Bind(configuration.GetSection(DeliverySettings.SectionName))
+            .Validate(o => o.IsValid, "Notifications settings are invalid: the retry schedule needs at least 5 attempts.")
+            .ValidateOnStart();
+        services.AddScoped(sp => sp.GetRequiredService<IOptions<DeliverySettings>>().Value);
+        services.AddScoped<IDeliveryClaimer, SkipLockedDeliveryClaimer>();
+        services.AddScoped<IMessageRenderer, PlainMessageRenderer>();
+        services.AddScoped<IChannelSender, EmailChannelSender>();
+        services.AddScoped<DeliveryProcessor>();
+        services.AddHostedService<DeliveryWorker>();
 
         // Orders' events become notifications through the one mapper (ADR 0026).
         services.AddScoped<IOutboxMessageHandler<OrderPlacedEvent>, OrderPlacedNotificationConsumer>();
