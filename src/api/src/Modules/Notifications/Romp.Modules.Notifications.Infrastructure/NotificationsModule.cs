@@ -53,12 +53,16 @@ public sealed class NotificationsModule : IModule
         services.AddScoped(sp => sp.GetRequiredService<IOptions<DeliverySettings>>().Value);
         services.AddScoped<IDeliveryClaimer, SkipLockedDeliveryClaimer>();
         services.AddScoped<IMessageRenderer, TemplateMessageRenderer>();
-        services.AddScoped<IChannelSender, EmailChannelSender>();
+
+        // One circuit per channel: a failing provider fails fast and never blocks the other channel (CHN-4).
+        services.AddSingleton(configuration.GetSection(ChannelCircuitOptions.SectionName).Get<ChannelCircuitOptions>() ?? new ChannelCircuitOptions());
+        services.AddSingleton<ChannelCircuits>();
+        services.AddScoped<IChannelSender>(sp => new CircuitBreakingChannelSender(ActivatorUtilities.CreateInstance<EmailChannelSender>(sp), sp.GetRequiredService<ChannelCircuits>()));
 
         // WhatsApp sits behind its port; the fake is the default until the business has a number and Meta's approval (CHN-8, D-4).
         services.TryAddSingleton<FakeWhatsAppSender>();
         services.TryAddSingleton<IWhatsAppSender>(sp => sp.GetRequiredService<FakeWhatsAppSender>());
-        services.AddScoped<IChannelSender, WhatsAppChannelSender>();
+        services.AddScoped<IChannelSender>(sp => new CircuitBreakingChannelSender(ActivatorUtilities.CreateInstance<WhatsAppChannelSender>(sp), sp.GetRequiredService<ChannelCircuits>()));
         services.AddScoped<DeliveryProcessor>();
         services.AddScoped<QueueHealth>();
         services.AddScoped<PurgeProcessor>();
