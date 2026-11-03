@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Romp.Modules.Notifications.Domain.Channels;
 using Romp.Modules.Notifications.Domain.Delivery;
 
 namespace Romp.Modules.Notifications.Infrastructure.Delivery;
@@ -39,6 +40,11 @@ internal static class NotificationsLookupConfiguration
 
         Configure<ReferenceKindLookup, string>(modelBuilder, "REF_KIND_LKP", DeliveryConversions.ReferenceKindId, DeliveryConversions.ReferenceKindCode, code => code,
             (ReferenceKinds.Order, "Order", "The notification is about an order"));
+
+        Configure<WhatsAppEventTypeLookup, WhatsAppEventType>(modelBuilder, "WBHK_TYP_LKP", Channels.ChannelConversions.EventTypeId, k => (WhatsAppEventType)(k - 1), WhatsAppEventCodes.Of,
+            (WhatsAppEventType.ButtonReply, "Button reply", "The customer pressed a quick-reply button (Confirm or Cancel)"),
+            (WhatsAppEventType.Stop, "Stop", "The customer asked to stop WhatsApp messages"),
+            (WhatsAppEventType.Receipt, "Receipt", "A delivery receipt from the provider"));
     }
 
     private static void Configure<TLookup, TKey>(

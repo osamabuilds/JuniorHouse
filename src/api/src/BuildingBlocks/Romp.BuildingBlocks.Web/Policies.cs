@@ -21,4 +21,7 @@ public static class RateLimitPolicies
 
     /// <summary>Guessing discount codes: a handful of tries per client per quarter hour (DSC-8).</summary>
     public const string DiscountApply = "discount-apply";
+
+    /// <summary>Provider webhooks (WhatsApp): signed events from a few provider addresses, so a higher ceiling than Strict, still per client (CHN-11).</summary>
+    public const string Webhook = "webhook";
 }

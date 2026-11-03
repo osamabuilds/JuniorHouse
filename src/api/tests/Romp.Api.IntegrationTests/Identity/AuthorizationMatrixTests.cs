@@ -40,6 +40,8 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "GET /api/orders/cod/status",
         "POST /api/orders/cod/confirm",
         "POST /api/orders/cod/cancel",
+        "GET /api/webhooks/whatsapp/", // the WhatsApp provider callback: no session, the proof is the signature on the body (notifications CHN-11)
+        "POST /api/webhooks/whatsapp/",
         "POST /api/cart/lines",
         "POST /api/cart/discount",
         "DELETE /api/cart/discount",

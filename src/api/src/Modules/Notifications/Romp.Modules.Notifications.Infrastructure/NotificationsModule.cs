@@ -63,6 +63,10 @@ public sealed class NotificationsModule : IModule
         services.TryAddSingleton<FakeWhatsAppSender>();
         services.TryAddSingleton<IWhatsAppSender>(sp => sp.GetRequiredService<FakeWhatsAppSender>());
         services.AddScoped<IChannelSender>(sp => new CircuitBreakingChannelSender(ActivatorUtilities.CreateInstance<WhatsAppChannelSender>(sp), sp.GetRequiredService<ChannelCircuits>()));
+
+        // Inbound WhatsApp: signature-checked webhook, events stored once, routed by type (CHN-11).
+        services.AddSingleton(configuration.GetSection(WhatsAppSettings.SectionName).Get<WhatsAppSettings>() ?? new WhatsAppSettings());
+        services.AddScoped<WhatsAppWebhookProcessor>();
         services.AddScoped<DeliveryProcessor>();
         services.AddScoped<QueueHealth>();
         services.AddScoped<PurgeProcessor>();
@@ -81,5 +85,6 @@ public sealed class NotificationsModule : IModule
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapWhatsAppWebhook();
     }
 }

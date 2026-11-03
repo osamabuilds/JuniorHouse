@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Notifications.Application.Abstractions;
+using Romp.Modules.Notifications.Domain.Channels;
 using Romp.Modules.Notifications.Domain.Delivery;
 
 namespace Romp.Modules.Notifications.Infrastructure.Persistence;
@@ -23,6 +24,10 @@ public sealed class NtfyDbContext(DbContextOptions<NtfyDbContext> options) : DbC
     public DbSet<MessageTemplate> Templates => Set<MessageTemplate>();
 
     public DbSet<DailySendCount> DailyCounts => Set<DailySendCount>();
+
+    public DbSet<WhatsAppEvent> WhatsAppEvents => Set<WhatsAppEvent>();
+
+    public DbSet<BlockedNumber> BlockedNumbers => Set<BlockedNumber>();
 
     async Task INotificationsDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);

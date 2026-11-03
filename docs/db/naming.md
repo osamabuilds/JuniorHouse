@@ -398,7 +398,7 @@ Reused as they are: `CNTC` (contact), `PAYM` (payment), `PRDT` (product), `CLR`,
 
 ### Added in Sprint 13 (SCRUM-202, notifications)
 
-Reused as they are: `CHNL`, `ATMP`, `LEAS` (lease), `NXT` (next), `MSG`, `ERR`, `CATG`, `KIND`, `REF`, `EVNT`, `EXPY`, `CNT`, `DAY`, `DT`, `SENT`, `VER`, `NO`, `STS`, `LKP`, `WBHK`, `WHTS`, `DEDL` (dead-letter), `TEXT`.
+Reused as they are: `CHNL`, `ATMP`, `LEAS` (lease), `NXT` (next), `MSG`, `ERR`, `CATG`, `KIND`, `REF`, `EVNT`, `EXPY`, `CNT`, `DAY`, `DT`, `SENT`, `VER`, `NO`, `STS`, `LKP`, `WBHK`, `WHTS`, `DEDL` (dead-letter), `TEXT`, `BLCK` (blocked number list), `HASH`, `RCVD`, `PROC`, `VRFY`.
 
 | Word | Abbr. | | Word | Abbr. |
 |---|---|---|---|---|
@@ -407,4 +407,4 @@ Reused as they are: `CHNL`, `ATMP`, `LEAS` (lease), `NXT` (next), `MSG`, `ERR`, 
 | priority | PRIO | | language | LANG |
 | subject | SUBJ | | body | BODY |
 | HTML | HTML | | resent | RSND |
-| of (e.g. fallback of) | OF | | | |
+| of (e.g. fallback of) | OF | | signature | SGNT |

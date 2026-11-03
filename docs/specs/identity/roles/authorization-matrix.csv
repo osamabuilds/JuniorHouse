@@ -43,6 +43,8 @@ POST,/api/orders/,anonymous
 GET,/api/orders/cod/status,anonymous
 POST,/api/orders/cod/confirm,anonymous
 POST,/api/orders/cod/cancel,anonymous
+GET,/api/webhooks/whatsapp/,anonymous
+POST,/api/webhooks/whatsapp/,anonymous
 DELETE,/api/cart/lines/{variantId:long},anonymous
 PUT,/api/cart/lines/{variantId:long},anonymous
 DELETE,/api/catalog/images/{imageId:long},catalog.write

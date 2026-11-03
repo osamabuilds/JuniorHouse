@@ -1,4 +1,5 @@
 using Romp.Modules.Notifications.Application.Channels;
+using Romp.Modules.Notifications.Domain.Channels;
 using Romp.Modules.Notifications.Application.Delivery;
 using Romp.Modules.Notifications.Domain.Delivery;
 using Romp.Modules.Notifications.Infrastructure.Channels;
@@ -46,7 +47,7 @@ public sealed class FakeWhatsAppSenderTests
         WhatsAppInboundEvent? seen = null;
         fake.InboundReceived += e => seen = e;
 
-        var inbound = new WhatsAppInboundEvent("evt-1", WhatsAppInboundKind.Stop, "+923001234567", null, null);
+        var inbound = new WhatsAppInboundEvent("evt-1", WhatsAppEventType.Stop, "+923001234567", null, null);
         fake.RaiseInbound(inbound);
 
         Assert.Equal(inbound, seen);

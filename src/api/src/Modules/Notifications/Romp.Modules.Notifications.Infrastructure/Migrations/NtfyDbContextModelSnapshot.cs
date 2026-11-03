@@ -124,6 +124,208 @@ namespace Romp.Modules.Notifications.Infrastructure.Migrations
                     b.ToTable("OUTB_MSG", "NTFY");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Notifications.Domain.Channels.BlockedNumber", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("BlockedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("BLCK_DTE");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("NumberHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("NO_HASH");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NumberHash")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_NTFY_BLCK_NO_HASH");
+
+                    b.ToTable("NTFY_BLCK", "NTFY");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Notifications.Domain.Channels.WhatsAppEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("BodyHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("BODY_HASH");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long?>("MatchedDeliveryId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("NTFY_CHNL_ID");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("PROC_DTE");
+
+                    b.Property<string>("ProviderEventId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("PRVD_EVNT_ID");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("RCVD_DTE");
+
+                    b.Property<bool>("SignatureVerified")
+                        .HasColumnType("boolean")
+                        .HasColumnName("SGNT_VRFY_IND");
+
+                    b.Property<short?>("Type")
+                        .HasColumnType("smallint")
+                        .HasColumnName("WBHK_TYP_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchedDeliveryId")
+                        .HasDatabaseName("IX_NTFY_WBHK_NTFY_CHNL_ID");
+
+                    b.HasIndex("ProviderEventId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_NTFY_WBHK_PRVD_EVNT_ID");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("IX_NTFY_WBHK_WBHK_TYP_ID");
+
+                    b.ToTable("NTFY_WBHK", "NTFY");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Notifications.Domain.Channels.WhatsAppEventTypeLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("WBHK_TYP_LKP", "NTFY");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "BTNR",
+                            Description = "The customer pressed a quick-reply button (Confirm or Cancel)",
+                            IsActive = true,
+                            Name = "Button reply",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "STOP",
+                            Description = "The customer asked to stop WhatsApp messages",
+                            IsActive = true,
+                            Name = "Stop",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "RCPT",
+                            Description = "A delivery receipt from the provider",
+                            IsActive = true,
+                            Name = "Receipt",
+                            SortSeq = (short)3
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Notifications.Domain.Delivery.ChannelDelivery", b =>
                 {
                     b.Property<long>("Id")
@@ -969,6 +1171,21 @@ namespace Romp.Modules.Notifications.Infrastructure.Migrations
                             Name = "Order",
                             SortSeq = (short)1
                         });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Notifications.Domain.Channels.WhatsAppEvent", b =>
+                {
+                    b.HasOne("Romp.Modules.Notifications.Domain.Delivery.ChannelDelivery", null)
+                        .WithMany()
+                        .HasForeignKey("MatchedDeliveryId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_NTFY_WBHK_NTFY_CHNL");
+
+                    b.HasOne("Romp.Modules.Notifications.Domain.Channels.WhatsAppEventTypeLookup", null)
+                        .WithMany()
+                        .HasForeignKey("Type")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_NTFY_WBHK_WBHK_TYP_LKP");
                 });
 
             modelBuilder.Entity("Romp.Modules.Notifications.Domain.Delivery.ChannelDelivery", b =>

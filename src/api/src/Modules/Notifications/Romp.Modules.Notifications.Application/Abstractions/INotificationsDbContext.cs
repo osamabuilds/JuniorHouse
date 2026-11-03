@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Notifications.Domain.Channels;
 using Romp.Modules.Notifications.Domain.Delivery;
 
 namespace Romp.Modules.Notifications.Application.Abstractions;
@@ -18,6 +19,12 @@ public interface INotificationsDbContext
     DbSet<DeadLetter> DeadLetters { get; }
 
     DbSet<MessageTemplate> Templates { get; }
+
+    DbSet<WhatsAppEvent> WhatsAppEvents { get; }
+
+    DbSet<BlockedNumber> BlockedNumbers { get; }
+
+    DbSet<DailySendCount> DailyCounts { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
