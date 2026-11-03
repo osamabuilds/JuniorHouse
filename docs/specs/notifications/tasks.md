@@ -4,7 +4,7 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## Skeleton
 
-- [ ] **N1** Projects `Romp.Modules.Notifications.{Domain,Application,Infrastructure,Contracts}` and `Romp.Modules.Notifications.Tests`, `NotificationsModule : IModule`, `NtfyDbContext` (schema `NTFY`), outbox and inbox, solution and `Program.cs` entries. *Proof:* `NotificationsMigrationTests`, architecture tests.
+- [x] **N1** Projects `Romp.Modules.Notifications.{Domain,Application,Infrastructure,Contracts}` and `Romp.Modules.Notifications.Tests`, `NotificationsModule : IModule`, `NtfyDbContext` (schema `NTFY`), outbox and inbox, solution and `Program.cs` entries. *Proof:* `NotificationsMigrationTests`, architecture tests.
 
 ## delivery
 
