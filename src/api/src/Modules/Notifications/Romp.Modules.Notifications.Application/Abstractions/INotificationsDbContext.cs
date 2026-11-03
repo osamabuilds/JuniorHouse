@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Notifications.Domain.Delivery;
+
 namespace Romp.Modules.Notifications.Application.Abstractions;
 
 /// <summary>
@@ -6,5 +9,7 @@ namespace Romp.Modules.Notifications.Application.Abstractions;
 /// </summary>
 public interface INotificationsDbContext
 {
+    DbSet<Notification> Notifications { get; }
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -5,6 +5,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Romp.Modules.Notifications.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>

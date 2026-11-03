@@ -41,6 +41,7 @@ public sealed class OrdersModule : IModule
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IOrderNumberAllocator, OrderNumberAllocator>();
         services.AddScoped<Application.Orders.ICodLinks, CodLinks>();
+        services.AddScoped<IOrderNotificationQueries, OrderNotificationQueries>();
         services.AddHostedService<CodConfirmationWorker>();
         services.AddOptions<OrdersOptions>().Bind(configuration.GetSection(OrdersOptions.SectionName))
             .Validate(OrdersOptions.IsValid, "Orders:EnabledOnlineMethods may only contain EASY, JAZZ or CARD.")

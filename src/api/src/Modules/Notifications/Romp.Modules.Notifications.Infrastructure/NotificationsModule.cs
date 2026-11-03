@@ -7,7 +7,10 @@ using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Notifications.Application.Abstractions;
+using Romp.Modules.Notifications.Application.Delivery;
+using Romp.Modules.Notifications.Infrastructure.Delivery;
 using Romp.Modules.Notifications.Infrastructure.Persistence;
+using Romp.Modules.Orders.Contracts;
 
 namespace Romp.Modules.Notifications.Infrastructure;
 
@@ -35,6 +38,13 @@ public sealed class NotificationsModule : IModule
         services.TryAddSingleton(TimeProvider.System);
 
         services.AddOutboxModule("NTFY");
+        services.AddScoped<CreateNotification>();
+
+        // Orders' events become notifications through the one mapper (ADR 0026).
+        services.AddScoped<IOutboxMessageHandler<OrderPlacedEvent>, OrderPlacedNotificationConsumer>();
+        services.AddScoped<IOutboxMessageHandler<OrderPaidEvent>, OrderPaidNotificationConsumer>();
+        services.AddScoped<IOutboxMessageHandler<OrderCancelledEvent>, OrderCancelledNotificationConsumer>();
+        services.AddScoped<IOutboxMessageHandler<CodConfirmationRequestedEvent>, CodConfirmationRequestedNotificationConsumer>();
         services.TryAdd(ServiceDescriptor.Scoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>)));
     }
 
