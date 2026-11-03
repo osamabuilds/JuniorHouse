@@ -32,6 +32,14 @@ public sealed class SecurityGateTests(ProductionApiFixture api)
                 builder.UseSetting("Identity:Mfa:KeyId", "k1");
                 builder.UseSetting("Identity:Mfa:EncryptionKey", MfaKey);
                 builder.UseSetting("Identity:Mfa:RecoveryPepper", MfaPepper);
+
+                // Outside Development the host refuses the fake WhatsApp sender, so a deployed-like host names the real one and its secrets.
+                builder.UseSetting("Notifications:WhatsApp:Enabled", "true");
+                builder.UseSetting("Notifications:WhatsApp:PhoneNumberId", "1234567890");
+                builder.UseSetting("Notifications:WhatsApp:AccessToken", "test-access-token");
+                builder.UseSetting("Notifications:WhatsApp:AppSecret", "test-app-secret");
+                builder.UseSetting("Notifications:WhatsApp:VerifyToken", "test-verify-token");
+                builder.UseSetting("Notifications:WhatsApp:NumberSalt", "test-number-salt-0123456789abcdef");
             }
 
             more?.Invoke(builder);
