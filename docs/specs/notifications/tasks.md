@@ -38,10 +38,10 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## delivery-log
 
-- [ ] **G1** Paged queries with masked recipients, filters, dead-letter view, summary. *Proof:* `DeliveryLogQueryTests` incl. query count and masking (DLG-1, 5, 6).
-- [ ] **G2** `ResendNotificationCommand`, audited, idempotent on a client key, duplicate warning data. *Proof:* `ResendTests` (DLG-2, 3, 7, 8).
-- [ ] **G3** Endpoints with `notifications.view` / `notifications.resend`; matrix rows. *Proof:* `DeliveryLogEndpointsTests`, authorization matrix (DLG-4).
-- [ ] **G4** Admin `features/notifications/delivery-log` (list, filters, detail, resend dialog, summary strip), `*hasPermission`, link from the order screen. *Proof:* component and store specs, `delivery-log.e2e.spec.ts` (DLG-9).
+- [x] **G1** Paged queries with masked recipients, filters, dead-letter view, summary. *Proof:* `DeliveryLogQueryTests` incl. query count and masking (DLG-1, 5, 6). Rows are channel deliveries. Masking and search live in Orders behind the new `Orders.Contracts.IOrderContactSummaries` (two bulk calls per page, exact match only); `ContactMaskingTests` in the Orders suite. The dead-letter filter shows dead deliveries not yet resent.
+- [x] **G2** `ResendNotificationCommand`, audited, idempotent on a client key, duplicate warning data. *Proof:* `ResendTests` (DLG-2, 3, 7, 8). A plain `ResendNotification` service (the module has no MediatR). New column `NTFY_CHNL.RSND_KEY` (unique when set), migration `AddResendKey`. A resend of a Sent or Delivered message needs `acknowledgeDuplicate`; a Queued or Skipped one is refused; a second resend while one is waiting is refused. An expired notification gets a fresh life on resend.
+- [x] **G3** Endpoints with `notifications.view` / `notifications.resend`; matrix rows. *Proof:* `DeliveryLogEndpointsTests`, authorization matrix (DLG-4). `{id}` in the routes is the delivery id. Resend answers 202 (queued), 200 (same key again), 409 with a `code` (duplicate-warning, in-progress, key-reused, not-resendable). The integration fixture now also migrates the NTFY schema. Run in the Linux container: these and the every-role matrix test pass.
+- [x] **G4** Admin `features/notifications/delivery-log` (list, filters, detail, resend dialog, summary strip), `*hasPermission`, link from the order screen. *Proof:* component and store specs, `delivery-log.e2e.spec.ts` (DLG-9). Unit specs and `ng build admin` pass (1014 tests). The resend question is an inline confirmation (as on the order screen), not a modal. The e2e spec is written but NOT yet run: it needs the docker stack rebuilt (Z2).
 
 ## Optional last task (only if everything above is green)
 

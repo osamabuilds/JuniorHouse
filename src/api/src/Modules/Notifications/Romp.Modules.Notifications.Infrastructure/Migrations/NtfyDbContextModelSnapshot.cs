@@ -378,6 +378,11 @@ namespace Romp.Modules.Notifications.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("PRVD_MSG_ID");
 
+                    b.Property<string>("ResendKey")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("RSND_KEY");
+
                     b.Property<short>("Status")
                         .HasColumnType("smallint")
                         .HasColumnName("CHNL_STS_ID");
@@ -417,6 +422,11 @@ namespace Romp.Modules.Notifications.Infrastructure.Migrations
 
                     b.HasIndex("ProviderMessageId")
                         .HasDatabaseName("IX_NTFY_CHNL_PRVD_MSG_ID");
+
+                    b.HasIndex("ResendKey")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_NTFY_CHNL_RSND_KEY")
+                        .HasFilter("\"RSND_KEY\" IS NOT NULL");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_NTFY_CHNL_CHNL_STS_ID");

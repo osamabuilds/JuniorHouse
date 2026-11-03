@@ -108,3 +108,55 @@ public interface ICodCustomerResponses
 {
     Task<CodReplyOutcome> RecordReplyAsync(long orderId, string senderMobile, bool confirm, CancellationToken cancellationToken);
 }
+
+/// <summary>
+/// An order's contact in the masked form staff may see in the delivery log (DLG-6, SEC-25): <c>a***@mail.com</c> and <c>03XX-XXX4567</c>.
+/// Nothing here can be turned back into the real address or number.
+/// </summary>
+public sealed record OrderContactSummary(long OrderId, string OrderNumber, string? MaskedEmail, string MaskedMobile);
+
+/// <summary>
+/// Lets Notifications show and search recipients without ever holding them (ADR 0026, SEC-25). Both calls are bulk, so a page of the
+/// delivery log costs two queries however many rows it has.
+/// </summary>
+public interface IOrderContactSummaries
+{
+    /// <summary>The masked contact of each order that exists; unknown ids are simply absent.</summary>
+    Task<IReadOnlyDictionary<long, OrderContactSummary>> FindManyAsync(IReadOnlyCollection<long> orderIds, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// The ids of orders matching <paramref name="term"/> exactly as an order number, an email address or a mobile number (any usual way of
+    /// writing it). Exact on purpose: no wildcard search over personal data. At most <paramref name="max"/> ids.
+    /// </summary>
+    Task<IReadOnlyList<long>> FindOrderIdsAsync(string term, int max, CancellationToken cancellationToken);
+}
+
+/// <summary>Masks contact details for display. Pure, so it is tested without a database.</summary>
+public static class ContactMasking
+{
+    /// <summary><c>ayesha@mail.com</c> becomes <c>a***@mail.com</c>; anything that is not an address becomes <c>***</c>.</summary>
+    public static string? MaskEmail(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return null;
+        }
+
+        var at = email.LastIndexOf('@');
+        return at < 1 ? "***" : string.Concat(email.AsSpan(0, 1), "***", email.AsSpan(at));
+    }
+
+    /// <summary><c>+923001234567</c> becomes <c>03XX-XXX4567</c>: the network prefix and the last four digits are enough for support to recognise a number.</summary>
+    public static string MaskMobile(string? mobile)
+    {
+        var digits = new string((mobile ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (digits.StartsWith("92", StringComparison.Ordinal) && digits.Length == 12)
+        {
+            digits = "0" + digits[2..];
+        }
+
+        return digits.Length == 11
+            ? string.Concat(digits.AsSpan(0, 2), "XX-XXX", digits.AsSpan(7))
+            : digits.Length >= 4 ? "XXXX" + digits[^4..] : "XXXX";
+    }
+}

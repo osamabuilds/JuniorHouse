@@ -30,6 +30,9 @@
       }
       Placed {{ o.placedAt | date: 'd MMM y, h:mm a' }}
     </p>
+    <p *hasPermission="'notifications.view'">
+      <a [routerLink]="['/notifications']" [queryParams]="{ orderId: o.id }">Messages sent to this customer</a>
+    </p>
   </header>
 
   @if (o.canRecordCodOutcome || o.canCancel) {

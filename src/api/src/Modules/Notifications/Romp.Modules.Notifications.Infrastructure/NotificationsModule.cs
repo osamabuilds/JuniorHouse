@@ -11,9 +11,11 @@ using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Notifications.Application.Abstractions;
 using Romp.Modules.Notifications.Application.Channels;
 using Romp.Modules.Notifications.Application.Delivery;
+using Romp.Modules.Notifications.Application.DeliveryLog;
 using Romp.Modules.Notifications.Contracts;
 using Romp.Modules.Notifications.Infrastructure.Channels;
 using Romp.Modules.Notifications.Infrastructure.Delivery;
+using Romp.Modules.Notifications.Infrastructure.DeliveryLog;
 using Romp.Modules.Notifications.Infrastructure.Persistence;
 using Romp.Modules.Orders.Contracts;
 
@@ -90,6 +92,8 @@ public sealed class NotificationsModule : IModule
         services.AddScoped<IWhatsAppInboundHandler, StopHandler>();
         services.AddScoped<DeliveryProcessor>();
         services.AddScoped<QueueHealth>();
+        services.AddScoped<DeliveryLogQueries>();
+        services.AddScoped<ResendNotification>();
         services.AddScoped<PurgeProcessor>();
         services.AddScoped<IOutboxMessageHandler<NotificationDeadLetteredEvent>, DeadLetterAlertConsumer>();
         services.AddHealthChecks().AddCheck<QueueAgeHealthCheck>(QueueAgeHealthCheck.Name, tags: ["ready"]);
@@ -107,5 +111,6 @@ public sealed class NotificationsModule : IModule
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapWhatsAppWebhook();
+        endpoints.MapDeliveryLogEndpoints();
     }
 }

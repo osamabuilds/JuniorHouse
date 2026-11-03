@@ -76,6 +76,38 @@ public sealed class Notification : Entity<long>, IAuditable
         return delivery;
     }
 
+    /// <summary>
+    /// Staff send one delivery again (FR-63, DLG-2): a new queued delivery linked to the one it replaces, which stays as history. A notification
+    /// that has expired is given a fresh life, because a person has decided the customer still needs it.
+    /// </summary>
+    public ChannelDelivery AddResend(ChannelDelivery original, string resendKey, DateTimeOffset now, TimeSpan validFor)
+    {
+        ArgumentNullException.ThrowIfNull(original);
+        if (string.IsNullOrWhiteSpace(resendKey))
+        {
+            throw new DomainException("A resend needs a key so a double click does not send twice.");
+        }
+
+        if (original.Id == 0 || _deliveries.All(d => d.Id != original.Id))
+        {
+            throw new DomainException("A resend replaces a saved delivery of this notification.");
+        }
+
+        if (original.Status is DeliveryStatus.Queued or DeliveryStatus.Skipped)
+        {
+            throw new DomainException($"A {original.Status} delivery cannot be resent.");
+        }
+
+        if (now + validFor > ExpiresAt)
+        {
+            ExpiresAt = now + validFor;
+        }
+
+        var delivery = new ChannelDelivery(original.Channel, now, original.Id, resendKey);
+        _deliveries.Add(delivery);
+        return delivery;
+    }
+
     /// <summary>Creates the deliveries the channel plan asks for. A skipped WhatsApp delivery is recorded so the log says why none was sent.</summary>
     public void Plan(ChannelPlanResult plan, DateTimeOffset now)
     {

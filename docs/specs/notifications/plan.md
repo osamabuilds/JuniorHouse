@@ -50,7 +50,7 @@ Build order (README): delivery → channels (email first, WhatsApp behind the fa
 | GET | `/api/notifications/whatsapp/webhook` | anonymous (verify token) | n/a |
 | POST | `/api/notifications/whatsapp/webhook` | anonymous, **signature-gated**, rate-limited, body at most 64 KB | matched by provider message id and sender number |
 | GET | `/api/admin/notifications` | `notifications.view` | staff; recipients masked |
-| GET | `/api/admin/notifications/{id}` | `notifications.view` | staff |
+| GET | `/api/admin/notifications/{id}` | `notifications.view` | staff; `{id}` is the delivery id (the log lists one row per channel delivery) |
 | POST | `/api/admin/notifications/{id}/resend` | `notifications.resend` | staff; idempotent on a client key |
 | GET | `/api/admin/notifications/summary` | `notifications.view` | counts by status, queue age, dead-letter count, WhatsApp sends today |
 

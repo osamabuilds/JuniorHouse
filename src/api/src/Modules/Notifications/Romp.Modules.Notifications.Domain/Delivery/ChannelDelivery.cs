@@ -15,8 +15,9 @@ public sealed class ChannelDelivery : Entity<long>, IAuditable
         InsrBy = string.Empty;
     }
 
-    public ChannelDelivery(NotificationChannel channel, DateTimeOffset now, long? fallbackOfId = null)
+    public ChannelDelivery(NotificationChannel channel, DateTimeOffset now, long? fallbackOfId = null, string? resendKey = null)
     {
+        ResendKey = resendKey;
         Channel = channel;
         Status = DeliveryStatus.Queued;
         NextAttemptAt = now;
@@ -43,6 +44,9 @@ public sealed class ChannelDelivery : Entity<long>, IAuditable
 
     /// <summary>Set on a resend or a fallback: the delivery this one replaces.</summary>
     public long? FallbackOfId { get; private set; }
+
+    /// <summary>The client key of the staff resend that created this delivery; the same key twice creates nothing new (DLG-8).</summary>
+    public string? ResendKey { get; private set; }
 
     public DateTimeOffset InsrDte { get; set; }
 

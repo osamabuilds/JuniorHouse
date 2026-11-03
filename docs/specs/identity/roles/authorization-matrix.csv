@@ -304,3 +304,7 @@ GET,/api/admin/orders/{id:long},orders.view
 POST,/api/admin/orders/{id:long}/cod-outcome,orders.manage
 POST,/api/admin/orders/{id:long}/cancel,orders.manage
 POST,/api/admin/orders/{id:long}/clear-flag,orders.manage
+GET,/api/admin/notifications/,notifications.view
+GET,/api/admin/notifications/summary,notifications.view
+GET,/api/admin/notifications/{id:long},notifications.view
+POST,/api/admin/notifications/{id:long}/resend,notifications.resend

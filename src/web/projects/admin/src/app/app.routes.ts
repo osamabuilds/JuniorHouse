@@ -23,6 +23,11 @@ const staffRoutes: Routes = [
     loadChildren: () => import('@features/orders/order-queue/order-queue.routes').then((m) => m.ORDER_QUEUE_ROUTES),
   },
   {
+    path: 'notifications',
+    canActivate: [permissionGuard('notifications.view')],
+    loadChildren: () => import('@features/notifications/delivery-log/delivery-log.routes').then((m) => m.DELIVERY_LOG_ROUTES),
+  },
+  {
     path: 'shipping',
     canActivate: [permissionGuard('shipping.manage')],
     loadChildren: () => import('@features/cart/totals/shipping.routes').then((m) => m.SHIPPING_ROUTES),

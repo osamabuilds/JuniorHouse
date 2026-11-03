@@ -73,6 +73,7 @@ internal sealed class ChannelDeliveryConfiguration : IEntityTypeConfiguration<Ch
         builder.Property(d => d.LastError).HasColumnName("ERR_CATG_ID").HasConversion(v => v.HasValue ? DeliveryConversions.ErrorId(v.Value) : (short?)null, v => v.HasValue ? (ErrorCategory)(v.Value - 1) : null);
         builder.Property(d => d.ProviderMessageId).HasColumnName("PRVD_MSG_ID").HasMaxLength(100);
         builder.Property(d => d.FallbackOfId).HasColumnName("FLBK_OF_ID");
+        builder.Property(d => d.ResendKey).HasColumnName("RSND_KEY").HasMaxLength(64);
         builder.Ignore(d => d.IsFinal);
         builder.HasAuditColumns();
 
@@ -86,6 +87,8 @@ internal sealed class ChannelDeliveryConfiguration : IEntityTypeConfiguration<Ch
         builder.HasIndex(d => d.Status).HasDatabaseName("IX_NTFY_CHNL_CHNL_STS_ID");
         builder.HasIndex(d => d.LastError).HasDatabaseName("IX_NTFY_CHNL_ERR_CATG_ID");
         builder.HasIndex(d => d.FallbackOfId).HasDatabaseName("IX_NTFY_CHNL_FLBK_OF_ID");
+        // One staff resend per client key: the database refuses a second even if two requests race (DLG-8).
+        builder.HasIndex(d => d.ResendKey).IsUnique().HasFilter("\"RSND_KEY\" IS NOT NULL").HasDatabaseName("UQ_NTFY_CHNL_RSND_KEY");
 
         builder.HasOne<ChannelLookup>().WithMany().HasForeignKey(d => d.Channel).HasConstraintName("FK_NTFY_CHNL_CHNL_LKP").OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<DeliveryStatusLookup>().WithMany().HasForeignKey(d => d.Status).HasConstraintName("FK_NTFY_CHNL_CHNL_STS_LKP").OnDelete(DeleteBehavior.Restrict);

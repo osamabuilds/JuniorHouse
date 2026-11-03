@@ -27,6 +27,7 @@
         <li *hasPermission="'warehouse.read'"><a routerLink="/warehouse" routerLinkActive="is-active">Warehouse</a> <app-alert-badge *hasPermission="'inventory.read'" /></li>
         <li *hasPermission="'catalog.read'"><a routerLink="/storefront" routerLinkActive="is-active">Storefront</a></li>
         <li *hasPermission="'orders.view'"><a routerLink="/orders" routerLinkActive="is-active">Orders</a></li>
+        <li *hasPermission="'notifications.view'"><a routerLink="/notifications" routerLinkActive="is-active">Notifications</a></li>
         <li *hasPermission="'shipping.manage'"><a routerLink="/shipping" routerLinkActive="is-active">Delivery fees</a></li>
         <li *hasPermission="'discounts.manage'"><a routerLink="/discounts" routerLinkActive="is-active">Discount codes</a></li>
         <li *hasPermission="'staff.manage'"><a routerLink="/staff" routerLinkActive="is-active">Staff</a></li>

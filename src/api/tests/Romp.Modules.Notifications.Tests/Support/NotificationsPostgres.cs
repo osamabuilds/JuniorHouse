@@ -37,11 +37,32 @@ public sealed class NotificationsPostgres : IAsyncLifetime
 
     public async Task DisposeAsync() => await _postgres.DisposeAsync().AsTask();
 
-    internal NtfyDbContext NewContext()
+    internal NtfyDbContext NewContext(params Microsoft.EntityFrameworkCore.Diagnostics.IInterceptor[] interceptors)
     {
         var options = new DbContextOptionsBuilder<NtfyDbContext>()
             .UseNpgsql(ConnectionString, npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "NTFY"))
+            .AddInterceptors(interceptors)
             .Options;
         return new NtfyDbContext(options);
+    }
+}
+
+/// <summary>Counts the SQL commands a context runs, so a test can prove a page costs a fixed number of queries however many rows it has.</summary>
+internal sealed class CommandCounter : Microsoft.EntityFrameworkCore.Diagnostics.DbCommandInterceptor
+{
+    private int _count;
+
+    public int Count => _count;
+
+    public override System.Data.Common.DbDataReader ReaderExecuted(System.Data.Common.DbCommand command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData eventData, System.Data.Common.DbDataReader result)
+    {
+        Interlocked.Increment(ref _count);
+        return base.ReaderExecuted(command, eventData, result);
+    }
+
+    public override ValueTask<System.Data.Common.DbDataReader> ReaderExecutedAsync(System.Data.Common.DbCommand command, Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData eventData, System.Data.Common.DbDataReader result, CancellationToken cancellationToken = default)
+    {
+        Interlocked.Increment(ref _count);
+        return base.ReaderExecutedAsync(command, eventData, result, cancellationToken);
     }
 }
