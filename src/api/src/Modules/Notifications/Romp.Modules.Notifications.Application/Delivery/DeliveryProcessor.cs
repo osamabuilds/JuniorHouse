@@ -57,11 +57,19 @@ public sealed class DeliveryProcessor(
             return;
         }
 
+        // Too late to help the customer (a COD notice three days on): record it and stop (DLV-10).
+        if (notification.IsExpired(clock.GetUtcNow()))
+        {
+            delivery.Expire();
+            dbContext.Attempts.Add(new DeliveryAttempt(delivery.Id, delivery.AttemptCount, DeliveryStatus.Expired, null, clock.GetUtcNow()));
+            return;
+        }
+
         var sender = senders.FirstOrDefault(s => s.Channel == delivery.Channel);
         if (sender is null)
         {
             // Nothing can carry this channel yet: wait without using up an attempt (CHN-4).
-            Fail(delivery, ErrorCategory.CircuitOpen);
+            Fail(notification, delivery, ErrorCategory.CircuitOpen);
             return;
         }
 
@@ -70,14 +78,14 @@ public sealed class DeliveryProcessor(
             var order = await orders.FindAsync(notification.ReferenceId, cancellationToken);
             if (order is null)
             {
-                Fail(delivery, ErrorCategory.Temporary);
+                Fail(notification, delivery, ErrorCategory.Temporary);
                 return;
             }
 
             var recipient = delivery.Channel == NotificationChannel.Email ? order.ContactEmail : order.ContactMobile;
             if (string.IsNullOrWhiteSpace(recipient))
             {
-                Fail(delivery, ErrorCategory.NoAddress);
+                Fail(notification, delivery, ErrorCategory.NoAddress);
                 return;
             }
 
@@ -90,19 +98,25 @@ public sealed class DeliveryProcessor(
         }
         catch (ChannelSendException ex)
         {
-            Fail(delivery, ex.Category);
+            Fail(notification, delivery, ex.Category);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Anything else from a provider is treated as temporary. The message is not kept: it may carry an address (SEC-25).
-            Fail(delivery, ErrorCategory.Temporary);
+            Fail(notification, delivery, ErrorCategory.Temporary);
         }
     }
 
-    private void Fail(ChannelDelivery delivery, ErrorCategory category)
+    private void Fail(Notification notification, ChannelDelivery delivery, ErrorCategory category)
     {
         var now = clock.GetUtcNow();
         delivery.RecordFailure(category, now, _policy, (Random.Shared.NextDouble() * 2) - 1);
         dbContext.Attempts.Add(new DeliveryAttempt(delivery.Id, delivery.AttemptCount, delivery.Status, category, now));
+
+        // Out of attempts: keep the references and history for a resend, and raise the alert in the same save (DLV-3, DLV-12).
+        if (delivery.Status == DeliveryStatus.Dead)
+        {
+            dbContext.DeadLetters.Add(new DeadLetter(notification.Id, delivery.Id, notification.Kind, delivery.Channel, category, delivery.AttemptCount, now));
+        }
     }
 }

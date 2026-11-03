@@ -10,6 +10,7 @@ using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Notifications.Application.Abstractions;
 using Romp.Modules.Notifications.Application.Delivery;
+using Romp.Modules.Notifications.Contracts;
 using Romp.Modules.Notifications.Infrastructure.Delivery;
 using Romp.Modules.Notifications.Infrastructure.Persistence;
 using Romp.Modules.Orders.Contracts;
@@ -39,7 +40,7 @@ public sealed class NotificationsModule : IModule
         services.AddScoped<INotificationsDbContext>(sp => sp.GetRequiredService<NtfyDbContext>());
         services.TryAddSingleton(TimeProvider.System);
 
-        services.AddOutboxModule("NTFY");
+        services.AddOutboxModule("NTFY", typeof(NotificationDeadLetteredEvent), typeof(NotificationSentEvent));
         services.AddScoped<CreateNotification>();
 
         // The delivery worker: claim, render, send, record (V4). Email goes through the shared port; WhatsApp joins with the channels feature.
@@ -52,7 +53,12 @@ public sealed class NotificationsModule : IModule
         services.AddScoped<IMessageRenderer, PlainMessageRenderer>();
         services.AddScoped<IChannelSender, EmailChannelSender>();
         services.AddScoped<DeliveryProcessor>();
+        services.AddScoped<QueueHealth>();
+        services.AddScoped<PurgeProcessor>();
+        services.AddScoped<IOutboxMessageHandler<NotificationDeadLetteredEvent>, DeadLetterAlertConsumer>();
+        services.AddHealthChecks().AddCheck<QueueAgeHealthCheck>(QueueAgeHealthCheck.Name, tags: ["ready"]);
         services.AddHostedService<DeliveryWorker>();
+        services.AddHostedService<PurgeWorker>();
 
         // Orders' events become notifications through the one mapper (ADR 0026).
         services.AddScoped<IOutboxMessageHandler<OrderPlacedEvent>, OrderPlacedNotificationConsumer>();

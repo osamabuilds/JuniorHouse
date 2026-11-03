@@ -1,4 +1,5 @@
 using Romp.BuildingBlocks.Domain;
+using Romp.Modules.Notifications.Contracts;
 
 namespace Romp.Modules.Notifications.Domain.Delivery;
 
@@ -53,14 +54,14 @@ public sealed class DeliveryAttempt : Entity<long>, IAuditable
 /// A delivery that ran out of attempts (DLV-3, DLV-12). It keeps references and the attempt count, so a resend has everything it needs;
 /// the message is rebuilt from the order at that time.
 /// </summary>
-public sealed class DeadLetter : Entity<long>, IAuditable
+public sealed class DeadLetter : AggregateRoot<long>, IAuditable
 {
     private DeadLetter()
     {
         InsrBy = string.Empty;
     }
 
-    public DeadLetter(long deliveryId, NotificationKind kind, NotificationChannel channel, ErrorCategory reason, int attemptCount, DateTimeOffset at)
+    public DeadLetter(long notificationId, long deliveryId, NotificationKind kind, NotificationChannel channel, ErrorCategory reason, int attemptCount, DateTimeOffset at)
     {
         DeliveryId = deliveryId;
         Kind = kind;
@@ -69,6 +70,9 @@ public sealed class DeadLetter : Entity<long>, IAuditable
         AttemptCount = attemptCount;
         DeadAt = at;
         InsrBy = string.Empty;
+
+        // Saved with the dead letter, in one transaction, so the alert can never be lost or raised for a delivery that did not die (DLV-3).
+        Raise(new NotificationDeadLetteredEvent(notificationId, NotificationCodes.Of(kind), NotificationCodes.Of(channel)));
     }
 
     public long DeliveryId { get; private set; }

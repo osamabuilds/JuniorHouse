@@ -51,9 +51,21 @@ public sealed class DeliverySettings
     public double Jitter { get; set; } = 0.2;
 
     /// <summary>Minutes to wait after each failed attempt; its length is the number of attempts before a delivery is dead.</summary>
+    /// <summary>Where the ops alert for a dead-lettered delivery goes (DLV-3). Empty means log and count only.</summary>
+    public string? OpsAlertEmail { get; set; }
+
+    /// <summary>The health check turns degraded when the oldest due delivery has waited longer than this (DLV-11).</summary>
+    public int QueueAgeWarnMinutes { get; set; } = 15;
+
+    public int RetentionMonths { get; set; } = 12;
+
+    public int PurgeBatchSize { get; set; } = 500;
+
+    public int PurgeIntervalHours { get; set; } = 24;
+
     public int[] RetryMinutes { get; set; } = [1, 5, 30, 120, 360, 720];
 
-    public bool IsValid => ClaimBatchSize is >= 1 and <= 200 && LeaseSeconds >= 10 && PollSeconds >= 1 && TryBuildPolicy(out _);
+    public bool IsValid => ClaimBatchSize is >= 1 and <= 200 && RetentionMonths >= 1 && PurgeBatchSize >= 1 && QueueAgeWarnMinutes >= 1 && PurgeIntervalHours >= 1 && LeaseSeconds >= 10 && PollSeconds >= 1 && TryBuildPolicy(out _);
 
     public RetryPolicy ToRetryPolicy() => new(RetryMinutes.Select(m => TimeSpan.FromMinutes(m)), Jitter);
 

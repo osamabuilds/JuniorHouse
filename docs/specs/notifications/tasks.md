@@ -12,10 +12,10 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 - [x] **V2** Migration: `NTFY_MAIN`, `NTFY_CHNL`, `NTFY_ATMP`, `NTFY_DEDL`, `NTFY_TMPL`, `NTFY_DAY_CNT`, lookups. *Proof:* `NotificationsMigrationTests`, naming and glossary tests.
 - [x] **V3** Event handlers through `OrderEventMapper` create notification and deliveries in one transaction, idempotent on event id. *Proof:* `OrderEventHandlerTests` incl. redelivery (DLV-1, 4, 6).
 - [x] **V4** `DeliveryWorker`: `SKIP LOCKED` claim with lease, render, send, record; two workers never send one delivery twice. *Proof:* `DeliveryWorkerTests`, `DeliveryClaimConcurrencyTests` (DLV-2, 9).
-- [ ] **V5** Exhaustion moves to `NTFY_DEDL` and raises the alert: log event, counter, email to `OpsAlertEmail`. *Proof:* `DeadLetterTests` (DLV-3, 12), `DeadLetterAlertTests`.
-- [ ] **V6** Per-kind expiry and queue-age health value. *Proof:* `ExpiryTests`, `QueueAgeHealthTests` (DLV-10, 11).
-- [ ] **V7** The business transaction never fails because of Notifications. *Proof:* `NotificationOutageTests.OrderPlaced_WhenSubsystemDown` against the real outbox (DLV-5, TC-NOTIF-07).
-- [ ] **V8** Purge job (12 months). *Proof:* `PurgeJobTests`.
+- [x] **V5** Exhaustion moves to `NTFY_DEDL` and raises the alert: log event, counter, email to `OpsAlertEmail`. *Proof:* `DeadLetterTests` (DLV-3, 12), `DeadLetterAlertTests`.
+- [x] **V6** Per-kind expiry and queue-age health value. *Proof:* `ExpiryTests`, `QueueAgeHealthTests` (DLV-10, 11).
+- [x] **V7** The business transaction never fails because of Notifications. *Proof:* `NotificationOutageTests.OrderPlaced_WhenSubsystemDown` against the real outbox (DLV-5, TC-NOTIF-07).
+- [x] **V8** Purge job (12 months). *Proof:* `PurgeJobTests`.
 
 ## channels
 

@@ -11,7 +11,11 @@ public interface INotificationsDbContext
 {
     DbSet<Notification> Notifications { get; }
 
+    DbSet<ChannelDelivery> Deliveries { get; }
+
     DbSet<DeliveryAttempt> Attempts { get; }
+
+    DbSet<DeadLetter> DeadLetters { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

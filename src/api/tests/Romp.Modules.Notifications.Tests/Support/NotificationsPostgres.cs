@@ -18,11 +18,21 @@ public sealed class NotificationsPostgres : IAsyncLifetime
         await context.Database.MigrateAsync();
     }
 
+    /// <summary>A context that also writes raised events to the module's outbox, as the running host does.</summary>
+    internal NtfyDbContext NewContextWithOutbox()
+    {
+        var options = new DbContextOptionsBuilder<NtfyDbContext>()
+            .UseNpgsql(ConnectionString, npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "NTFY"))
+            .AddInterceptors(new Romp.BuildingBlocks.Persistence.Outbox.OutboxSaveChangesInterceptor(TimeProvider.System))
+            .Options;
+        return new NtfyDbContext(options);
+    }
+
     /// <summary>Empties the notifications so a test that claims "everything due" sees only its own rows.</summary>
     public async Task ResetAsync()
     {
         await using var context = NewContext();
-        await context.Database.ExecuteSqlRawAsync("TRUNCATE \"NTFY\".\"NTFY_MAIN\" CASCADE");
+        await context.Database.ExecuteSqlRawAsync("TRUNCATE \"NTFY\".\"NTFY_MAIN\", \"NTFY\".\"OUTB_MSG\" CASCADE");
     }
 
     public async Task DisposeAsync() => await _postgres.DisposeAsync().AsTask();
