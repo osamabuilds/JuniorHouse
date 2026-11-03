@@ -1,7 +1,7 @@
 # Notification delivery
 
 - **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
-- **Jira:** to be created on approval (sprint S13)
+- **Jira:** SCRUM-212 (sprint S13)
 - **BRD sections:** §8.3, §9.5, §12.3.7
 - **Requirement IDs:** FR-61, FR-62, FR-65, NFR-FT-01, NFR-FT-02, NFR-FT-03, NFR-FT-04, NFR-FT-05, NFR-FT-08, TC-NOTIF-01, 02, 03, 04, 07
 
@@ -60,3 +60,6 @@ SMS, push, marketing campaigns, a separate message broker.
 - [x] **Q-DLV-2 Retry schedule numbers.** Recommendation: 6 attempts at about 1 min, 5 min, 30 min, 2 h, 6 h, 12 h with jitter. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-DLV-3 Per-kind expiry** (for example: order confirmation never expires within 7 days; COD cancel notice 24 hours). **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-DLV-4 Retention** of notification records and dead letters (they contain no body, only references; recommendation 12 months). **Approved (owner, 2026-11-02: approve all recommendations).**
+
+## As built
+Built as specced (tasks N1, V1-V8). Notes: dead-letter is `NTFY_DEDL` and expiry `EXPY` in the schema (glossary words); `NotificationSentEvent` is registered but never raised; set `Notifications:OpsAlertEmail` before deploy.

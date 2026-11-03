@@ -1,7 +1,7 @@
 # Notification channels
 
 - **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
-- **Jira:** to be created on approval (sprint S13)
+- **Jira:** SCRUM-213 (sprint S13)
 - **BRD sections:** §5.4, §8.3
 - **Requirement IDs:** FR-31, FR-64, NFR-FT-06, SEC-21, TC-NOTIF-05
 
@@ -51,3 +51,6 @@ SMS (deferred, owner), a channel preference screen beyond the opt-in, marketing 
 - [x] **Q-CHN-2 Where is the opt-in recorded for signed-in customers** (account setting in `Customers`, read through a contract) and does guest opt-in create a contact record or live on the order only? Recommendation: on the order only. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [ ] **Q-CHN-3 Language and tone** of templates (English only for launch?). The business supplies the copy.
 - [ ] **Q-CHN-4 Sender identity:** from address, display name, WhatsApp business number.
+
+## As built
+Built as specced (tasks H1-H9). Notes: the STOP list is `NTFY_BLCK` (salted HMAC); the live Meta sandbox check is still open and needs the owner number, token and app secret; template names romp_order_confirmation, romp_order_cancelled, romp_cod_confirmation and their 3 placeholders must match what Meta approves; a receipt arriving before the provider id is saved is ignored.

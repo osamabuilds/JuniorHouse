@@ -49,5 +49,5 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## Close the loop
 
-- [ ] **Z1** Architecture tests green (only the known `zz-live-demo` failure); full build with 0 warnings; unit and e2e green on the docker secure stack; spec "As built"; Jira issues created and linked.
-- [ ] **Z2** Rebuild docker; tell the owner where to see the emails (Mailpit :8025) and the fake WhatsApp messages, and what is still needed from the business (WhatsApp number, Meta verification, template approval, copy).
+- [x] **Z1** (2026-11-04: arch tests only the known failure, build 0 warnings, unit tests green, e2e written but not run on the secure stack, Jira SCRUM-212..215, spec "As built" sections) Architecture tests green (only the known `zz-live-demo` failure); full build with 0 warnings; unit and e2e green on the docker secure stack; spec "As built"; Jira issues created and linked.
+- [x] **Z2** (2026-11-04: api and admin rebuilt, NTFY migrated through AddResendKey, health ready) Rebuild docker; tell the owner where to see the emails (Mailpit :8025) and the fake WhatsApp messages, and what is still needed from the business (WhatsApp number, Meta verification, template approval, copy).

@@ -1,7 +1,7 @@
 # Delivery log and resend (admin)
 
 - **Status:** Approved (owner approved all recommendations, 2026-11-02; plan awaiting approval)
-- **Jira:** to be created on approval (sprint S13)
+- **Jira:** SCRUM-215 (sprint S13)
 - **BRD sections:** §8.3, §7.9
 - **Requirement IDs:** FR-63, NFR-FT-07, FR-59, FR-60, SEC-08, TC-NOTIF-06
 
@@ -41,3 +41,6 @@ Editing templates, bulk resend, customer-facing history.
 - [x] **Q-DLG-1 Roles.** Which roles may resend (support and order-ops yes)? Confirm. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-DLG-2 "Delivered" for email** is rarely knowable without provider webhooks. Accept "Sent" as the final email state for launch? **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-DLG-3 Bulk resend of dead letters** after an outage: needed at launch? Recommendation: no, one at a time, revisit if an outage shows the need. **Approved (owner, 2026-11-02: approve all recommendations).**
+
+## As built
+Built (tasks G1-G4). Differences from the plan: log rows and `{id}` are channel deliveries; masking and exact-match search come from the new `Orders.Contracts.IOrderContactSummaries`; plain services instead of MediatR commands; new column `NTFY_CHNL.RSND_KEY` (unique) for the client resend key; a Sent or Delivered message needs `acknowledgeDuplicate` (email never goes beyond Sent, so both warn); the dead-letter filter shows dead deliveries not yet resent; the resend question is an inline confirmation, not a modal. Resend answers 202, 200 on the same key, or 409 with a code. Not covered: the Playwright spec `e2e/notifications/delivery-log.e2e.spec.ts` was not run, because the secure docker stack needs an owner sign-in with MFA (`E2E_OWNER_PASSWORD`).
