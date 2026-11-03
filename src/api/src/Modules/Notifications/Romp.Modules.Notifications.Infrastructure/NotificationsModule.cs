@@ -9,8 +9,10 @@ using Romp.BuildingBlocks.Modules;
 using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Notifications.Application.Abstractions;
+using Romp.Modules.Notifications.Application.Channels;
 using Romp.Modules.Notifications.Application.Delivery;
 using Romp.Modules.Notifications.Contracts;
+using Romp.Modules.Notifications.Infrastructure.Channels;
 using Romp.Modules.Notifications.Infrastructure.Delivery;
 using Romp.Modules.Notifications.Infrastructure.Persistence;
 using Romp.Modules.Orders.Contracts;
@@ -50,8 +52,13 @@ public sealed class NotificationsModule : IModule
             .ValidateOnStart();
         services.AddScoped(sp => sp.GetRequiredService<IOptions<DeliverySettings>>().Value);
         services.AddScoped<IDeliveryClaimer, SkipLockedDeliveryClaimer>();
-        services.AddScoped<IMessageRenderer, PlainMessageRenderer>();
+        services.AddScoped<IMessageRenderer, TemplateMessageRenderer>();
         services.AddScoped<IChannelSender, EmailChannelSender>();
+
+        // WhatsApp sits behind its port; the fake is the default until the business has a number and Meta's approval (CHN-8, D-4).
+        services.TryAddSingleton<FakeWhatsAppSender>();
+        services.TryAddSingleton<IWhatsAppSender>(sp => sp.GetRequiredService<FakeWhatsAppSender>());
+        services.AddScoped<IChannelSender, WhatsAppChannelSender>();
         services.AddScoped<DeliveryProcessor>();
         services.AddScoped<QueueHealth>();
         services.AddScoped<PurgeProcessor>();

@@ -12,7 +12,10 @@ namespace Romp.Modules.Notifications.Application.Delivery;
 /// </summary>
 public sealed class PlainMessageRenderer : IMessageRenderer
 {
-    public RenderedMessage Render(NotificationKind kind, NotificationChannel channel, OrderNotificationView order)
+    public Task<RenderedMessage> RenderAsync(NotificationKind kind, NotificationChannel channel, OrderNotificationView order, CancellationToken cancellationToken) =>
+        Task.FromResult(RenderPlain(kind, channel, order));
+
+    public static RenderedMessage RenderPlain(NotificationKind kind, NotificationChannel channel, OrderNotificationView order)
     {
         ArgumentNullException.ThrowIfNull(order);
 

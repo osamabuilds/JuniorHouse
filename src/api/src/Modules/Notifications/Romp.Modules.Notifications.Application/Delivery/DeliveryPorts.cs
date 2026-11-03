@@ -23,7 +23,7 @@ public interface IChannelSender
 /// <summary>Builds the words of a message from the order as stored now (OCF-5). Every value is encoded for the channel (CHN-9, OCF-7).</summary>
 public interface IMessageRenderer
 {
-    RenderedMessage Render(NotificationKind kind, NotificationChannel channel, OrderNotificationView order);
+    Task<RenderedMessage> RenderAsync(NotificationKind kind, NotificationChannel channel, OrderNotificationView order, CancellationToken cancellationToken);
 }
 
 public sealed record RenderedMessage(string Subject, string Text, string? Html);

@@ -89,7 +89,7 @@ public sealed class DeliveryProcessor(
                 return;
             }
 
-            var rendered = renderer.Render(notification.Kind, delivery.Channel, order);
+            var rendered = await renderer.RenderAsync(notification.Kind, delivery.Channel, order, cancellationToken);
             var providerId = await sender.SendAsync(
                 new OutboundMessage(delivery.Channel, recipient, rendered.Subject, rendered.Text, rendered.Html), cancellationToken);
 

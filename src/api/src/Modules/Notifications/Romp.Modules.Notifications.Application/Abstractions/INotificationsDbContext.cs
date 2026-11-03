@@ -17,5 +17,7 @@ public interface INotificationsDbContext
 
     DbSet<DeadLetter> DeadLetters { get; }
 
+    DbSet<MessageTemplate> Templates { get; }
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
