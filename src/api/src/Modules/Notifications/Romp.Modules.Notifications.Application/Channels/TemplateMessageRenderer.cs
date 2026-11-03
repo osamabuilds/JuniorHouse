@@ -42,6 +42,16 @@ public static partial class TemplateEngine
         var subject = Fill(template.Subject, textValues);
         var text = Fill(template.PlainText, textValues);
 
+        if (whatsApp)
+        {
+            // The provider's template has fixed numbered placeholders: 1 customer name, 2 order number, 3 total (CHN-13). The COD request carries
+            // the two reply buttons whose ids come back in the reply (CHN-12).
+            IReadOnlyList<WhatsAppButton>? buttons = template.Kind == NotificationKind.CodConfirmationRequest
+                ? [new WhatsAppButton(CodButtons.Confirm, "Confirm order"), new WhatsAppButton(CodButtons.Cancel, "Cancel order")]
+                : null;
+            return new RenderedMessage(subject, text, null, template.ProviderTemplateName, [textValues["CustomerName"], textValues["OrderNumber"], total], buttons);
+        }
+
         string? html = null;
         if (!whatsApp && !string.IsNullOrWhiteSpace(template.Html))
         {

@@ -59,15 +59,33 @@ public sealed class NotificationsModule : IModule
         services.AddSingleton<ChannelCircuits>();
         services.AddScoped<IChannelSender>(sp => new CircuitBreakingChannelSender(ActivatorUtilities.CreateInstance<EmailChannelSender>(sp), sp.GetRequiredService<ChannelCircuits>()));
 
-        // WhatsApp sits behind its port; the fake is the default until the business has a number and Meta's approval (CHN-8, D-4).
-        services.TryAddSingleton<FakeWhatsAppSender>();
-        services.TryAddSingleton<IWhatsAppSender>(sp => sp.GetRequiredService<FakeWhatsAppSender>());
+        // WhatsApp sits behind its port. Off by default, the fake stands in (CHN-8, D-4); with Enabled the Cloud API adapter takes over, and the
+        // host refuses to start without its secrets outside Development (WhatsAppStartupCheck).
+        var whatsAppSettings = configuration.GetSection(WhatsAppSettings.SectionName).Get<WhatsAppSettings>() ?? new WhatsAppSettings();
+        services.AddSingleton(whatsAppSettings);
+        services.AddHostedService<WhatsAppStartupCheck>();
+        if (whatsAppSettings.Enabled)
+        {
+            services.AddHttpClient<WhatsAppCloudSender>(client =>
+            {
+                client.BaseAddress = new Uri(whatsAppSettings.ApiBaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(whatsAppSettings.TimeoutSeconds);
+            });
+            services.AddTransient<IWhatsAppSender>(sp => sp.GetRequiredService<WhatsAppCloudSender>());
+        }
+        else
+        {
+            services.TryAddSingleton<FakeWhatsAppSender>();
+            services.TryAddSingleton<IWhatsAppSender>(sp => sp.GetRequiredService<FakeWhatsAppSender>());
+        }
+
         services.AddScoped<IChannelSender>(sp => new CircuitBreakingChannelSender(ActivatorUtilities.CreateInstance<WhatsAppChannelSender>(sp), sp.GetRequiredService<ChannelCircuits>()));
 
         // Inbound WhatsApp: signature-checked webhook, events stored once, routed by type (CHN-11).
-        services.AddSingleton(configuration.GetSection(WhatsAppSettings.SectionName).Get<WhatsAppSettings>() ?? new WhatsAppSettings());
         services.AddScoped<WhatsAppWebhookProcessor>();
         services.AddScoped<ISuppressionList, SuppressionList>();
+        services.AddScoped<IDailySendCounter, SqlDailySendCounter>();
+        services.AddScoped<IWhatsAppInboundHandler, ReceiptHandler>();
         services.AddScoped<IWhatsAppInboundHandler, CodReplyHandler>();
         services.AddScoped<IWhatsAppInboundHandler, StopHandler>();
         services.AddScoped<DeliveryProcessor>();

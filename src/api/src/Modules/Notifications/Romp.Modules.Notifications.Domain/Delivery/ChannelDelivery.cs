@@ -97,6 +97,23 @@ public sealed class ChannelDelivery : Entity<long>, IAuditable
         Status = DeliveryStatus.Delivered;
     }
 
+    /// <summary>The provider reports it could not deliver a message it had accepted (a WhatsApp "failed" receipt). Final; the email, sent in parallel, stands (CHN-3).</summary>
+    public void MarkFailedByProvider()
+    {
+        if (Status == DeliveryStatus.Failed)
+        {
+            return;
+        }
+
+        if (Status != DeliveryStatus.Sent)
+        {
+            throw new DomainException("Only a sent message can be reported failed by the provider.");
+        }
+
+        Status = DeliveryStatus.Failed;
+        LastError = ErrorCategory.Permanent;
+    }
+
     /// <summary>
     /// An attempt failed. A permanent failure is final and not retried (DLV-8); a temporary one is retried on the schedule until the
     /// attempts run out, then the delivery is dead (DLV-3). An open circuit waits without using up an attempt (CHN-4).

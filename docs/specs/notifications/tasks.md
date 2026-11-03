@@ -19,15 +19,15 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## channels
 
-- [ ] **H1** `IWhatsAppSender` and `FakeWhatsAppSender` (records sends, configurable failures, can raise inbound events); `IEmailSender` used as is. *Proof:* `FakeWhatsAppSenderTests`; `CHN-8` architecture check.
-- [ ] **H2** Templates as data (`NTFY_TMPL`), renderer with HTML encoding and plain-text twin; seed order confirmation, order cancelled, COD confirmation request (placeholder copy until the business supplies it). *Proof:* `TemplateRendererTests` incl. encoding of hostile values (CHN-9, OCF-7).
-- [ ] **H3** Circuit breaker per channel using `Microsoft.Extensions.Http.Resilience` (version pinned, at least two weeks old). *Proof:* `ChannelCircuitTests` (CHN-4).
-- [ ] **H4** Fallback and opt-in: no opt-in means no WhatsApp; WhatsApp failure leaves email standing; status tracked per channel. *Proof:* `FallbackTests`, `OptInTests` (CHN-1, 2, 3, 5, 10).
-- [ ] **H5** Inbound webhook: GET verification, POST signature check before parsing, event stored once, 64 KB cap, rate limit. *Proof:* `WhatsAppWebhookTests` (valid, missing or bad signature, replay, oversize: CHN-11).
-- [ ] **H6** Button reply routing: match by provider message id and sender number, call `ICodCustomerResponses`, ignore unmatched. *Proof:* `CodReplyRoutingTests` (CHN-12, COD-14, 15, 16).
-- [ ] **H7** STOP adds a salted number hash to `NTFY_SUPR`; every WhatsApp send checks it. *Proof:* `SuppressionTests` (CHN-6).
-- [ ] **H8** Delivery receipts update channel status; daily send counter. *Proof:* `ReceiptTests`, `DailyCountTests` (CHN-14, 15, DLG-10).
-- [ ] **H9** Real WhatsApp Cloud API adapter written against Meta's documented request shapes behind the port, disabled by default, needing the secrets; sandbox check once the owner has the number and verification. *Proof:* `WhatsAppCloudAdapterTests` with a stub HTTP handler (request shape, error mapping); the live check is recorded in "As built" when done.
+- [x] **H1** `IWhatsAppSender` and `FakeWhatsAppSender` (records sends, configurable failures, can raise inbound events); `IEmailSender` used as is. *Proof:* `FakeWhatsAppSenderTests`; `CHN-8` architecture check.
+- [x] **H2** Templates as data (`NTFY_TMPL`), renderer with HTML encoding and plain-text twin; seed order confirmation, order cancelled, COD confirmation request (placeholder copy until the business supplies it). *Proof:* `TemplateRendererTests` incl. encoding of hostile values (CHN-9, OCF-7).
+- [x] **H3** Circuit breaker per channel using `Microsoft.Extensions.Http.Resilience` 10.0.0 (Polly strategy; the HTTP adapter uses a plain timeout and relies on this breaker, not the standard handler, to avoid a second retry schedule). *Proof:* `ChannelCircuitTests` (CHN-4).
+- [x] **H4** Fallback and opt-in: no opt-in means no WhatsApp; WhatsApp failure leaves email standing; status tracked per channel. *Proof:* `FallbackTests`, `OptInTests` (CHN-1, 2, 3, 5, 10).
+- [x] **H5** Inbound webhook: GET verification, POST signature check before parsing, event stored once, 64 KB cap, rate limit. *Proof:* `WhatsAppWebhookTests` (valid, missing or bad signature, replay, oversize: CHN-11).
+- [x] **H6** Button reply routing: match by provider message id and sender number, call `ICodCustomerResponses`, ignore unmatched. *Proof:* `CodReplyRoutingTests` (CHN-12, COD-14, 15, 16).
+- [x] **H7** STOP adds a salted number hash to `NTFY_SUPR`; every WhatsApp send checks it. *Proof:* `SuppressionTests` (CHN-6).
+- [x] **H8** Delivery receipts update channel status; daily send counter. *Proof:* `ReceiptTests`, `DailyCountTests` (CHN-14, 15, DLG-10).
+- [x] **H9** Real WhatsApp Cloud API adapter written against Meta's documented request shapes behind the port, disabled by default, needing the secrets; sandbox check once the owner has the number and verification. *Proof:* `WhatsAppCloudAdapterTests` with a stub HTTP handler (request shape, error mapping); the live check is recorded in "As built" when done.
 
 ## order-confirmation
 

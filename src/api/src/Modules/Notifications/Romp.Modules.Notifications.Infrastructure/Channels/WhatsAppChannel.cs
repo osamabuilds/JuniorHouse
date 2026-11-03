@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
+using Romp.Modules.Notifications.Infrastructure.Delivery;
 using Romp.Modules.Notifications.Application.Channels;
 using Romp.Modules.Notifications.Application.Delivery;
 using Romp.Modules.Notifications.Domain.Delivery;
@@ -10,8 +12,12 @@ internal sealed class WhatsAppChannelSender(IWhatsAppSender whatsApp) : IChannel
 {
     public NotificationChannel Channel => NotificationChannel.WhatsApp;
 
-    public async Task<string?> SendAsync(OutboundMessage message, CancellationToken cancellationToken) =>
-        await whatsApp.SendAsync(new WhatsAppMessage(message.Recipient, message.Text, []), cancellationToken);
+    public async Task<string?> SendAsync(OutboundMessage message, CancellationToken cancellationToken)
+    {
+        var id = await whatsApp.SendAsync(
+            new WhatsAppMessage(message.Recipient, message.Text, message.Buttons ?? [], message.ProviderTemplate, message.Parameters), cancellationToken);
+        return string.IsNullOrEmpty(id) ? null : id;
+    }
 }
 
 /// <summary>
@@ -51,4 +57,21 @@ public sealed class FakeWhatsAppSender : IWhatsAppSender
         _sent.Enqueue(message);
         return Task.FromResult($"fake-wamid-{Interlocked.Increment(ref _counter)}");
     }
+}
+
+/// <summary>The daily send count as one atomic upsert on <c>NTFY_DAY_CNT</c>, so concurrent workers never lose a count (CHN-15).</summary>
+internal sealed class SqlDailySendCounter(Persistence.NtfyDbContext dbContext, TimeProvider clock) : IDailySendCounter
+{
+    private const string UpsertSql = """
+        INSERT INTO "NTFY"."NTFY_DAY_CNT" ("DAY_DT", "CHNL_ID", "SENT_CNT", "INSR_DTE", "INSR_BY")
+        VALUES ({0}, {1}, 1, {2}, 'delivery-worker')
+        ON CONFLICT ("DAY_DT", "CHNL_ID")
+        DO UPDATE SET "SENT_CNT" = "NTFY_DAY_CNT"."SENT_CNT" + 1, "UPDT_DTE" = {2}, "UPDT_BY" = 'delivery-worker'
+        """;
+
+    public async Task IncrementAsync(DateOnly day, NotificationChannel channel, CancellationToken cancellationToken) =>
+        await dbContext.Database.ExecuteSqlRawAsync(UpsertSql, [day, DeliveryConversions.ChannelId(channel), clock.GetUtcNow()], cancellationToken);
+
+    public async Task<int> CountAsync(DateOnly day, NotificationChannel channel, CancellationToken cancellationToken) =>
+        await dbContext.DailyCounts.AsNoTracking().Where(c => c.Day == day && c.Channel == channel).Select(c => c.SentCount).SingleOrDefaultAsync(cancellationToken);
 }

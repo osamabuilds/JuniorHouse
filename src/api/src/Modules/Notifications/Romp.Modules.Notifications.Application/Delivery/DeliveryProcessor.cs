@@ -17,6 +17,7 @@ public sealed class DeliveryProcessor(
     IOrderNotificationQueries orders,
     IMessageRenderer renderer,
     ISuppressionList suppression,
+    IDailySendCounter dailyCounts,
     IEnumerable<IChannelSender> senders,
     DeliverySettings settings,
     TimeProvider clock)
@@ -101,9 +102,10 @@ public sealed class DeliveryProcessor(
 
             var rendered = await renderer.RenderAsync(notification.Kind, delivery.Channel, order, cancellationToken);
             var providerId = await sender.SendAsync(
-                new OutboundMessage(delivery.Channel, recipient, rendered.Subject, rendered.Text, rendered.Html), cancellationToken);
+                new OutboundMessage(delivery.Channel, recipient, rendered.Subject, rendered.Text, rendered.Html, rendered.ProviderTemplate, rendered.Parameters, rendered.Buttons), cancellationToken);
 
             delivery.MarkSent(providerId);
+            await dailyCounts.IncrementAsync(DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime), delivery.Channel, cancellationToken);
             dbContext.Attempts.Add(new DeliveryAttempt(delivery.Id, delivery.AttemptCount, DeliveryStatus.Sent, null, clock.GetUtcNow()));
         }
         catch (ChannelSendException ex)

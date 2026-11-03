@@ -4,7 +4,15 @@ using Romp.Modules.Orders.Contracts;
 namespace Romp.Modules.Notifications.Application.Delivery;
 
 /// <summary>What a channel sender is asked to send. Built at send time from the order; never stored (SEC-25).</summary>
-public sealed record OutboundMessage(NotificationChannel Channel, string Recipient, string Subject, string Text, string? Html);
+public sealed record OutboundMessage(
+    NotificationChannel Channel,
+    string Recipient,
+    string Subject,
+    string Text,
+    string? Html,
+    string? ProviderTemplate = null,
+    IReadOnlyList<string>? Parameters = null,
+    IReadOnlyList<Channels.WhatsAppButton>? Buttons = null);
 
 /// <summary>A channel failed. The category decides what happens next: retry on the schedule, fail fast, or wait for the circuit (DLV-8, CHN-4).</summary>
 public sealed class ChannelSendException(ErrorCategory category, string message) : Exception(message)
@@ -26,7 +34,14 @@ public interface IMessageRenderer
     Task<RenderedMessage> RenderAsync(NotificationKind kind, NotificationChannel channel, OrderNotificationView order, CancellationToken cancellationToken);
 }
 
-public sealed record RenderedMessage(string Subject, string Text, string? Html);
+/// <summary>The words of a message. For WhatsApp it also names the approved provider template, the values for its placeholders and the reply buttons (CHN-13).</summary>
+public sealed record RenderedMessage(
+    string Subject,
+    string Text,
+    string? Html,
+    string? ProviderTemplate = null,
+    IReadOnlyList<string>? Parameters = null,
+    IReadOnlyList<Channels.WhatsAppButton>? Buttons = null);
 
 /// <summary>
 /// Takes due deliveries for one worker (DLV-9). Implemented in one statement with <c>FOR UPDATE SKIP LOCKED</c> and a lease, so two workers

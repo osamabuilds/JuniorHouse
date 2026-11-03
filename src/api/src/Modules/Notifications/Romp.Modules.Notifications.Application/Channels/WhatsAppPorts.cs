@@ -3,7 +3,12 @@ using Romp.Modules.Notifications.Domain.Channels;
 namespace Romp.Modules.Notifications.Application.Channels;
 
 /// <summary>One WhatsApp message to send. Built at send time and never stored (SEC-25). <c>Buttons</c> are the quick replies (Confirm, Cancel) of a COD request.</summary>
-public sealed record WhatsAppMessage(string RecipientNumber, string Text, IReadOnlyList<WhatsAppButton> Buttons);
+public sealed record WhatsAppMessage(
+    string RecipientNumber,
+    string Text,
+    IReadOnlyList<WhatsAppButton> Buttons,
+    string? TemplateName = null,
+    IReadOnlyList<string>? Parameters = null);
 
 public sealed record WhatsAppButton(string Id, string Title);
 

@@ -32,6 +32,11 @@ public sealed class WhatsAppSettings
     /// <summary>The salt for the STOP list: numbers are stored as salted hashes, never in clear (CHN-6).</summary>
     public string? NumberSalt { get; set; }
 
+    /// <summary>The provider API address including the version, ending in a slash. Changed only when the provider retires a version.</summary>
+    public string ApiBaseUrl { get; set; } = "https://graph.facebook.com/v21.0/";
+
+    public int TimeoutSeconds { get; set; } = 15;
+
     /// <summary>The largest webhook body accepted, in bytes (64 KB).</summary>
     public int MaxBodyBytes { get; set; } = 64 * 1024;
 }
