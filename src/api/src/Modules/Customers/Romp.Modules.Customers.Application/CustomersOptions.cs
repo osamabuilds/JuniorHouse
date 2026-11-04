@@ -8,11 +8,15 @@ public sealed class CustomersOptions
     /// <summary>How many saved addresses one customer may keep (ADD-6, Q-ADD-3 default).</summary>
     public int MaxAddresses { get; set; } = 10;
 
+    /// <summary>How many products one customer may keep on the wishlist (plan: 200).</summary>
+    public int MaxWishlistItems { get; set; } = 200;
+
     /// <summary>The storefront address that emailed links point at (verify email, reset password). Configuration only, never taken from a request.</summary>
     public string PublicBaseUrl { get; set; } = "http://localhost:4000";
 
     public static bool IsValid(CustomersOptions options) =>
         options.MaxAddresses is >= 1 and <= 50
+        && options.MaxWishlistItems is >= 1 and <= 1000
         && Uri.TryCreate(options.PublicBaseUrl, UriKind.Absolute, out var url)
         && url.Scheme is "http" or "https";
 }

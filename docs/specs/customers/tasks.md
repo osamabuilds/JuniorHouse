@@ -44,7 +44,7 @@ From the "Real sign-in" section of [accounts/plan.md](accounts/plan.md) and [ADR
 
 From [wishlist/plan.md](wishlist/plan.md). Two things the plan assumes do not exist yet: `IStorefrontCatalogQueries` (Storefront.Contracts has only `IStorefrontPageQueries`) and an `ICustomerSignedInHook` (sign-in is parked). W2 adds the first; W7 builds the merge endpoint only and the hook waits for the auth sprint.
 
-- [ ] **W1** `WishlistItem` and `WishlistFlags` (pure: saved price, current price, availability to `PriceDropped`, `OnSale`, `SoldOut`, `Unavailable`), `MaxWishlistItems` option validated at start. *Proof:* `WishlistFlagsTests`, `WishlistItemTests` (WSL-4, WSL-5, WSL-6).
+- [x] **W1** (2026-11-04; the flags enum is `WishlistNotes` because CA1711 bans a type name ending in Flag; `MaxWishlistItems` added to `CustomersOptions`) `WishlistItem` and `WishlistFlags` (pure: saved price, current price, availability to `PriceDropped`, `OnSale`, `SoldOut`, `Unavailable`), `MaxWishlistItems` option validated at start. *Proof:* `WishlistFlagsTests`, `WishlistItemTests` (WSL-4, WSL-5, WSL-6).
 - [ ] **W2** Storefront contract `IStorefrontCatalogQueries.GetProductSummariesAsync(ids)`: one bulk call, DTOs only (id, slug, name, price, was-price, availability, image, link path); unpublished ids are returned as absent. *Proof:* `StorefrontCatalogQueriesTests` in Storefront integration tests, including a query-count assertion (WSL-5, WSL-8).
 - [ ] **W3** `CUST_WSHL` migration (`UQ_CUST_WSHL_CUST_ID_PRDT_ID`, index on `CUST_ID`, `SAVD_PRIC_AMT` numeric(12,2)); glossary words (`WSHL`, `SAVD`, `PRIC`, `AMT` if missing). *Proof:* `WishlistMigrationTests`, `NamingConventionTests`, `GlossaryTests`.
 - [ ] **W4** Commands: add (idempotent `INSERT ... ON CONFLICT DO NOTHING`, price taken from the read model, 200 cap) and remove by product id. *Proof:* `WishlistCommandTests` (WSL-1, WSL-4, WSL-7).
@@ -56,9 +56,26 @@ From [wishlist/plan.md](wishlist/plan.md). Two things the plan assumes do not ex
 - [ ] **W10** Wire the heart into the product page and listing tiles without breaking the shared edge cache (state fetched client-side after load). *Proof:* product-page and listing specs still pass; heart renders off on the server.
 - [ ] **W11** E2E journey and axe scan; spec "As built"; rebuild docker. *Proof:* `wishlist.e2e.spec.ts` (WSL-1, WSL-9).
 
-## newsletter, notify-me
+## newsletter
 
-Tasks are added when their turn comes, from their feature plans, in that order (module plan, "Order of work").
+Tasks are added when its turn comes, from its plan (module plan, "Order of work").
+
+## notify-me
+
+From [notify-me/plan.md](notify-me/plan.md) (drafted 2026-11-04, awaiting the owner's go-ahead). Open questions Q-NTM-1..5 take the spec defaults (15 min SLA, 90/30 day retention, send even if sold out again, check against the Storefront read model, per variant). **Dependencies not built yet:** `IStorefrontCatalogQueries` (task W2, wishlist; N2 adds `GetVariantSummariesAsync` to it, or does W2 first), and `CustomerEmailRequestedEvent` plus its handler (newsletter plan; N5 creates them here if newsletter is not built first, and newsletter reuses them). Note the Notifications module now exists (ADR 0026); the plan keeps the restock email on `IEmailSender` with the Customers handler, and notifications task X1 moves it later. Raise this with the owner before N5 if they would rather send it through Notifications from the start.
+
+- [ ] **N1** Domain: `NotifyRequest` (Open/Notified/Expired, notified exactly once), `RestockRule`, email normalisation, options `MaxNotifyPerVariant` 5000, `NotifyOpenDays` 90, `NotifyClosedDays` 30 validated at start. *Proof:* `NotifyRequestTests`, `RestockRuleTests` (NTM-2, NTM-3, NTM-9).
+- [ ] **N2** Storefront contract `IStorefrontCatalogQueries.GetVariantSummariesAsync(ids)`: one bulk call, DTOs only (variant id, product name, size, colour, SKU, slug, availability); unknown or unpublished ids absent. *Proof:* `StorefrontCatalogQueriesTests` with a query-count assertion (NTM-1, NTM-6, NTM-13).
+- [ ] **N3** Migration `CUST.NTFM_REQ` and lookup `NTFM_STS_LKP` (OPEN, NTFD, EXPD), partial unique `UQ_NTFM_REQ_VRNT_ID_EML_OPEN`, indexes on `STS_ID` and (`VRNT_ID`, `STS_ID`); glossary words (`NTFM`, `NTFD`, `EXPD`). *Proof:* `NotifyMigrationTests`, `NamingConventionTests`, `GlossaryTests`.
+- [ ] **N4** `CreateNotifyRequestCommand`: variant must exist and be sold out, `INSERT ... ON CONFLICT DO NOTHING`, cap per variant, identical result for new and repeated. *Proof:* `CreateNotifyRequestTests` (NTM-2, NTM-3, NTM-6).
+- [ ] **N5** `StockChangedMapper` and inbox-guarded `StockChangedConsumer` for `StockLevelChangedEvent` v1; `ProcessStockChangeCommand` marks open requests Notified (conditional UPDATE) and queues one `CustomerEmailRequestedEvent(RestockNotice, requestId)` each through the outbox, batches of 500, one transaction. *Proof:* `ProcessStockChangeTests` incl. redelivery (NTM-4, NTM-8).
+- [ ] **N6** `SendRestockNoticeHandler`: loads request and variant summary, renders HTML-encoded email (product, size, link, no marketing), sends via `IEmailSender`, sets `SENT_DTE`; a send failure retries the message only. *Proof:* `RestockNoticeEmailTests`, `RestockOutageTests` (NTM-5, NTM-8, NTM-9).
+- [ ] **N7** `PurgeNotifyRequestsJob` (daily). *Proof:* `PurgeNotifyRequestsTests`.
+- [ ] **N8** `POST /api/notify-me` (`Public`, `strict`, works as a normal form POST) and `GET /api/admin/customers/notify-demand` (`Policies.CustomerDemand`, one grouped query, one bulk contract call, counts only, page size 1..100); matrix rows. *Proof:* `NotifyMeEndpointsTests`, `NotifyDemandQueryTests` incl. query count and no addresses in the response or logs, authorization matrix test (NTM-7, NTM-11, NTM-12, NTM-13).
+- [ ] **N9** Architecture tests: Notify Me depends on nothing else in Customers; `NTFM_REQ` email never selected by the demand query. *Proof:* `CustomersFeatureDependencyTests`.
+- [ ] **N10** Storefront `features/customers/notify-me`: email form on the sold-out variant (SSR, labelled, live-region confirmation, no-JS POST, prefilled for the signed-in customer), added to the `server.ts` pass-through. *Proof:* component, store and service specs (NTM-1, NTM-10).
+- [ ] **N11** Admin `features/customers/notify-me` demand table (paged, route `customers/notify-me`, menu entry, `*hasPermission`). *Proof:* component and store specs, `ng build admin` (NTM-11, NTM-12).
+- [ ] **N12** E2E (sold-out size, submit twice, restock, email in Mailpit) and axe scan; spec "As built"; Notify Me README status; rebuild docker. *Proof:* `notify-me.e2e.spec.ts` (TC-PDP-04..06).
 
 ## Decisions taken on defaults
 
