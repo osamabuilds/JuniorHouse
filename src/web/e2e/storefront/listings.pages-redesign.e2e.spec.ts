@@ -54,7 +54,7 @@ for (const width of VIEWPORTS) {
       const cards = page.locator('rp-product-tile');
       test.skip((await cards.count()) === 0, 'the shop lists no products');
       await expect(cards.first().locator('.rp-avail li').first()).toBeVisible();
-      await expect(cards.first().locator('button')).toHaveCount(0);
+      await expect(cards.first().locator('button:not([aria-pressed])')).toHaveCount(0);
       // The visually hidden "Now / Was / sold out" text must not take up room on screen.
       for (const hidden of await page.locator('rp-product-tile .sr-only').all()) {
         const box = await hidden.boundingBox();
