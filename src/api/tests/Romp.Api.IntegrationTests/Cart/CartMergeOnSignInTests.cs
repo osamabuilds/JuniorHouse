@@ -38,9 +38,9 @@ public sealed class CartMergeOnSignInTests(ProductionApiFixture api)
         public Task<IReadOnlyList<StockAvailability>> GetManyAsync(IReadOnlyCollection<long> variantIds, CancellationToken cancellationToken) =>
             Task.FromResult<IReadOnlyList<StockAvailability>>([.. variantIds.Where(Available.ContainsKey).Select(id => new StockAvailability(id, $"SKU-{id}", Available[id], 1))]);
 
-        public Task<IReadOnlyList<StockAvailability>> ListAvailabilityAsync(long afterVariantId, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<IReadOnlyList<StockAvailability>> ListAvailabilityAsync(long afterVariantId, int take, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<StockAvailability>>([]);
 
-        public Task<StockAvailability?> GetAsync(long variantId, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<StockAvailability?> GetAsync(long variantId, CancellationToken cancellationToken) => Task.FromResult(Available.TryGetValue(variantId, out var available) ? new StockAvailability(variantId, $"SKU-{variantId}", available, 1) : null);
     }
 
     private WebApplicationFactory<Program> RealSignIn(FakeSales sales, FakeAvailability stock) => api.Factory.WithWebHostBuilder(builder =>
