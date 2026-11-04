@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Customers.Domain.Accounts;
 using Romp.Modules.Customers.Domain.Addresses;
+using Romp.Modules.Customers.Domain.Newsletter;
 using Romp.Modules.Customers.Domain.Wishlist;
 
 namespace Romp.Modules.Customers.Application.Abstractions;
@@ -17,6 +18,8 @@ public interface ICustomerDbContext
 
     DbSet<WishlistItem> Wishlist { get; }
 
+    DbSet<NewsletterSubscription> Newsletter { get; }
+
     DbSet<CustomerSession> Sessions { get; }
 
     DbSet<LoginAttempt> LoginAttempts { get; }
@@ -30,6 +33,12 @@ public interface ICustomerDbContext
 
     /// <summary>Takes a row lock on the customer until the transaction ends, so changes to that customer's owned lists run one at a time.</summary>
     Task LockCustomerAsync(long customerId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Takes a transaction-scoped lock on a name (an email address, say) so two requests about the same value run one at a time even when
+    /// no row exists yet. Released when the transaction ends.
+    /// </summary>
+    Task LockKeyAsync(string key, CancellationToken cancellationToken);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -24,6 +24,8 @@ const devRoutes: Routes = isDevMode()
 export const productMatcher: UrlMatcher = (segments: UrlSegment[]) => (segments.length === 3 ? { consumed: segments } : null);
 
 const listing = () => import('./features/storefront/listings/containers/listing-page/listing-page.container').then((m) => m.ListingPageContainer);
+const newsletterResult = () =>
+  import('./features/customers/newsletter/containers/newsletter-result-page/newsletter-result-page.container').then((m) => m.NewsletterResultPageContainer);
 
 /**
  * Listings run on the read model through the API (listings LST-*). Content pages are served from the settings by slug; the catch-all
@@ -69,8 +71,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/customers/addresses/containers/addresses-page/addresses-page.container').then((m) => m.AddressesPageContainer),
       },
+      {
+        path: 'preferences',
+        loadComponent: () =>
+          import('./features/customers/newsletter/containers/preferences-page/preferences-page.container').then((m) => m.PreferencesPageContainer),
+      },
     ],
   },
+  // Where the storefront server sends a visitor after the footer form without JavaScript and after an unsubscribe link (noindex, never cached).
+  { path: 'newsletter/subscribed', data: { kind: 'subscribed' }, loadComponent: newsletterResult },
+  { path: 'newsletter/unsubscribed', data: { kind: 'unsubscribed' }, loadComponent: newsletterResult },
   {
     path: 'wishlist',
     loadComponent: () => import('./features/customers/wishlist/containers/wishlist-page/wishlist-page.container').then((m) => m.WishlistPageContainer),

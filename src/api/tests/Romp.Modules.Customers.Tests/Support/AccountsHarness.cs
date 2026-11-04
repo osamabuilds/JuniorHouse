@@ -9,6 +9,7 @@ using Romp.BuildingBlocks.Persistence.Auditing;
 using Romp.Modules.Customers.Application;
 using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Application.Accounts;
+using Romp.Modules.Customers.Application.Newsletter;
 using Romp.BuildingBlocks.Application.Captcha;
 using Romp.BuildingBlocks.Web.Captcha;
 using Romp.Modules.Customers.Domain.Accounts;
@@ -125,6 +126,7 @@ internal sealed class AccountsHarness : IDisposable
         services.AddScoped<TestCurrentCustomer>();
         services.AddScoped<ICurrentCustomer>(sp => sp.GetRequiredService<TestCurrentCustomer>());
         services.AddCustomerAccounts();
+        services.AddCustomerNewsletter();
 
         var application = typeof(CustomersOptions).Assembly;
         services.AddValidatorsFromAssembly(application);

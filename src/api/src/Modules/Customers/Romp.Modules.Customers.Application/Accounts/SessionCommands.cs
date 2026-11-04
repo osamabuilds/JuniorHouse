@@ -32,7 +32,7 @@ public sealed record RegisterResult(RegisterStatus Status, IReadOnlyList<string>
 /// number is format-checked and stored, not verified.
 /// </summary>
 public sealed record RegisterCommand(
-    string Email, string FirstName, string LastName, string Mobile, SecretString Password, bool KeepSignedIn, string? ClientIp, string? UserAgent, string? PresentedAccessToken, string? GuestSessionId = null)
+    string Email, string FirstName, string LastName, string Mobile, SecretString Password, bool KeepSignedIn, string? ClientIp, string? UserAgent, string? PresentedAccessToken, string? GuestSessionId = null, bool SubscribeNewsletter = false)
     : IRequest<RegisterResult>, ICustomerCommand;
 
 public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
@@ -64,7 +64,7 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
 }
 
 public sealed class RegisterCommandHandler(
-    ICustomerDbContext dbContext, IPasswordHasher hasher, CustomerSessionIssuer sessions, EmailVerificationIssuer verification, SignedInHooks hooks)
+    ICustomerDbContext dbContext, IPasswordHasher hasher, CustomerSessionIssuer sessions, EmailVerificationIssuer verification, SignedInHooks hooks, INewsletterOptIn newsletter)
     : IRequestHandler<RegisterCommand, RegisterResult>
 {
     public async Task<RegisterResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -84,6 +84,12 @@ public sealed class RegisterCommandHandler(
         var customer = Customer.Register(email, request.FirstName, request.LastName, request.Mobile, hasher.Hash(request.Password));
         dbContext.Customers.Add(customer);
         await dbContext.SaveChangesAsync(cancellationToken); // the session needs the new id
+
+        // Only a ticked box subscribes (NLS-4): an unticked one leaves any earlier unsubscribe alone.
+        if (request.SubscribeNewsletter)
+        {
+            await newsletter.SubscribeAtRegistrationAsync(email, cancellationToken);
+        }
 
         var session = await sessions.IssueAsync(customer, request.KeepSignedIn, request.PresentedAccessToken, request.ClientIp, request.UserAgent, cancellationToken);
         await verification.IssueAndSendAsync(customer, cancellationToken);

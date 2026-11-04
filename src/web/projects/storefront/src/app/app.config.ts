@@ -13,6 +13,7 @@ import { provideSearch } from './features/storefront/search';
 import { provideSiteSettings } from './features/storefront/site-settings';
 import { customerRefreshInterceptor, provideCustomerAuth, serverCookieInterceptor } from './core/customer-auth';
 import { provideCart } from './features/cart/carts/cart.providers';
+import { provideNewsletter } from './features/customers/newsletter/newsletter.providers';
 import { provideWishlist } from './features/customers/wishlist/wishlist.providers';
 import { provideRpImageLoader } from './shared/ui/image/image-loader';
 
@@ -33,6 +34,7 @@ export const appConfig: ApplicationConfig = {
     provideSearch(),
     provideCart(),
     provideWishlist(),
+    provideNewsletter(),
     providePage(),
     provideRpImageLoader(),
   ],

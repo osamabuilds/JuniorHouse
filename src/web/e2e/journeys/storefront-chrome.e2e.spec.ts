@@ -40,12 +40,13 @@ test.describe('chrome in the server HTML (no scripting)', () => {
     expect(html).toMatch(/<form[^>]*class="rp-search"[^>]*action="\/search"[^>]*method="get"|<form[^>]*action="\/search"[^>]*method="get"[^>]*class="rp-search"/);
   });
 
-  test('SC-11 the footer links to the help and brand pages, shows WhatsApp and has no newsletter form', async ({ request }) => {
+  test('SC-11 the footer links to the help and brand pages, shows WhatsApp and a newsletter form that posts without JavaScript', async ({ request }) => {
     const html = await (await request.get(PAGE)).text();
     for (const href of ['/delivery', '/exchanges', '/size-guide', '/contact', '/our-story', '/made-in-pakistan']) expect(html).toContain(`href="${href}"`);
     expect(html).toContain('href="https://wa.me/923315613217"');
     const footer = html.slice(html.indexOf('<footer'), html.indexOf('</footer>'));
-    expect(footer).not.toMatch(/type="email"|<form/);
+    expect(footer).toMatch(/<form[^>]*method="post"[^>]*action="\/newsletter\/subscribe"|<form[^>]*action="\/newsletter\/subscribe"[^>]*method="post"/);
+    expect(footer).toMatch(/type="email"/);
   });
 });
 

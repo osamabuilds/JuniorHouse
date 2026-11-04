@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { NewsletterFormComponent } from '../../features/customers/newsletter/components/newsletter-form/newsletter-form.component';
 import { selectBrand, selectFooter } from '../../features/storefront/site-settings';
 import { whatsappLink } from '../../shared/utils/whatsapp';
 
-/** Dark footer: link columns, contact line and legal row, all from the settings. No newsletter in this release. */
+/** Dark footer: link columns, newsletter sign-up, contact line and legal row, all from the settings. */
 @Component({
   selector: 'rp-site-footer',
-  imports: [RouterLink],
+  imports: [RouterLink, NewsletterFormComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './site-footer.component.html',
   styleUrl: './site-footer.component.scss',

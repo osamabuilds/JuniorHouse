@@ -12,6 +12,8 @@ export interface RegisterInput {
   readonly mobile: string;
   readonly password: string;
   readonly keepSignedIn: boolean;
+  /** The unticked-by-default box on the form (newsletter NLS-4): only a ticked box subscribes. */
+  readonly subscribeNewsletter: boolean;
 }
 
 export interface SignInInput {

@@ -16,10 +16,10 @@ export async function registerCustomer(page: Page, firstName = 'Sana'): Promise<
   await openHydrated(page, '/account/register');
   await page.getByLabel('First name').fill(firstName);
   await page.getByLabel('Last name').fill('Khan');
-  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Mobile number').fill('03001234567');
   await page.getByLabel('Password', { exact: true }).fill(CUSTOMER_PASSWORD);
-  await page.getByRole('checkbox').check();
+  await page.getByRole('checkbox', { name: /I agree/ }).check();
   await page.getByRole('button', { name: 'Create account' }).click();
   await expect(page).toHaveURL(/\/account(\/addresses)?$/);
   return email;

@@ -2,4 +2,4 @@
 
 Subscribe and unsubscribe records honoured on every future send.
 
-**Status:** Planned (spec and plan approved by the owner 2026-10-25, tasks pending) · **Spec:** [spec.md](spec.md) · **Requirements:** FR-41 · **Code / tests:** not started (plan and tasks follow approval) · **Module:** [customers](../README.md)
+**Status:** Built 2026-11-04 (SCRUM-62) · **Spec:** [spec.md](spec.md) · **Requirements:** FR-41 · **Code / tests:** `src/api/src/Modules/Customers` (Newsletter), `features/customers/newsletter` in the storefront, `e2e/customers/newsletter.e2e.spec.ts` · **Module:** [customers](../README.md)

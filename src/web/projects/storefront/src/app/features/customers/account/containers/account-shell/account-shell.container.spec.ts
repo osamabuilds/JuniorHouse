@@ -12,6 +12,9 @@ describe('AccountShellContainer', () => {
     const link = el.querySelector<HTMLAnchorElement>('nav[aria-label="Account"] ul > li > a');
     expect(link!.textContent).toContain('Addresses');
     expect(link!.getAttribute('href')).toBe('/account/addresses');
+    const prefs = el.querySelectorAll<HTMLAnchorElement>('nav[aria-label="Account"] ul > li > a')[1];
+    expect(prefs.textContent).toContain('Preferences');
+    expect(prefs.getAttribute('href')).toBe('/account/preferences');
     expect(el.querySelector('router-outlet')).toBeTruthy();
     expect(el.querySelectorAll('main').length).toBe(0);
   });

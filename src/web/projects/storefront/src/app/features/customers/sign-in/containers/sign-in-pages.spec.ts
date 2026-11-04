@@ -140,7 +140,27 @@ describe('RegisterPageContainer', () => {
     fixture.detectChanges();
     el.querySelector('form')!.dispatchEvent(new Event('submit'));
 
-    expect(register).toHaveBeenCalledWith({ firstName: 'Sana', lastName: 'Khan', email: 'sana@example.pk', mobile: '0300 1234567', password: 'Sunny9day', keepSignedIn: false });
+    expect(register).toHaveBeenCalledWith({ firstName: 'Sana', lastName: 'Khan', email: 'sana@example.pk', mobile: '0300 1234567', password: 'Sunny9day', keepSignedIn: false, subscribeNewsletter: false });
+  });
+
+  it('NLS-4 the newsletter box starts unticked and is sent only when the customer ticks it', () => {
+    const register = vi.fn(() => of({ status: 'ok' as const, session: { firstName: 'Sana', emailVerified: false, csrfToken: 'c' } }));
+    const { el, fixture } = render({ register });
+    const boxes = el.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    const news = boxes[boxes.length - 1];
+    expect(news.checked).toBe(false);
+    expect(news.closest('label')!.textContent).toContain('news and offers');
+    type(el, 'input[name="firstName"]', 'Sana');
+    type(el, 'input[name="lastName"]', 'Khan');
+    type(el, 'input[name="email"]', 'sana@example.pk');
+    type(el, 'input[name="mobile"]', '0300 1234567');
+    type(el, 'input[name="password"]', 'Sunny9day');
+    boxes[0].click();
+    news.click();
+    fixture.detectChanges();
+    el.querySelector('form')!.dispatchEvent(new Event('submit'));
+
+    expect(register).toHaveBeenCalledWith(expect.objectContaining({ subscribeNewsletter: true }));
   });
 
   it('ACT-3 says the email already has an account and offers sign-in or reset', () => {
