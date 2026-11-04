@@ -51,4 +51,28 @@ public sealed class StorefrontCatalogQueries(IStorefrontReadDbContext db) : ISto
             return new ProductSummary(p.Id, p.Name, p.Path, p.MinPrice, was, p.IsAvailable, image);
         }).ToList();
     }
+
+    public async Task<IReadOnlyList<VariantSummary>> GetVariantSummariesAsync(IReadOnlyCollection<long> variantIds, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(variantIds);
+        if (variantIds.Count > IStorefrontCatalogQueries.MaxIds)
+        {
+            throw new ArgumentException($"At most {IStorefrontCatalogQueries.MaxIds} variants can be asked for at once.", nameof(variantIds));
+        }
+
+        var ids = variantIds.Where(id => id > 0).Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        // One joined query: a variant of a product that is in the read model (published and priced) and that can be sold at all.
+        return await (
+            from v in db.Variants.AsNoTracking()
+            join p in db.Products.AsNoTracking() on v.ProductId equals p.Id
+            where ids.Contains(v.Id) && v.IsSellable && p.MinPrice != null
+            orderby v.Id
+            select new VariantSummary(v.Id, p.Id, p.Name, p.Path, v.ColourName, v.SizeName, v.SkuCode, v.AvailableQuantity > 0))
+            .ToListAsync(cancellationToken);
+    }
 }
