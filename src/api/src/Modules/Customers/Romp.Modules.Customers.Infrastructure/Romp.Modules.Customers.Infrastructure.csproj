@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Romp.Modules.Customers.Application\Romp.Modules.Customers.Application.csproj" />
     <ProjectReference Include="../../../BuildingBlocks/Romp.BuildingBlocks.Web/Romp.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\Romp.Modules.Customers.Contracts\Romp.Modules.Customers.Contracts.csproj" />
+    <ProjectReference Include="..\..\Warehouse\Romp.Modules.Warehouse.Contracts\Romp.Modules.Warehouse.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Persistence\Romp.BuildingBlocks.Persistence.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Email\Romp.BuildingBlocks.Email.csproj" />
   </ItemGroup>
