@@ -43,9 +43,19 @@ jobs:
       - name: Build image
         run: docker build -f src/Romp.Api/Dockerfile -t romp-api:${{ github.sha }} .
       # SEC-24: scan the container image before it can be deployed.
-      - uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: romp-api:${{ github.sha }}
-          severity: CRITICAL
-          exit-code: "1"
-          ignore-unfixed: true
+      # Trivy is installed straight from its GitHub release and checked against the published checksum. aquasecurity/trivy-action
+      # fetches the binary from get.trivy.dev, which stopped resolving (curl exit 6), so the action is not used.
+      - name: Install Trivy
+        env:
+          TRIVY_VERSION: "0.70.0"
+        run: |
+          base="https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}"
+          tarball="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/$tarball" "$base/$tarball"
+          curl -sSfL -o "$RUNNER_TEMP/checksums.txt" "$base/trivy_${TRIVY_VERSION}_checksums.txt"
+          (cd "$RUNNER_TEMP" && grep " $tarball\$" checksums.txt | sha256sum -c -)
+          mkdir -p "$RUNNER_TEMP/trivy-bin"
+          tar -xzf "$RUNNER_TEMP/$tarball" -C "$RUNNER_TEMP/trivy-bin" trivy
+          echo "$RUNNER_TEMP/trivy-bin" >> "$GITHUB_PATH"
+      - name: Scan image
+        run: trivy image --severity CRITICAL --ignore-unfixed --exit-code 1 romp-api:${{ github.sha }}
