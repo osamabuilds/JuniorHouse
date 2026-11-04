@@ -56,6 +56,7 @@ internal static class ListingTiles
         var sizes = await SizesAsync(db, pageIds, cancellationToken);
 
         return page.Select(x => new ListingTileDto(
+            x.Id,
             x.Path,
             x.Name,
             x.From,

@@ -1,8 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
+import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideCart } from '../../../../cart/carts/cart.providers';
 import { CartActions } from '../../../../cart/carts/store/cart.actions';
-import { Store } from '@ngrx/store';
+import { Store, provideState } from '@ngrx/store';
 import { RESPONSE_INIT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, UrlSegment } from '@angular/router';
@@ -15,6 +16,7 @@ import { ProductPagesApi } from '../../services/product-pages-api.service';
 import { ProductPageContainer } from './product-page.container';
 
 const basePage: ProductPage = {
+  productId: 1,
   path: '/girls/dresses/floral-summer-dress',
   name: 'Floral Summer Dress',
   description: 'A light cotton dress.',
@@ -60,6 +62,7 @@ function render(result: ProductPageResult, query: Record<string, string> = {}, r
     providers: [
       provideRouter([]),
       provideStore({}),
+      provideState(wishlistFeature),
       provideHttpClient(),
       provideHttpClientTesting(),
       provideCart(),
@@ -211,7 +214,7 @@ describe('ProductPageContainer', () => {
     expect(el.querySelector('rp-sold-out-state')!.textContent).toContain('Sold out');
     expect(el.querySelector('h1')!.textContent).toContain('Floral Summer Dress');
     expect(el.querySelectorAll('rp-size-options a').length).toBe(0);
-    expect(el.querySelector('button')).toBeNull();
+    expect(el.querySelector('button:not([aria-pressed])')).toBeNull();
   });
 
   it('PDP-17 words availability as a guide and shows no count or reservation wording', () => {

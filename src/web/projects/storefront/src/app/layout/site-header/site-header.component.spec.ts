@@ -1,9 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
+import { wishlistFeature } from '../../features/customers/wishlist/store/wishlist.reducer';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideCart } from '../../features/cart/carts/cart.providers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideStore } from '@ngrx/store';
+import { provideStore, provideState } from '@ngrx/store';
 import { NavigationActions, provideNavigation } from '../../features/storefront/navigation';
 import { sampleMenu } from '../../features/storefront/navigation/testing/sample-menu';
 import { Menu } from '../../features/storefront/navigation/models/menu.model';
@@ -15,7 +16,7 @@ import { Store } from '@ngrx/store';
 
 function render(menu: Menu = sampleMenu): ComponentFixture<SiteHeaderComponent> {
   TestBed.configureTestingModule({
-    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings(), provideNavigation(), provideHttpClient(), provideHttpClientTesting(), provideCart()],
+    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideState(wishlistFeature), provideSiteSettings(), provideNavigation(), provideHttpClient(), provideHttpClientTesting(), provideCart()],
   });
   const store = TestBed.inject(Store);
   store.dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));

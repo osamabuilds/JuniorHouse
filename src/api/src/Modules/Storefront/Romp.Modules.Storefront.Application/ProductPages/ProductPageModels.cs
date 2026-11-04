@@ -43,6 +43,7 @@ public sealed record SizeChartDto(string Name, IReadOnlyList<SizeChartRowDto> Ro
 
 /// <summary>What the product page shows (PDP-1..11, 15..17). Every amount is the server's; nothing here is a stock count.</summary>
 public sealed record ProductPageDto(
+    long ProductId,
     string Path,
     string Name,
     string Description,

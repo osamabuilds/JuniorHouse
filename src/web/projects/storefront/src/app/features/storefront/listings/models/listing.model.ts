@@ -21,6 +21,8 @@ export interface ListingTileSize {
 }
 
 export interface ListingTile {
+  /** The Catalog product id, for the wishlist heart. */
+  readonly productId: number;
   readonly path: string;
   readonly name: string;
   readonly price: number | null;

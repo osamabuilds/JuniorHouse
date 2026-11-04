@@ -1,7 +1,8 @@
 import { RESPONSE_INIT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { provideStore } from '@ngrx/store';
+import { provideState, provideStore } from '@ngrx/store';
+import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
 import { of } from 'rxjs';
 import { ListingTile } from '../../../listings';
 import { provideSiteSettings } from '../../../site-settings';
@@ -11,6 +12,7 @@ import { provideSearch } from '../../search.providers';
 import { SearchPageContainer } from './search-page.container';
 
 const tile = (n: number): ListingTile => ({
+  productId: n,
   path: `/girls/dresses/dress-${n}`,
   name: `Dress ${n}`,
   price: 800,
@@ -47,6 +49,7 @@ function render(result: SearchResult | null, query: Record<string, string | stri
     providers: [
       provideRouter([]),
       provideStore({}),
+      provideState(wishlistFeature),
       provideSiteSettings(),
       provideSearch(),
       { provide: SearchApi, useValue: { find, suggest: () => of({ query: '', items: [] }) } },

@@ -41,6 +41,9 @@ public sealed class WishlistQueryTests(CustomersPostgres postgres)
         Assert.Equal(["Unavailable"], byId[3].Notes);
         Assert.Null(byId[3].Price);
         Assert.Equal(2000m, byId[3].SavedPrice);
+        Assert.Equal("/media/10-640.webp", byId[1].ImageUrl);
+        Assert.Equal("/media/10-640.jpg", byId[1].ImageFallbackUrl);
+        Assert.Null(byId[3].ImageUrl);
     }
 
     [Fact]

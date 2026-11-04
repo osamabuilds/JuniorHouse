@@ -34,13 +34,24 @@
 
           @if (p.isAvailable) {
             <div class="pdp-add">
-              <button rpBtn="action" type="button" [block]="true" [disabled]="!canAdd() || bagBusy()" [reasonId]="canAdd() ? '' : 'pdp-add-hint'" (click)="addToBag()">Add to bag</button>
+              <div class="rp-buy__actions">
+                <button rpBtn="action" type="button" [block]="true" [disabled]="!canAdd() || bagBusy()" [reasonId]="canAdd() ? '' : 'pdp-add-hint'" (click)="addToBag()">Add to bag</button>
+                <button rpWishlistHeart variant="page" [productId]="p.productId" [productName]="p.name"></button>
+              </div>
               @if (!canAdd()) {
                 <p class="rp-help" id="pdp-add-hint">{{ addHint() }}</p>
               }
               @if (bagMessage(); as text) {
                 <p class="rp-error" role="alert"><rp-icon name="alert" />{{ text }}</p>
               }
+            </div>
+          }
+
+          @if (!p.isAvailable) {
+            <div class="pdp-add">
+              <div class="rp-buy__actions pdp-save-only">
+                <button rpWishlistHeart variant="page" [productId]="p.productId" [productName]="p.name"></button>
+              </div>
             </div>
           }
 

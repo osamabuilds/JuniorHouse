@@ -40,6 +40,7 @@ internal sealed class AddressHarness : IDisposable
         services.AddSingleton<IGeographyQueries>(Geography);
         Catalog = new FakeCatalog();
         services.AddSingleton<IStorefrontCatalogQueries>(Catalog);
+        services.AddSingleton<IStorefrontImageQueries>(new FakeImages());
         services.AddSingleton(Options.Create(new CustomersOptions { MaxAddresses = maxAddresses, MaxWishlistItems = maxWishlistItems }));
 
         var application = typeof(CustomersOptions).Assembly;
@@ -167,4 +168,11 @@ internal sealed class FakeCatalog : IStorefrontCatalogQueries
         Calls++;
         return Task.FromResult<IReadOnlyList<ProductSummary>>(productIds.Where(_products.ContainsKey).Select(id => _products[id]).ToList());
     }
+}
+
+/** Every image has a finished 640-wide WebP and JPEG, named after its id. */
+internal sealed class FakeImages : IStorefrontImageQueries
+{
+    public Task<IReadOnlyList<ImageThumbnail>> GetThumbnailsAsync(IReadOnlyCollection<long> imageIds, int minWidth, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ImageThumbnail>>(imageIds.Select(id => new ImageThumbnail(id, $"/media/{id}-640.webp", $"/media/{id}-640.jpg", 640)).ToList());
 }

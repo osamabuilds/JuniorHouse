@@ -1,0 +1,5 @@
+.rp-lhead { display: grid; gap: var(--space-3); padding-block: var(--space-6) var(--space-5); }
+.rp-wishlist-notice { margin-bottom: var(--space-6); max-width: 36rem; }
+.rp-wishlist-note { margin-block: var(--space-4); }
+.rp-wishlist-action { margin-top: var(--space-3); }
+.rp-wishlist-pager { display: flex; align-items: center; justify-content: center; gap: var(--space-4); margin-block: var(--space-6); }

@@ -1,6 +1,7 @@
 import { Home } from '../models/home.model';
 
 const tile = (n: number) => ({
+  productId: n,
   path: `/girls/dresses/dress-${n}`,
   name: `Dress ${n}`,
   price: 800,

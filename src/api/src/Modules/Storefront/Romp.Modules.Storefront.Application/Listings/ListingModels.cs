@@ -17,11 +17,12 @@ public sealed record ListingImageSourceDto(int Width, string Webp, string? Jpeg)
 public sealed record ListingImageDto(string AltText, int Width, int Height, IReadOnlyList<ListingImageSourceDto> Sources);
 
 /// <summary>
-/// One product tile (LST-12). The price is the lowest among the variants that match the filter; the compare-at price is the one of that
+/// One product tile (LST-12). <c>ProductId</c> is the Catalog product id, for the wishlist heart. The price is the lowest among the variants that match the filter; the compare-at price is the one of that
 /// variant; <c>SavingAmount</c> is the server difference in PKR (SEC-09). There is no stock count: only whether some sizes are sold out (PCT-3)
 /// and, per size, whether it is sold out.
 /// </summary>
 public sealed record ListingTileDto(
+    long ProductId,
     string Path,
     string Name,
     decimal? Price,
