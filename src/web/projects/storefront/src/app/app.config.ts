@@ -14,6 +14,7 @@ import { provideSiteSettings } from './features/storefront/site-settings';
 import { customerRefreshInterceptor, provideCustomerAuth, serverCookieInterceptor } from './core/customer-auth';
 import { provideCart } from './features/cart/carts/cart.providers';
 import { provideNewsletter } from './features/customers/newsletter/newsletter.providers';
+import { provideNotifyMe } from './features/customers/notify-me/notify-me.providers';
 import { provideWishlist } from './features/customers/wishlist/wishlist.providers';
 import { provideRpImageLoader } from './shared/ui/image/image-loader';
 
@@ -35,6 +36,7 @@ export const appConfig: ApplicationConfig = {
     provideCart(),
     provideWishlist(),
     provideNewsletter(),
+    provideNotifyMe(),
     providePage(),
     provideRpImageLoader(),
   ],

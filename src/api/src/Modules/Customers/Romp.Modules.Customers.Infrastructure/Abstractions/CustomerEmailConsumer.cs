@@ -2,10 +2,11 @@ using MediatR;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Customers.Application.Newsletter;
+using Romp.Modules.Customers.Application.NotifyMe;
 using Romp.Modules.Customers.Domain.Abstractions;
 using Romp.Modules.Customers.Infrastructure.Persistence;
 
-namespace Romp.Modules.Customers.Infrastructure.Newsletter;
+namespace Romp.Modules.Customers.Infrastructure.Abstractions;
 
 /// <summary>
 /// Turns "send this customer email" (ADR 0022) into the command for its kind. Behind the inbox, so a redelivered message is not sent
@@ -25,6 +26,9 @@ public sealed class CustomerEmailConsumer(ISender sender, CustDbContext dbContex
         {
             case CustomerEmailKind.NewsletterWelcome:
                 await sender.Send(new SendNewsletterWelcomeCommand(domainEvent.RelatedId), cancellationToken);
+                break;
+            case CustomerEmailKind.RestockNotice:
+                await sender.Send(new SendRestockNoticeCommand(domainEvent.RelatedId), cancellationToken);
                 break;
             default:
                 throw new InvalidOperationException($"No handler exists for customer email kind {domainEvent.Kind}.");

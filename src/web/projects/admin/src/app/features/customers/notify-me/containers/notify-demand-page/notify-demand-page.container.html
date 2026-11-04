@@ -1,0 +1,31 @@
+<h1>Notify Me demand</h1>
+<p class="page-intro">
+  Sizes that customers have asked to be told about when they are back in stock, most waiting first. Use it to decide what to reorder or make.
+  Only counts are shown: customers' email addresses are never displayed here.
+</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<div class="actions">
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+</div>
+
+<section aria-labelledby="nd-list-heading">
+  <h2 id="nd-list-heading">{{ total() }} {{ total() === 1 ? 'size' : 'sizes' }} with customers waiting</h2>
+  @if (loading() && rows().length === 0) {
+    <p role="status">Loading…</p>
+  } @else if (rows().length === 0) {
+    <p>Nobody is waiting for a size right now.</p>
+  } @else {
+    <app-notify-demand-table [rows]="rows()" />
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>

@@ -760,6 +760,78 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.NotifyMe.NotifyRequest", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("EML");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<DateTimeOffset?>("NotifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("NTFD_DTE");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("SENT_DTE");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint")
+                        .HasColumnName("STS_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<long>("VariantId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("VRNT_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "Status" }, "IX_NTFM_REQ_STS_ID");
+
+                    b.HasIndex(new[] { "VariantId", "Status" }, "IX_NTFM_REQ_VRNT_ID_STS_ID");
+
+                    b.HasIndex(new[] { "VariantId", "Email" }, "UQ_NTFM_REQ_VRNT_ID_EML_OPEN")
+                        .IsUnique()
+                        .HasFilter("\"STS_ID\" = 1");
+
+                    b.ToTable("NTFM_REQ", "CUST", t =>
+                        {
+                            t.HasCheckConstraint("CK_NTFM_REQ_EML_LOWR", "\"EML\" = lower(\"EML\")");
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Customers.Domain.Wishlist.WishlistItem", b =>
                 {
                     b.Property<long>("Id")
@@ -1176,6 +1248,71 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Customers.Infrastructure.NotifyMe.NotifyStatusRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("NTFM_STS_LKP", "CUST");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "OPEN",
+                            IsActive = true,
+                            Name = "Open",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "NTFD",
+                            IsActive = true,
+                            Name = "Notified",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "EXPD",
+                            IsActive = true,
+                            Name = "Expired",
+                            SortSeq = (short)3
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Customers.Domain.Accounts.CustomerSession", b =>
                 {
                     b.HasOne("Romp.Modules.Customers.Domain.Accounts.Customer", null)
@@ -1270,6 +1407,16 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_NWSL_SUBS_STS_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.NotifyMe.NotifyRequest", b =>
+                {
+                    b.HasOne("Romp.Modules.Customers.Infrastructure.NotifyMe.NotifyStatusRow", null)
+                        .WithMany()
+                        .HasForeignKey("Status")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_NTFM_REQ_STS_ID");
                 });
 
             modelBuilder.Entity("Romp.Modules.Customers.Domain.Wishlist.WishlistItem", b =>

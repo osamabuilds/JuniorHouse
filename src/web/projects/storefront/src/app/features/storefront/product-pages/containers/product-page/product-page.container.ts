@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, RESPONSE_INIT, computed, effect, in
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WishlistHeartComponent } from '../../../../customers/wishlist/components/wishlist-heart/wishlist-heart.component';
+import { NotifyMeFormComponent } from '../../../../customers/notify-me/components/notify-me-form/notify-me-form.component';
 import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
@@ -20,7 +21,7 @@ import { ProductPriceComponent } from '../../components/product-price/product-pr
 import { SizeChartComponent } from '../../components/size-chart/size-chart.component';
 import { SizeOptionsComponent } from '../../components/size-options/size-options.component';
 import { SoldOutStateComponent } from '../../components/sold-out-state/sold-out-state.component';
-import { ProductPageResult } from '../../models/product-page.model';
+import { ProductPageResult, SizeOption } from '../../models/product-page.model';
 import { parseSelection, productKey, selectionQueryString } from '../../models/product-selection';
 import { ProductPagesActions } from '../../store/product-pages.actions';
 import { selectProductPageKey, selectProductPageResult } from '../../store/product-pages.selectors';
@@ -48,6 +49,7 @@ const META_DESCRIPTION_LENGTH = 155;
     SizeChartComponent,
     CompositionCareComponent,
     WishlistHeartComponent,
+    NotifyMeFormComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-page.container.html',
@@ -98,17 +100,22 @@ export class ProductPageContainer {
     return p?.sizes.find((s) => s.code === p.selectedSize) ?? null;
   });
 
+  /** Only a size in stock can be bought. A sold-out size can be chosen (to ask to be told when it is back, NTM-1) but not added. */
+  private canBuy(size: SizeOption): boolean {
+    return size.selectable && (size.availability === 'InStock' || size.availability === 'LowStock') && size.variantId > 0;
+  }
+
   /** Add to bag is offered once a size that can be bought is chosen; the server decides stock again when it is pressed (CRT-4). */
   protected readonly canAdd = computed(() => {
     const size = this.chosenSize();
-    return !!size && size.selectable && size.variantId > 0;
+    return !!size && this.canBuy(size);
   });
 
   protected readonly addHint = computed(() => (this.chosenSize() ? 'That size is not available right now.' : 'Choose a size to add this to your bag.'));
 
   protected addToBag(): void {
     const size = this.chosenSize();
-    if (size && size.selectable) this.store.dispatch(CartActions.add({ variantId: size.variantId, quantity: 1 }));
+    if (size && this.canBuy(size)) this.store.dispatch(CartActions.add({ variantId: size.variantId, quantity: 1 }));
   }
 
   constructor() {

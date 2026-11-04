@@ -426,3 +426,12 @@ Reused as they are: `CUST`, `EML`, `STS`, `SRC`, `HIST`, `SENT`, `CHNG`, `OCCR`,
 |---|---|---|---|---|
 | newsletter | NWSL | | subscription | SUBS |
 | action | ACTN | | welcome | WLCM |
+
+### Added with notify-me (Customers)
+
+Reused as they are: `CUST`, `EML`, `STS`, `VRNT`, `REQ`, `SENT`, `LKP`, `DTE`, `OPEN`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| notify-me (back-in-stock request) | NTFM | | notified | NTFD |
+| expired | EXPD | | | |

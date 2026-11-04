@@ -62,6 +62,57 @@ public sealed class StorefrontCatalogQueriesTests : IAsyncLifetime
         return StorefrontPostgres.NewContext(_postgres.GetConnectionString(), counter);
     }
 
+    private async Task<StfrDbContext> SeedVariantsAsync(QueryCounter? counter = null)
+    {
+        await using (var setup = StorefrontPostgres.NewContext(_postgres.GetConnectionString()))
+        {
+            await setup.Database.MigrateAsync();
+            setup.Products.AddRange(Product(1, 1500m, onSale: false, available: true), Product(3, null, onSale: false, available: false));
+            await setup.SaveChangesAsync();
+            var inStock = Stamp(new VariantRow(11, 1, 1, "NAVY", "Navy", 1, "4-5Y", "4-5 years", 1, "SKU-11", 1500m, null, true));
+            inStock.ApplyStock(7, 1);
+            var soldOut = Stamp(new VariantRow(12, 1, 1, "NAVY", "Navy", 2, "6-7Y", "6-7 years", 2, "SKU-12", 1500m, null, true));
+            soldOut.ApplyStock(0, 1);
+            var noStockYet = Stamp(new VariantRow(13, 1, 1, "NAVY", "Navy", 3, "8-9Y", "8-9 years", 3, "SKU-13", 1500m, null, true));
+            var notSellable = Stamp(new VariantRow(14, 1, 1, "NAVY", "Navy", 4, "10-11Y", "10-11 years", 4, "SKU-14", 1500m, null, false));
+            var unpublishedProduct = Stamp(new VariantRow(31, 3, 1, "NAVY", "Navy", 1, "4-5Y", "4-5 years", 1, "SKU-31", null, null, true));
+            setup.Variants.AddRange(inStock, soldOut, noStockYet, notSellable, unpublishedProduct);
+            await setup.SaveChangesAsync();
+        }
+
+        return StorefrontPostgres.NewContext(_postgres.GetConnectionString(), counter);
+    }
+
+    [Fact]
+    [Trait("Spec", "NTM-1")]
+    public async Task Variants_AreReturnedWithAvailability_AndUnknownUnsellableAndUnpublishedAreAbsent()
+    {
+        await using var context = await SeedVariantsAsync();
+
+        var result = await new StorefrontCatalogQueries(context).GetVariantSummariesAsync([11, 12, 13, 14, 31, 999, 0, -4], CancellationToken.None);
+
+        Assert.Equal([11L, 12L, 13L], result.Select(v => v.VariantId));
+        Assert.Equal([true, false, false], result.Select(v => v.IsAvailable));
+        Assert.Equal(new VariantSummary(12, 1, "Dress 1", "/girls/dresses/dress-1", "Navy", "6-7 years", "SKU-12", false), result[1]);
+    }
+
+    [Fact]
+    [Trait("Spec", "NTM-13")]
+    public async Task ManyVariants_AreOneQuery_AndTheLimitIsEnforced()
+    {
+        var counter = new QueryCounter();
+        await using var context = await SeedVariantsAsync(counter);
+        var queries = new StorefrontCatalogQueries(context);
+        counter.Reset();
+
+        var all = await queries.GetVariantSummariesAsync([11, 12, 13], CancellationToken.None);
+
+        Assert.Equal(3, all.Count);
+        Assert.Equal(1, counter.Count);
+        await Assert.ThrowsAsync<ArgumentException>(() => queries.GetVariantSummariesAsync(
+            Enumerable.Range(1, IStorefrontCatalogQueries.MaxIds + 1).Select(i => (long)i).ToList(), CancellationToken.None));
+    }
+
     [Fact]
     [Trait("Spec", "WSL-5")]
     public async Task ASaleProduct_ComesBackWithItsPriceWasPriceAndMainImage()

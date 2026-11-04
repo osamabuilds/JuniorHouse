@@ -5,6 +5,7 @@ using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Domain.Accounts;
 using Romp.Modules.Customers.Domain.Addresses;
 using Romp.Modules.Customers.Domain.Newsletter;
+using Romp.Modules.Customers.Domain.NotifyMe;
 using Romp.Modules.Customers.Domain.Wishlist;
 
 namespace Romp.Modules.Customers.Infrastructure.Persistence;
@@ -22,6 +23,8 @@ public sealed class CustDbContext(DbContextOptions<CustDbContext> options) : DbC
     public DbSet<WishlistItem> Wishlist => Set<WishlistItem>();
 
     public DbSet<NewsletterSubscription> Newsletter => Set<NewsletterSubscription>();
+
+    public DbSet<NotifyRequest> NotifyRequests => Set<NotifyRequest>();
 
     public DbSet<CustomerSession> Sessions => Set<CustomerSession>();
 

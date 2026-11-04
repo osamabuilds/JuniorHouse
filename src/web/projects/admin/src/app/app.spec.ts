@@ -48,7 +48,7 @@ describe('App', () => {
     const nav = (fixture.nativeElement as HTMLElement).querySelector('nav');
     const linkText = Array.from(nav?.querySelectorAll('a') ?? []).map((a) => a.textContent?.trim());
 
-    expect(linkText).toEqual(['Reference Data', 'Styles', 'Catalog', 'Vendors', 'Purchase Orders', 'Production', 'Receiving & QC', 'Labelling', 'Warehouse', 'Storefront', 'Staff', 'Roles', 'Audit']);
+    expect(linkText).toEqual(['Reference Data', 'Styles', 'Catalog', 'Vendors', 'Purchase Orders', 'Production', 'Receiving & QC', 'Labelling', 'Warehouse', 'Storefront', 'Notify Me demand', 'Staff', 'Roles', 'Audit']);
   });
 
   it('hides the admin header, nav and footer on the vendor-facing PO view (SCRUM-93 task 51)', async () => {
@@ -112,7 +112,7 @@ describe('App', () => {
     });
 
     it('Order-ops: reference data, styles, catalogue, warehouse and stock', () => {
-      expect(menuFor(['ref.read', 'catalog.read', 'warehouse.read', 'inventory.read'])).toEqual(['Reference Data', 'Styles', 'Catalog', 'Warehouse', 'Storefront']);
+      expect(menuFor(['ref.read', 'catalog.read', 'warehouse.read', 'inventory.read'])).toEqual(['Reference Data', 'Styles', 'Catalog', 'Warehouse', 'Storefront', 'Notify Me demand']);
     });
 
     it('Support and Marketing: reference data and the catalogue only', () => {

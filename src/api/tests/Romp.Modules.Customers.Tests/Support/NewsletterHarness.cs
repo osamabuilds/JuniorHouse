@@ -15,6 +15,8 @@ using Romp.Modules.Customers.Contracts;
 using Romp.Modules.Customers.Domain.Abstractions;
 using Romp.Modules.Customers.Domain.Accounts;
 using Romp.Modules.Customers.Domain.Newsletter;
+using Romp.Modules.Customers.Domain.NotifyMe;
+using Romp.Modules.Customers.Infrastructure.Abstractions;
 using Romp.Modules.Customers.Infrastructure.Newsletter;
 using Romp.Modules.Customers.Infrastructure.Persistence;
 
@@ -30,7 +32,7 @@ internal sealed class NewsletterHarness : IDisposable
 
     private readonly ServiceProvider _services;
 
-    public NewsletterHarness(CustomersPostgres postgres)
+    public NewsletterHarness(CustomersPostgres postgres, CustomersOptions? options = null)
     {
         Emails = new BreakableEmailSender();
         var services = new ServiceCollection();
@@ -45,7 +47,7 @@ internal sealed class NewsletterHarness : IDisposable
         services.AddScoped<ICustomerDbContext>(sp => sp.GetRequiredService<CustDbContext>());
         services.AddScoped<TestCurrentCustomer>();
         services.AddScoped<ICurrentCustomer>(sp => sp.GetRequiredService<TestCurrentCustomer>());
-        services.AddSingleton(Options.Create(new CustomersOptions { LinkSigningKey = Key, PublicBaseUrl = "https://shop.example.test" }));
+        services.AddSingleton(Options.Create(options ?? new CustomersOptions { LinkSigningKey = Key, PublicBaseUrl = "https://shop.example.test" }));
         services.AddSingleton<IEmailSender>(Emails);
         services.AddScoped<NewsletterConsent>();
         services.AddScoped<INewsletterMailer, EmailNewsletterMailer>();
@@ -53,6 +55,10 @@ internal sealed class NewsletterHarness : IDisposable
         services.AddScoped<OutboxMessageContext>();
         services.AddScoped<InboxGuard>();
         services.AddScoped<CustomerEmailConsumer>();
+        services.AddScoped<Romp.Modules.Customers.Application.NotifyMe.IRestockMailer, Romp.Modules.Customers.Infrastructure.NotifyMe.EmailRestockMailer>();
+        services.AddScoped<Romp.Modules.Customers.Infrastructure.NotifyMe.StockChangedConsumer>();
+        Catalog = new FakeCatalog();
+        services.AddSingleton<Romp.Modules.Storefront.Contracts.IStorefrontCatalogQueries>(Catalog);
 
         var application = typeof(CustomersOptions).Assembly;
         services.AddValidatorsFromAssembly(application);
@@ -66,6 +72,20 @@ internal sealed class NewsletterHarness : IDisposable
     }
 
     public BreakableEmailSender Emails { get; }
+
+    /// <summary>The fake storefront, for the Notify Me tests (sold-out and in-stock variants).</summary>
+    public FakeCatalog Catalog { get; }
+
+    /// <summary>Notify Me rows for a variant, oldest first (the address is included so tests can check who is waiting).</summary>
+    public async Task<List<NotifyRequest>> NotifyRequestsAsync(long variantId)
+    {
+        await using var scope = _services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<CustDbContext>();
+        return await db.NotifyRequests.AsNoTracking().Where(r => r.VariantId == variantId).OrderBy(r => r.Id).ToListAsync();
+    }
+
+    /// <summary>A variant id no other test uses.</summary>
+    public static long NewVariantId() => Random.Shared.NextInt64(1_000_000, long.MaxValue / 20);
 
     public static string NewEmail() => $"nl.{Guid.NewGuid():N}@example.test";
 
@@ -132,6 +152,16 @@ internal sealed class NewsletterHarness : IDisposable
         context.MessageId = message.Id;
         context.Schema = "CUST";
         await scope.ServiceProvider.GetRequiredService<CustomerEmailConsumer>().HandleAsync(domainEvent, CancellationToken.None);
+    }
+
+    /// <summary>Hands a Warehouse stock event to the Notify Me consumer under the given outbox message id (use the same id to simulate redelivery).</summary>
+    public async Task DeliverStockChangeAsync(Romp.Modules.Warehouse.Contracts.StockLevelChangedEvent domainEvent, long messageId)
+    {
+        await using var scope = _services.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<OutboxMessageContext>();
+        context.MessageId = messageId;
+        context.Schema = "WHSE";
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Customers.Infrastructure.NotifyMe.StockChangedConsumer>().HandleAsync(domainEvent, CancellationToken.None);
     }
 
     public void Dispose() => _services.Dispose();

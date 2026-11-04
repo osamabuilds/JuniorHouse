@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Customers.Domain.Accounts;
 using Romp.Modules.Customers.Domain.Addresses;
 using Romp.Modules.Customers.Domain.Newsletter;
+using Romp.Modules.Customers.Domain.NotifyMe;
 using Romp.Modules.Customers.Domain.Wishlist;
 
 namespace Romp.Modules.Customers.Application.Abstractions;
@@ -19,6 +20,8 @@ public interface ICustomerDbContext
     DbSet<WishlistItem> Wishlist { get; }
 
     DbSet<NewsletterSubscription> Newsletter { get; }
+
+    DbSet<NotifyRequest> NotifyRequests { get; }
 
     DbSet<CustomerSession> Sessions { get; }
 

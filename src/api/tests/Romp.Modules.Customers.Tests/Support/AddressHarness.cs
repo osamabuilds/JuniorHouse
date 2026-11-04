@@ -163,6 +163,22 @@ internal sealed class FakeCatalog : IStorefrontCatalogQueries
 
     public void Unpublish(long id) => _products.Remove(id);
 
+    public int VariantCalls { get; private set; }
+
+    private readonly Dictionary<long, VariantSummary> _variants = [];
+
+    /// <summary>Makes a variant known to the fake storefront; <paramref name="available"/> false is a sold-out size.</summary>
+    public void PublishVariant(long id, bool available = false, string product = "Floral Dress", string size = "4-5 years", string colour = "Navy") =>
+        _variants[id] = new VariantSummary(id, id * 10, product, $"/girls/dresses/product-{id}", colour, size, $"SKU-{id}", available);
+
+    public void UnpublishVariant(long id) => _variants.Remove(id);
+
+    public Task<IReadOnlyList<VariantSummary>> GetVariantSummariesAsync(IReadOnlyCollection<long> variantIds, CancellationToken cancellationToken)
+    {
+        VariantCalls++;
+        return Task.FromResult<IReadOnlyList<VariantSummary>>(variantIds.Where(_variants.ContainsKey).Select(id => _variants[id]).ToList());
+    }
+
     public Task<IReadOnlyList<ProductSummary>> GetProductSummariesAsync(IReadOnlyCollection<long> productIds, CancellationToken cancellationToken)
     {
         Calls++;

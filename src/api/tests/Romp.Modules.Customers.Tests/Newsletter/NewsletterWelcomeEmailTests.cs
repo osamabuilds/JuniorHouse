@@ -137,7 +137,7 @@ public sealed class NewsletterWelcomeEmailTests(CustomersPostgres postgres)
 
     [Fact]
     [Trait("Spec", "NLS-3")]
-    public async Task AKindWithNoHandlerYet_IsAnErrorNotASilentSkip()
+    public async Task AKindWithNoHandler_IsAnErrorNotASilentSkip()
     {
         using var harness = new NewsletterHarness(postgres);
         var (_, message) = await SubscribeAsync(harness, NewsletterHarness.NewEmail());
@@ -145,7 +145,7 @@ public sealed class NewsletterWelcomeEmailTests(CustomersPostgres postgres)
         {
             Id = message.Id,
             EventType = nameof(CustomerEmailRequestedEvent),
-            Payload = System.Text.Json.JsonSerializer.Serialize(new CustomerEmailRequestedEvent(CustomerEmailKind.RestockNotice, 1)),
+            Payload = System.Text.Json.JsonSerializer.Serialize(new CustomerEmailRequestedEvent((CustomerEmailKind)99, 1)),
         };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => harness.DeliverAsync(restock));
