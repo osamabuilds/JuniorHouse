@@ -35,7 +35,7 @@ test.describe('wishlist', () => {
     expect((await request.get('/customer-api/wishlist/not-a-route')).status()).toBe(404);
   });
 
-  test('WSL-1 to WSL-3, WSL-9 a guest saves a product, signs up, and finds it on the account wishlist once', async ({ page }) => {
+  test('WSL-1 to WSL-3, WSL-9 a guest saves a product, sees it on the wishlist, signs up, and finds it on the account wishlist once', async ({ page }) => {
     const product = await firstProduct(page);
 
     // Signed out: the heart asks for a sign-in and the product is remembered in this browser.
@@ -49,6 +49,13 @@ test.describe('wishlist', () => {
     await prompt.getByRole('button', { name: 'Not now' }).click();
     await expect(prompt).toBeHidden();
     await expect(page.getByRole('button', { name: /from wishlist$/ }).first()).toHaveAttribute('aria-pressed', 'true');
+
+    // A guest sees the saved product on the wishlist page, and the header heart counts it, as the bag does.
+    await expect(page.getByRole('link', { name: 'Wishlist, 1 product saved' })).toBeVisible();
+    await openHydrated(page, '/wishlist');
+    await expect(page.locator('ul.rp-grid > li > article')).toHaveCount(1);
+    await expect(page.locator('ul.rp-grid > li > article h2')).toContainText(product.name);
+    await expect(page.getByRole('link', { name: 'Wishlist, 1 product saved' })).toBeVisible();
 
     // Registering merges it into the account and clears the browser copy.
     await registerCustomer(page);

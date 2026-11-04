@@ -49,7 +49,7 @@ export class WishlistEffects {
   readonly rememberGuest$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(WishlistActions.toggle),
+        ofType(WishlistActions.toggle, WishlistActions.remove),
         withLatestFrom(this.store.select(wishlistFeature.selectSignedIn), this.store.select(wishlistFeature.selectGuestIds)),
         filter(([, signedIn]) => signedIn === false),
         tap(([, , ids]) => this.guest.write(ids)),
@@ -72,10 +72,21 @@ export class WishlistEffects {
     ),
   );
 
+  /** The page for a signed-out shopper: one public call for every remembered product. */
+  readonly guestItems$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(WishlistActions.guestItemsRequested),
+      withLatestFrom(this.store.select(wishlistFeature.selectGuestIds)),
+      switchMap(([, ids]) => this.api.cards(ids).pipe(map((items) => WishlistActions.guestItemsLoaded({ items })))),
+    ),
+  );
+
   readonly remove$ = createEffect(() =>
     this.actions$.pipe(
       ofType(WishlistActions.remove),
-      concatMap(({ productId }) => this.api.remove(productId).pipe(map((result) => WishlistActions.changeDone({ productId, result })))),
+      withLatestFrom(this.store.select(wishlistFeature.selectSignedIn)),
+      filter(([, signedIn]) => signedIn === true),
+      concatMap(([{ productId }]) => this.api.remove(productId).pipe(map((result) => WishlistActions.changeDone({ productId, result })))),
     ),
   );
 

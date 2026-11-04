@@ -18,6 +18,7 @@ const item = (id: number, extra: Partial<WishlistItem> = {}): WishlistItem => ({
   productId: id, name: `Product ${id}`, path: `/girls/dresses/product-${id}`, price: 3490, wasPrice: null, savedPrice: 3490, isAvailable: true,
   imageUrl: `/media/${id}-640.webp`, imageFallbackUrl: `/media/${id}-640.jpg`, imageWidth: 640, notes: [], savedAt: '2026-11-04T09:00:00Z', ...extra,
 });
+const gone = (id: number): WishlistItem => item(id, { name: null, path: null, price: null, imageUrl: null, imageFallbackUrl: null, notes: ['Unavailable'], isAvailable: false });
 const ok = (items: WishlistItem[]): ListResult => ({ status: 'ok', page: { items, page: 1, pageSize: 24, totalCount: items.length, totalPages: 1 } });
 
 function render(list: ListResult, signedIn = true, responseInit?: ResponseInit) {
@@ -37,6 +38,7 @@ function render(list: ListResult, signedIn = true, responseInit?: ResponseInit) 
           add: () => of({ status: 'ok' }),
           remove: (id: number) => of(remove(id)),
           merge: () => of({ status: 'ok' }),
+          cards: (ids: readonly number[]) => of(ids.map((id) => (id === 99 ? gone(99) : item(id, { savedPrice: 3490 })))),
         },
       },
       ...(responseInit ? [{ provide: RESPONSE_INIT, useValue: responseInit }] : []),
@@ -105,14 +107,39 @@ describe('WishlistPageContainer', () => {
     expect(remove).toHaveBeenCalledWith(9);
   });
 
-  it('WSL-2 a signed-out shopper is told what is remembered on this device and asked to sign in', () => {
+  it('WSL-2 a signed-out shopper sees the products this device remembers, with a note to sign in', () => {
     localStorage.setItem(GUEST_KEY, JSON.stringify([1, 2]));
     const { el } = render(ok([]), false);
 
     const notice = el.querySelector('.rp-notice')!;
-    expect(notice.textContent).toContain('2 saved on this device');
+    expect(notice.textContent).toContain('Saved on this device');
     expect(notice.querySelector('a')!.getAttribute('href')).toContain('/account/sign-in');
-    expect(el.querySelector('ul.rp-grid')).toBeNull();
+    expect(el.querySelectorAll('ul.rp-grid > li > article')).toHaveLength(2);
+    expect(el.querySelector('.rp-count-note')!.textContent).toContain('2 saved');
+  });
+
+  it('WSL-2 a guest takes a product off with its heart and it leaves the page at once, without a prompt', () => {
+    localStorage.setItem(GUEST_KEY, JSON.stringify([1, 2]));
+    const { fixture, el } = render(ok([]), false);
+
+    (el.querySelector('article button[aria-pressed]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(el.querySelectorAll('ul.rp-grid > li > article')).toHaveLength(1);
+    expect(JSON.parse(localStorage.getItem(GUEST_KEY) ?? '[]')).toHaveLength(1);
+    expect(document.querySelector('dialog[open]')).toBeNull();
+  });
+
+  it('WSL-2 a remembered product that is no longer published is shown as unavailable and a guest can remove it', () => {
+    localStorage.setItem(GUEST_KEY, JSON.stringify([99]));
+    const { fixture, el } = render(ok([]), false);
+
+    expect(el.querySelector('article')!.textContent).toContain('No longer available');
+    (Array.from(el.querySelectorAll('article button')).find((b) => b.textContent?.includes('Remove from wishlist')) as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(el.querySelectorAll('article')).toHaveLength(0);
+    expect(el.textContent).toContain('Nothing saved yet');
   });
 
   it('shows an empty list as a sentence with one link onward', () => {

@@ -1,5 +1,5 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { ChangeResult, IdsResult, ListResult } from '../models/wishlist.model';
+import { ChangeResult, IdsResult, ListResult, WishlistItem } from '../models/wishlist.model';
 
 export const WishlistActions = createActionGroup({
   source: 'Wishlist',
@@ -16,6 +16,9 @@ export const WishlistActions = createActionGroup({
     'Close Prompt': emptyProps(),
     'Load Page': props<{ page: number }>(),
     'Load Page Done': props<{ result: ListResult }>(),
+    /** The wishlist page opened for a signed-out shopper: read the products this device remembers. */
+    'Guest Items Requested': emptyProps(),
+    'Guest Items Loaded': props<{ items: readonly WishlistItem[] | null }>(),
     'Clear Message': emptyProps(),
   },
 });

@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, RESPONSE_INIT, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, RESPONSE_INIT, computed, effect, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { SeoService } from '../../../../../shared/seo/seo.service';
@@ -10,6 +10,8 @@ import { WishlistHeartComponent } from '../../components/wishlist-heart/wishlist
 import { WishlistItem } from '../../models/wishlist.model';
 import { WishlistActions } from '../../store/wishlist.actions';
 import {
+  selectGuestItems,
+  selectGuestStatus,
   selectSavedIds,
   selectWishlistMessage,
   selectWishlistPage,
@@ -40,9 +42,20 @@ export class WishlistPageContainer {
   protected readonly signedIn = this.store.selectSignal(selectWishlistSignedIn);
   protected readonly status = this.store.selectSignal(selectWishlistStatus);
   protected readonly page = this.store.selectSignal(selectWishlistPage);
+  private readonly guestItems = this.store.selectSignal(selectGuestItems);
+  private readonly guestStatus = this.store.selectSignal(selectGuestStatus);
   protected readonly message = this.store.selectSignal(selectWishlistMessage);
   protected readonly savedIds = this.store.selectSignal(selectSavedIds);
   private readonly brand = this.store.selectSignal(selectBrand);
+
+  /** What the grid shows: the account's page when signed in, else the products this device remembers. */
+  protected readonly items = computed<readonly WishlistItem[]>(() => (this.signedIn() ? (this.page()?.items ?? []) : this.guestItems()));
+  protected readonly viewStatus = computed(() => {
+    if (this.signedIn() === null) return 'loading';
+    if (this.signedIn()) return this.status() === 'ready' ? 'ready' : this.status() === 'error' ? 'error' : 'loading';
+    return this.guestStatus() === 'idle' || this.guestStatus() === 'loading' ? 'loading' : this.guestStatus();
+  });
+  protected readonly savedCount = computed(() => (this.signedIn() ? (this.page()?.totalCount ?? 0) : this.savedIds().length));
 
   protected readonly crumbs: readonly Crumb[] = [{ label: 'Home', path: '/' }, { label: 'Wishlist', path: null }];
 
@@ -60,6 +73,11 @@ export class WishlistPageContainer {
       });
     });
 
+    // Signed out: the products this device remembers are read once the sign-in state is known.
+    effect(() => {
+      if (this.signedIn() === false && this.guestStatus() === 'idle') this.store.dispatch(WishlistActions.guestItemsRequested());
+    });
+
     // The list is read once the customer is known to be signed in (and again after a sign-out and sign-in).
     effect(() => {
       if (this.signedIn() === true && (this.status() === 'idle' || this.status() === 'signedOut')) this.store.dispatch(WishlistActions.loadPage({ page: 1 }));
@@ -75,7 +93,7 @@ export class WishlistPageContainer {
   }
 
   protected reload(): void {
-    this.store.dispatch(WishlistActions.loadPage({ page: 1 }));
+    this.store.dispatch(this.signedIn() ? WishlistActions.loadPage({ page: 1 }) : WishlistActions.guestItemsRequested());
   }
 
   protected has(item: WishlistItem, note: string): boolean {

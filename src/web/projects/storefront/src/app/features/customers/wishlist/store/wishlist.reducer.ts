@@ -1,5 +1,5 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
-import { MAX_GUEST_IDS, WishlistPage } from '../models/wishlist.model';
+import { MAX_GUEST_IDS, WishlistItem, WishlistPage } from '../models/wishlist.model';
 import { WishlistActions } from './wishlist.actions';
 
 export type WishlistStatus = 'idle' | 'loading' | 'ready' | 'signedOut' | 'error';
@@ -13,6 +13,9 @@ export interface WishlistState {
   readonly guestIds: readonly number[];
   /** Hearts are drawn from the ids only once they are known, so a saved product never flashes unsaved. */
   readonly idsKnown: boolean;
+  /** The products this browser remembers, as cards for the wishlist page (signed out only). */
+  readonly guestItems: readonly WishlistItem[];
+  readonly guestStatus: 'idle' | 'loading' | 'ready' | 'error';
   /** The page being shown on /wishlist. */
   readonly status: WishlistStatus;
   readonly page: WishlistPage | null;
@@ -27,6 +30,8 @@ export const initialWishlistState: WishlistState = {
   ids: [],
   guestIds: [],
   idsKnown: false,
+  guestItems: [],
+  guestStatus: 'idle',
   status: 'idle',
   page: null,
   pageNo: 1,
@@ -53,7 +58,11 @@ export const wishlistFeature = createFeature({
       if (s.guestIds.includes(productId)) return { ...s, guestIds: without(s.guestIds, productId) };
       return { ...s, guestIds: [productId, ...s.guestIds].slice(0, MAX_GUEST_IDS), promptOpen: true };
     }),
-    on(WishlistActions.remove, (s, { productId }): WishlistState => (s.signedIn ? { ...s, message: null, ids: without(s.ids, productId) } : s)),
+    on(WishlistActions.remove, (s, { productId }): WishlistState =>
+      s.signedIn ? { ...s, message: null, ids: without(s.ids, productId) } : { ...s, guestIds: without(s.guestIds, productId) },
+    ),
+    on(WishlistActions.guestItemsRequested, (s): WishlistState => ({ ...s, guestStatus: s.guestItems.length > 0 ? s.guestStatus : 'loading' })),
+    on(WishlistActions.guestItemsLoaded, (s, { items }): WishlistState => (items ? { ...s, guestItems: items, guestStatus: 'ready' } : { ...s, guestStatus: 'error' })),
     on(WishlistActions.changeDone, (s, { result }): WishlistState => {
       switch (result.status) {
         case 'ok':

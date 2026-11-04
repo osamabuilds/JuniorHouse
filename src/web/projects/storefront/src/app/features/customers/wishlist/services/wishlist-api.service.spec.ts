@@ -65,6 +65,35 @@ describe('WishlistApi', () => {
     req.flush({ added: 2 });
   });
 
+  it('WSL-2 reads the cards for a guest from the public storefront route, in the order asked, and marks a missing one unavailable', () => {
+    let items: unknown;
+    api.cards([5, 9, 7]).subscribe((r) => (items = r));
+    const req = http.expectOne((r) => r.url === '/api/storefront/products/summaries');
+    expect(req.request.params.get('ids')).toBe('5,9,7');
+    req.flush([
+      { productId: 7, name: 'Jacket', path: '/boys/jackets/jacket', price: 3000, wasPrice: 4000, isAvailable: false, imageUrl: null, imageFallbackUrl: null, imageWidth: null },
+      { productId: 5, name: 'Dress', path: '/girls/dresses/dress', price: 1500, wasPrice: null, isAvailable: true, imageUrl: '/media/a.webp', imageFallbackUrl: '/media/a.jpg', imageWidth: 640 },
+    ]);
+
+    const list = items as { productId: number; notes: string[]; name: string | null }[];
+    expect(list.map((i) => i.productId)).toEqual([5, 9, 7]);
+    expect(list[0].notes).toEqual([]);
+    expect(list[1].notes).toEqual(['Unavailable']);
+    expect(list[1].name).toBeNull();
+    expect(list[2].notes).toEqual(['OnSale', 'SoldOut']);
+  });
+
+  it('WSL-2 asks for nothing when the browser remembers nothing, and a failed call is null', () => {
+    let none: unknown;
+    api.cards([]).subscribe((r) => (none = r));
+    expect(none).toEqual([]);
+
+    let failed: unknown = 'unset';
+    api.cards([1]).subscribe((r) => (failed = r));
+    http.expectOne(() => true).flush(null, { status: 500, statusText: 'x' });
+    expect(failed).toBeNull();
+  });
+
   it('maps failures to results the page can show', () => {
     expect(change(() => api.add(1), 204)).toEqual({ status: 'ok' });
     expect(change(() => api.add(1), 401)).toEqual({ status: 'signedOut' });

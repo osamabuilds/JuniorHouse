@@ -250,6 +250,7 @@ GET,/api/storefront/listings/options,anonymous
 GET,/api/storefront/menu,anonymous
 GET,/api/storefront/pages/{slug},anonymous
 GET,/api/storefront/products/by-path,anonymous
+GET,/api/storefront/products/summaries,anonymous
 GET,/api/storefront/search/,anonymous
 GET,/api/storefront/search/sku,anonymous
 GET,/api/storefront/search/suggest,anonymous

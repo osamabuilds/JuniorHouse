@@ -155,4 +155,32 @@ public sealed class WishlistEndpointsTests(ProductionApiFixture api)
         Assert.Equal(0, second.GetProperty("added").GetInt32());
         Assert.Equal(HttpStatusCode.BadRequest, tooMany.StatusCode);
     }
+
+    [Fact]
+    [Trait("Spec", "WSL-2")]
+    public async Task GuestCards_AreOpenToAnyone_ForTheRememberedIds_AndLeaveOutWhatIsNotPublished()
+    {
+        await SeedProductsAsync();
+
+        var response = await SendAsync(HttpMethod.Get, $"/api/storefront/products/summaries?ids={Jacket},999999999,{Dress}", customer: "none");
+        var cards = (await JsonAsync(response)).EnumerateArray().ToList();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal([Jacket, Dress], cards.Select(c => c.GetProperty("productId").GetInt64()));
+        Assert.Equal(3200m, cards[0].GetProperty("price").GetDecimal());
+        Assert.Equal($"/girls/dresses/wish-{Jacket}", cards[0].GetProperty("path").GetString());
+        Assert.Contains("public", response.Headers.CacheControl?.ToString() ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait("Spec", "WSL-2")]
+    public async Task GuestCards_RefuseTooManyOrMalformedIds()
+    {
+        var tooMany = string.Join(',', Enumerable.Range(1, 51));
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(HttpMethod.Get, $"/api/storefront/products/summaries?ids={tooMany}")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(HttpMethod.Get, "/api/storefront/products/summaries?ids=1,abc")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await SendAsync(HttpMethod.Get, "/api/storefront/products/summaries?ids=-3")).StatusCode);
+        Assert.Empty((await JsonAsync(await SendAsync(HttpMethod.Get, "/api/storefront/products/summaries"))).EnumerateArray());
+    }
 }

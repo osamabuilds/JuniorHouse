@@ -1,10 +1,24 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
-import { ChangeResult, IdsResult, ListResult, WishlistPage } from '../models/wishlist.model';
+import { ChangeResult, IdsResult, ListResult, WishlistItem, WishlistNote, WishlistPage } from '../models/wishlist.model';
+
+/** The public card for a published product (GET /api/storefront/products/summaries). */
+interface ProductCard {
+  readonly productId: number;
+  readonly name: string;
+  readonly path: string;
+  readonly price: number;
+  readonly wasPrice: number | null;
+  readonly isAvailable: boolean;
+  readonly imageUrl: string | null;
+  readonly imageFallbackUrl: string | null;
+  readonly imageWidth: number | null;
+}
 
 /** Same-origin pass-through to /api/customers/me/wishlist (server.ts); the browser never calls the API directly (ADR 0021). */
 const BASE = '/customer-api/wishlist';
+const CARDS = '/api/storefront/products/summaries';
 
 /** HTTP only. Every failure becomes a result: nothing throws into the store or the page. */
 @Injectable({ providedIn: 'root' })
@@ -23,6 +37,25 @@ export class WishlistApi {
     return this.http.get<number[]>(`${BASE}/ids`).pipe(
       map((ids): IdsResult => ({ status: 'ok', ids })),
       catchError((e: unknown) => of<IdsResult>(isUnauthorized(e) ? { status: 'signedOut' } : { status: 'error' })),
+    );
+  }
+
+  /**
+   * The products a signed-out shopper has saved, from the public storefront (no sign-in needed), in the order asked. An id the storefront no
+   * longer publishes comes back as an unavailable entry so the shopper can remove it. Null when the call failed.
+   */
+  cards(productIds: readonly number[]): Observable<readonly WishlistItem[] | null> {
+    if (productIds.length === 0) return of([]);
+    const params = new HttpParams().set('ids', productIds.join(','));
+    return this.http.get<ProductCard[]>(CARDS, { params }).pipe(
+      map((cards): readonly WishlistItem[] => {
+        const byId = new Map(cards.map((c) => [c.productId, c]));
+        return productIds.map((id) => {
+          const card = byId.get(id);
+          return card ? fromCard(card) : gone(id);
+        });
+      }),
+      catchError(() => of(null)),
     );
   }
 
@@ -45,6 +78,21 @@ export class WishlistApi {
       catchError((e: unknown) => of(toFailure(e))),
     );
   }
+}
+
+function fromCard(card: ProductCard): WishlistItem {
+  const notes: WishlistNote[] = [];
+  if (card.wasPrice !== null && card.wasPrice > card.price) notes.push('OnSale');
+  if (!card.isAvailable) notes.push('SoldOut');
+  // A guest has no saved price, so there is nothing to compare for a price drop.
+  return { ...card, savedPrice: card.price, notes, savedAt: '' };
+}
+
+function gone(productId: number): WishlistItem {
+  return {
+    productId, name: null, path: null, price: null, wasPrice: null, savedPrice: 0, isAvailable: false,
+    imageUrl: null, imageFallbackUrl: null, imageWidth: null, notes: ['Unavailable'], savedAt: '',
+  };
 }
 
 function isUnauthorized(e: unknown): boolean {

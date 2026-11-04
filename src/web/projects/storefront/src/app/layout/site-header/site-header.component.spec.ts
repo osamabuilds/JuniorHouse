@@ -1,4 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
+import { WishlistActions } from '../../features/customers/wishlist/store/wishlist.actions';
 import { wishlistFeature } from '../../features/customers/wishlist/store/wishlist.reducer';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideCart } from '../../features/cart/carts/cart.providers';
@@ -145,5 +146,20 @@ describe('SiteHeaderComponent', () => {
     expect(labels.some((l) => l.includes('account'))).toBe(false);
     expect(labels).toContain('bag, 0 items');
     expect(q(f, 'input[type="email"]')).toBeNull();
+  });
+
+  it('WSL-1 the wishlist link names its count and shows a badge like the bag, for a guest too', () => {
+    const f = render();
+    const link = q(f, 'a[href="/wishlist"]');
+    expect(link.getAttribute('aria-label')).toBe('Wishlist, 0 products saved');
+    expect(link.querySelector('.rp-count')).toBeNull();
+
+    const store = TestBed.inject(Store);
+    store.dispatch(WishlistActions.sessionKnown({ signedIn: false }));
+    store.dispatch(WishlistActions.guestLoaded({ ids: [4, 5, 6] }));
+    f.detectChanges();
+
+    expect(link.getAttribute('aria-label')).toBe('Wishlist, 3 products saved');
+    expect(link.querySelector('.rp-count')!.textContent!.trim()).toBe('3');
   });
 });
