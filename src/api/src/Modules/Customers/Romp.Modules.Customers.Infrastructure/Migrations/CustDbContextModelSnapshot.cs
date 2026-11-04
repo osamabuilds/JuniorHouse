@@ -634,6 +634,65 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Wishlist.WishlistItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("CustomerId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("CUST_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<decimal>("SavedPrice")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("SAVD_PRIC_AMT");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "CustomerId" }, "IX_CUST_WSHL_CUST_ID");
+
+                    b.HasIndex(new[] { "CustomerId", "ProductId" }, "UQ_CUST_WSHL_CUST_ID_PRDT_ID")
+                        .IsUnique();
+
+                    b.ToTable("CUST_WSHL", "CUST", t =>
+                        {
+                            t.HasCheckConstraint("CK_CUST_WSHL_SAVD_PRIC_AMT", "\"SAVD_PRIC_AMT\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Customers.Infrastructure.Accounts.LoginOutcomeRow", b =>
                 {
                     b.Property<short>("Id")
@@ -864,6 +923,16 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_CUST_ADDR_CUST_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Wishlist.WishlistItem", b =>
+                {
+                    b.HasOne("Romp.Modules.Customers.Domain.Accounts.Customer", null)
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_CUST_WSHL_CUST_ID");
                 });
 #pragma warning restore 612, 618
         }
