@@ -1,12 +1,18 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Romp.Modules.Customers.Application.Abstractions;
+using Romp.Modules.Customers.Domain.Newsletter;
 using Romp.Modules.Storefront.Contracts;
 
 namespace Romp.Modules.Customers.Application.NotifyMe;
 
 /// <summary>What the restock email needs to say. The page address is site-relative; Infrastructure joins it to the public base address.</summary>
-public sealed record RestockNotice(string ProductName, string ColourName, string SizeName, string PagePath);
+/// <param name="UnsubscribeToken">
+/// The signed newsletter unsubscribe token, set only when this address is currently subscribed to the newsletter; the email then carries a
+/// link to unsubscribe from it. Null for everyone else (nothing to unsubscribe from).
+/// </param>
+public sealed record RestockNotice(string ProductName, string ColourName, string SizeName, string PagePath, string? UnsubscribeToken = null);
 
 /// <summary>Renders and sends the restock email (ADR 0022). A failure throws so the message is retried (NFR-FT-08).</summary>
 public interface IRestockMailer
@@ -24,7 +30,7 @@ public interface IRestockMailer
 public sealed record SendRestockNoticeCommand(long RequestId) : IRequest<bool>, ICustomerCommand;
 
 public sealed class SendRestockNoticeCommandHandler(
-    ICustomerDbContext dbContext, IStorefrontCatalogQueries catalog, IRestockMailer mailer, TimeProvider clock)
+    ICustomerDbContext dbContext, IStorefrontCatalogQueries catalog, IRestockMailer mailer, IOptions<CustomersOptions> options, TimeProvider clock)
     : IRequestHandler<SendRestockNoticeCommand, bool>
 {
     public async Task<bool> Handle(SendRestockNoticeCommand request, CancellationToken cancellationToken)
@@ -42,7 +48,12 @@ public sealed class SendRestockNoticeCommandHandler(
         }
 
         var variant = variants[0];
-        await mailer.SendAsync(notify.Email, new RestockNotice(variant.ProductName, variant.ColourName, variant.SizeName, variant.Path), cancellationToken);
+        var subscriptionId = await dbContext.Newsletter.AsNoTracking()
+            .Where(s => s.Email == notify.Email && s.Status == NewsletterStatus.Subscribed)
+            .Select(s => (long?)s.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        var token = subscriptionId is { } id ? UnsubscribeToken.Create(id, options.Value.LinkSigningKey) : null;
+        await mailer.SendAsync(notify.Email, new RestockNotice(variant.ProductName, variant.ColourName, variant.SizeName, variant.Path, token), cancellationToken);
         notify.MarkSent(clock.GetUtcNow());
         return true;
     }

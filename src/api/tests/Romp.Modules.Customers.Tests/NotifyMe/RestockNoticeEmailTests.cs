@@ -49,7 +49,7 @@ public sealed class RestockNoticeEmailTests(CustomersPostgres postgres)
 
     [Fact]
     [Trait("Spec", "NTM-5")]
-    public async Task TheEmail_HasNoMarketing_AndNoUnsubscribeMachinery()
+    public async Task TheEmail_ForANonSubscriber_HasNoMarketing_AndNoUnsubscribeMachinery()
     {
         using var harness = new NewsletterHarness(postgres);
         var variant = NewsletterHarness.NewVariantId();
@@ -63,6 +63,28 @@ public sealed class RestockNoticeEmailTests(CustomersPostgres postgres)
         Assert.Null(sent.Headers);
         Assert.DoesNotContain("newsletter", sent.TextBody, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("only email", sent.TextBody, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("unsubscribe", sent.TextBody, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    [Trait("Spec", "NTM-5")]
+    [Trait("Spec", "NLS-3")]
+    public async Task TheEmail_ForANewsletterSubscriber_CarriesASignedUnsubscribeLink_WithoutTheAddress()
+    {
+        using var harness = new NewsletterHarness(postgres);
+        var variant = NewsletterHarness.NewVariantId();
+        harness.Catalog.PublishVariant(variant);
+        var email = NewEmail();
+        await harness.Send(new Romp.Modules.Customers.Application.Newsletter.SubscribeNewsletterCommand(email));
+        var (_, message) = await RestockedAsync(harness, variant, email);
+
+        await harness.DeliverAsync(message);
+
+        var sent = Assert.Single(harness.Emails.Sent, m => m.To == email);
+        Assert.Contains("https://shop.example.test/newsletter/unsubscribe?token=", sent.TextBody, StringComparison.Ordinal);
+        Assert.Contains("https://shop.example.test/newsletter/unsubscribe?token=", sent.HtmlBody, StringComparison.Ordinal);
+        Assert.DoesNotContain(email, sent.TextBody, StringComparison.Ordinal);
+        Assert.DoesNotContain(email, sent.HtmlBody, StringComparison.Ordinal);
     }
 
     [Fact]
