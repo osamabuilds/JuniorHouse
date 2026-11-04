@@ -1,5 +1,4 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Domain.Newsletter;
@@ -20,12 +19,12 @@ public interface INewsletterMailer
 public sealed record SendNewsletterWelcomeCommand(long SubscriptionId) : IRequest<bool>, ICustomerCommand;
 
 public sealed class SendNewsletterWelcomeCommandHandler(
-    ICustomerDbContext dbContext, INewsletterMailer mailer, IOptions<CustomersOptions> options, TimeProvider clock)
+    NewsletterConsent consent, INewsletterMailer mailer, IOptions<CustomersOptions> options, TimeProvider clock)
     : IRequestHandler<SendNewsletterWelcomeCommand, bool>
 {
     public async Task<bool> Handle(SendNewsletterWelcomeCommand request, CancellationToken cancellationToken)
     {
-        var subscription = await dbContext.Newsletter.FirstOrDefaultAsync(s => s.Id == request.SubscriptionId, cancellationToken);
+        var subscription = await consent.LoadLockedAsync(request.SubscriptionId, cancellationToken);
         if (subscription is null || !subscription.IsSubscribed || subscription.WelcomeSentAt is not null)
         {
             return false;

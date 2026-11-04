@@ -40,12 +40,8 @@ public sealed class NewsletterConsent(ICustomerDbContext dbContext, TimeProvider
     /// <summary>Withdraws consent for the record a signed link names. An unknown or already-unsubscribed record changes nothing.</summary>
     public async Task UnsubscribeByIdAsync(long subscriptionId, ConsentSource source, CancellationToken cancellationToken)
     {
-        var subscription = await dbContext.Newsletter.FirstOrDefaultAsync(s => s.Id == subscriptionId, cancellationToken);
-        if (subscription is not null)
-        {
-            await dbContext.LockKeyAsync(LockName(subscription.Email), cancellationToken);
-            subscription.Unsubscribe(source, clock.GetUtcNow());
-        }
+        var subscription = await LoadLockedAsync(subscriptionId, cancellationToken);
+        subscription?.Unsubscribe(source, clock.GetUtcNow());
     }
 
     /// <summary>Withdraws consent for an address (the signed-in customer turning it off).</summary>
@@ -54,6 +50,22 @@ public sealed class NewsletterConsent(ICustomerDbContext dbContext, TimeProvider
         await dbContext.LockKeyAsync(LockName(normalisedEmail), cancellationToken);
         var subscription = await dbContext.Newsletter.FirstOrDefaultAsync(s => s.Email == normalisedEmail, cancellationToken);
         subscription?.Unsubscribe(source, clock.GetUtcNow());
+    }
+
+    /// <summary>
+    /// Loads a record by id after taking the lock on its address. The address is read first without tracking, then the lock is taken, then the
+    /// record is read for update, so a send or a change that held the lock has finished before this one reads (no row-version conflict).
+    /// </summary>
+    public async Task<NewsletterSubscription?> LoadLockedAsync(long subscriptionId, CancellationToken cancellationToken)
+    {
+        var email = await dbContext.Newsletter.AsNoTracking().Where(s => s.Id == subscriptionId).Select(s => s.Email).FirstOrDefaultAsync(cancellationToken);
+        if (email is null)
+        {
+            return null;
+        }
+
+        await dbContext.LockKeyAsync(LockName(email), cancellationToken);
+        return await dbContext.Newsletter.FirstOrDefaultAsync(s => s.Id == subscriptionId, cancellationToken);
     }
 
     private static string LockName(string email) => "newsletter:" + email;
