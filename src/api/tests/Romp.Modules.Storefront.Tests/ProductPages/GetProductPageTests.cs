@@ -87,14 +87,14 @@ public sealed class GetProductPageTests(StorefrontPostgres postgres)
 
     [Fact]
     [Trait("Spec", "PDP-4")]
-    public async Task ASizeWithNoStock_IsSoldOutAndNotSelectable_AndLowStockStaysSelectable()
+    public async Task ASizeWithNoStock_IsSoldOutButCanBeChosen_AndLowStockStaysSelectable()
     {
         using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
         await PublishAsync(host, [V(11, "RED", "5-6Y", "SKU-1"), V(12, "RED", "7-8Y", "SKU-2")], new() { [11] = 0, [12] = 3 });
 
         var page = await PageAsync(host);
 
-        Assert.Equal(("SoldOut", false), (page.Sizes[0].Availability, page.Sizes[0].Selectable));
+        Assert.Equal(("SoldOut", true), (page.Sizes[0].Availability, page.Sizes[0].Selectable));
         Assert.Equal(("LowStock", true), (page.Sizes[1].Availability, page.Sizes[1].Selectable));
     }
 

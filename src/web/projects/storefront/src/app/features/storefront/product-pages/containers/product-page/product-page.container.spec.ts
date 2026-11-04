@@ -37,7 +37,7 @@ const basePage: ProductPage = {
   colours: [{ code: 'red', name: 'Red', inStock: true }, { code: 'navy', name: 'Navy', inStock: false }],
   sizes: [
     { code: '5-6y', name: '5-6 Years', availability: 'InStock', selectable: true, variantId: 501 },
-    { code: '7-8y', name: '7-8 Years', availability: 'SoldOut', selectable: false, variantId: 502 },
+    { code: '7-8y', name: '7-8 Years', availability: 'SoldOut', selectable: true, variantId: 502 },
     { code: '9-10y', name: '9-10 Years', availability: 'NotYetAvailable', selectable: false, variantId: 503 },
   ],
   images: [
@@ -162,13 +162,13 @@ describe('ProductPageContainer', () => {
     expect(links[1].textContent).toContain('sold out');
   });
 
-  it('PDP-4 a sold-out size and a size not yet available are text, not links, and say why', () => {
+  it('PDP-4 NTM-1 a sold-out size is a link worded Sold out, and a size not yet available is text that says why', () => {
     const { el } = render(found());
     const sizes = [...el.querySelectorAll('rp-size-options li')];
 
     expect(sizes[0].querySelector('a')!.getAttribute('href')).toBe('/girls/dresses/floral-summer-dress?colour=red&size=5-6y');
     expect(sizes[0].querySelector('a')!.getAttribute('aria-current')).toBe('true');
-    expect(sizes[1].querySelector('a')).toBeNull();
+    expect(sizes[1].querySelector('a')!.getAttribute('href')).toBe('/girls/dresses/floral-summer-dress?colour=red&size=7-8y');
     expect(sizes[1].textContent).toContain('Sold out');
     expect(sizes[2].querySelector('a')).toBeNull();
     expect(sizes[2].textContent).toContain('Not yet available');
@@ -211,11 +211,12 @@ describe('ProductPageContainer', () => {
   });
 
   it('PDP-16 a product with nothing in stock shows a sold-out state and keeps the page', () => {
-    const { el } = render(found({ isAvailable: false, selectedSize: null, sku: null, sizes: basePage.sizes.map((s) => ({ ...s, selectable: false, availability: 'SoldOut' })) }));
+    const { el } = render(found({ isAvailable: false, selectedSize: null, sku: null, sizes: basePage.sizes.map((s) => ({ ...s, selectable: true, availability: 'SoldOut' })) }));
 
     expect(el.querySelector('rp-sold-out-state')!.textContent).toContain('Sold out');
     expect(el.querySelector('h1')!.textContent).toContain('Floral Summer Dress');
-    expect(el.querySelectorAll('rp-size-options a').length).toBe(0);
+    expect(el.querySelectorAll('rp-size-options a').length).toBe(basePage.sizes.length);
+    expect(el.querySelector('rp-size-options a')!.textContent).toContain('Sold out');
     expect(el.querySelector('button:not([aria-pressed])')).toBeNull();
   });
 

@@ -32,7 +32,7 @@ This is the page where a parent decides. It must show the garment clearly from s
 | PDP-1 | Given a published product, then the page shows a gallery of its images, name, price, SKU and its variants | FR-07 |
 | PDP-2 | Given a colour is selected, then the gallery and price match that colour (variant images override product-level ones) and the choice is reflected in the URL's query only as a non-indexed hint (Q-PDP-2) | TC-PDP-02 |
 | PDP-3 | Given a size is selected, then the SKU of that colour and size is shown | FR-07 |
-| PDP-4 | Given a size with no stock, then it is shown as unavailable (struck through with text "Sold out", not colour alone) and cannot be chosen | TC-PDP-04 (display part) |
+| PDP-4 | Given a size with no stock, then it is shown as unavailable (with the text "Sold out", not colour alone) and cannot be bought; it can be chosen so the shopper can ask to be told when it is back (amended 2026-11-04, customers/notify-me NTM-1). A size that is not yet available is plain text and cannot be chosen | TC-PDP-04 |
 | PDP-5 | Given a variant that Labelling has not yet issued a GTIN for, then it is listed as "not yet available" | Catalog D1 |
 | PDP-6 | Given a size chart exists for the category and gender, then a table (with `th scope`) shows each size with its age range and measurements; the product's own size is highlighted | TC-PDP-01, FR-08 |
 | PDP-7 | Given no size chart exists, then the page says so and still works | SCRUM-28 AC-4 |
@@ -71,3 +71,5 @@ Tests that prove each criterion: [traceability.md](traceability.md). The open qu
 - **Status codes:** the route matches any three-segment address and the container sets 200, 301, 404, 410 or 503 on the server response.
 - **Layout fix found by the e2e run:** the product grids needed `minmax(0, 1fr)` columns, otherwise the gallery strip stretched the page to twice the width at 320px.
 - **Not built here:** Product JSON-LD with `Offer.availability` (PDP-14 moves to `seo`). The old mock product page, the product card and the product part of the mock catalogue are removed; this closes published-catalog task 23.
+
+- **Amended 2026-11-04 (customers/notify-me).** A sold-out size is now a link worded "Sold out" (`Selectable` means "can be chosen": true for all but "not yet available"). Choosing it shows the Notify me form and keeps Add to bag disabled; only in-stock and low-stock sizes can be bought. PDP-4 above reads accordingly.

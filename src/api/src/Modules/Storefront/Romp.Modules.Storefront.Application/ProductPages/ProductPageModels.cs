@@ -13,7 +13,7 @@ public sealed record ColourOptionDto(string Code, string Name, bool InStock);
 
 /// <summary>
 /// A size of the selected colour. <c>VariantId</c> is the catalogue variant the basket takes (cart C10). <c>Availability</c> is one of InStock, LowStock, SoldOut or NotYetAvailable (PDP-4, 5); there is never a
-/// count (PCT-3). <c>Selectable</c> is false for the last two.
+/// count (PCT-3). <c>Selectable</c> (can be chosen) is true for all but NotYetAvailable: a sold-out size can be chosen so the shopper can ask to be told when it is back (customers/notify-me NTM-1), but only InStock and LowStock can be bought.
 /// </summary>
 public sealed record SizeOptionDto(string Code, string Name, string Availability, bool Selectable, long VariantId);
 

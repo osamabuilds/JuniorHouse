@@ -2,4 +2,4 @@
 
 Back-in-stock email capture for sold-out variants and the restock email.
 
-**Status:** Planned (spec and plan approved by the owner 2026-10-25, tasks pending) · **Spec:** [spec.md](spec.md) · **Requirements:** FR-11 · **Code / tests:** not started (plan and tasks follow approval) · **Module:** [customers](../README.md)
+**Status:** Built (2026-11-04) · **Spec:** [spec.md](spec.md) (see "As built") · **Plan:** [plan.md](plan.md) · **Requirements:** FR-11 · **Code / tests:** `src/api/src/Modules/Customers/*/NotifyMe`, `tests/Romp.Modules.Customers.Tests/NotifyMe`, `src/web/projects/{storefront,admin}/src/app/features/customers/notify-me`, `src/web/e2e/customers/notify-me.e2e.spec.ts` · **Module:** [customers](../README.md)

@@ -13,7 +13,7 @@ Customer accounts for the storefront (Sprint 10, "Sell: customers"): registratio
 | [newsletter](newsletter/spec.md) | Subscribe and unsubscribe, honoured on every future send | FR-41 | Built |
 | [wishlist](wishlist/spec.md) | Save products, guest prompt with the item kept, sale and stock flags | FR-17, SEC-05 | Built |
 | [child-profiles](child-profiles/spec.md) | Create, edit, delete profiles; owner-only; export and erase | FR-18, FR-21, NFR-27, NFR-29, SEC-05, SEC-25 | **Parked** (owner, 2026-10-25): not in Sprint 10, not built until the owner says |
-| [notify-me](notify-me/spec.md) | Back-in-stock capture on sold-out variants and the restock email | FR-11 | Draft |
+| [notify-me](notify-me/spec.md) | Back-in-stock capture on sold-out variants and the restock email | FR-11 | Built (2026-11-04) |
 
 Order of work (proposed): accounts → addresses → wishlist → newsletter → notify-me (child-profiles parked). Accounts come first because everything but Notify Me and the guest newsletter signup needs a signed-in customer.
 
