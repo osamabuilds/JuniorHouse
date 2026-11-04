@@ -79,6 +79,7 @@ public sealed class CustomersModule : IModule
         // Notify Me (FR-11): a Warehouse stock change closes the open requests and queues the restock emails.
         services.AddScoped<IOutboxMessageHandler<Warehouse.Contracts.StockLevelChangedEvent>, StockChangedConsumer>();
         services.AddScoped<Application.NotifyMe.IRestockMailer, EmailRestockMailer>();
+        services.AddHostedService<PurgeNotifyRequestsWorker>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CustTransactionBehavior<,>));
@@ -117,6 +118,7 @@ public sealed class CustomersModule : IModule
         endpoints.MapAddressEndpoints();
         endpoints.MapWishlistEndpoints();
         endpoints.MapNewsletterEndpoints();
+        endpoints.MapNotifyMeEndpoints();
     }
 
     /// <summary>

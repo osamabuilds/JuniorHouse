@@ -159,6 +159,18 @@ public sealed class CustomersFeatureDependencyTests
         Assert.True(offenders.Count == 0, "Customers reads other modules through their Contracts, never their tables: " + string.Join(", ", offenders));
     }
 
+    [Fact]
+    [Trait("Spec", "NTM-12")]
+    public void NotifyMeDemandQuery_NeverReadsTheAddress_AndItsRowHasNoAddressField()
+    {
+        var file = Path.Combine(FindRepoRoot(), "src", "api", "src", "Modules", "Customers", "Romp.Modules.Customers.Application", "NotifyMe", "ListNotifyDemand.cs");
+        var source = File.ReadAllText(file);
+
+        Assert.DoesNotContain(".Email", source, StringComparison.Ordinal);
+        var item = typeof(Romp.Modules.Customers.Application.NotifyMe.NotifyDemandItem);
+        Assert.DoesNotContain(item.GetProperties(), p => p.Name.Contains("Email", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Mail", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static string[] Forbidden(string feature, string layerNamespace) =>
         Features.Where(f => f != feature && !Allowed[feature].Contains(f)).Select(f => $"{layerNamespace}.{f}").ToArray();
 

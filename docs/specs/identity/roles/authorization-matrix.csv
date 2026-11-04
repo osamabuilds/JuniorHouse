@@ -46,6 +46,8 @@ POST,/api/orders/cod/cancel,anonymous
 POST,/api/newsletter/subscribe,anonymous
 GET,/api/newsletter/unsubscribe,anonymous
 POST,/api/newsletter/unsubscribe,anonymous
+POST,/api/notify-me/,anonymous
+GET,/api/admin/customers/notify-demand,inventory.read
 GET,/api/webhooks/whatsapp/,anonymous
 POST,/api/webhooks/whatsapp/,anonymous
 DELETE,/api/cart/lines/{variantId:long},anonymous

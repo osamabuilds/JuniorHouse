@@ -43,6 +43,7 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "POST /api/newsletter/subscribe", // newsletter consent (customers/newsletter NL7): a visitor's email, strict rate limit, Origin check
         "GET /api/newsletter/unsubscribe", // the signed link in an email: the signature is the authority and names one record
         "POST /api/newsletter/unsubscribe", // the one-click form mail clients send (List-Unsubscribe-Post)
+        "POST /api/notify-me/", // back-in-stock request (customers/notify-me N8): a variant id and an email, strict rate limit, Origin check, same answer for new and repeated
         "GET /api/webhooks/whatsapp/", // the WhatsApp provider callback: no session, the proof is the signature on the body (notifications CHN-11)
         "POST /api/webhooks/whatsapp/",
         "POST /api/cart/lines",
