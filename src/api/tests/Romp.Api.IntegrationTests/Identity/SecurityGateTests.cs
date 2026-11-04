@@ -28,6 +28,7 @@ public sealed class SecurityGateTests(ProductionApiFixture api)
             {
                 builder.UseSetting("Site:PublicBaseUrl", "https://staging.romp.example");
                 builder.UseSetting("Customers:Auth:CsrfKey", StrongKey);
+                builder.UseSetting("Customers:LinkSigningKey", StrongKey);
                 builder.UseSetting("Identity:Csrf:Key", StrongKey);
                 builder.UseSetting("Identity:Mfa:KeyId", "k1");
                 builder.UseSetting("Identity:Mfa:EncryptionKey", MfaKey);

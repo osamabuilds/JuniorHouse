@@ -8,7 +8,7 @@ using Romp.Modules.Customers.Domain.Accounts;
 
 namespace Romp.Modules.Customers.Infrastructure.Accounts;
 
-public sealed record RegisterRequest(string? Email, string? FirstName, string? LastName, string? Mobile, string? Password, bool KeepSignedIn);
+public sealed record RegisterRequest(string? Email, string? FirstName, string? LastName, string? Mobile, string? Password, bool KeepSignedIn, bool SubscribeNewsletter = false);
 
 public sealed record SignInRequest(string? Email, string? Password, bool KeepSignedIn, string? CaptchaToken);
 
@@ -93,7 +93,8 @@ internal static class CustomerAuthEndpoints
                 http.ClientIp(),
                 http.Request.Headers.UserAgent.ToString(),
                 cookies.ReadAccess(http.Request),
-                CustomerCookies.ReadGuestSession(http.Request)),
+                CustomerCookies.ReadGuestSession(http.Request),
+                body.SubscribeNewsletter),
             cancellationToken);
 
         switch (result.Status)

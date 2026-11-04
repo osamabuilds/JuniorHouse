@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.Api.IntegrationTests.Production;
 using Romp.BuildingBlocks.Email;
+using Romp.Modules.Customers.Infrastructure;
 using Romp.Modules.Customers.Infrastructure.Accounts;
 
 namespace Romp.Api.IntegrationTests.Customers;

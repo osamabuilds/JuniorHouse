@@ -14,9 +14,20 @@ public sealed class CustomersOptions
     /// <summary>The storefront address that emailed links point at (verify email, reset password). Configuration only, never taken from a request.</summary>
     public string PublicBaseUrl { get; set; } = "http://localhost:4000";
 
+    /// <summary>The development key. It only works in Development and Testing; the module refuses to start with it anywhere else.</summary>
+    public const string DevelopmentLinkSigningKey = "development-only-link-signing-key-do-not-use";
+
+    /// <summary>The secret that signs links in email (unsubscribe, NLS-3). From secrets or configuration, never committed.</summary>
+    public string LinkSigningKey { get; set; } = DevelopmentLinkSigningKey;
+
+    /// <summary>True when the signing key is a real secret: long enough and not the development key.</summary>
+    public static bool HasProductionKey(CustomersOptions options) =>
+        options.LinkSigningKey.Length >= 32 && options.LinkSigningKey != DevelopmentLinkSigningKey;
+
     public static bool IsValid(CustomersOptions options) =>
         options.MaxAddresses is >= 1 and <= 50
         && options.MaxWishlistItems is >= 1 and <= 1000
+        && options.LinkSigningKey.Length >= 16
         && Uri.TryCreate(options.PublicBaseUrl, UriKind.Absolute, out var url)
         && url.Scheme is "http" or "https";
 }

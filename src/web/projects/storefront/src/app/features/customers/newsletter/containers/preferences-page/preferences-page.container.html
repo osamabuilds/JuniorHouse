@@ -1,0 +1,33 @@
+<div class="rp-lhead">
+  <rp-breadcrumbs [crumbs]="crumbs" />
+  <h1 class="rp-display-lg">Preferences</h1>
+</div>
+
+@switch (status()) {
+  @case ('error') {
+    <p role="alert">We could not load your preferences.</p>
+    <button rpBtn="ghost" type="button" (click)="reload()">Try again</button>
+  }
+  @case ('ready') {
+    <section aria-labelledby="rp-pref-email">
+      <h2 class="rp-display-sm" id="rp-pref-email">Email</h2>
+      <label class="rp-check">
+        <input
+          type="checkbox"
+          [checked]="subscribed()"
+          [disabled]="saving()"
+          aria-describedby="rp-pref-help rp-pref-note"
+          (change)="toggle($any($event.target).checked)"
+        />
+        <span>Send me news and offers by email</span>
+      </label>
+      <p class="rp-help" id="rp-pref-help">
+        Order and account emails (confirmations, password resets) are always sent and never carry offers. You can unsubscribe at any time.
+      </p>
+      <p class="rp-help" id="rp-pref-note" role="status" aria-live="polite">{{ note() }}</p>
+    </section>
+  }
+  @default {
+    <p role="status">Loading your preferences...</p>
+  }
+}

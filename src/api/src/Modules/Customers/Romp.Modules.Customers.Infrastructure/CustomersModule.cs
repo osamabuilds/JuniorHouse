@@ -17,8 +17,10 @@ using Romp.BuildingBlocks.Web;
 using Romp.BuildingBlocks.Web.Captcha;
 using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Application.Accounts;
+using Romp.Modules.Customers.Application.Newsletter;
 using Romp.Modules.Customers.Infrastructure.Accounts;
 using Romp.Modules.Customers.Infrastructure.Addresses;
+using Romp.Modules.Customers.Infrastructure.Newsletter;
 using Romp.Modules.Customers.Infrastructure.Wishlist;
 using Romp.Modules.Customers.Infrastructure.Persistence;
 
@@ -46,7 +48,11 @@ public sealed class CustomersModule : IModule
 
         services.AddScoped<ICustomerDbContext>(sp => sp.GetRequiredService<CustDbContext>());
         services.AddOptions<Application.CustomersOptions>().Bind(configuration.GetSection(Application.CustomersOptions.SectionName))
-            .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50, Customers:MaxWishlistItems between 1 and 1000, and Customers:PublicBaseUrl must be an http or https address.").ValidateOnStart();
+            .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50, Customers:MaxWishlistItems between 1 and 1000, and Customers:PublicBaseUrl must be an http or https address, and Customers:LinkSigningKey at least 16 characters.")
+            .Validate<IHostEnvironment>(
+                (options, environment) => environment.IsDevelopment() || environment.IsEnvironment("Testing") || Application.CustomersOptions.HasProductionKey(options),
+                "Customers:LinkSigningKey must be a secret of at least 32 characters, not the development key, outside Development and Testing.")
+            .ValidateOnStart();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentCustomer, HttpContextCurrentCustomer>();
         services.AddScoped<Contracts.ICurrentCustomerAccessor>(sp => sp.GetRequiredService<ICurrentCustomer>());
@@ -61,6 +67,12 @@ public sealed class CustomersModule : IModule
         services.AddCaptcha(configuration);
         services.AddEmail(configuration);
         services.AddScoped<ICustomerMailer, EmailCustomerMailer>();
+
+        // Newsletter consent (FR-41): one place that changes it, the welcome mail, the outbox consumer and the audience contract.
+        services.AddCustomerNewsletter();
+        services.AddScoped<Application.Newsletter.INewsletterMailer, EmailNewsletterMailer>();
+        services.AddScoped<Contracts.INewsletterAudience, NewsletterAudience>();
+        services.AddScoped<IOutboxMessageHandler<Domain.Abstractions.CustomerEmailRequestedEvent>, CustomerEmailConsumer>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CustTransactionBehavior<,>));
@@ -82,7 +94,7 @@ public sealed class CustomersModule : IModule
             }));
 
         // Customers' events go to the shared dispatcher; every event without a real consumer gets the placeholder logging handler.
-        services.AddOutboxModule("CUST");
+        services.AddOutboxModule("CUST", typeof(Domain.Abstractions.CustomerEmailRequestedEvent));
         services.TryAdd(ServiceDescriptor.Scoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>)));
     }
 
@@ -98,6 +110,7 @@ public sealed class CustomersModule : IModule
         endpoints.MapAccountEndpoints();
         endpoints.MapAddressEndpoints();
         endpoints.MapWishlistEndpoints();
+        endpoints.MapNewsletterEndpoints();
     }
 
     /// <summary>

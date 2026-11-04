@@ -47,7 +47,7 @@ const addressBook = /^\/customer-api\/addresses(\/[0-9]+(\/default)?)?$/;
 const wishlist = /^\/customer-api\/wishlist(\/(ids|merge|[0-9]+))?$/;
 
 app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res, next) => {
-  if (req.path === '/customer-api/config' || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/') || req.path === '/customer-api/orders' || req.path.startsWith('/customer-api/orders/')) {
+  if (req.path === '/customer-api/config' || req.path === '/customer-api/newsletter' || req.path.startsWith('/customer-api/newsletter/') || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/') || req.path === '/customer-api/orders' || req.path.startsWith('/customer-api/orders/')) {
     next(); // the sign-in routes below
     return;
   }
@@ -81,6 +81,95 @@ app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, r
   } catch {
     res.status(502).json({ title: 'The storefront could not reach the API.' });
   }
+});
+
+/**
+ * Newsletter consent (customers/newsletter NLS-1 to NLS-6). The browser asks this origin (`/customer-api/newsletter...`) and the server
+ * forwards to the API with the cookies, the browser's `Origin` (the API checks it on subscribe) and the real client address. Only the
+ * routes below are reachable, each with the methods it accepts. Answers are never cached.
+ */
+const newsletterRoutes: Readonly<Record<string, { readonly methods: readonly string[]; readonly target: string }>> = {
+  '/customer-api/newsletter/subscribe': { methods: ['POST'], target: '/api/newsletter/subscribe' },
+  '/customer-api/newsletter/unsubscribe': { methods: ['GET', 'POST'], target: '/api/newsletter/unsubscribe' },
+  '/customer-api/newsletter': { methods: ['GET', 'PUT'], target: '/api/customers/me/newsletter' },
+};
+
+/** What the API said, as the result page understands it: 2xx done, 4xx a request that cannot be used, anything else an error. */
+const outcome = (status: number): 'ok' | 'invalid' | 'error' => (status >= 200 && status < 300 ? 'ok' : status >= 400 && status < 500 && status !== 429 && status !== 403 ? 'invalid' : 'error');
+
+const clientHeaders = (req: express.Request): Record<string, string> => {
+  const headers: Record<string, string> = {};
+  for (const name of ['cookie', 'origin', 'user-agent']) {
+    const value = req.header(name);
+    if (value) headers[name] = value;
+  }
+  const forwardedFor = [req.header('x-forwarded-for'), req.socket.remoteAddress].filter(Boolean).join(', ');
+  if (forwardedFor) headers['x-forwarded-for'] = forwardedFor;
+  return headers;
+};
+
+app.all('/customer-api/newsletter{/*splat}', express.json({ limit: '2kb' }), async (req, res) => {
+  const route = newsletterRoutes[req.path];
+  if (!route?.methods.includes(req.method)) {
+    res.status(404).end();
+    return;
+  }
+  try {
+    const headers = clientHeaders(req);
+    const sendsJson = (req.method === 'POST' || req.method === 'PUT') && req.body && Object.keys(req.body).length > 0;
+    if (sendsJson) headers['content-type'] = 'application/json';
+    const target = new URL(route.target, apiBaseUrl);
+    target.search = new URL(req.originalUrl, apiBaseUrl).search;
+    const upstream = await fetch(target, { method: req.method, headers, body: sendsJson ? JSON.stringify(req.body) : undefined, redirect: 'manual' });
+    res.status(upstream.status);
+    const type = upstream.headers.get('content-type');
+    if (type) res.setHeader('content-type', type);
+    res.setHeader('cache-control', 'private, no-store');
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
+
+/**
+ * The footer form without JavaScript: the browser posts the email here, the server subscribes it and sends the visitor on (303) to a page
+ * that says what happened. With JavaScript the same form is handled in the page and never reaches this route.
+ */
+app.post('/newsletter/subscribe', express.urlencoded({ extended: false, limit: '2kb' }), async (req, res) => {
+  let status: 'ok' | 'invalid' | 'error' = 'error';
+  try {
+    const email = typeof req.body?.email === 'string' ? req.body.email : '';
+    const upstream = await fetch(new URL('/api/newsletter/subscribe', apiBaseUrl), {
+      method: 'POST',
+      headers: { ...clientHeaders(req), 'content-type': 'application/json' },
+      body: JSON.stringify({ email }),
+      redirect: 'manual',
+    });
+    status = outcome(upstream.status);
+  } catch {
+    status = 'error';
+  }
+  res.setHeader('cache-control', 'private, no-store');
+  res.redirect(303, `/newsletter/subscribed?status=${status}`);
+});
+
+/**
+ * The link in a newsletter email. Opening it unsubscribes (idempotent; the signed token names one record), then the visitor is sent on to a
+ * page that says so. A mail scanner that opens the link also unsubscribes: accepted, it errs towards not mailing.
+ */
+app.get('/newsletter/unsubscribe', async (req, res) => {
+  let status: 'ok' | 'invalid' | 'error' = 'error';
+  try {
+    const token = typeof req.query['token'] === 'string' ? req.query['token'].slice(0, 200) : '';
+    const target = new URL('/api/newsletter/unsubscribe', apiBaseUrl);
+    target.searchParams.set('token', token);
+    const upstream = await fetch(target, { headers: clientHeaders(req), redirect: 'manual' });
+    status = outcome(upstream.status);
+  } catch {
+    status = 'error';
+  }
+  res.setHeader('cache-control', 'private, no-store');
+  res.redirect(303, `/newsletter/unsubscribed?status=${status}`);
 });
 
 /**

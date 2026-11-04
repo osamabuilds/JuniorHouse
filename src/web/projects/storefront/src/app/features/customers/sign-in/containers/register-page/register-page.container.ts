@@ -44,6 +44,7 @@ export class RegisterPageContainer {
     mobile: new FormControl('', { nonNullable: true, validators: [Validators.required, (c) => (!c.value || looksLikePakistaniMobile(c.value) ? null : { mobile: true })] }),
     password: new FormControl('', { nonNullable: true, validators: [Validators.required, (c) => (isPasswordValid(c.value) ? null : { rules: true })] }),
     terms: new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] }),
+    newsletter: new FormControl(false, { nonNullable: true }),
   });
   protected readonly submitted = signal(false);
   protected readonly typedPassword = toSignal(this.form.controls.password.valueChanges, { initialValue: '' });
@@ -81,10 +82,10 @@ export class RegisterPageContainer {
   protected submit(): void {
     this.submitted.set(true);
     if (this.form.invalid || this.state().busy) return;
-    const { firstName, lastName, email, mobile, password } = this.form.getRawValue();
+    const { firstName, lastName, email, mobile, password, newsletter } = this.form.getRawValue();
     this.store.dispatch(
       CustomerAuthActions.registerSubmitted({
-        input: { firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), mobile: mobile.trim(), password, keepSignedIn: false },
+        input: { firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), mobile: mobile.trim(), password, keepSignedIn: false, subscribeNewsletter: newsletter },
       }),
     );
   }

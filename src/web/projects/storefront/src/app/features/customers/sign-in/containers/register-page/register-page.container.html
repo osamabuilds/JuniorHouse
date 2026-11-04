@@ -49,6 +49,11 @@
       }
     </div>
 
+    <label class="rp-check">
+      <input type="checkbox" formControlName="newsletter" />
+      <span>Send me news and offers by email. You can unsubscribe at any time.</span>
+    </label>
+
     <button rpBtn="action" type="submit" [block]="true" [disabled]="state().busy">{{ state().busy ? 'Creating your account…' : 'Create account' }}</button>
   </form>
   <div class="rp-auth__alt">

@@ -416,3 +416,13 @@ Reused as they are: `CUST`, `PRDT` (product), `PRIC`, `AMT`. Only the words belo
 | Word | Abbr. | | Word | Abbr. |
 |---|---|---|---|---|
 | wishlist | WSHL | | saved | SAVD |
+
+
+### Added with the newsletter (Customers)
+
+Reused as they are: `CUST`, `EML`, `STS`, `SRC`, `HIST`, `SENT`, `CHNG`, `OCCR`, `LKP`, `DTE`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| newsletter | NWSL | | subscription | SUBS |
+| action | ACTN | | welcome | WLCM |

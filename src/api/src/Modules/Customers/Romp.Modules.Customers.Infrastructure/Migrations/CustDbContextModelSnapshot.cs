@@ -634,6 +634,132 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Newsletter.ConsentEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("Action")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ACTN_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("OCCR_DTE");
+
+                    b.Property<short>("Source")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SRC_ID");
+
+                    b.Property<long>("SubscriptionId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("SUBS_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "Action" }, "IX_NWSL_HIST_ACTN_ID");
+
+                    b.HasIndex(new[] { "Source" }, "IX_NWSL_HIST_SRC_ID");
+
+                    b.HasIndex(new[] { "SubscriptionId" }, "IX_NWSL_HIST_SUBS_ID");
+
+                    b.ToTable("NWSL_HIST", "CUST");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Newsletter.NewsletterSubscription", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CHNG_DTE");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("EML");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint")
+                        .HasColumnName("STS_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<DateTimeOffset?>("WelcomeSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("WLCM_SENT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "Status" }, "IX_NWSL_SUBS_STS_ID");
+
+                    b.HasIndex(new[] { "Email" }, "UQ_NWSL_SUBS_EML")
+                        .IsUnique();
+
+                    b.ToTable("NWSL_SUBS", "CUST", t =>
+                        {
+                            t.HasCheckConstraint("CK_NWSL_SUBS_EML_LOWR", "\"EML\" = lower(\"EML\")");
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Customers.Domain.Wishlist.WishlistItem", b =>
                 {
                     b.Property<long>("Id")
@@ -863,6 +989,193 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Customers.Infrastructure.Newsletter.ConsentActionRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("NWSL_ACTN_LKP", "CUST");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "SUBD",
+                            IsActive = true,
+                            Name = "Subscribed",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "UNSB",
+                            IsActive = true,
+                            Name = "Unsubscribed",
+                            SortSeq = (short)2
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Infrastructure.Newsletter.ConsentSourceRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("NWSL_SRC_LKP", "CUST");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "REGN",
+                            IsActive = true,
+                            Name = "Registration form",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "ACCT",
+                            IsActive = true,
+                            Name = "Account preferences",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "FOOT",
+                            IsActive = true,
+                            Name = "Footer form",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "LINK",
+                            IsActive = true,
+                            Name = "Link in an email",
+                            SortSeq = (short)4
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Infrastructure.Newsletter.NewsletterStatusRow", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("NWSL_STS_LKP", "CUST");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "SUBD",
+                            IsActive = true,
+                            Name = "Subscribed",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "UNSB",
+                            IsActive = true,
+                            Name = "Unsubscribed",
+                            SortSeq = (short)2
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Customers.Domain.Accounts.CustomerSession", b =>
                 {
                     b.HasOne("Romp.Modules.Customers.Domain.Accounts.Customer", null)
@@ -925,6 +1238,40 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         .HasConstraintName("FK_CUST_ADDR_CUST_ID");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Newsletter.ConsentEvent", b =>
+                {
+                    b.HasOne("Romp.Modules.Customers.Infrastructure.Newsletter.ConsentActionRow", null)
+                        .WithMany()
+                        .HasForeignKey("Action")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_NWSL_HIST_ACTN_ID");
+
+                    b.HasOne("Romp.Modules.Customers.Infrastructure.Newsletter.ConsentSourceRow", null)
+                        .WithMany()
+                        .HasForeignKey("Source")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_NWSL_HIST_SRC_ID");
+
+                    b.HasOne("Romp.Modules.Customers.Domain.Newsletter.NewsletterSubscription", null)
+                        .WithMany("History")
+                        .HasForeignKey("SubscriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_NWSL_HIST_SUBS_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Newsletter.NewsletterSubscription", b =>
+                {
+                    b.HasOne("Romp.Modules.Customers.Infrastructure.Newsletter.NewsletterStatusRow", null)
+                        .WithMany()
+                        .HasForeignKey("Status")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_NWSL_SUBS_STS_ID");
+                });
+
             modelBuilder.Entity("Romp.Modules.Customers.Domain.Wishlist.WishlistItem", b =>
                 {
                     b.HasOne("Romp.Modules.Customers.Domain.Accounts.Customer", null)
@@ -933,6 +1280,11 @@ namespace Romp.Modules.Customers.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_CUST_WSHL_CUST_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Customers.Domain.Newsletter.NewsletterSubscription", b =>
+                {
+                    b.Navigation("History");
                 });
 #pragma warning restore 612, 618
         }

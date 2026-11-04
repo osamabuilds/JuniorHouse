@@ -43,6 +43,9 @@ POST,/api/orders/,anonymous
 GET,/api/orders/cod/status,anonymous
 POST,/api/orders/cod/confirm,anonymous
 POST,/api/orders/cod/cancel,anonymous
+POST,/api/newsletter/subscribe,anonymous
+GET,/api/newsletter/unsubscribe,anonymous
+POST,/api/newsletter/unsubscribe,anonymous
 GET,/api/webhooks/whatsapp/,anonymous
 POST,/api/webhooks/whatsapp/,anonymous
 DELETE,/api/cart/lines/{variantId:long},anonymous
@@ -92,6 +95,8 @@ GET,/api/customers/me/wishlist/ids,customer
 POST,/api/customers/me/wishlist/merge,customer
 DELETE,/api/customers/me/wishlist/{productId:long},customer
 PUT,/api/customers/me/wishlist/{productId:long},customer
+GET,/api/customers/me/newsletter/,customer
+PUT,/api/customers/me/newsletter/,customer
 GET,/api/geography/provinces,anonymous
 GET,/api/geography/provinces/{id:int}/cities,anonymous
 GET,/api/identity/audit/,audit.read

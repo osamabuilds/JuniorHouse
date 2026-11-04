@@ -3,7 +3,7 @@
 - **Spec:** [spec.md](spec.md) · **Module:** Customers · **Module plan:** [../plan.md](../plan.md) · **ADR:** [0022](../../../adr/0022-email-sender-port.md)
 
 ## Domain model
-`NewsletterSubscription` (`Id`, `Email` normalised, `Status` Subscribed/Unsubscribed, `CustomerId?`, `ChangedAt`) with an append-only `ConsentEvent` history (`Action` Subscribed/Unsubscribed, `Source` Registration/Account/Footer/Link, time). Rules: one subscription per normalised email; **an unsubscribe is never reversed except by an explicit subscribe action** (NLS-4): the Registration source only subscribes when the checkbox is ticked, and never touches an already-unsubscribed record otherwise. `UnsubscribeToken` is `base64url(subscriptionId) + "." + base64url(HMAC-SHA256(key, subscriptionId))` using `Customers:LinkSigningKey`; it carries no email and cannot be forged or used for another record (NLS-3).
+`NewsletterSubscription` (`Id`, `Email` normalised, `Status` Subscribed/Unsubscribed, `ChangedAt`) with an append-only `ConsentEvent` history (`Action` Subscribed/Unsubscribed, `Source` Registration/Account/Footer/Link, time). Rules: one subscription per normalised email; **an unsubscribe is never reversed except by an explicit subscribe action** (NLS-4): the Registration source only subscribes when the checkbox is ticked, and never touches an already-unsubscribed record otherwise. `UnsubscribeToken` is `base64url(subscriptionId) + "." + base64url(HMAC-SHA256(key, subscriptionId))` using `Customers:LinkSigningKey`; it carries no email and cannot be forged or used for another record (NLS-3).
 
 ## Application layer
 | Command / Query | Output | Covers |
@@ -25,7 +25,7 @@
 `CustomerEmailRequestedEvent` (module plan). Consent changes are not published (no consumer; the audience contract is the read path).
 
 ## Data
-`CUST`: `NWSL_SUBS` (`ID`, `EML` varchar(254) unique on lower-case, `CUST_ID` bigint null, `STS_ID` smallint FK, audit, `xmin`), `NWSL_HIST` (`ID`, `SUBS_ID` FK, `ACTN_ID`, `SRC_ID`, `INSR_DTE`; append-only, no updates), lookups `NWSL_STS_LKP` (SUBD, UNSB), `NWSL_SRC_LKP` (REGN, ACCT, FOOT, LINK), `NWSL_ACTN_LKP` (SUBD, UNSB). Seeded by migration. Indexes on every FK. `SUBS_ID` in the history has a declared FK.
+`CUST`: `NWSL_SUBS` (`ID`, `EML` varchar(254) stored lower-case and unique, `STS_ID` smallint FK, `CHNG_DTE`, `WLCM_SENT_DTE`, audit, `xmin`; no customer id, see the spec "As built"), `NWSL_HIST` (`ID`, `SUBS_ID` FK, `ACTN_ID`, `SRC_ID`, `INSR_DTE`; append-only, no updates), lookups `NWSL_STS_LKP` (SUBD, UNSB), `NWSL_SRC_LKP` (REGN, ACCT, FOOT, LINK), `NWSL_ACTN_LKP` (SUBD, UNSB). Seeded by migration. Indexes on every FK. `SUBS_ID` in the history has a declared FK.
 
 ## NFR / security design
 Public endpoints answer identically for known/unknown/already-subscribed emails and are rate limited (NLS-6). Welcome email carries `List-Unsubscribe` and the signed link; HTML encodes all values. A short **email format check** (RFC-lite plus length ≤ 254) is enough. No email address is ever put in a URL: the unsubscribe token carries a subscription id only. The footer form posts to the SSR server and works without JavaScript (SEO-01, NFR-19).

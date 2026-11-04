@@ -65,7 +65,7 @@ test.describe('customer sign-in', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Create account' })).toBeVisible();
     await page.getByLabel('First name').fill('Sana');
     await page.getByLabel('Last name').fill('Khan');
-    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Email', { exact: true }).fill(email);
     await page.getByLabel('Mobile number').fill('0300 1234567');
     await page.getByLabel('Password', { exact: true }).fill('weak');
     await expect(page.getByRole('list', { name: 'Password rules' })).toBeVisible();
@@ -74,7 +74,7 @@ test.describe('customer sign-in', () => {
     const axe = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
     expect(axe.violations.map((v) => v.id)).toEqual([]);
 
-    await page.getByRole('checkbox').check();
+    await page.getByRole('checkbox', { name: /I agree/ }).check();
     await page.getByRole('button', { name: 'Create account' }).click();
     await expect(page).toHaveURL(/\/account(\/addresses)?$/);
 
@@ -88,7 +88,7 @@ test.describe('customer sign-in', () => {
     await open(page, '/account');
     await page.getByRole('button', { name: /Sign out/ }).first().click();
     await open(page, '/account/sign-in');
-    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Email', { exact: true }).fill(email);
     await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await expect(page).toHaveURL(/\/account(\/addresses)?$/);
@@ -100,16 +100,16 @@ test.describe('customer sign-in', () => {
     await open(page, '/account/register');
     await page.getByLabel('First name').fill('Ali');
     await page.getByLabel('Last name').fill('Raza');
-    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Email', { exact: true }).fill(email);
     await page.getByLabel('Mobile number').fill('03001234567');
     await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
-    await page.getByRole('checkbox').check();
+    await page.getByRole('checkbox', { name: /I agree/ }).check();
     await page.getByRole('button', { name: 'Create account' }).click();
     await expect(page).toHaveURL(/\/account(\/addresses)?$/);
     await page.getByRole('button', { name: /Sign out/ }).first().click();
 
     await open(page, '/account/forgot-password');
-    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Email', { exact: true }).fill(email);
     await page.getByRole('button', { name: /Send|Email me|Reset/i }).click();
 
     await open(page, localUrl(await mailLink(request, email, '/account/reset-password')));
@@ -120,7 +120,7 @@ test.describe('customer sign-in', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Password updated' })).toBeVisible();
 
     await open(page, '/account/sign-in');
-    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Email', { exact: true }).fill(email);
     await page.getByLabel('Password', { exact: true }).fill(next);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await expect(page).toHaveURL(/\/account(\/addresses)?$/);
@@ -129,7 +129,7 @@ test.describe('customer sign-in', () => {
   test('ACT-9 a wrong password gives one generic message, never a lock', async ({ page }) => {
     await open(page, '/account/sign-in');
     for (let i = 0; i < 1; i++) {
-      await page.getByLabel('Email').fill('nobody@example.com');
+      await page.getByLabel('Email', { exact: true }).fill('nobody@example.com');
       await page.getByLabel('Password', { exact: true }).fill('Wrong-Pass-1');
       await page.getByRole('button', { name: 'Sign in' }).click();
       await expect(page.getByRole('alert').first()).toContainText('We could not sign you in');
