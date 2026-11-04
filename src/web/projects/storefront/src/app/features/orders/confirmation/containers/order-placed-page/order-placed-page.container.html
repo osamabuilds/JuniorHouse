@@ -1,0 +1,65 @@
+<div class="rp-wrap">
+  <section class="rp-placed" aria-labelledby="placed-heading">
+    <span class="rp-placed__check"><rp-icon name="check" /></span>
+    <div>
+      <p class="rp-eyebrow">Order {{ number }}</p>
+      <h1 class="rp-display-lg" id="placed-heading" tabindex="-1">Thank you for your order</h1>
+      <p class="rp-lead">We have your order. We will message you on the mobile number you gave as it moves along.</p>
+    </div>
+
+    @if (placed?.confirmToken) {
+      <div class="rp-notice" role="status">
+        <rp-icon name="alert" />
+        <div>
+          <b>One quick step for cash on delivery</b><br />
+          Press Confirm my order and we can send it straight away, with no phone call. If you prefer, leave it and we may call or message you instead. Please have the money ready for the courier.
+        </div>
+      </div>
+      <rp-cod-response
+        [link]="codLink()"
+        [loading]="codStatus() === 'idle' || codStatus() === 'loading'"
+        [sending]="codSending()"
+        [failed]="codFailed()"
+        [outcome]="codOutcome()"
+        (answer)="answer($event)"
+      />
+    } @else {
+      <div class="rp-notice" role="status">
+        <rp-icon name="alert" />
+        <div>
+          <b>What happens next</b><br />
+          We will message you on the mobile number you gave as your order moves along.
+        </div>
+      </div>
+    }
+
+    @if (placed; as p) {
+      <div class="rp-placed__box">
+        <h2 class="rp-display-sm">Your order</h2>
+        <p><b>Delivering to</b><br />{{ p.deliveringTo }}</p>
+        <p><b>Payment</b><br />{{ p.paymentMethodName }}</p>
+        <ul class="rp-sumlist">
+          @for (line of p.lines; track line.variantId) {
+            <li>
+              <span>{{ line.name }} <small>({{ line.colour }}, {{ line.size }}) × {{ line.quantity }}</small></span>
+              <span>Rs. {{ line.lineTotal | number }}</span>
+            </li>
+          }
+        </ul>
+        <dl>
+          <div class="rp-sumrow"><dt>Subtotal</dt><dd>Rs. {{ p.subtotal | number }}</dd></div>
+          @if (p.discount > 0) {
+            <div class="rp-sumrow rp-sumrow--sale"><dt>Discount</dt><dd>&minus; Rs. {{ p.discount | number }}</dd></div>
+          }
+          <div class="rp-sumrow"><dt>Delivery</dt><dd>{{ p.shipping === null ? 'To be confirmed' : p.shipping === 0 ? 'Free' : 'Rs. ' + (p.shipping | number) }}</dd></div>
+          <div class="rp-sumrow rp-sumrow--total"><dt>Total</dt><dd>Rs. {{ p.total | number }}</dd></div>
+        </dl>
+      </div>
+    }
+
+    <div class="rp-placed__actions">
+      <a rpBtn="ghost" routerLink="/new-in">Continue shopping</a>
+    </div>
+    <p class="rp-help">Keep your order number. Want to save your sizes and see your orders? <a class="rp-link" routerLink="/account/register">Create an account</a>.</p>
+  </section>
+</div>

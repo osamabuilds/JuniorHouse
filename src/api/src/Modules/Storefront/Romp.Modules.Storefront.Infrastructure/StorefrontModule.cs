@@ -43,7 +43,8 @@ public sealed class StorefrontModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "STFR"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
 
@@ -66,6 +67,7 @@ public sealed class StorefrontModule : IModule
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
+        services.AddScoped<Contracts.IStorefrontImageQueries, Application.Listings.StorefrontImageQueries>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(StorefrontTransactionBehavior<,>));

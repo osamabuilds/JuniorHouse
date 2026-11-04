@@ -1,0 +1,25 @@
+<section class="card" aria-labelledby="dl-summary-heading">
+  <h2 id="dl-summary-heading" class="sr-only">Delivery summary</h2>
+  <dl class="strip">
+    <div>
+      <dt>Waiting to send</dt>
+      <dd>{{ summary().queuedCount }}</dd>
+    </div>
+    <div>
+      <dt>Oldest wait</dt>
+      <dd [class.is-late]="late()">{{ wait() }}</dd>
+    </div>
+    <div>
+      <dt>Gave up, not resent</dt>
+      <dd [class.is-late]="summary().deadLettersAwaitingResend > 0">{{ summary().deadLettersAwaitingResend }}</dd>
+    </div>
+    <div>
+      <dt>Failed</dt>
+      <dd>{{ failed() }}</dd>
+    </div>
+    <div>
+      <dt>WhatsApp sent today</dt>
+      <dd>{{ summary().whatsAppSentToday }}</dd>
+    </div>
+  </dl>
+</section>

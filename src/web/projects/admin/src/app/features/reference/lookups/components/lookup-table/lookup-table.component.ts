@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LookupDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-lookup-table',
   templateUrl: './lookup-table.component.html',
   styles: ':host { display: block; }',

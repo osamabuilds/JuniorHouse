@@ -36,7 +36,7 @@
       <span class="sr-only">Your name</span>
       <input type="text" placeholder="Your name" maxlength="100" autocomplete="name" [value]="person()" (input)="onNameInput($event)" />
     </label>
-    <button type="button" class="button button--primary" [disabled]="creating() || selected().length === 0" (click)="start()">
+    <button *hasPermission="'inventory.write'" type="button" class="button button--primary" [disabled]="creating() || selected().length === 0" (click)="start()">
       {{ creating() ? 'Starting…' : 'Start a count of ' + selected().length + ' bin(s)' }}
     </button>
   </div>

@@ -1,5 +1,9 @@
 import { isDevMode } from '@angular/core';
 import { Routes, UrlMatcher, UrlSegment } from '@angular/router';
+import { signedInGuard, signedOutGuard } from './core/customer-auth';
+import { provideCodConfirm } from './features/orders/cod-confirm/cod-confirm.providers';
+import { provideCheckout } from './features/orders/checkout/checkout.providers';
+import { provideAddresses } from './features/customers/addresses/addresses.providers';
 import { audienceCanMatch } from './features/storefront/listings/listings.guards';
 
 /** The foundations page is a visual check for the design system; it is not part of production builds. */
@@ -42,6 +46,30 @@ export const routes: Routes = [
     matcher: productMatcher,
     loadComponent: () =>
       import('./features/storefront/product-pages/containers/product-page/product-page.container').then((m) => m.ProductPageContainer),
+  },
+  // Sign-in screens (accounts S9). Signed-in customers are sent on to their account; the screens are noindex (ACT-16).
+  { path: 'cod/confirm', data: { shell: 'slim' }, providers: [provideCodConfirm()], loadComponent: () => import('./features/orders/cod-confirm/containers/cod-confirm-page/cod-confirm-page.container').then((m) => m.CodConfirmPageContainer) },
+  { path: 'checkout', data: { shell: 'slim' }, providers: [provideCheckout()], loadComponent: () => import('./features/orders/checkout/containers/checkout-page/checkout-page.container').then((m) => m.CheckoutPageContainer) },
+  { path: 'order-placed/:number', data: { shell: 'slim' }, providers: [provideCodConfirm()], loadComponent: () => import('./features/orders/confirmation/containers/order-placed-page/order-placed-page.container').then((m) => m.OrderPlacedPageContainer) },
+  { path: 'cart', loadComponent: () => import('./features/cart/carts/containers/cart-page/cart-page.container').then((m) => m.CartPageContainer) },
+  { path: 'account/sign-in', data: { shell: 'slim' }, canActivate: [signedOutGuard], loadComponent: () => import('./features/customers/sign-in/containers/sign-in-page/sign-in-page.container').then((m) => m.SignInPageContainer) },
+  { path: 'account/register', data: { shell: 'slim' }, canActivate: [signedOutGuard], loadComponent: () => import('./features/customers/sign-in/containers/register-page/register-page.container').then((m) => m.RegisterPageContainer) },
+  { path: 'account/forgot-password', data: { shell: 'slim' }, loadComponent: () => import('./features/customers/sign-in/containers/forgot-password-page/forgot-password-page.container').then((m) => m.ForgotPasswordPageContainer) },
+  { path: 'account/reset-password', data: { shell: 'slim' }, loadComponent: () => import('./features/customers/sign-in/containers/reset-password-page/reset-password-page.container').then((m) => m.ResetPasswordPageContainer) },
+  { path: 'account/verify-email', data: { shell: 'slim' }, loadComponent: () => import('./features/customers/sign-in/containers/verify-email-page/verify-email-page.container').then((m) => m.VerifyEmailPageContainer) },
+  {
+    path: 'account',
+    canActivate: [signedInGuard],
+    providers: [provideAddresses()],
+    loadComponent: () => import('./features/customers/account/containers/account-shell/account-shell.container').then((m) => m.AccountShellContainer),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'addresses' },
+      {
+        path: 'addresses',
+        loadComponent: () =>
+          import('./features/customers/addresses/containers/addresses-page/addresses-page.container').then((m) => m.AddressesPageContainer),
+      },
+    ],
   },
   { path: ':gender/new-in', data: { kind: 'new-in' }, loadComponent: listing },
   { path: ':gender/sale', data: { kind: 'sale' }, loadComponent: listing },

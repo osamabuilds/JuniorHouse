@@ -80,7 +80,7 @@
 .rp-menu-btn { justify-self: start; margin-left: -10px; }
 .rp-left { display: flex; align-items: center; }
 .rp-hide-sm { display: none; }
-.rp-count { position: absolute; top: 6px; right: 3px; min-width: 16px; height: 16px; padding: 0 4px; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--accent); color: var(--surface-dark); font: 500 10px/1 var(--font-sans); }
+.rp-count { position: absolute; top: 4px; right: 0; min-width: 18px; height: 18px; padding: 0 5px; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--ink); color: var(--surface); font: 600 11px/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 .rp-nav > li > a, .rp-nav > li > button { position: relative; display: inline-flex; align-items: center; min-height: var(--tap); padding: 0; border: 0; background: transparent; cursor: pointer; font: 500 13px/16px var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; }
 .rp-nav > li > a::after, .rp-nav > li > button::after { content: ""; position: absolute; left: 0; right: 0; bottom: 8px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: 0 50%; transition: transform var(--dur-base) var(--ease-out); }
 .rp-nav > li > a:hover::after, .rp-nav > li > button:hover::after, .rp-nav a[aria-current="page"]::after, .rp-nav button[aria-expanded="true"]::after { transform: scaleX(1); }
@@ -411,3 +411,118 @@
 .rp-fact { display: grid; grid-template-columns: minmax(8rem, 14rem) 1fr; gap: var(--space-4); padding-block: var(--space-3); border-bottom: var(--border-line) solid var(--line); font: 400 16px/24px var(--font-sans); }
 .rp-fact dt { font-weight: 500; }
 .rp-fact dd { margin: 0; color: var(--ink-muted); }
+
+/* ==== Sign-in screens (design-system handoff: AuthScreens, Field) =============================================== */
+.rp-notice { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); border: var(--border-line) solid var(--ink); border-radius: var(--radius-sm); font: 400 14px/22px var(--font-sans); }
+.rp-notice--error { border-color: var(--danger-text); }
+.rp-notice .rp-ico { width: 20px; height: 20px; flex: none; }
+.rp-notice p { margin: 0; }
+.rp-notice:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.rp-center { text-align: center; max-width: 36rem; margin-inline: auto; }
+.rp-check { display: flex; gap: var(--space-3); align-items: flex-start; min-height: var(--tap); padding-block: 8px; font: 400 15px/24px var(--font-sans); cursor: pointer; }
+.rp-check input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--ink); }
+.rp-pw { position: relative; }
+.rp-pw .rp-input { padding-right: 84px; }
+.rp-pw button { position: absolute; right: 4px; top: 4px; height: 44px; padding: 0 var(--space-3); border: 0; background: transparent; color: var(--ink); font: 500 12px/16px var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+.rp-pw button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.rp-auth { display: grid; min-height: 640px; }
+.rp-auth__media { display: none; position: relative; }
+.rp-auth__main { display: grid; align-content: center; justify-items: center; padding: var(--space-12) var(--margin-mobile); }
+.rp-auth__box { width: 100%; max-width: 420px; display: grid; gap: var(--space-5); }
+.rp-auth__box > form { display: grid; gap: var(--space-5); }
+.rp-auth__media .rp-ph { position: absolute; inset: 0; }
+.rp-auth__media .rp-hero__scrim { position: absolute; inset: 0; z-index: 2; }
+.rp-auth__quote { position: absolute; z-index: 3; left: var(--space-8); right: var(--space-8); bottom: var(--space-8); margin: 0; color: var(--on-image); }
+.rp-header--slim { position: static; }
+.rp-header--slim .rp-wrap { display: flex; align-items: center; justify-content: center; height: 64px; }
+.rp-btn--action { color: var(--on-action); background: var(--action); border-color: var(--action); }
+.rp-btn--action:hover { color: var(--on-action); background: var(--action-deep); border-color: var(--action-deep); }
+.rp-formgrid { display: grid; gap: var(--space-4); }
+.rp-formgrid .rp-field { align-content: start; }
+@media (min-width: 40rem) { .rp-formgrid--2 { grid-template-columns: 1fr 1fr; } }
+.rp-auth__alt { display: grid; gap: var(--space-2); justify-items: center; padding-top: var(--space-5); border-top: var(--border-line) solid var(--line); }
+.rp-auth__alt .rp-btn { width: 100%; }
+.rp-auth__row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+@media (min-width: 64rem) { .rp-auth { grid-template-columns: 1fr 1fr; } .rp-auth__media { display: block; } }
+.rp-rules { display: grid; gap: var(--space-1); margin: 0; padding: 0; list-style: none; font: 400 14px/20px var(--font-sans); }
+.rp-rules li { display: flex; gap: var(--space-2); align-items: center; color: var(--ink-muted); }
+.rp-rules li.is-met { color: var(--ink); }
+.rp-rules .rp-ico { width: 16px; height: 16px; }
+.rp-verify-bar { background: var(--surface-raised); border-bottom: var(--border-line) solid var(--line); }
+.rp-verify-bar__row { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); align-items: center; justify-content: center; padding-block: var(--space-2); font: 400 14px/22px var(--font-sans); }
+.rp-verify-bar p { margin: 0; }
+.rp-captcha { min-height: 65px; }
+.rp-acct { display: flex; align-items: center; gap: var(--space-3); margin-right: var(--space-2); }
+.rp-acct__link { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--space-1); border: 0; background: transparent; color: var(--ink); font: 500 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; cursor: pointer; }
+.rp-acct__link:hover { color: var(--accent-deep); }
+.rp-acct__link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Bag (design system: CartPage, CartDrawer). Taken from components/bundle.css; the storefront uses viewport media queries where the bundle uses container queries. */
+.rp-split2 { display: grid; gap: var(--space-8); }
+@media (min-width: 64rem) { .rp-split2 { grid-template-columns: minmax(0, 1fr) 400px; gap: var(--space-12); align-items: start; } }
+.rp-sumrow { display: flex; justify-content: space-between; gap: var(--space-4); padding: 3px 0; font: 400 15px/24px var(--font-sans); font-variant-numeric: tabular-nums; }
+.rp-sumrow dt { color: var(--ink-muted); }
+.rp-sumrow dd { margin: 0; }
+.rp-sumrow--total { margin-top: var(--space-3); padding-top: var(--space-4); border-top: var(--border-line) solid var(--line); font: 600 18px/26px var(--font-sans); }
+.rp-sumrow--total dt { color: var(--ink); }
+.rp-lineprice { margin: 0; white-space: nowrap; text-align: right; font: 500 15px/22px var(--font-sans); font-variant-numeric: tabular-nums; }
+.rp-lineprice s { display: block; font-weight: 400; color: var(--ink-muted); }
+.rp-bag-lines { list-style: none; margin: 0; padding: 0; }
+.rp-bag-lines > li { border-top: var(--border-line) solid var(--line); padding-block: var(--space-6); }
+.rp-bag-note { display: grid; gap: var(--space-1); margin: var(--space-2) 0 0; font: 500 14px/20px var(--font-sans); }
+.rp-line--page { grid-template-columns: 96px 1fr; }
+.rp-line__head { display: flex; justify-content: space-between; gap: var(--space-4); }
+.rp-line__head a { color: inherit; text-decoration: none; }
+.rp-line__head a:hover { text-decoration: underline; }
+.rp-bag-summary { display: grid; gap: var(--space-4); padding: var(--space-6); border: var(--border-line) solid var(--line); border-radius: var(--radius-sm); }
+.rp-promo { display: flex; gap: var(--space-2); }
+.rp-promo .rp-input { height: 48px; }
+.rp-promo .rp-btn { height: 48px; padding: 0 var(--space-5); }
+.rp-promo-chip { display: inline-flex; align-items: center; gap: var(--space-2); height: 36px; padding: 0 var(--space-1) 0 var(--space-3); border: var(--border-line) solid var(--success-text); color: var(--success-text); border-radius: var(--radius-sm); font: 500 12px/16px var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; }
+.rp-promo-chip button { display: grid; place-items: center; width: var(--tap); height: 32px; margin-right: -6px; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.rp-promo { align-items: flex-start; }
+.rp-promo__field { flex: 1; }
+.rp-promo .rp-btn { margin-top: calc(var(--space-2) + 20px); }
+.rp-bag-summary h2 { margin: 0; }
+.rp-bag-empty { display: grid; justify-items: center; gap: var(--space-4); padding-block: var(--space-16); text-align: center; }
+.rp-bag-empty .rp-ico { width: 40px; height: 40px; }
+.rp-bag-btn { position: relative; }
+.rp-line__pic { display: block; aspect-ratio: var(--image-ratio); overflow: hidden; border-radius: var(--radius-sm); background: var(--surface-sunken, var(--line)); }
+.rp-line__pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.rp-line__remove { color: var(--ink-muted); }
+.rp-line__remove:hover { color: var(--danger-text); }
+.rp-option { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); border: var(--border-line) solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface-raised); cursor: pointer; }
+.rp-option:hover { border-color: var(--ink); }
+.rp-option:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.rp-option input[type="radio"], .rp-option input[type="checkbox"] { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--ink); }
+.rp-option__body { flex: 1; display: grid; gap: 2px; }
+.rp-option__body b { font-weight: 500; }
+.rp-option__body span { font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+.rp-option .rp-ico { width: 24px; height: 24px; flex: none; }
+.rp-step { padding-block: var(--space-6); border-top: var(--border-line) solid var(--line); }
+.rp-step__h { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); font: 600 clamp(20px, 2cqw, 24px)/1.2 var(--font-display); letter-spacing: -0.01em; }
+.rp-step__n { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border: var(--border-line) solid var(--ink); border-radius: var(--radius-pill); font: 500 14px/1 var(--font-sans); }
+.rp-checkout__bar { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: center; justify-content: space-between; padding-block: var(--space-4); }
+.rp-optgroup { display: grid; gap: var(--space-3); border: 0; padding: 0; margin: 0; }
+.rp-optgroup legend { padding: 0; margin-bottom: var(--space-3); }
+.rp-sumlist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.rp-sumlist li { display: flex; justify-content: space-between; gap: var(--space-4); font: 400 14px/20px var(--font-sans); }
+.rp-sumlist small { color: var(--ink-muted); }
+.rp-placed { display: grid; gap: var(--space-6); max-width: 40rem; margin-inline: auto; padding-block: var(--space-10); }
+.rp-placed__check { display: grid; place-items: center; width: 56px; height: 56px; border: var(--border-line) solid var(--success-text); border-radius: var(--radius-pill); color: var(--success-text); }
+.rp-placed__box { display: grid; gap: var(--space-4); padding: var(--space-6); border: var(--border-line) solid var(--line); border-radius: var(--radius-sm); }
+.rp-placed__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* Checkout and order-placed polish: steady vertical rhythm, headings that do not collide, buttons of one size side by side. */
+.rp-step .rp-step__h { margin: 0 0 var(--space-5); line-height: 1.2; }
+.rp-step > * + * { margin-top: var(--space-4); }
+.rp-step .rp-help { margin-top: var(--space-3); }
+.rp-placed > * { margin: 0; }
+.rp-placed h1 { margin: var(--space-2) 0 var(--space-4); font-size: clamp(2.25rem, 6vw, 3.25rem); line-height: 1.1; }
+.rp-placed .rp-lead { margin: 0; max-width: 34rem; }
+.rp-placed__actions { align-items: stretch; }
+.rp-placed__actions .rp-btn { flex: 1 1 13rem; min-width: 13rem; justify-content: center; text-align: center; }
+.rp-placed__box dl { margin: 0; }
+rp-cod-response { display: grid; gap: var(--space-4); }
+.rp-placed { padding-top: var(--space-12); }
+.rp-sumlist li > span:last-child { white-space: nowrap; }

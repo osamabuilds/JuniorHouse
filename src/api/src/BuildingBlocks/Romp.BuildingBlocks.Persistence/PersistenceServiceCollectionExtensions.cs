@@ -17,6 +17,7 @@ public static class PersistenceServiceCollectionExtensions
         services.AddScoped<ICurrentActor, SystemCurrentActor>();
         services.AddScoped<AuditSaveChangesInterceptor>();
         services.AddScoped<OutboxSaveChangesInterceptor>();
+        services.AddScoped<AuditTrailSaveChangesInterceptor>();
 
         return services;
     }

@@ -46,7 +46,8 @@ public sealed class WarehouseModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "WHSE"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
         services.AddScoped<IWarehouseDbContext>(sp => sp.GetRequiredService<WhseDbContext>());
 
         // "Configuration, not constants" (D5, D13): validated when the host starts.
@@ -57,6 +58,9 @@ public sealed class WarehouseModule : IModule
         services.AddScoped<IBinReader, BinReader>();
         services.AddScoped<IBinCountMarker, BinCountMarker>();
         services.AddScoped<IStockPosting, StockPosting>();
+        services.AddScoped<Romp.Modules.Warehouse.Application.Reservations.IReservationLedger, Romp.Modules.Warehouse.Infrastructure.Reservations.ReservationLedger>();
+        services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockReservations, Romp.Modules.Warehouse.Infrastructure.Reservations.StockReservations>();
+        services.AddHostedService<Romp.Modules.Warehouse.Infrastructure.Reservations.ReservationSweeper>();
         services.AddScoped<IAdjustmentPoster, AdjustmentPoster>();
         services.AddScoped<ICountNumberAllocator, CountNumberAllocator>();
         services.AddScoped<AlertEvaluator>();
@@ -76,6 +80,10 @@ public sealed class WarehouseModule : IModule
         services.AddScoped<IOutboxMessageHandler<VariantGtinAssignedEvent>, VariantGtinAssignedConsumer>();
         services.AddScoped<IOutboxMessageHandler<VariantGtinAssignedEvent>, VariantGtinAssignedPutawayConsumer>();
         services.AddScoped<IOutboxMessageHandler<GtinVoidedEvent>, GtinVoidedConsumer>();
+
+        // Orders' events keep stock holds in step with orders: confirm on placement, release on cancellation (ADR 0025).
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderPlacedEvent>, Reservations.OrderPlacedReservationConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderCancelledEvent>, Reservations.OrderCancelledReservationConsumer>();
 
         // Putaway: QC's accepted batches become items waiting to be shelved (FR-SC-08).
         services.AddScoped<IPoStyleLookup, ContractsPoStyleLookup>();

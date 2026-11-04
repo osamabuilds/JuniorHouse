@@ -143,9 +143,9 @@ public sealed class RequirePermissionTests
 
     [Fact]
     [Trait("Spec", "SEC-08")]
-    public async Task TheLegacyPolicyOverload_StillWorks_UntilTaskR9()
+    public async Task ThePolicyNameOverload_StillWorks_ForThePublicPolicy()
     {
-        await using var app = await StartAsync("Testing", map: a => a.MapSecuredGroup("/legacy", Policies.Catalogue).MapGet("/ping", () => Results.Ok("ok")));
+        await using var app = await StartAsync("Testing", map: a => a.MapSecuredGroup("/legacy", Policies.Public).MapGet("/ping", () => Results.Ok("ok")));
 
         Assert.Equal(HttpStatusCode.OK, (await app.GetTestClient().GetAsync(new Uri("/legacy/ping", UriKind.Relative))).StatusCode);
     }

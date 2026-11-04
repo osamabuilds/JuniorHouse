@@ -5,11 +5,12 @@ import { AppDatePipe, selectNumberOrNull } from '@shared';
 import { VendorSummaryDto } from '@features/vendor/vendors';
 import { PoSummaryDto } from '../../models';
 import { PO_STATUS_DRAFT, PO_STATUS_LABELS } from '../../purchase-orders.constants';
+import { HasPermissionDirective } from '@core/auth';
 
 /** The PO list with its vendor / status filters and the "Raise PO" action. */
 @Component({
   selector: 'app-po-list',
-  imports: [KeyValuePipe, AppDatePipe],
+  imports: [HasPermissionDirective, KeyValuePipe, AppDatePipe],
   templateUrl: './po-list.component.html',
   styles: ':host { display: block; }',
   changeDetection: ChangeDetectionStrategy.OnPush,

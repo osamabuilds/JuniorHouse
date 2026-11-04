@@ -51,6 +51,12 @@ internal static class RoleSeed
         new(17, "ops.admin", "Operate the system", "Outbox and operational data, voids"),
         new(18, "staff.manage", "Manage staff", "Staff accounts, roles and MFA reset"),
         new(19, "audit.read", "View the audit trail", "Read the audit trail"),
+        new(20, "orders.view", "View orders", "Read the order queue, order details and COD flags"),
+        new(21, "orders.manage", "Manage orders", "Record COD outcomes, cancel orders and clear COD flags"),
+        new(22, "discounts.manage", "Manage discount codes", "Create, change and deactivate discount codes"),
+        new(23, "shipping.manage", "Manage shipping rates", "Set the shipping fee per city, the default fee and the free-shipping threshold"),
+        new(24, "notifications.view", "View notifications", "Read the delivery log and dead letters"),
+        new(25, "notifications.resend", "Resend notifications", "Resend a notification from the delivery log"),
     ];
 
     /// <summary>Owner has no rows: the <c>ALL_PERM_IND</c> flag grants everything.</summary>
@@ -64,9 +70,9 @@ internal static class RoleSeed
         void Grant(short role, params string[] codes) => rows.AddRange(codes.Select(c => new MappingRow(role, id[c])));
 
         Grant(Catalogue, "ref.read", "catalog.read", "catalog.write", "warehouse.read");
-        Grant(OrderOps, "ref.read", "catalog.read", "warehouse.read", "inventory.read");
-        Grant(Support, "ref.read", "catalog.read");
-        Grant(Marketing, "ref.read", "catalog.read");
+        Grant(OrderOps, "ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend");
+        Grant(Support, "ref.read", "catalog.read", "orders.view", "notifications.view", "notifications.resend");
+        Grant(Marketing, "ref.read", "catalog.read", "discounts.manage");
 
         return rows;
     }

@@ -28,10 +28,11 @@ public sealed class SecurityBaselineTests
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
-        var group = app.MapSecuredGroup("/secured");
+        var group = app.MapSecuredGroup("/secured", Permissions.CatalogRead);
         group.MapGet("/ping", () => Results.Ok("pong"));
         group.MapGet("/strict", () => Results.Ok("strict")).RequireRateLimiting(RateLimitPolicies.Strict);
-        app.MapSecuredGroup("/admin", Policies.Admin).MapGet("/ping", () => Results.Ok("admin"));
+        group.MapGet("/discount", () => Results.Ok("discount")).RequireRateLimiting(RateLimitPolicies.DiscountApply);
+        app.MapSecuredGroup("/admin", Permissions.OpsAdmin).MapGet("/ping", () => Results.Ok("admin"));
         app.MapGet("/open", () => Results.Ok("open"));
         return app;
     }
@@ -65,9 +66,39 @@ public sealed class SecurityBaselineTests
     {
         await using var app = Build("Production", services: s => s
             .AddAuthentication()
-            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>("Staff-Login", _ => { }));
+            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>(RompAuthorizationExtensions.SessionScheme, _ => { }));
 
         await SecurityGate.VerifyAsync(app.Services, app.Environment);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-14")]
+    public async Task InProduction_SomeOtherScheme_DoesNotOpenTheGate()
+    {
+        await using var app = Build("Production", services: s => s
+            .AddAuthentication()
+            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>("Staff-Login", _ => { }));
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => SecurityGate.VerifyAsync(app.Services, app.Environment));
+
+        Assert.Contains(RompAuthorizationExtensions.SessionScheme, ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait("Spec", "AC-14")]
+    public async Task InProduction_TheSessionScheme_MustAlsoBeTheDefault()
+    {
+        await using var app = Build("Production", services: s =>
+        {
+            s.AddAuthentication()
+                .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>(RompAuthorizationExtensions.SessionScheme, _ => { })
+                .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, NoopHandler>("Other", _ => { });
+            s.Configure<Microsoft.AspNetCore.Authentication.AuthenticationOptions>(o => o.DefaultScheme = "Other");
+        });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => SecurityGate.VerifyAsync(app.Services, app.Environment));
+
+        Assert.Contains("default", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -116,6 +147,24 @@ public sealed class SecurityBaselineTests
         for (var i = 0; i < 5; i++)
         {
             statuses.Add((await client.GetAsync("/secured/strict")).StatusCode);
+        }
+
+        Assert.Equal([HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests, HttpStatusCode.TooManyRequests], statuses);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/secured/ping")).StatusCode);
+    }
+
+    [Fact]
+    [Trait("Spec", "DSC-8")]
+    public async Task TheDiscountPolicy_StopsCodeGuessing_AfterTheAllowedAttempts_AndLeavesOtherEndpointsAlone()
+    {
+        await using var app = Build("Development", new Dictionary<string, string?> { ["RateLimit:DiscountApplyPer15Minutes"] = "3", ["RateLimit:PerMinute"] = "1000" });
+        await app.StartAsync();
+        var client = app.GetTestClient();
+
+        var statuses = new List<HttpStatusCode>();
+        for (var i = 0; i < 5; i++)
+        {
+            statuses.Add((await client.GetAsync("/secured/discount")).StatusCode);
         }
 
         Assert.Equal([HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.OK, HttpStatusCode.TooManyRequests, HttpStatusCode.TooManyRequests], statuses);

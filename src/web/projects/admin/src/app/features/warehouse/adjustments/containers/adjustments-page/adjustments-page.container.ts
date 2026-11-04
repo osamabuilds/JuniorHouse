@@ -21,11 +21,12 @@ import {
   selectSaving,
   selectTotal,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Adjustments (docs/specs/warehouse/adjustments/spec.md): the history of stock corrections, and a form to record a new one (ADJ-0..10). */
 @Component({
   selector: 'app-adjustments-page',
-  imports: [SectionNavComponent, AdjustmentTableComponent, AdjustmentFormComponent, PaginationComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, AdjustmentTableComponent, AdjustmentFormComponent, PaginationComponent],
   templateUrl: './adjustments-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

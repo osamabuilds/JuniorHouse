@@ -1,0 +1,47 @@
+<form class="rp-address-form" novalidate (submit)="submit($event)">
+  <rp-field #name label="Recipient name" [error]="shown().recipientName ?? ''">
+    <input class="rp-input" type="text" name="recipientName" autocomplete="name" maxlength="80" [id]="name.controlId" [attr.aria-describedby]="name.describedBy()" [attr.aria-invalid]="name.invalid()" [value]="draft().recipientName" (input)="set('recipientName', $event)" />
+  </rp-field>
+
+  <rp-field #phone label="Phone number" hint="A Pakistani number the courier can call, such as 0300 1234567" [error]="shown().phone ?? ''">
+    <input class="rp-input" type="tel" name="phone" autocomplete="tel" inputmode="tel" maxlength="20" [id]="phone.controlId" [attr.aria-describedby]="phone.describedBy()" [attr.aria-invalid]="phone.invalid()" [value]="draft().phone" (input)="set('phone', $event)" />
+  </rp-field>
+
+  <rp-field #province label="Province" [error]="shown().provinceId ?? ''">
+    <select class="rp-select" name="provinceId" autocomplete="address-level1" [id]="province.controlId" [attr.aria-describedby]="province.describedBy()" [attr.aria-invalid]="province.invalid()" (change)="chooseProvince($event)">
+      <option value="" [selected]="!draft().provinceId">Choose a province</option>
+      @for (p of provinces(); track p.id) {
+        <option [value]="p.id" [selected]="draft().provinceId === '' + p.id">{{ p.name }}</option>
+      }
+    </select>
+  </rp-field>
+
+  <rp-field #city label="City" [error]="shown().cityId ?? ''">
+    <select class="rp-select" name="cityId" autocomplete="address-level2" [id]="city.controlId" [attr.aria-describedby]="city.describedBy()" [attr.aria-invalid]="city.invalid()" [disabled]="!draft().provinceId" (change)="set('cityId', $event)">
+      <option value="" [selected]="!draft().cityId">{{ draft().provinceId ? 'Choose a city' : 'Choose a province first' }}</option>
+      @for (c of cities(); track c.id) {
+        <option [value]="c.id" [selected]="draft().cityId === '' + c.id">{{ c.name }}</option>
+      }
+    </select>
+  </rp-field>
+
+  <rp-field #line1 label="Address line 1" [error]="shown().lineOne ?? ''">
+    <input class="rp-input" type="text" name="lineOne" autocomplete="address-line1" maxlength="150" [id]="line1.controlId" [attr.aria-describedby]="line1.describedBy()" [attr.aria-invalid]="line1.invalid()" [value]="draft().lineOne" (input)="set('lineOne', $event)" />
+  </rp-field>
+
+  <rp-field #line2 label="Address line 2 (optional)" hint="Area, landmark or building" [error]="shown().lineTwo ?? ''">
+    <input class="rp-input" type="text" name="lineTwo" autocomplete="address-line2" maxlength="150" [id]="line2.controlId" [attr.aria-describedby]="line2.describedBy()" [attr.aria-invalid]="line2.invalid()" [value]="draft().lineTwo" (input)="set('lineTwo', $event)" />
+  </rp-field>
+
+  <rp-field #postcode label="Postcode (optional)" [error]="shown().postcode ?? ''">
+    <input class="rp-input" type="text" name="postcode" autocomplete="postal-code" maxlength="10" [id]="postcode.controlId" [attr.aria-describedby]="postcode.describedBy()" [attr.aria-invalid]="postcode.invalid()" [value]="draft().postcode" (input)="set('postcode', $event)" />
+  </rp-field>
+
+  <div class="rp-address-form__actions">
+    <button rpBtn type="submit" [disabled]="saving()" [reasonId]="saving() ? 'rp-address-saving' : ''">Save address</button>
+    <button rpBtn="ghost" type="button" data-cancel (click)="cancelled.emit()">Cancel</button>
+    @if (saving()) {
+      <p id="rp-address-saving" class="t-caption" role="status">Saving your address…</p>
+    }
+  </div>
+</form>

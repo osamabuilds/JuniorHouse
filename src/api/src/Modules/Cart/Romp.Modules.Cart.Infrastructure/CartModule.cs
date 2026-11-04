@@ -1,0 +1,74 @@
+using FluentValidation;
+using MediatR;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Romp.BuildingBlocks.Modules;
+using Romp.BuildingBlocks.Persistence.Auditing;
+using Romp.BuildingBlocks.Persistence.Outbox;
+using Romp.Modules.Cart.Application.Abstractions;
+using Romp.Modules.Cart.Infrastructure.Carts;
+using Romp.Modules.Cart.Infrastructure.DiscountCodes;
+using Romp.Modules.Cart.Infrastructure.Totals;
+using Romp.Modules.Cart.Infrastructure.Persistence;
+
+namespace Romp.Modules.Cart.Infrastructure;
+
+/// <summary>
+/// The <c>CART</c> module's entry point (Cart, Sprint 11): the shopper's basket, the one server-side pricing routine, discount codes and
+/// shipping rates (ADR 0024). It never stores a price (D-2) and it never reads another module's tables, only their contracts.
+/// </summary>
+public sealed class CartModule : IModule
+{
+    public string Name => "Cart";
+
+    public void RegisterServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContext<CartDbContext>((sp, options) => options
+            .UseNpgsql(
+                configuration.GetConnectionString("Postgres"),
+                npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "CART"))
+            .AddInterceptors(
+                sp.GetRequiredService<AuditSaveChangesInterceptor>(),
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
+
+        services.AddScoped<ICartDbContext>(sp => sp.GetRequiredService<CartDbContext>());
+        services.AddOptions<Application.CartOptions>().Bind(configuration.GetSection(Application.CartOptions.SectionName))
+            .Validate(Application.CartOptions.IsValid, "Cart:MaxPerLine, MaxLines, GuestCartDays or HoldMinutes is outside its allowed range.")
+            .ValidateOnStart();
+
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<Application.Carts.CartPricer>();
+        services.AddScoped<Application.Carts.CartCommandSupport>();
+        services.AddScoped<Application.DiscountCodes.DiscountService>();
+        services.AddScoped<Application.DiscountCodes.CartNotices>();
+        services.AddScoped<Carts.CartResponder>();
+        services.AddScoped<Romp.Modules.Cart.Contracts.IDiscountRedemptions, DiscountCodes.DiscountRedemptions>();
+        services.AddScoped<Application.Totals.ShippingPolicyLoader>();
+        services.AddScoped<Romp.Modules.Customers.Contracts.ICustomerSignedInHook, Application.Carts.GuestCartMergeHook>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<Carts.CartOwnerAccessor>();
+        services.AddScoped<Application.Totals.CartTotalsCalculator>();
+        services.AddScoped<Romp.Modules.Cart.Contracts.ICheckoutPricing, Totals.CheckoutPricing>();
+        services.AddHostedService<Carts.CartPurgeWorker>();
+        services.AddHostedService<DiscountCodes.DiscountHoldSweeper>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderPlacedEvent>, DiscountCodes.OrderPlacedCartConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderCancelledEvent>, DiscountCodes.OrderCancelledCartConsumer>();
+        services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CartTransactionBehavior<,>));
+
+        // Cart's events go to the shared dispatcher; every event without a real consumer gets the placeholder logging handler.
+        services.AddOutboxModule("CART");
+        services.TryAdd(ServiceDescriptor.Scoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>)));
+    }
+
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapCartEndpoints();
+        endpoints.MapShippingEndpoints();
+        endpoints.MapDiscountEndpoints();
+    }
+}

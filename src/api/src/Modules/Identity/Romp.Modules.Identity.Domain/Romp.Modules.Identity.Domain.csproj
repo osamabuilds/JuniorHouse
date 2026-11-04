@@ -5,4 +5,8 @@
     <ProjectReference Include="..\Romp.Modules.Identity.Contracts\Romp.Modules.Identity.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="StaffAccounts/common-passwords.txt" />
+  </ItemGroup>
+
 </Project>

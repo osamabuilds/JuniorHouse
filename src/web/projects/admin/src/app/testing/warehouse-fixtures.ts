@@ -22,6 +22,7 @@ export function stockRow(overrides: Partial<StockVariantRowDto> = {}): StockVari
     available: 13,
     onHandAccepted: 10,
     onHandConcession: 3,
+    reserved: 0,
     bins: [
       { binId: 5, binCode: 'A-03-2', gradeId: 1, gradeCode: 'ACCEPTED', quantity: 10 },
       { binId: 6, binCode: 'B-01-1', gradeId: 2, gradeCode: 'CONCESSION', quantity: 3 },

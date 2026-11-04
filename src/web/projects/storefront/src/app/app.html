@@ -1,9 +1,19 @@
 <a class="rp-skip" href="#main">Skip to content</a>
-<rp-announcement-bar />
-<rp-site-header (menuOpen)="menu.open()" (searchOpen)="search.open()" />
+@if (slim()) {
+  <header class="rp-header rp-header--slim">
+    <div class="rp-wrap"><a class="rp-logo" routerLink="/" aria-label="Romp, home">romp<i></i></a></div>
+  </header>
+} @else {
+  <rp-announcement-bar />
+  <rp-verify-email-bar />
+  <rp-site-header (menuOpen)="menu.open()" (searchOpen)="search.open()" />
+}
 <main id="main" tabindex="-1">
   <router-outlet />
 </main>
-<rp-site-footer />
+@if (!slim()) {
+  <rp-site-footer />
+}
 <rp-mobile-menu #menu />
 <rp-search-overlay #search />
+<rp-mini-cart />

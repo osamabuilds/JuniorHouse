@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LookupDto } from '@features/reference/lookups';
 import { VendorSummaryDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-vendor-table',
   templateUrl: './vendor-table.component.html',
   styles: ':host { display: block; } td[data-label="City"] { white-space: nowrap; }',

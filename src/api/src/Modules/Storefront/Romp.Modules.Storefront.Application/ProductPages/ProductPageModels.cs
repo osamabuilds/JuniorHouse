@@ -12,10 +12,10 @@ public sealed record ProductImageDto(string AltText, int Width, int Height, IRea
 public sealed record ColourOptionDto(string Code, string Name, bool InStock);
 
 /// <summary>
-/// A size of the selected colour. <c>Availability</c> is one of InStock, LowStock, SoldOut or NotYetAvailable (PDP-4, 5); there is never a
+/// A size of the selected colour. <c>VariantId</c> is the catalogue variant the basket takes (cart C10). <c>Availability</c> is one of InStock, LowStock, SoldOut or NotYetAvailable (PDP-4, 5); there is never a
 /// count (PCT-3). <c>Selectable</c> is false for the last two.
 /// </summary>
-public sealed record SizeOptionDto(string Code, string Name, string Availability, bool Selectable);
+public sealed record SizeOptionDto(string Code, string Name, string Availability, bool Selectable, long VariantId);
 
 /// <summary>The price line. <c>IsFrom</c> marks "From PKR x" before a size is chosen (PDP-15); <c>CompareAtPrice</c> is set only when above the price (PDP-9); <c>SavingAmount</c> is the server difference in PKR (SEC-09), zero when there is no discount.</summary>
 public sealed record ProductPriceDto(decimal Price, decimal? CompareAtPrice, int SavingPercent, bool IsFrom, decimal SavingAmount);

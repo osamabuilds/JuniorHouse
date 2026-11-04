@@ -25,11 +25,25 @@ public sealed class StockAvailabilityQueries(IWarehouseDbContext dbContext) : IS
         await Project(dbContext.VariantRefs.AsNoTracking().Where(v => v.VariantId == variantId && v.StockVersion > 0))
             .FirstOrDefaultAsync(cancellationToken);
 
-    // Available equals on-hand (all bins, all grades) until reservations exist (LED-5); the sum is a correlated subquery, so it is one statement.
+    public async Task<IReadOnlyList<StockAvailability>> GetManyAsync(IReadOnlyCollection<long> variantIds, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(variantIds);
+        if (variantIds.Count > IStockAvailabilityQueries.MaxIds)
+        {
+            throw new ArgumentException($"At most {IStockAvailabilityQueries.MaxIds} variants can be asked for at once.", nameof(variantIds));
+        }
+
+        var ids = variantIds.Where(id => id > 0).Distinct().ToList();
+        return ids.Count == 0
+            ? []
+            : await Project(dbContext.VariantRefs.AsNoTracking().Where(v => ids.Contains(v.VariantId) && v.StockVersion > 0)).ToListAsync(cancellationToken);
+    }
+
+    // Available is on-hand (all bins, all grades, LED-5) minus the units reserved for orders (RSV-7); the sum is a correlated subquery, so it is one statement.
     private IQueryable<StockAvailability> Project(IQueryable<VariantRef> source) =>
         source.Select(v => new StockAvailability(
             v.VariantId,
             v.SkuCode,
-            dbContext.Balances.Where(b => b.VariantRefId == v.Id).Sum(b => (int?)b.Quantity) ?? 0,
+            Math.Max(0, (dbContext.Balances.Where(b => b.VariantRefId == v.Id).Sum(b => (int?)b.Quantity) ?? 0) - (dbContext.ReservedBalances.Where(r => r.Id == v.Id).Sum(r => (int?)r.Quantity) ?? 0)),
             v.StockVersion));
 }

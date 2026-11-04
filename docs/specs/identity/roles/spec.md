@@ -1,6 +1,6 @@
 # SCRUM-202: Roles and permissions
 
-- **Status:** Approved (owner, 2026-10-16)
+- **Status:** Implemented (2026-10-26)
 - **Jira:** SCRUM-202; sources SCRUM-85, SCRUM-128
 - **BRD sections:** §7.8, §8.4, §11.3
 - **Requirement IDs:** FR-60, NFR-14, SEC-08
@@ -79,3 +79,29 @@ Sprints 1 to 7 declared who may call each endpoint (`Staff`, `Admin`, `Inventory
 - [x] ~~Supply-chain access~~ Decided by the owner (2026-10-16): vendors, purchase orders, production, QC, labelling and stock writes stay **Owner-only** as separate granular permissions (`procurement.*`, `production.*`, `qc.*`, `labelling.*`, `inventory.write`), so a future Warehouse role is one lookup row, not code. No new named roles in Sprint 8. Reason: PO and vendor data carries cost and advance terms Order-ops should not see.
 - [x] ~~Order-ops and stock writes~~ Decided: Order-ops gets `inventory.read` only. Adjustments and cycle-count approval stay Owner-only, because the only controls on write-offs today are the audit trail and same-person reconfirm, so the role that dispatches orders must not also write stock off.
 - [x] ~~`warehouse.write`~~ Decided (owner, 2026-10-16): bins and putaway stay Owner-only as their own permission, separate from `inventory.write`, because moving stock between places does not change stock value but write-offs do. A future Warehouse role bundles `warehouse.write`, `qc.write` and `labelling.write` as one lookup row; whether it also gets `inventory.write` is decided later, not in Sprint 8.
+
+## As built
+- **AC-6:** role assignments are audited: each change of a mapping row is an entry in the audit trail with the person who made it and the person concerned (audit-trail AC-7, `IdentityAuditTests`). The last active Owner keeps the Owner role.
+- **AC-7:** menus, routes (`permissionGuard` on every top-level route, `/forbidden` page) and the buttons and links that start or save a change on the feature screens (create, edit, save, publish, approve, cancel) are hidden through `*hasPermission` with the permission the matrix requires for that write; read-only people see the lists and nothing to click. The product editor also turns its forms read-only. A 403 from the server shows one plain sentence that names no permission. Proof: `write-gating.spec.ts`, `has-permission.directive.spec.ts`, `app.spec.ts`, `e2e/identity/roles.e2e.spec.ts` (Order-ops sees no "Add style" or "Add a bin"). The server check remains the real control (SEC-08).
+- **Authorization matrix:** `authorization-matrix.csv` (with `authorization-matrix.md` explaining the reviewed calls, e.g. slugs and suggestions need `catalog.read`, storefront admin needs `catalog.*`) is enforced by `AuthorizationMatrixTests`; `PermissionArchitectureTests` fails a mutating route that requires only a read permission. The old role-shaped policies are gone; only `Policies.Public` remains.
+- **Open item for the owner:** a non-Owner holding `staff.manage` can reset an Owner's MFA. The matrix allows it today; decide whether that must be Owner-only.
+- `GET /api/auth/me` lists the caller's permissions, for hiding only.
+
+## Traceability
+| AC | Proof |
+|---|---|
+| AC-1..AC-5 | `EffectivePermissionsTests`, `PermissionHandlerTests`, `RoleBehaviourTests` |
+| AC-6 | `AssignRolesTests` (last Owner), staff-detail role picker spec, `IdentityAuditTests` |
+| AC-7 | `has-permission.directive.spec.ts`, `permission.guard.spec.ts`, `roles-matrix.component.spec.ts`, `staff-detail.component.spec.ts`, `e2e/identity/roles.e2e.spec.ts` |
+| AC-8 | `RoleBehaviourTests` (Support, Marketing write nothing) |
+| AC-9, AC-10 | `AuthorizationMatrixTests` |
+| AC-11 | `RoleBehaviourTests` (every role against every matrix route) |
+| AC-12 | `PermissionArchitectureTests` |
+| AC-13 | integration suites run on the dev handler; `RoleBehaviourTests` on the real one |
+| AC-14, AC-15 | `RoleBehaviourTests` (new role by data; Order-ops) |
+
+## Verification report
+- Linux SDK container: Identity tests, integration tests (194), `BuildingBlocks.Web.Tests` (80), architecture tests (all except the developer's untracked `zz-live-demo` spec, which `StructureSyncTests` rightly flags).
+- Admin unit tests 956 pass; `ng build admin` clean.
+- Playwright against an isolated stack with real authentication (`romp-e2e`): `roles.e2e.spec.ts` 4/4, `staff-accounts.e2e.spec.ts` 3/3.
+- CI (Linux) remains the reference run for `Romp.Api.IntegrationTests`, which this machine's policy blocks locally.

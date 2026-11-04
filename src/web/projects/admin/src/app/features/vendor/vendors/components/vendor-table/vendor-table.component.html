@@ -24,7 +24,7 @@
             </span>
           </td>
           <td data-label="Actions">
-            <button type="button" class="button button--small" (click)="edit.emit(vendor)">Edit</button>
+            <button *hasPermission="'procurement.write'" type="button" class="button button--small" (click)="edit.emit(vendor)">Edit</button>
             <button type="button" class="button button--small" (click)="scorecard.emit(vendor)">Scorecard</button>
           </td>
         </tr>

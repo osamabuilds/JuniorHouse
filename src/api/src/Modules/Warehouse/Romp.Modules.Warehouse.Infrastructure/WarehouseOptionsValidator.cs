@@ -29,6 +29,11 @@ public sealed class WarehouseOptionsValidator : IValidateOptions<WarehouseOption
             failures.Add("Warehouse:MaxLinesPerAcceptedBatch must be at least 1.");
         }
 
+        if (options.ReservationHoldMinutes is < 5 or > 1440)
+        {
+            failures.Add("Warehouse:ReservationHoldMinutes must be between 5 and 1440.");
+        }
+
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
     }
 }

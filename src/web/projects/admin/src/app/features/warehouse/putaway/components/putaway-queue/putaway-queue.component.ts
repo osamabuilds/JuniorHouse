@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { PUTAWAY_STATUS_TEXT } from '../../putaway.constants';
 import { PutawayItemRowDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The items still to be shelved, oldest first ("put away n of N", PUT-14). "Choose" is the way in when a variant has no printed tag yet
@@ -8,6 +9,7 @@ import { PutawayItemRowDto } from '../../models';
  * row says why. Presentational only.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-putaway-queue',
   template: `
     @if (loading()) {
@@ -43,7 +45,7 @@ import { PutawayItemRowDto } from '../../models';
                 {{ statusText(item) }}
               </td>
               <td data-label="Actions">
-                <button type="button" class="button button--small" [disabled]="!canChoose(item)" (click)="chosen.emit(item)">Choose</button>
+                <button *hasPermission="'warehouse.write'" type="button" class="button button--small" [disabled]="!canChoose(item)" (click)="chosen.emit(item)">Choose</button>
               </td>
             </tr>
           }

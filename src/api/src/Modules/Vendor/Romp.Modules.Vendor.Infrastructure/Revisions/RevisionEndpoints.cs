@@ -11,7 +11,7 @@ internal static class RevisionEndpoints
 {
     public static void MapRevisionEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/purchase-orders").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/purchase-orders", Permissions.ProcurementRead).WithTags("Vendor");
 
         // SCRUM-93 task 29.
         group.MapPost("/{id:long}/amendments", async (
@@ -19,14 +19,14 @@ internal static class RevisionEndpoints
                 CreateAmendmentRequest body,
                 ISender sender,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
+            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPost("/{id:long}/amendments/{revNo}/accept", async (
                 long id,
                 short revNo,
                 ISender sender,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: true, Note: null), cancellationToken)));
+            Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: true, Note: null), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPost("/{id:long}/amendments/{revNo}/reject", async (
                 long id,
@@ -34,7 +34,7 @@ internal static class RevisionEndpoints
                 RevisionNoteRequest body,
                 ISender sender,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: false, body.Note), cancellationToken)));
+            Results.Ok(await sender.Send(new DecideRevisionCommand(id, revNo, Accept: false, body.Note), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPost("/{id:long}/amendments/{revNo}/withdraw", async (
                 long id,
@@ -42,7 +42,7 @@ internal static class RevisionEndpoints
                 RevisionNoteRequest body,
                 ISender sender,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new WithdrawRevisionCommand(id, revNo, body.Note), cancellationToken)));
+            Results.Ok(await sender.Send(new WithdrawRevisionCommand(id, revNo, body.Note), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapGet("/{id:long}/revisions", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetPurchaseOrderRevisionsQuery(id), cancellationToken)));

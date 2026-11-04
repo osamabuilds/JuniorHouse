@@ -21,15 +21,15 @@ internal static class OutcomeEndpoints
 {
     public static void MapOutcomeEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/quality").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality", Permissions.QcRead).WithTags("Quality");
 
         group.MapPost("/batches/{id:long}/decision", async (long id, DecideBatchRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new DecideBatchCommand(id, body.ActingPerson, body.Parts), cancellationToken)));
+            Results.Ok(await sender.Send(new DecideBatchCommand(id, body.ActingPerson, body.Parts), cancellationToken))).RequirePermission(Permissions.QcWrite);
 
         group.MapPost("/sub-batches/{id:long}/decision", async (long id, DecideSubBatchRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new DecideSubBatchCommand(id, body.OutcomeId, body.Reason, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new DecideSubBatchCommand(id, body.OutcomeId, body.Reason, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.QcWrite);
 
         group.MapPost("/sub-batches/{id:long}/rework-return", async (long id, RecordReworkReturnRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new RecordReworkReturnCommand(id, body.ReturnDate, body.ActingPerson, body.Note, body.Lines), cancellationToken)));
+            Results.Ok(await sender.Send(new RecordReworkReturnCommand(id, body.ReturnDate, body.ActingPerson, body.Note, body.Lines), cancellationToken))).RequirePermission(Permissions.QcWrite);
     }
 }

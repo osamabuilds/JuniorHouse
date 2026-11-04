@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal, untracked } from '@angular/core';
 import { inputValue } from '@shared';
 import { VariantDto, VariantPriceInput } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /** What the person has typed for one variant, as text, until it is saved. */
 interface Draft {
@@ -16,6 +17,7 @@ const key = (variant: VariantDto) => `${variant.colourId}:${variant.sizeId}`;
  * A compare-at price must be higher than the price (D4), and the form says so before anything is sent.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-variants-table',
   template: `
     <p class="field-hint">
@@ -88,7 +90,7 @@ const key = (variant: VariantDto) => `${variant.colourId}:${variant.sizeId}`;
       <button type="button" class="button button--primary" [disabled]="disabled() || saving()" (click)="save()">
         {{ saving() ? 'Saving…' : 'Save prices' }}
       </button>
-      <button type="button" class="button" [disabled]="saving()" (click)="refreshRequested.emit()">Read barcodes again</button>
+      <button *hasPermission="'catalog.write'" type="button" class="button" [disabled]="saving()" (click)="refreshRequested.emit()">Read barcodes again</button>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

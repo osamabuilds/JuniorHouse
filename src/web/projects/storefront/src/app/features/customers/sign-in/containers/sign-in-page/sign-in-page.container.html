@@ -1,0 +1,49 @@
+<rp-auth-layout>
+  <p class="rp-eyebrow">Welcome back</p>
+  <h1 class="rp-display-md">Sign in</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate aria-label="Sign in">
+    @if (state().failed || state().error) {
+      <div #notice class="rp-notice rp-notice--error" role="alert" tabindex="-1">
+        <rp-icon name="alert" />
+        <div>
+          @if (state().error) {
+            <b>Something went wrong on our side</b><br />Please try again in a moment.
+          } @else if (state().retryAfterSeconds; as wait) {
+            <b>We could not sign you in</b><br />Too many attempts: wait {{ wait }} seconds, then try again.
+          } @else {
+            <b>We could not sign you in</b><br />Check your email and password and try again, or <a class="rp-link" routerLink="/account/forgot-password">reset your password</a>.
+          }
+        </div>
+      </div>
+    }
+
+    <rp-field #email label="Email" [error]="emailError()">
+      <input class="rp-input" type="email" name="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" required
+        [id]="email.controlId" [attr.aria-describedby]="email.describedBy()" [attr.aria-invalid]="email.invalid()" />
+    </rp-field>
+
+    <rp-password-field [control]="form.controls.password" label="Password" autocomplete="current-password" [error]="passwordError()" />
+
+    <div class="rp-auth__row">
+      <label class="rp-check">
+        <input type="checkbox" formControlName="keepSignedIn" />
+        <span>Keep me signed in</span>
+      </label>
+      <a class="rp-link" routerLink="/account/forgot-password">Forgot password?</a>
+    </div>
+
+    @if (state().captchaRequired && page.siteKey() !== null) {
+      <rp-turnstile [siteKey]="page.siteKey()!" (token)="onToken($event)" />
+      @if (captchaMissing()) {
+        <p class="rp-error" role="alert"><rp-icon name="alert" />Complete the check above, then sign in.</p>
+      }
+    }
+
+    <button rpBtn="action" type="submit" [block]="true" [disabled]="state().busy">{{ state().busy ? 'Signing in…' : 'Sign in' }}</button>
+  </form>
+  <div class="rp-auth__alt">
+    <p class="rp-help">New here?</p>
+    <a rpBtn="ghost" [block]="true" routerLink="/account/register" [queryParams]="{ returnUrl: returnUrl() }">Create an account</a>
+  </div>
+</rp-auth-layout>

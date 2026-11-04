@@ -108,6 +108,9 @@
             ],
             "styles": [
               "projects/admin/src/styles.scss"
+            ],
+            "allowedCommonJsDependencies": [
+              "qrcode"
             ]
           },
           "configurations": {
@@ -167,7 +170,10 @@
               "buildTarget": "admin:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "proxyConfig": "projects/admin/proxy.conf.json"
+          }
         },
         "test": {
           "builder": "@angular/build:unit-test"

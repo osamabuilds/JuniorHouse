@@ -4,6 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
+import { CartActions } from '../../../../cart/carts/store/cart.actions';
+import { selectCartBusy, selectCartMessage } from '../../../../cart/carts/store/cart.selectors';
+import { ButtonDirective } from '../../../../../shared/ui/button/button.directive';
+import { IconComponent } from '../../../../../shared/ui/icon/icon.component';
 import { SeoService } from '../../../../../shared/seo/seo.service';
 import { BreadcrumbsComponent } from '../../../navigation/components/breadcrumbs/breadcrumbs.component';
 import { selectBrand, selectTopLinks } from '../../../site-settings';
@@ -31,6 +35,8 @@ const META_DESCRIPTION_LENGTH = 155;
   selector: 'rp-product-page',
   imports: [
     NotFoundComponent,
+    ButtonDirective,
+    IconComponent,
     BreadcrumbsComponent,
     ProductGalleryComponent,
     ProductPriceComponent,
@@ -81,11 +87,27 @@ export class ProductPageContainer {
     return p.isAvailable ? p.price : { ...p.price, compareAtPrice: null, savingPercent: 0, savingAmount: 0 };
   });
 
+  protected readonly bagBusy = this.store.selectSignal(selectCartBusy);
+  protected readonly bagMessage = this.store.selectSignal(selectCartMessage);
+
   /** The size the visitor chose, as the server confirmed it. */
   protected readonly chosenSize = computed(() => {
     const p = this.page();
     return p?.sizes.find((s) => s.code === p.selectedSize) ?? null;
   });
+
+  /** Add to bag is offered once a size that can be bought is chosen; the server decides stock again when it is pressed (CRT-4). */
+  protected readonly canAdd = computed(() => {
+    const size = this.chosenSize();
+    return !!size && size.selectable && size.variantId > 0;
+  });
+
+  protected readonly addHint = computed(() => (this.chosenSize() ? 'That size is not available right now.' : 'Choose a size to add this to your bag.'));
+
+  protected addToBag(): void {
+    const size = this.chosenSize();
+    if (size && size.selectable) this.store.dispatch(CartActions.add({ variantId: size.variantId, quantity: 1 }));
+  }
 
   constructor() {
     effect(() => {

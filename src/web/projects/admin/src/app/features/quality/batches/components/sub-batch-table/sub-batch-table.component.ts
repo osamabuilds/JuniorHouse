@@ -12,6 +12,7 @@ import {
   PART_STATUS_LABELS,
 } from '../../batches.constants';
 import { hasBothSafetyChecks, inspectionOfPart, outstandingQty } from '../../utils';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The parts of a decided batch and what each needs next (spec AC-20..AC-27): which part was accepted, rejected or sent back, what
@@ -19,6 +20,7 @@ import { hasBothSafetyChecks, inspectionOfPart, outstandingQty } from '../../uti
  * checks, decide it). Every state is written out; colour is only a second cue. Holds no state.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-sub-batch-table',
   template: `
     <table class="responsive">
@@ -64,14 +66,14 @@ import { hasBothSafetyChecks, inspectionOfPart, outstandingQty } from '../../uti
             <td data-label="Still with the vendor">{{ outstanding(part) > 0 ? outstanding(part) + ' pieces' : '—' }}</td>
             <td data-label="Action" class="actions-cell">
               @if (part.statusId === awaitingRework && outstanding(part) > 0) {
-                <button type="button" class="button button--small" (click)="returnRequested.emit(part.id)">Record return</button>
+                <button *hasPermission="'qc.write'" type="button" class="button button--small" (click)="returnRequested.emit(part.id)">Record return</button>
               } @else if (part.statusId === pending) {
-                <button type="button" class="button button--small" (click)="reinspectRequested.emit(part.id)">Re-inspect</button>
+                <button *hasPermission="'qc.write'" type="button" class="button button--small" (click)="reinspectRequested.emit(part.id)">Re-inspect</button>
               } @else if (part.statusId === inInspection) {
                 @if (!safetyDone(part)) {
-                  <button type="button" class="button button--small" (click)="safetyRequested.emit(inspectionId(part))">Record safety checks</button>
+                  <button *hasPermission="'qc.write'" type="button" class="button button--small" (click)="safetyRequested.emit(inspectionId(part))">Record safety checks</button>
                 }
-                <button type="button" class="button button--small" (click)="decideRequested.emit(part.id)">Record outcome</button>
+                <button *hasPermission="'qc.write'" type="button" class="button button--small" (click)="decideRequested.emit(part.id)">Record outcome</button>
               }
             </td>
           </tr>

@@ -49,7 +49,7 @@ internal static class CycleCountEndpoints
 
     public static void MapCycleCountEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var staff = endpoints.MapSecuredGroup("/api/warehouse/cycle-counts").WithTags("Warehouse")
+        var staff = endpoints.MapSecuredGroup("/api/warehouse/cycle-counts", Permissions.InventoryRead).WithTags("Warehouse")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         staff.MapGet("", async (
@@ -67,23 +67,23 @@ internal static class CycleCountEndpoints
             Results.Ok(await sender.Send(new GetCycleCountQuery(id), cancellationToken)));
 
         staff.MapPut("/{id:long}/lines", async (long id, SubmitCountLinesRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SubmitCountLinesCommand(id, body.BinCode, body.Lines ?? [], body.Recount, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SubmitCountLinesCommand(id, body.BinCode, body.Lines ?? [], body.Recount, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.WarehouseWrite);
 
-        var inventory = endpoints.MapSecuredGroup("/api/warehouse/cycle-counts", Policies.Inventory).WithTags("Warehouse")
+        var inventory = endpoints.MapSecuredGroup("/api/warehouse/cycle-counts", Permissions.InventoryWrite).WithTags("Warehouse")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         inventory.MapPost("", async (CreateCycleCountRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new CreateCycleCountCommand(body.BinIds ?? [], body.ActingPerson), cancellationToken)))
+                Results.Ok(await sender.Send(new CreateCycleCountCommand(body.BinIds ?? [], body.ActingPerson), cancellationToken))).RequirePermission(Permissions.InventoryWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         inventory.MapGet("/{id:long}/review", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new ReviewCountQuery(id), cancellationToken)));
 
         inventory.MapPost("/{id:long}/confirm", async (long id, ConfirmCycleCountRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new ConfirmCycleCountCommand(id, body.Reasons ?? [], body.ActingPerson), cancellationToken)))
+                Results.Ok(await sender.Send(new ConfirmCycleCountCommand(id, body.Reasons ?? [], body.ActingPerson), cancellationToken))).RequirePermission(Permissions.InventoryWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         inventory.MapPost("/{id:long}/cancel", async (long id, CancelCycleCountRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new CancelCycleCountCommand(id, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new CancelCycleCountCommand(id, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.InventoryWrite);
     }
 }

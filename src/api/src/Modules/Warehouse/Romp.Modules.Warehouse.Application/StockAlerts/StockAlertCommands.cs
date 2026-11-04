@@ -31,7 +31,7 @@ public sealed class AlertEvaluator(IWarehouseDbContext dbContext, IStockVariantR
             return;
         }
 
-        var available = await variants.GetOnHandAsync(variantRefId, cancellationToken);
+        var available = await variants.GetAvailableAsync(variantRefId, cancellationToken);
         var everHeld = await variants.HasEverHeldStockAsync(variantRefId, cancellationToken);
         var threshold = await dbContext.Thresholds.AsNoTracking().Where(t => t.VariantRefId == variantRefId).Select(t => (int?)t.Quantity).FirstOrDefaultAsync(cancellationToken)
             ?? options.Value.DefaultLowStockThreshold;

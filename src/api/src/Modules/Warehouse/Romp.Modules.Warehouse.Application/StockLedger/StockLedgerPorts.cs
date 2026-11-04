@@ -38,6 +38,9 @@ public interface IStockVariantReader
     /// <summary>Total on hand across all bins and grades (available equals on-hand until reservations exist).</summary>
     Task<int> GetOnHandAsync(long variantRefId, CancellationToken cancellationToken);
 
+    /// <summary>On-hand minus the units reserved for orders: what alerts and the storefront treat as available (RSV-7).</summary>
+    Task<int> GetAvailableAsync(long variantRefId, CancellationToken cancellationToken);
+
     /// <summary>True when the variant has ever held stock (used by alerts so a never-stocked variant raises none, ALR-4).</summary>
     Task<bool> HasEverHeldStockAsync(long variantRefId, CancellationToken cancellationToken);
 }
@@ -54,7 +57,8 @@ public sealed record StockVariantRowDto(
     int Available,
     int OnHandAccepted,
     int OnHandConcession,
-    IReadOnlyList<StockBinQuantityDto> Bins);
+    IReadOnlyList<StockBinQuantityDto> Bins,
+    int Reserved = 0);
 
 public sealed record BinContentDto(long VariantRefId, string SkuCode, string Gtin, short GradeId, string GradeCode, int Quantity);
 

@@ -3,8 +3,10 @@ import { alertRow } from '@app/testing/warehouse-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { AlertRowDto } from '../../models';
 import { AlertTableComponent } from './alert-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('AlertTableComponent (spec ALR-1, ALR-2, ALR-5, ALR-8)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(alerts: AlertRowDto[], loading = false, acknowledgingId: number | null = null) {
     const fixture = TestBed.createComponent(AlertTableComponent);
     fixture.componentRef.setInput('alerts', alerts);

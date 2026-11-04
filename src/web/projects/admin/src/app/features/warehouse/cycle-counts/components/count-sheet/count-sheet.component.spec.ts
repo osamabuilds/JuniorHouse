@@ -3,8 +3,10 @@ import { countDto } from '@app/testing/warehouse-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { CycleCountDto, SubmitLinesValue } from '../../models';
 import { CountSheetComponent } from './count-sheet.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('CountSheetComponent (spec CC-2, CC-6, CC-7, CC-10)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(count: CycleCountDto = countDto()) {
     const fixture = TestBed.createComponent(CountSheetComponent);
     fixture.componentRef.setInput('count', count);

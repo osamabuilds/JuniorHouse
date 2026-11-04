@@ -20,11 +20,11 @@ internal static class MilestoneEndpoints
 {
     public static void MapMilestoneEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/production/runs").WithTags("Production");
+        var group = endpoints.MapSecuredGroup("/api/production/runs", Permissions.ProductionRead).WithTags("Production");
 
         group.MapPost("/{id:long}/milestones", async (long id, RecordMilestoneRequest body, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(
                 new RecordMilestoneCommand(id, body.TypeId, body.ClaimedDate, body.ReportedBy, body.ActingPerson, body.Note, body.FinishedLines),
-                cancellationToken)));
+                cancellationToken))).RequirePermission(Permissions.ProductionWrite);
     }
 }

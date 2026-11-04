@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { MAX_THRESHOLD } from '../../stock-alerts.constants';
 import { ThresholdRowDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 export interface ThresholdChange {
   readonly variantRefId: number;
@@ -13,6 +14,7 @@ export interface ThresholdChange {
  * by the server. Presentational only.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-threshold-table',
   template: `
     @if (loading()) {
@@ -60,7 +62,7 @@ export interface ThresholdChange {
                 }
               </td>
               <td data-label="Actions">
-                <button
+                <button *hasPermission="'inventory.write'"
                   type="button"
                   class="button button--small"
                   [disabled]="savingVariantId() === row.variantRefId || invalid(box.value)"

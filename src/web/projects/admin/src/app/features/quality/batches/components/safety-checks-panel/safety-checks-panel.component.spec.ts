@@ -4,8 +4,10 @@ import { bothSafetyPassed, inspection } from '@app/testing/quality-fixtures';
 import { buttonByText, click, setSelect, setText, textOf } from '@app/testing/production-fixtures';
 import { InspectionDto, RecordSafetyValue } from '../../models';
 import { SafetyChecksPanelComponent } from './safety-checks-panel.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('SafetyChecksPanelComponent (spec AC-31..AC-34, BRD 5.11)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   const lines = [
     { sizeId: 1, colourId: 10, qty: 90 },
     { sizeId: 2, colourId: 10, qty: 50 },

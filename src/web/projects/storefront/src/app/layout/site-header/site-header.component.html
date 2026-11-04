@@ -33,6 +33,23 @@
     <a class="rp-logo" routerLink="/" [attr.aria-label]="brand().name + ', home'">{{ brand().name.toLowerCase() }}<i></i></a>
 
     <div class="rp-tools">
+      <nav class="rp-acct" aria-label="Account">
+        @switch (auth()) {
+          @case ('signedIn') {
+            <a routerLink="/account" class="rp-acct__link">{{ greeting() }}</a>
+            <button type="button" class="rp-acct__link" (click)="signOut()">Sign out</button>
+          }
+          @case ('signedOut') {
+            <a routerLink="/account/sign-in" class="rp-acct__link">Sign in</a>
+          }
+        }
+      </nav>
+      <button type="button" class="rp-icon-btn rp-bag-btn" [attr.aria-label]="'Bag, ' + bagCount() + (bagCount() === 1 ? ' item' : ' items')" (click)="openBag()">
+        <rp-icon name="bag" />
+        @if (bagCount() > 0) {
+          <span class="rp-count" aria-hidden="true">{{ bagCount() }}</span>
+        }
+      </button>
       <form class="rp-search" role="search" action="/search" method="get">
         <rp-icon name="search" />
         <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off" (focus)="searchOpen.emit()" />

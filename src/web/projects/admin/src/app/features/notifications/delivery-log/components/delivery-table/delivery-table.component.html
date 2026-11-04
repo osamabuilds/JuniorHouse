@@ -1,0 +1,35 @@
+<table class="table">
+  <caption class="sr-only">Messages sent to customers, newest first</caption>
+  <thead>
+    <tr>
+      <th scope="col">Message</th>
+      <th scope="col">Order</th>
+      <th scope="col">Sent to</th>
+      <th scope="col">Status</th>
+      <th scope="col" class="num">Attempts</th>
+      <th scope="col">Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (r of rows(); track r.id) {
+      <tr [attr.aria-current]="r.id === selectedId() ? 'true' : null">
+        <th scope="row">
+          <button type="button" class="button button--small" (click)="selected.emit(r.id)">{{ kind(r.kind) }} · {{ channel(r.channel) }}</button>
+          @if (r.isResend) {
+            <br /><small>Resent{{ r.resentBy ? ' by ' + r.resentBy : '' }}</small>
+          }
+        </th>
+        <td>{{ r.orderNumber ?? 'Unknown order' }}</td>
+        <td>{{ r.recipient ?? 'Not known' }}</td>
+        <td>
+          <span class="badge" [class.badge--muted]="!isProblem(r.status)">{{ status(r.status) }}</span>
+          @if (r.lastError) {
+            <br /><small>{{ error(r.lastError) }}</small>
+          }
+        </td>
+        <td class="num">{{ r.attempts }}</td>
+        <td>{{ r.createdAt | date: 'd MMM y, h:mm a' }}</td>
+      </tr>
+    }
+  </tbody>
+</table>

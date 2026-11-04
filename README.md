@@ -289,6 +289,38 @@ Every action asks for your name (kept in this browser), because there is no sign
 enforced then. Publishing writes an event through the outbox; the storefront that reads it arrives in Sprint 9. Open questions (defaults
 adopted, see `docs/specs/catalog/README.md`): the age-band names (Q-AGE-2), the launch fibre and care lists, and the URL shape for unisex.
 
+## Try Sprint 8 (sign-in, two-step verification, roles and the audit trail)
+
+Sprint 8 puts a login in front of the admin (`docs/specs/identity/`). The normal stack keeps the stand-in user so the earlier demos
+still work; the **secure** stack turns real sign-in on:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build
+# Create the first Owner (once). The password comes from the environment, never the command line; it must be changed at first sign-in.
+docker compose -f docker-compose.yml -f docker-compose.secure.yml run --rm -T `
+  -e ROMP_OWNER_USERNAME=owner -e "ROMP_OWNER_DISPLAY_NAME=The Owner" -e ROMP_OWNER_PASSWORD=<a long passphrase> api create-owner
+```
+
+**Demo script** (admin app at http://localhost:4201):
+
+1. **Sign in** as the Owner. You are made to choose your own password, then to set up two-step verification: scan the QR code with an
+   authenticator app (or type the key), enter the first code, and save the **recovery codes** shown once.
+2. **Staff.** Add a person with a role (Catalogue, Order operations, Support, Marketing). The temporary password is shown **once**; they
+   must change it and set up two-step verification at their first sign-in. Open the person to change roles, deactivate them (their open
+   session stops at once), make a new temporary password, or clear their two-step verification.
+3. **Roles.** The Roles page is a table of who can do what. Sign in as a Catalogue person: the menu shows only their sections, a page they
+   may not use says "no access", and read-only people see no buttons that change things (the server refuses a direct call anyway).
+4. **Audit.** The **Audit** page (Owner) lists every change in every part of Romp: who, when, which record, and the **names** of the
+   columns that changed, never the values. Filter by person, module, record type, key and dates. Entries appear a few seconds after the
+   change. Nothing can edit or delete an entry, not even with database access (triggers refuse it).
+5. **Security page.** Your account's two-step status and regenerated recovery codes.
+6. **If you lock yourself out.** On the server, with access to the database:
+   `docker compose -f docker-compose.yml -f docker-compose.secure.yml run --rm -T -e ROMP_OWNER_USERNAME=owner -e ROMP_OWNER_PASSWORD=<new passphrase> api reset-owner --password --mfa`
+   (the step is recorded in the audit trail as `operator-cli`).
+
+Nothing is deployed yet: the staging server needs the domain, the VPS and the accounts (`docs/specs/platform/`). Open questions are in
+the specs ("Open questions" and "As built" of each identity feature).
+
 ## Try Sprint 9 (storefront settings)
 Staff change the shop's menu, ages, footer, contact, delivery and exchange facts and content pages in the admin app; a publish puts the whole set on the shop within a minute (SCRUM-206, [spec](docs/specs/storefront/storefront-settings/spec.md)).
 

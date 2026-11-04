@@ -1,6 +1,6 @@
 # Roles and permissions
 
-- **Module:** [`identity`](../README.md) · **Feature:** `roles` · **Status:** Planned
+- **Module:** [`identity`](../README.md) · **Feature:** `roles` · **Status:** Implemented
 
 Permission lookups, Owner plus the four BRD roles, endpoint authorization matrix and the Sprint 1-7 enforcement verification pass.
 

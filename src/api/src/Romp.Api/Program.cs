@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Romp.Api;
 using Romp.Api.ExceptionHandling;
+using Romp.Api.HostVerbs;
 using Romp.Api.Seeding;
 using Romp.BuildingBlocks.Application;
 using Romp.BuildingBlocks.Modules;
@@ -15,6 +16,15 @@ using Romp.Modules.Labelling.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure;
 using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure;
+using Romp.Modules.Cart.Infrastructure;
+using Romp.Modules.Cart.Infrastructure.Persistence;
+using Romp.Modules.Notifications.Infrastructure;
+using Romp.Modules.Notifications.Infrastructure.Persistence;
+using Romp.Modules.Orders.Infrastructure;
+using Romp.Modules.Orders.Infrastructure.Persistence;
+using Romp.Modules.Customers.Infrastructure;
+using Romp.Modules.Customers.Infrastructure.Accounts;
+using Romp.Modules.Customers.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure;
 using Romp.Modules.Storefront.Infrastructure;
@@ -28,6 +38,15 @@ using Romp.Modules.Vendor.Domain.Vendors;
 using Romp.Modules.Vendor.Infrastructure;
 using Romp.Modules.Vendor.Infrastructure.Persistence;
 
+// Operator verbs (create-owner, reset-owner, migrate, healthcheck, rebuild-storefront) are parsed before anything else is built, so a bad
+// verb or a secret on the command line is refused without touching configuration, the database or the logs.
+var verbParse = HostVerbParser.Parse(args);
+if (verbParse.Error is not null)
+{
+    await Console.Error.WriteLineAsync(verbParse.Error);
+    return 2;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ADR 0011: an explicit request-body ceiling (large uploads keep their own per-endpoint validation).
@@ -35,9 +54,11 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule(), new CustomersModule(), new CartModule(), new OrdersModule(), new NotificationsModule()];
 
 builder.Services.AddSharedPersistence();
+builder.Services.AddHttpContextCurrentActor();
+builder.Services.AddRompHostOptions(builder.Configuration, builder.Environment);
 
 // Registration order is pipeline order (outermost first): every request is logged, then
 // validated - a rejected request is still logged - before reaching any module's own
@@ -52,7 +73,12 @@ builder.Services.AddMediatR(cfg =>
         typeof(Romp.Modules.Quality.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Labelling.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Warehouse.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Storefront.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Storefront.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Identity.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Customers.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Cart.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Orders.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Notifications.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -88,7 +114,13 @@ builder.Services.AddExceptionHandler<ConcurrencyExceptionHandler>();
 builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddRompAuthorization(builder.Environment);
+if (RompAuthorizationExtensions.IsDevelopmentLike(builder.Environment))
+{
+    // The stand-in for a signed-in customer (ADR 0021): Development and Testing only.
+    CustomersModule.AddStandInCustomer(builder.Services);
+}
 builder.Services.AddRompRateLimiting(builder.Configuration);
+builder.Services.AddRompForwardedHeaders();
 builder.Services.AddOpenApi();
 
 // Storefront and admin are separate origins (SSR/SPA hosts, different ports). No auth yet
@@ -110,14 +142,25 @@ var app = builder.Build();
 
 // Operator verb (ADR 0016): `dotnet Romp.Api.dll rebuild-storefront` rebuilds the storefront read model inline on the server and exits.
 // It needs server access; the hosted services (outbox dispatcher, workers) are not started, so nothing else runs alongside it.
-if (args.Contains(Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildVerb))
+// The verbs create-owner, reset-owner, migrate and healthcheck are registered here as their tasks land (staff-accounts 10, platform D2/D3).
+if (verbParse.Request is { } verb)
 {
-    return await Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildAsync(app.Services, Console.Out, CancellationToken.None);
+    var handlers = new Dictionary<string, HostVerbHandler>
+    {
+        [Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildVerb] =
+            (_, output, cancellationToken) => Romp.Modules.Storefront.Infrastructure.PublishedCatalog.StorefrontOperator.RebuildAsync(app.Services, output, cancellationToken),
+        [Romp.Api.HostVerbs.OwnerVerbs.CreateVerb] = (_, output, cancellationToken) =>
+            Romp.Api.HostVerbs.OwnerVerbs.CreateAsync(app.Services, OperatorSecretReader.ForConsole(), output, cancellationToken),
+        [Romp.Api.HostVerbs.OwnerVerbs.ResetVerb] = (request, output, cancellationToken) =>
+            Romp.Api.HostVerbs.OwnerVerbs.ResetAsync(app.Services, OperatorSecretReader.ForConsole(), request, output, cancellationToken),
+    };
+    return await HostVerbRunner.RunAsync(verb, handlers, Console.Out, Console.Error, CancellationToken.None);
 }
 
 // ADR 0011 deployment gate: outside Development/Testing the host refuses to start without a real authentication scheme.
 await SecurityGate.VerifyAsync(app.Services, app.Environment);
 
+app.UseRompForwardedHeaders(); // first: the rate limiter, authentication and sign-in all read the client address
 app.UseRompSecurityHeaders();
 
 app.UseExceptionHandler();
@@ -152,7 +195,16 @@ if (app.Environment.IsDevelopment())
         labellingContext.Database.MigrateAsync(),
         warehouseContext.Database.MigrateAsync(),
         scope.ServiceProvider.GetRequiredService<StfrDbContext>().Database.MigrateAsync(),
-        scope.ServiceProvider.GetRequiredService<IdntDbContext>().Database.MigrateAsync());
+        scope.ServiceProvider.GetRequiredService<IdntDbContext>().Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<CustDbContext>().Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<CartDbContext>().Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<OrdrDbContext>().Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<NtfyDbContext>().Database.MigrateAsync());
+
+    if (RompAuthorizationExtensions.IsDevelopmentLike(app.Environment))
+    {
+        await StandInCustomer.SeedAsync(scope.ServiceProvider.GetRequiredService<CustDbContext>(), CancellationToken.None);
+    }
 
     // Opt-in (docker-compose sets Demo__SeedSampleData=true) so a plain `dotnet run` for backend
     // work doesn't get sample vendors/styles it didn't ask for; the "Try Sprint 1" walkthrough
@@ -166,7 +218,7 @@ if (app.Environment.IsDevelopment())
 // Liveness: process is up. Readiness: dependencies are reachable (SEC-22).
 // SCRUM-186: are events flowing? Counts per module outbox (pending, in flight, retrying, dead-lettered) and the oldest waiting age.
 // Admin-only once staff authentication exists (S8, SEC-08); tagged for that sweep.
-app.MapSecuredGroup("/api/admin", Policies.Admin).WithTags("Admin")
+app.MapSecuredGroup("/api/admin", Permissions.OpsAdmin).WithTags("Admin")
     .MapGet("/outbox", async (OutboxHealthReader reader, CancellationToken cancellationToken) =>
         Results.Ok(await reader.ReadAsync(cancellationToken)));
 

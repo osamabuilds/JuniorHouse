@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { AlertRowDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * Open low-stock and stock-out alerts (ALR-8). The level is shown in words, not colour alone. Acknowledging records who has seen the alert;
@@ -8,7 +9,7 @@ import { AlertRowDto } from '../../models';
  */
 @Component({
   selector: 'app-alert-table',
-  imports: [DatePipe],
+  imports: [HasPermissionDirective, DatePipe],
   template: `
     @if (loading()) {
       <p class="state-message">Loading…</p>
@@ -50,7 +51,7 @@ import { AlertRowDto } from '../../models';
                 }
               </td>
               <td data-label="Actions">
-                <button
+                <button *hasPermission="'inventory.write'"
                   type="button"
                   class="button button--small"
                   [disabled]="alert.acknowledged || acknowledgingId() === alert.id"

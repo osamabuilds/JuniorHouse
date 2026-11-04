@@ -7,4 +7,6 @@ export interface ApiError {
   readonly status: number;
   readonly message: string;
   readonly fieldErrors: Readonly<Record<string, readonly string[]>>;
+  /** From the `Retry-After` header of a 429 answer: how many seconds to wait before trying again. */
+  readonly retryAfterSeconds?: number;
 }

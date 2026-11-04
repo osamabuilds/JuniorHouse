@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { GateFailureDto, PRODUCT_TABS, ProductDto, ProductTab } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /** "NO_SIZE_CHART" and friends, in words. */
 const WARNINGS: Readonly<Record<string, string>> = {
@@ -11,6 +12,7 @@ const WARNINGS: Readonly<Record<string, string>> = {
  * fixes it, and the publish, unpublish and archive buttons. Archive asks for a second click because it cannot be undone.
  */
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-publish-panel',
   template: `
     <p>
@@ -43,16 +45,16 @@ const WARNINGS: Readonly<Record<string, string>> = {
 
     <div class="form-actions">
       @if (product().status === 'Published') {
-        <button type="button" class="button" [disabled]="saving()" (click)="unpublish.emit()">Take off sale</button>
+        <button *hasPermission="'catalog.write'" type="button" class="button" [disabled]="saving()" (click)="unpublish.emit()">Take off sale</button>
       } @else if (product().status !== 'Archived') {
-        <button type="button" class="button button--primary" [disabled]="saving()" (click)="publish.emit()">Publish</button>
+        <button *hasPermission="'catalog.write'" type="button" class="button button--primary" [disabled]="saving()" (click)="publish.emit()">Publish</button>
       }
       @if (product().status !== 'Archived') {
         @if (confirmingArchive()) {
           <button type="button" class="button button--danger" [disabled]="saving()" (click)="confirmingArchive.set(false); archive.emit()">Yes, archive it for good</button>
           <button type="button" class="button" (click)="confirmingArchive.set(false)">Keep it</button>
         } @else {
-          <button type="button" class="button" [disabled]="saving()" (click)="confirmingArchive.set(true)">Archive</button>
+          <button *hasPermission="'catalog.write'" type="button" class="button" [disabled]="saving()" (click)="confirmingArchive.set(true)">Archive</button>
         }
       } @else {
         <p class="state-message">This product is archived. It is kept for order history and cannot be edited or published.</p>

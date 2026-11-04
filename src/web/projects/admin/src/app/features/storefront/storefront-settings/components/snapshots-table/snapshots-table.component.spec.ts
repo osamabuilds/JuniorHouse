@@ -3,8 +3,10 @@ import { snapshotRow } from '@app/testing/storefront-fixtures';
 import { buttonNamed, hasButton, textContent } from '@app/testing/dom-helpers';
 import { SnapshotRow } from '../../models';
 import { SnapshotsTableComponent } from './snapshots-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('SnapshotsTableComponent (spec ST-12)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(snapshots: SnapshotRow[], restoringVersion: number | null = null, loading = false) {
     const fixture = TestBed.createComponent(SnapshotsTableComponent);
     fixture.componentRef.setInput('snapshots', snapshots);

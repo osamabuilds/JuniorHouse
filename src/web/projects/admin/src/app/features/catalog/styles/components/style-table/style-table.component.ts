@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LookupDto } from '@features/reference/lookups';
 import { StyleSummaryDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 @Component({
+  imports: [HasPermissionDirective],
   selector: 'app-style-table',
   templateUrl: './style-table.component.html',
   styles: ':host { display: block; }',

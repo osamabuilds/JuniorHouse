@@ -1,22 +1,38 @@
-@if (!chromeless()) {
+@if (!chromeless() && user()) {
   <header class="shell-header">
     <div class="shell-header__brand">
       <span class="shell-header__mark" aria-hidden="true">R</span>
       <span class="shell-header__title">Romp <span class="shell-header__title-muted">Admin</span></span>
     </div>
 
+    <div class="shell-user">
+      <span class="shell-user__name">{{ user()?.displayName }}</span>
+      @if (canSignOut()) {
+        <a routerLink="/security" routerLinkActive="is-active">Security</a>
+        <button type="button" class="button" (click)="signOut()">Sign out</button>
+        <button type="button" class="button" (click)="signOutEverywhere()">Sign out everywhere</button>
+      }
+    </div>
+
     <nav class="shell-nav" aria-label="Primary">
       <ul>
-        <li><a routerLink="/reference-data" routerLinkActive="is-active">Reference Data</a></li>
-        <li><a routerLink="/styles" routerLinkActive="is-active">Styles</a></li>
-        <li><a routerLink="/catalog" routerLinkActive="is-active">Catalog</a></li>
-        <li><a routerLink="/vendors" routerLinkActive="is-active">Vendors</a></li>
-        <li><a routerLink="/purchase-orders" routerLinkActive="is-active">Purchase Orders</a></li>
-        <li><a routerLink="/production" routerLinkActive="is-active">Production</a></li>
-        <li><a routerLink="/quality" routerLinkActive="is-active">Receiving &amp; QC</a></li>
-        <li><a routerLink="/labelling" routerLinkActive="is-active">Labelling</a></li>
-        <li><a routerLink="/warehouse" routerLinkActive="is-active">Warehouse</a> <app-alert-badge /></li>
-        <li><a routerLink="/storefront" routerLinkActive="is-active">Storefront</a></li>
+        <li *hasPermission="'ref.read'"><a routerLink="/reference-data" routerLinkActive="is-active">Reference Data</a></li>
+        <li *hasPermission="'catalog.read'"><a routerLink="/styles" routerLinkActive="is-active">Styles</a></li>
+        <li *hasPermission="'catalog.read'"><a routerLink="/catalog" routerLinkActive="is-active">Catalog</a></li>
+        <li *hasPermission="'procurement.read'"><a routerLink="/vendors" routerLinkActive="is-active">Vendors</a></li>
+        <li *hasPermission="'procurement.read'"><a routerLink="/purchase-orders" routerLinkActive="is-active">Purchase Orders</a></li>
+        <li *hasPermission="'production.read'"><a routerLink="/production" routerLinkActive="is-active">Production</a></li>
+        <li *hasPermission="'qc.read'"><a routerLink="/quality" routerLinkActive="is-active">Receiving &amp; QC</a></li>
+        <li *hasPermission="'labelling.read'"><a routerLink="/labelling" routerLinkActive="is-active">Labelling</a></li>
+        <li *hasPermission="'warehouse.read'"><a routerLink="/warehouse" routerLinkActive="is-active">Warehouse</a> <app-alert-badge *hasPermission="'inventory.read'" /></li>
+        <li *hasPermission="'catalog.read'"><a routerLink="/storefront" routerLinkActive="is-active">Storefront</a></li>
+        <li *hasPermission="'orders.view'"><a routerLink="/orders" routerLinkActive="is-active">Orders</a></li>
+        <li *hasPermission="'notifications.view'"><a routerLink="/notifications" routerLinkActive="is-active">Notifications</a></li>
+        <li *hasPermission="'shipping.manage'"><a routerLink="/shipping" routerLinkActive="is-active">Delivery fees</a></li>
+        <li *hasPermission="'discounts.manage'"><a routerLink="/discounts" routerLinkActive="is-active">Discount codes</a></li>
+        <li *hasPermission="'staff.manage'"><a routerLink="/staff" routerLinkActive="is-active">Staff</a></li>
+        <li *hasPermission="'staff.manage'"><a routerLink="/roles" routerLinkActive="is-active">Roles</a></li>
+        <li *hasPermission="'audit.read'"><a routerLink="/audit" routerLinkActive="is-active">Audit</a></li>
       </ul>
     </nav>
   </header>
@@ -26,7 +42,7 @@
   <router-outlet />
 </main>
 
-@if (!chromeless()) {
+@if (!chromeless() && user()) {
   <footer class="shell-footer">
     <p>Romp Admin &middot; Sprint 7 (Publish)</p>
     <app-outbox-health [health]="outboxHealth()" />

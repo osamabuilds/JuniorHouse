@@ -38,3 +38,11 @@ dialog.rp-fullscreen::backdrop { background: var(--overlay); }
 @media (min-width: 40rem) { .rp-suggestions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--grid-gap-desktop); } }
 @media (min-width: 64rem) { .rp-suggestions { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .rp-mobile-search { margin-bottom: var(--space-3); }
+
+/* The bag drawer: a right-hand sheet (a full-width bottom sheet is not needed: it is already full width under 40rem). */
+dialog.rp-drawer-r { margin: 0; padding: 0; border: 0; max-width: none; max-height: none; background: var(--surface-raised); color: var(--ink); position: fixed; inset: 0 0 0 auto; width: min(27.5rem, 100%); height: 100dvh; overflow: hidden; }
+dialog.rp-drawer-r::backdrop { background: var(--overlay); }
+dialog.rp-drawer-r[open] { display: flex; flex-direction: column; }
+@media (prefers-reduced-motion: no-preference) { dialog.rp-drawer-r[open] { animation: rp-slide-in-r var(--dur-base) var(--ease-inout); } }
+@keyframes rp-slide-in-r { from { transform: translateX(100%); } to { transform: none; } }
+.rp-drawer__body { flex: 1; overflow-y: auto; }

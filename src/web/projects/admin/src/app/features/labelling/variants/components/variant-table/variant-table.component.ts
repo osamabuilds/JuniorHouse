@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { VariantRowDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The SKU register (VAR-13): one row per variant with its readable SKU and the barcode number in use. Reprint and print history
@@ -8,7 +9,7 @@ import { VariantRowDto } from '../../models';
  */
 @Component({
   selector: 'app-variant-table',
-  imports: [RouterLink],
+  imports: [HasPermissionDirective, RouterLink],
   template: `
     @if (loading()) {
       <p class="state-message">Loading…</p>
@@ -55,7 +56,7 @@ import { VariantRowDto } from '../../models';
                     routerLink="/labelling/queue"
                     [queryParams]="{ variantId: variant.id, reprint: 1, sku: variant.skuCode }"
                   >Reprint</a>
-                  <button type="button" class="button button--small button--danger" (click)="voidRequested.emit(variant)">Void barcode</button>
+                  <button *hasPermission="'ops.admin'" type="button" class="button button--small button--danger" (click)="voidRequested.emit(variant)">Void barcode</button>
                 }
               </td>
             </tr>

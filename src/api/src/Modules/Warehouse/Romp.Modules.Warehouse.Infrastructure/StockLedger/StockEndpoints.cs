@@ -14,7 +14,7 @@ internal static class StockEndpoints
 {
     public static void MapStockEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/warehouse/stock").WithTags("Warehouse");
+        var group = endpoints.MapSecuredGroup("/api/warehouse/stock", Permissions.InventoryRead).WithTags("Warehouse");
 
         group.MapGet("", async (
                 string? search,
@@ -42,8 +42,17 @@ internal static class StockEndpoints
                 int pageSize = PageRequest.DefaultPageSize) =>
             Results.Ok(await sender.Send(new GetMovementsQuery(variantId, binId, kindId, page, pageSize), cancellationToken)));
 
+        // Which orders are holding units of a variant (RSV, staff view): order numbers only, never a customer.
+        group.MapGet("/{variantRefId:long}/reservations", async (
+                long variantRefId,
+                ISender sender,
+                CancellationToken cancellationToken,
+                int page = 1,
+                int pageSize = PageRequest.DefaultPageSize) =>
+            Results.Ok(await sender.Send(new Romp.Modules.Warehouse.Application.Reservations.ListVariantReservationsQuery(variantRefId, page, pageSize), cancellationToken)));
+
         // The books-agree check (LED-2) is an administrative action.
-        endpoints.MapSecuredGroup("/api/warehouse/stock", Policies.Admin).WithTags("Warehouse")
+        endpoints.MapSecuredGroup("/api/warehouse/stock", Permissions.OpsAdmin).WithTags("Warehouse")
             .MapGet("/consistency", async (ISender sender, CancellationToken cancellationToken) =>
                 Results.Ok(await sender.Send(new StockConsistencyQuery(), cancellationToken)));
     }

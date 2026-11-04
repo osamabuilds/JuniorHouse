@@ -3,8 +3,10 @@ import { binRow } from '@app/testing/warehouse-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { BinRowDto } from '../../models';
 import { BinTableComponent } from './bin-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('BinTableComponent (spec BIN-4, BIN-6)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(bins: BinRowDto[], loading = false, togglingId: number | null = null) {
     const fixture = TestBed.createComponent(BinTableComponent);
     fixture.componentRef.setInput('bins', bins);

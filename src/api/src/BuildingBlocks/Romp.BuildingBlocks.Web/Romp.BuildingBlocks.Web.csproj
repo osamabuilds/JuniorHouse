@@ -4,4 +4,9 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Romp.BuildingBlocks.Persistence\Romp.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="..\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
 </Project>

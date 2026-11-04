@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Romp.Modules.Orders.Application\Romp.Modules.Orders.Application.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/Romp.BuildingBlocks.Web/Romp.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="..\Romp.Modules.Orders.Contracts\Romp.Modules.Orders.Contracts.csproj" />
+    <ProjectReference Include="..\..\Customers\Romp.Modules.Customers.Contracts\Romp.Modules.Customers.Contracts.csproj" />
+    <ProjectReference Include="../../Cart/Romp.Modules.Cart.Contracts/Romp.Modules.Cart.Contracts.csproj" />
+    <ProjectReference Include="../../Warehouse/Romp.Modules.Warehouse.Contracts/Romp.Modules.Warehouse.Contracts.csproj" />
+    <ProjectReference Include="../../Reference/Romp.Modules.Reference.Contracts/Romp.Modules.Reference.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Persistence\Romp.BuildingBlocks.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

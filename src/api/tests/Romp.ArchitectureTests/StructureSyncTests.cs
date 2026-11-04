@@ -46,7 +46,7 @@ public sealed class StructureSyncTests
     {
         var api = ApiFeaturesByModule().ToDictionary(p => Kebab(p.Key), p => p.Value.Select(Kebab).ToHashSet());
         var orphans = new List<string>();
-        foreach (var moduleDir in Directory.GetDirectories(SpecsRoot).Where(d => !IsUnderscored(d)))
+        foreach (var moduleDir in Directory.GetDirectories(SpecsRoot).Where(d => !IsUnderscored(d) && !IsSpecOnlyArea(d)))
         {
             var module = Path.GetFileName(moduleDir);
             foreach (var featureDir in Directory.GetDirectories(moduleDir).Where(d => !IsUnderscored(d)))
@@ -61,6 +61,15 @@ public sealed class StructureSyncTests
         }
 
         Assert.True(orphans.Count == 0, "Spec features with no API feature (mark the card 'Planned' if not built yet, or '**Scope:** Frontend-only' if it never has a backend):" + Environment.NewLine + string.Join(Environment.NewLine, orphans));
+    }
+
+    [Fact]
+    public void PlatformIsSpecOnly()
+    {
+        // Platform work (deployment, observability) is cross-cutting: it has specs but no module and no admin screens.
+        Assert.True(Directory.Exists(Path.Combine(SpecsRoot, SpecOnlyArea)), "docs/specs/platform is missing");
+        Assert.DoesNotContain(ApiFeaturesByModule(), p => Kebab(p.Key) == SpecOnlyArea);
+        Assert.False(Directory.Exists(Path.Combine(WebFeaturesRoot, SpecOnlyArea)), "platform must not have a web feature folder");
     }
 
     [Fact]
@@ -170,6 +179,10 @@ public sealed class StructureSyncTests
     private static string SpecsRoot => Path.Combine(RepoRoot, "docs", "specs");
 
     private static string WebFeaturesRoot => Path.Combine(RepoRoot, "src", "web", "projects", "admin", "src", "app", "features");
+
+    private const string SpecOnlyArea = "platform";
+
+    private static bool IsSpecOnlyArea(string dir) => Path.GetFileName(dir) == SpecOnlyArea;
 
     private static bool IsUnderscored(string dir) => Path.GetFileName(dir).StartsWith('_');
 

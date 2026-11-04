@@ -47,10 +47,10 @@
       </p>
       <div class="form-actions">
         @if (current.status !== 'Published') {
-          <button type="button" class="button button--primary" [disabled]="saving() || dirty()" (click)="setStatus('Published')">Mark as published</button>
+          <button *hasPermission="'catalog.write'" type="button" class="button button--primary" [disabled]="saving() || dirty()" (click)="setStatus('Published')">Mark as published</button>
         }
         @if (current.status === 'Published') {
-          <button type="button" class="button" [disabled]="saving() || dirty()" (click)="setStatus('Draft')">Return to draft</button>
+          <button *hasPermission="'catalog.write'" type="button" class="button" [disabled]="saving() || dirty()" (click)="setStatus('Draft')">Return to draft</button>
         }
         @if (current.status !== 'Archived') {
           <button type="button" class="button button--danger" [disabled]="saving() || dirty()" (click)="setStatus('Archived')">Archive</button>
@@ -89,5 +89,5 @@
     <app-page-blocks-editor [blocks]="value().blocks" (blocksChange)="edit({ blocks: $event })" />
   </section>
 
-  <app-save-bar [label]="isNew() ? 'Create the page' : 'Save the page'" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
+  <app-save-bar *hasPermission="'catalog.write'" [label]="isNew() ? 'Create the page' : 'Save the page'" [saving]="saving()" [dirty]="dirty()" (save)="save()" (discard)="discard()" />
 }

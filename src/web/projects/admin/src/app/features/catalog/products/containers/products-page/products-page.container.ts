@@ -23,13 +23,14 @@ import {
   selectStatusId,
   selectTotal,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 const LOOKUP_TYPES = ['genders', 'categories', 'age-brackets'] as const;
 
 /** Products (docs/specs/catalog/products/spec.md): the paged list with filters, and creating a product from a style (PRD-1, PRD-11). */
 @Component({
   selector: 'app-products-page',
-  imports: [SectionNavComponent, ProductTableComponent, ProductCreateFormComponent, PaginationComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, ProductTableComponent, ProductCreateFormComponent, PaginationComponent],
   templateUrl: './products-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -68,7 +68,10 @@ public sealed class WarehouseLatencyTests(ProductionApiFixture api)
         }
 
         var p95 = samples.Order().ElementAt((int)Math.Ceiling(samples.Count * 0.95) - 1);
-        Assert.True(p95 < TimeSpan.FromSeconds(5), $"p95 commit-to-delivery was {p95.TotalMilliseconds:F0} ms (worst-case poll wait included)");
+        var health = string.Join("; ", (await api.Services.GetRequiredService<OutboxHealthReader>().ReadAsync(CancellationToken.None))
+            .Where(h => h.Pending + h.InFlight + h.Retrying + h.DeadLettered > 0)
+            .Select(h => $"{h.Schema} pending={h.Pending} inflight={h.InFlight} retrying={h.Retrying} dead={h.DeadLettered}"));
+        Assert.True(p95 < TimeSpan.FromSeconds(5), $"p95 commit-to-delivery was {p95.TotalMilliseconds:F0} ms (worst-case poll wait included); outbox: {(health.Length == 0 ? "idle" : health)}");
     }
 
     [Fact]

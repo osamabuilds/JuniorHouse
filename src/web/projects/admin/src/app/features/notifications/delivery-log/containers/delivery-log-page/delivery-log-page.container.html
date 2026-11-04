@@ -1,0 +1,98 @@
+<h1>Notifications</h1>
+<p class="page-intro">
+  Every message sent to a customer, by email and WhatsApp, with where it stands. When a customer says they never got their confirmation, find the order here:
+  if the message failed, resend it.
+</p>
+
+@if (summary(); as s) {
+  <app-delivery-summary-strip [summary]="s" />
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+<form class="card" (submit)="submitSearch($event)" aria-label="Filter messages" novalidate>
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="dl-search">Search</label>
+      <input
+        id="dl-search"
+        type="search"
+        maxlength="100"
+        autocomplete="off"
+        placeholder="Order number, email or mobile"
+        [value]="search()"
+        (input)="search.set($any($event.target).value)"
+      />
+      <small class="field-hint">Exact match: the whole order number, email address or mobile number.</small>
+    </div>
+    <div class="form-field">
+      <label for="dl-status">Status</label>
+      <select id="dl-status" (change)="chooseStatus($event)">
+        <option value="" [selected]="filters().status === ''">Any status</option>
+        @for (s of statuses; track s.code) {
+          <option [value]="s.code" [selected]="filters().status === s.code">{{ s.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="dl-channel">Channel</label>
+      <select id="dl-channel" (change)="chooseChannel($event)">
+        <option value="" [selected]="filters().channel === ''">Any channel</option>
+        @for (c of channels; track c.code) {
+          <option [value]="c.code" [selected]="filters().channel === c.code">{{ c.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="dl-kind">Message</label>
+      <select id="dl-kind" (change)="chooseKind($event)">
+        <option value="" [selected]="filters().kind === ''">Any message</option>
+        @for (k of kinds; track k.code) {
+          <option [value]="k.code" [selected]="filters().kind === k.code">{{ k.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+  <div class="actions">
+    <label class="checkbox"><input type="checkbox" [checked]="filters().deadLettersOnly" (change)="toggleDeadLetters($event)" /> Gave up, not resent</label>
+    <button type="submit" class="button button--primary">Search</button>
+    @if (hasFilters()) {
+      <button type="button" class="button" (click)="clear()">Clear filters</button>
+    }
+    <button type="button" class="button" (click)="refresh()">Refresh</button>
+  </div>
+  @if (filters().orderId !== null) {
+    <p>Showing the messages of one order only. Clear the filters to see them all.</p>
+  }
+</form>
+
+<section aria-labelledby="dl-list-heading">
+  <h2 id="dl-list-heading">{{ total() }} {{ total() === 1 ? 'message' : 'messages' }}</h2>
+  @if (loading() && rows().length === 0) {
+    <p role="status">Loading…</p>
+  } @else if (rows().length === 0) {
+    <p>No messages match. {{ hasFilters() ? 'Try clearing the filters.' : 'Messages appear here as soon as customers place orders.' }}</p>
+  } @else {
+    <app-delivery-table [rows]="rows()" [selectedId]="detail()?.row.id ?? null" (selected)="open($event)" />
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>
+
+@if (detailLoading()) {
+  <p role="status">Loading the message…</p>
+} @else if (detail(); as d) {
+  <app-delivery-detail [detail]="d" [resending]="resending()" (resendRequested)="resend($event)" (closed)="close()" />
+}

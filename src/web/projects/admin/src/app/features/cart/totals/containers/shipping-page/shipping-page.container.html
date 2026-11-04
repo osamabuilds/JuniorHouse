@@ -1,0 +1,131 @@
+<h1>Delivery fees</h1>
+<p class="page-intro">
+  What delivery costs. Each city can have its own fee; a city with none uses the default fee. A change applies from the next basket, and
+  orders that are already placed keep the fee they were placed with.
+</p>
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (settings()?.defaultFeeIsUnset) {
+  <p class="banner banner--error" role="status">
+    The default delivery fee has not been set yet, so delivery is free everywhere until you set it below.
+  </p>
+}
+
+<form class="card" [formGroup]="settingsForm" (ngSubmit)="saveSettings()" aria-labelledby="ship-settings-heading" novalidate>
+  <h2 id="ship-settings-heading">Settings for every order</h2>
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="ship-default">Default delivery fee (Rs.)</label>
+      <input id="ship-default" type="number" inputmode="decimal" min="0" max="100000" step="1" formControlName="defaultFee" />
+      <small class="field-hint">Used for a city that has no fee of its own.</small>
+      @if (settingsForm.controls.defaultFee.touched && settingsForm.controls.defaultFee.invalid) {
+        <small class="field-error" role="alert">Enter a fee from 0 to 100,000.</small>
+      }
+    </div>
+    <div class="form-field">
+      <label for="ship-free">Free delivery from (Rs.)</label>
+      <input id="ship-free" type="number" inputmode="decimal" min="1" step="1" formControlName="freeThreshold" />
+      <small class="field-hint">Leave empty for no free-delivery offer. Counted after any discount.</small>
+      @if (settingsForm.controls.freeThreshold.touched && settingsForm.controls.freeThreshold.invalid) {
+        <small class="field-error" role="alert">Enter an amount of 1 or more, or leave it empty.</small>
+      }
+    </div>
+    <div class="form-field">
+      <label for="ship-cod">Extra fee for Cash on Delivery (Rs.)</label>
+      <input id="ship-cod" type="number" inputmode="decimal" min="0" max="100000" step="1" formControlName="codFee" />
+      <small class="field-hint">Leave empty for no extra fee.</small>
+      @if (settingsForm.controls.codFee.touched && settingsForm.controls.codFee.invalid) {
+        <small class="field-error" role="alert">Enter a fee from 0 to 100,000, or leave it empty.</small>
+      }
+    </div>
+  </div>
+  <button *hasPermission="'shipping.manage'" type="submit" class="button button--primary" [disabled]="settingsSaving()">
+    {{ settingsSaving() ? 'Saving…' : 'Save settings' }}
+  </button>
+</form>
+
+<form class="card" [formGroup]="rateForm" (ngSubmit)="addRate()" aria-labelledby="ship-rate-heading" novalidate>
+  <h2 id="ship-rate-heading">Set the fee for a city</h2>
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="ship-province">Province</label>
+      <select id="ship-province" formControlName="provinceId" (change)="chooseProvince($event)">
+        <option [ngValue]="null">Choose a province</option>
+        @for (p of provinces(); track p.id) {
+          <option [ngValue]="p.id">{{ p.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="ship-city">City</label>
+      <select id="ship-city" formControlName="cityId">
+        <option [ngValue]="null">Choose a city</option>
+        @for (c of cities(); track c.id) {
+          <option [ngValue]="c.id">{{ c.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="ship-fee">Delivery fee (Rs.)</label>
+      <input id="ship-fee" type="number" inputmode="decimal" min="0" max="100000" step="1" formControlName="fee" />
+      @if (rateForm.controls.fee.touched && rateForm.controls.fee.invalid) {
+        <small class="field-error" role="alert">Enter a fee from 0 to 100,000.</small>
+      }
+    </div>
+  </div>
+  <button *hasPermission="'shipping.manage'" type="submit" class="button button--primary" [disabled]="rateSaving()">
+    {{ rateSaving() ? 'Saving…' : 'Set fee' }}
+  </button>
+</form>
+
+<section aria-labelledby="ship-list-heading">
+  <h2 id="ship-list-heading">Cities with their own fee</h2>
+  @if (loading() && rates().length === 0) {
+    <p role="status">Loading…</p>
+  } @else if (rates().length === 0) {
+    <p>No city has its own fee yet. Every city uses the default fee.</p>
+  } @else {
+    <table class="table">
+      <caption class="sr-only">Cities with their own delivery fee</caption>
+      <thead>
+        <tr>
+          <th scope="col">City</th>
+          <th scope="col">Province</th>
+          <th scope="col" class="num">Fee (Rs.)</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (rate of rates(); track rate.cityId) {
+          <tr>
+            <th scope="row">{{ rate.cityName }}</th>
+            <td>{{ rate.provinceName }}</td>
+            <td class="num">{{ rate.fee }}</td>
+            <td>
+              <button *hasPermission="'shipping.manage'" type="button" class="button button--small" [disabled]="removingCityId() === rate.cityId" (click)="remove(rate)">
+                Use default<span class="sr-only"> for {{ rate.cityName }}</span>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>

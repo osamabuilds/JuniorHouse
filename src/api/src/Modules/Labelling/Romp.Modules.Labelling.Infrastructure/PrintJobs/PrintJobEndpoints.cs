@@ -23,7 +23,7 @@ internal static class PrintJobEndpoints
 
     public static void MapPrintJobEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/labelling").WithTags("Labelling")
+        var group = endpoints.MapSecuredGroup("/api/labelling", Permissions.LabellingRead).WithTags("Labelling")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/print-jobs", async (
@@ -36,13 +36,12 @@ internal static class PrintJobEndpoints
             Results.Ok(await sender.Send(new SearchPrintJobsQuery(status, printerId, page, pageSize), cancellationToken)));
 
         group.MapPost("/print-jobs/{id:long}/retry", async (long id, PrintJobActionRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new RetryPrintJobCommand(id, body.ActingPerson), cancellationToken)))
+                Results.Ok(await sender.Send(new RetryPrintJobCommand(id, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.LabellingWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
-        // Cancel is an Admin action: declared now, enforced with roles in Sprint 8 (SEC-08).
+        // Cancel is an operational action: ops.admin (roles spec).
         group.MapPost("/print-jobs/{id:long}/cancel", async (long id, PrintJobActionRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new CancelPrintJobCommand(id, body.ActingPerson), cancellationToken)))
-            .RequireAuthorization(Policies.Admin)
+                Results.Ok(await sender.Send(new CancelPrintJobCommand(id, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.OpsAdmin)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapPost("/variants/{id:long}/reprints", async (long id, ReprintTagRequest body, ISender sender, CancellationToken cancellationToken) =>
@@ -50,7 +49,7 @@ internal static class PrintJobEndpoints
                 var job = await sender.Send(
                     new ReprintTagCommand(id, body.Qty, body.ReasonId, body.Note, body.PrinterCode, body.ActingPerson), cancellationToken);
                 return Results.Created($"/api/labelling/print-jobs/{job.Id}", job);
-            })
+            }).RequirePermission(Permissions.LabellingWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapGet("/variants/{id:long}/print-history", async (

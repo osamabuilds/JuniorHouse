@@ -1,11 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { PendingRevisionActionsComponent } from './pending-revision-actions.component';
 import { PoRevisionDto } from '../../models';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 const pending = (initiatorId: number): PoRevisionDto =>
   ({ id: 2, poId: 10, revisionNumber: 1, initiatorId, statusId: 1, unitCost: 600, expectedDeliveryDate: '2026-12-06' }) as unknown as PoRevisionDto;
 
 describe('PendingRevisionActionsComponent (SCRUM-93 task 50)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(initiatorId: number) {
     const fixture = TestBed.createComponent(PendingRevisionActionsComponent);
     fixture.componentRef.setInput('revision', pending(initiatorId));

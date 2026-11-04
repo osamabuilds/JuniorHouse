@@ -45,7 +45,8 @@ public sealed class VendorModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "VNDR"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
 
         services.AddScoped<IVendorDbContext>(sp => sp.GetRequiredService<VendorDbContext>());
         services.AddScoped<IPoNumberAllocator, PoNumberAllocator>();

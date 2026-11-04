@@ -42,6 +42,7 @@ public sealed class ReferenceModule : IModule
         services.AddScoped<IPaymentTermQueries, PaymentTermQueries>();
         services.AddScoped<IApparelCodeQueries, ApparelCodeQueries>();
         services.AddScoped<ICatalogLookupQueries, CatalogLookupQueries>();
+        services.AddScoped<IGeographyQueries, GeographyQueries>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ReferenceTransactionBehavior<,>));
@@ -65,6 +66,7 @@ public sealed class ReferenceModule : IModule
         RegisterOne<AgeBracketLookup>(services, mutable: true);
         RegisterOne<CategoryLookup>(services, mutable: true);
         RegisterOne<CityLookup>(services, mutable: true);
+        RegisterOne<ProvinceLookup>(services, mutable: false);
         RegisterOne<PaymentTermLookup>(services, mutable: true);
         RegisterOne<VendorSpecialisationLookup>(services, mutable: true);
         RegisterOne<PoCancelReasonLookup>(services, mutable: true);
@@ -109,6 +111,8 @@ public sealed class ReferenceModule : IModule
         endpoints.MapLookupType<AgeBracketLookup>("age-brackets", mutable: true);
         endpoints.MapLookupType<CategoryLookup>("categories", mutable: true);
         endpoints.MapLookupType<CityLookup>("cities", mutable: true);
+        endpoints.MapLookupType<ProvinceLookup>("provinces", mutable: false);
+        endpoints.MapGeographyEndpoints();
         endpoints.MapLookupType<PaymentTermLookup>("payment-terms", mutable: true);
         endpoints.MapLookupType<VendorSpecialisationLookup>("vendor-specialisations", mutable: true);
         endpoints.MapLookupType<PoCancelReasonLookup>("po-cancel-reasons", mutable: true);

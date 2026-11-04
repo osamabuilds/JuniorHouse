@@ -82,6 +82,7 @@ Note: there is no `_AT` suffix in this convention — every timestamp column, au
 | Quality Control | `QC` |
 | SKU & Barcode | `SKU` |
 | Warehouse | `WHSE` |
+| Cart (basket, discount codes, shipping rates) | `CART` |
 | Orders | `ORDR` |
 | Payments | `PAYM` |
 | Customers (storefront accounts) | `CUST` |
@@ -346,3 +347,64 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | IP address | IP | | temporary | TEMP |
 | login | LGIN | | token | TOKN |
 | multi-factor authentication | MFA | | used | USED |
+| rotated | ROTD | | | |
+
+### Added in Sprint 10 (Customers)
+
+`CUST`, `ADDR`, `EML`, `PHON`, `NAME`, `LINE`, `CITY`, `DFLT`, `IND`, `LKP`, `SORT`, `SEQ` and `ACT` already existed. Only the words below are new; more are added with the features that need them (wishlist, newsletter, notify-me).
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| postcode | PCDE | | recipient | RCPT |
+| province | PROV | | two | TWO |
+| one | ONE | | | |
+
+### Added with customer sign-in (Customers, accounts)
+
+`PWD`, `HASH`, `SESS`, `ACSS`, `RFSH`, `TOKN`, `EXPY`, `STRT`, `ROTD`, `RVKD`, `RSN`, `CLNT`, `AGNT`, `ABS`, `USED`, `ATMP`, `OTCM`, `LGIN`, `PREV`, `IP`, `LAST`, `EML` and `DTE` already existed (the staff sign-in uses them) and keep their abbreviation. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| reset | RSET | | verified (verify) | VRFY |
+| keep (keep me signed in) | KEEP | | issued | ISSD |
+
+### Added in Sprint 11 (SCRUM-202, cart, orders, notifications)
+
+Reused as they are: `DISC` (discount), `EXPY` (expiry), `RATE`, `THRS` (threshold), `CNFM` (confirmed), `TYP`, `HASH`, `KEY`, `LAST`, `USED`, `CODE`, `LINE`, `QTY`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| cart | CART | | guest | GST |
+| seen | SEEN | | shipping | SHPG |
+| settings | SETG | | fee | FEE |
+| cash on delivery | COD | | spend | SPND |
+| inclusive | INCL | | sale | SALE |
+| cap | CAP | | scope | SCOP |
+| redemption | RDMP | | placement | PLCE |
+| held | HELD | | released | RLSD |
+| use | USE | | | |
+| reservation | RSRV | | until | UNTL |
+
+### Added in Sprint 12 (SCRUM-202, orders, warehouse reservations)
+
+Reused as they are: `CNTC` (contact), `PAYM` (payment), `PRDT` (product), `CLR`, `PRIC`, `RCPT`, `LINE_ONE`, `LINE_TWO`, `PCDE`, `CNCL`, `HIST`, `ACTR`, `KIND`. The orders plan wrote `CONT` and `PYMT`; the glossary's `CNTC` and `PAYM` win.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| subtotal | SUBT | | whatsapp | WHTS |
+| opt-in | OPTN | | method | METH |
+| webhook | WBHK | | | |
+| risk | RISK | | look-up | LOOK |
+
+### Added in Sprint 13 (SCRUM-202, notifications)
+
+Reused as they are: `CHNL`, `ATMP`, `LEAS` (lease), `NXT` (next), `MSG`, `ERR`, `CATG`, `KIND`, `REF`, `EVNT`, `EXPY`, `CNT`, `DAY`, `DT`, `SENT`, `VER`, `NO`, `STS`, `LKP`, `WBHK`, `WHTS`, `DEDL` (dead-letter), `TEXT`, `BLCK` (blocked number list), `HASH`, `RCVD`, `PROC`, `VRFY`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| notification | NTFY | | template | TMPL |
+| provider | PRVD | | fallback | FLBK |
+| priority | PRIO | | language | LANG |
+| subject | SUBJ | | body | BODY |
+| HTML | HTML | | resent | RSND |
+| of (e.g. fallback of) | OF | | signature | SGNT |

@@ -1,3 +1,8 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideCart } from '../../../../cart/carts/cart.providers';
+import { CartActions } from '../../../../cart/carts/store/cart.actions';
+import { Store } from '@ngrx/store';
 import { RESPONSE_INIT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, UrlSegment } from '@angular/router';
@@ -28,9 +33,9 @@ const basePage: ProductPage = {
   sku: 'SKU-1',
   colours: [{ code: 'red', name: 'Red', inStock: true }, { code: 'navy', name: 'Navy', inStock: false }],
   sizes: [
-    { code: '5-6y', name: '5-6 Years', availability: 'InStock', selectable: true },
-    { code: '7-8y', name: '7-8 Years', availability: 'SoldOut', selectable: false },
-    { code: '9-10y', name: '9-10 Years', availability: 'NotYetAvailable', selectable: false },
+    { code: '5-6y', name: '5-6 Years', availability: 'InStock', selectable: true, variantId: 501 },
+    { code: '7-8y', name: '7-8 Years', availability: 'SoldOut', selectable: false, variantId: 502 },
+    { code: '9-10y', name: '9-10 Years', availability: 'NotYetAvailable', selectable: false, variantId: 503 },
   ],
   images: [
     { altText: 'Front', width: 1200, height: 1600, sources: [{ width: 320, webp: '/media/a-320.webp', jpeg: '/media/a-320.jpg' }, { width: 640, webp: '/media/a-640.webp', jpeg: '/media/a-640.jpg' }] },
@@ -55,6 +60,9 @@ function render(result: ProductPageResult, query: Record<string, string> = {}, r
     providers: [
       provideRouter([]),
       provideStore({}),
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideCart(),
       provideSiteSettings(),
       provideProductPages(),
       { provide: ProductPagesApi, useValue: { get } },
@@ -206,12 +214,41 @@ describe('ProductPageContainer', () => {
     expect(el.querySelector('button')).toBeNull();
   });
 
-  it('PDP-17 words availability as a guide and shows no purchase control or count', () => {
+  it('PDP-17 words availability as a guide and shows no count or reservation wording', () => {
     const { el } = render(found());
 
     expect(el.querySelector('rp-availability-note')!.textContent).toContain('Size 5-6 Years: in stock.');
     expect(el.querySelector('rp-availability-note')!.textContent).toContain('guide');
-    expect(el.textContent).not.toMatch(/reserved|\d+ left|add to (cart|bag)/i);
+    expect(el.textContent).not.toMatch(/reserved|d+ left/i);
+  });
+
+  it('CRT-1 Add to bag is offered for a size that can be bought and sends that size\'s variant, one at a time', () => {
+    const { el } = render(found());
+    const dispatch = vi.spyOn(TestBed.inject(Store), 'dispatch');
+    const button = [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Add to bag')!;
+
+    expect(button).toBeTruthy();
+    expect(button.disabled).toBe(false);
+    button.click();
+
+    expect(dispatch).toHaveBeenCalledWith(CartActions.add({ variantId: 501, quantity: 1 }));
+  });
+
+  it('CRT-4 with no size chosen Add to bag waits and says why, in words', () => {
+    const { el } = render(found({ selectedSize: null }));
+    const button = [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Add to bag')!;
+
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute('aria-describedby')).toBe('pdp-add-hint');
+    expect(el.querySelector('#pdp-add-hint')!.textContent).toContain('Choose a size');
+  });
+
+  it('CRT-4 a size that is sold out cannot be added', () => {
+    const { el } = render(found({ selectedSize: '7-8y' }));
+    const button = [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Add to bag')!;
+
+    expect(button.disabled).toBe(true);
+    expect(el.querySelector('#pdp-add-hint')!.textContent).toContain('not available');
   });
 
   it('PDP-13 answers 200 for a page, 404 for a missing one and 410 for a removed one', () => {

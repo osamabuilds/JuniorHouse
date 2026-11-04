@@ -26,6 +26,8 @@ export interface SizeOption {
   readonly name: string;
   readonly availability: SizeAvailability;
   readonly selectable: boolean;
+  /** The catalogue variant the basket takes for this size in the chosen colour. */
+  readonly variantId: number;
 }
 
 export interface ProductPrice {

@@ -19,24 +19,26 @@ public static class RompAuthorizationExtensions
 {
     public const string DevelopmentScheme = "DevelopmentStaff";
 
+    /// <summary>The scheme of the Identity module's session cookie handler. The module registers the handler; this layer only names it.</summary>
+    public const string SessionScheme = "RompSession";
+
     public static IServiceCollection AddRompAuthorization(this IServiceCollection services, IHostEnvironment environment)
     {
         var authentication = services.AddAuthentication();
         if (IsDevelopmentLike(environment))
         {
             authentication.AddScheme<AuthenticationSchemeOptions, DevelopmentStaffHandler>(DevelopmentScheme, _ => { });
-            services.Configure<AuthenticationOptions>(options => options.DefaultScheme = DevelopmentScheme);
             services.AddSingleton<IAuthorizationHandler, DevelopmentPermissionHandler>();
         }
 
-        services.AddAuthorizationBuilder()
-            .AddPolicy(Policies.Staff, policy => policy.RequireAuthenticatedUser())
-            .AddPolicy(Policies.Admin, policy => policy.RequireAuthenticatedUser().RequireRole("Admin"))
-            .AddPolicy(Policies.Inventory, policy => policy.RequireAuthenticatedUser().RequireRole("Inventory", "Admin"))
-            .AddPolicy(Policies.Catalogue, policy => policy.RequireAuthenticatedUser().RequireRole("Catalogue", "Admin"))
-            .AddPolicy(Policies.StorefrontSettings, policy => policy.RequireAuthenticatedUser().RequireRole("StorefrontSettings", "Admin"))
-            .AddPolicy(Policies.StorefrontSearch, policy => policy.RequireAuthenticatedUser().RequireRole("StorefrontSearch", "Admin"))
-            .AddPolicy(Policies.Public, policy => policy.RequireAssertion(_ => true));
+        // Real authentication (the session cookie) is the default everywhere except a Development/Testing host that has not asked for
+        // it with Identity:UseRealAuthentication; only there does the development handler stand in.
+        services.AddOptions<AuthenticationOptions>().Configure<IOptions<IdentityOptions>>((options, identity) =>
+            options.DefaultScheme = IdentityOptions.IsRealAuthentication(identity.Value, environment) ? SessionScheme : DevelopmentScheme);
+
+        // Permissions are decided by a handler per requirement (the Identity module's, or the development one); the one named policy left
+        // is the explicit "open to everyone".
+        services.AddAuthorizationBuilder().AddPolicy(Policies.Public, policy => policy.RequireAssertion(_ => true));
         return services;
     }
 
@@ -50,7 +52,7 @@ public static class RompAuthorizationExtensions
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var identity = new ClaimsIdentity(
-                [new Claim(ClaimTypes.Name, "dev-staff"), new Claim(ClaimTypes.Role, "Staff"), new Claim(ClaimTypes.Role, "Admin")],
+                [new Claim(ClaimTypes.Name, "dev-staff")],
                 DevelopmentScheme);
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), DevelopmentScheme)));
         }

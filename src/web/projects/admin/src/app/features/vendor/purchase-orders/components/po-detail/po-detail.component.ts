@@ -24,6 +24,7 @@ import { PoReceiptsPanelComponent } from '../po-receipts-panel/po-receipts-panel
 import { RevisionHistoryComponent } from '../revision-history/revision-history.component';
 import { SendConfirmComponent } from '../send-confirm/send-confirm.component';
 import { VendorResponseFormComponent } from '../vendor-response-form/vendor-response-form.component';
+import { HasPermissionDirective } from '@core/auth';
 
 export interface RevisionNoteDecision {
   readonly revision: PoRevisionDto;
@@ -37,7 +38,7 @@ export interface RevisionNoteDecision {
  */
 @Component({
   selector: 'app-po-detail',
-  imports: [
+  imports: [HasPermissionDirective, 
     RouterLink,
     AppDatePipe,
     AmendFormComponent,

@@ -16,9 +16,9 @@ internal static class SafetyCheckEndpoints
 {
     public static void MapSafetyCheckEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/quality/inspections").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality/inspections", Permissions.QcRead).WithTags("Quality");
 
         group.MapPut("/{id:long}/safety-checks", async (long id, RecordSafetyChecksRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new RecordSafetyChecksCommand(id, body.ActingPerson, body.Checks), cancellationToken)));
+            Results.Ok(await sender.Send(new RecordSafetyChecksCommand(id, body.ActingPerson, body.Checks), cancellationToken))).RequirePermission(Permissions.QcWrite);
     }
 }

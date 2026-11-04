@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AppDatePipe } from '@shared';
 import { InboundDeliverySummaryDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /** The receiving queue (spec AC-1, AC-5, AC-44): one row per vendor delivery note, with what state it is in written out. */
 @Component({
   selector: 'app-inbound-table',
-  imports: [RouterLink, AppDatePipe],
+  imports: [HasPermissionDirective, RouterLink, AppDatePipe],
   template: `
     @if (loading()) {
       <p class="state-message">Loading…</p>
@@ -52,7 +53,7 @@ import { InboundDeliverySummaryDto } from '../../models';
               </td>
               <td data-label="Action" class="actions-cell">
                 @if (!delivery.isCancelled && !delivery.grnNo) {
-                  <a class="button button--small" [routerLink]="['/quality/receive', delivery.id]">Receive goods</a>
+                  <a *hasPermission="'qc.write'" class="button button--small" [routerLink]="['/quality/receive', delivery.id]">Receive goods</a>
                 }
               </td>
             </tr>

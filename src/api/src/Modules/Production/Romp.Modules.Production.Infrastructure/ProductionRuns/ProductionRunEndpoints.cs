@@ -17,7 +17,7 @@ internal static class ProductionRunEndpoints
 {
     public static void MapProductionRunEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/production/runs").WithTags("Production");
+        var group = endpoints.MapSecuredGroup("/api/production/runs", Permissions.ProductionRead).WithTags("Production");
 
         group.MapGet("/", async (
                 short? statusId,
@@ -39,6 +39,6 @@ internal static class ProductionRunEndpoints
         });
 
         group.MapPut("/{id:long}/expected-completion", async (long id, SetExpectedCompletionRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SetExpectedCompletionCommand(id, body.Date, body.Reason, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SetExpectedCompletionCommand(id, body.Date, body.Reason, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.ProductionWrite);
     }
 }

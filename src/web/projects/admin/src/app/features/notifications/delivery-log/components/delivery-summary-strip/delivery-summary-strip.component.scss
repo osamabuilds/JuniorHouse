@@ -1,0 +1,21 @@
+.strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.strip dt {
+  color: var(--color-ink-soft);
+}
+
+.strip dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip dd.is-late {
+  color: var(--color-danger);
+}

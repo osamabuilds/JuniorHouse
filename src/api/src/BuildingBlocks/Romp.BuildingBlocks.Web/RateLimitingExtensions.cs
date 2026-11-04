@@ -17,6 +17,8 @@ public static class RateLimitingExtensions
     {
         var perMinute = configuration.GetValue("RateLimit:PerMinute", 1200);
         var strictPerMinute = configuration.GetValue("RateLimit:StrictPerMinute", 60);
+        var discountPer15Minutes = configuration.GetValue("RateLimit:DiscountApplyPer15Minutes", 10);
+        var webhookPerMinute = configuration.GetValue("RateLimit:WebhookPerMinute", 600);
 
         services.AddRateLimiter(options =>
         {
@@ -25,6 +27,10 @@ public static class RateLimitingExtensions
                 RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => Window(perMinute)));
             options.AddPolicy(RateLimitPolicies.Strict, context =>
                 RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => Window(strictPerMinute)));
+            options.AddPolicy(RateLimitPolicies.Webhook, context =>
+                RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => Window(webhookPerMinute)));
+            options.AddPolicy(RateLimitPolicies.DiscountApply, context =>
+                RateLimitPartition.GetFixedWindowLimiter(ClientKey(context), _ => new FixedWindowRateLimiterOptions { PermitLimit = discountPer15Minutes, Window = TimeSpan.FromMinutes(15), QueueLimit = 0 }));
         });
         return services;
     }
