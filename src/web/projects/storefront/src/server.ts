@@ -47,7 +47,7 @@ const addressBook = /^\/customer-api\/addresses(\/[0-9]+(\/default)?)?$/;
 const wishlist = /^\/customer-api\/wishlist(\/(ids|merge|[0-9]+))?$/;
 
 app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res, next) => {
-  if (req.path === '/customer-api/config' || req.path === '/customer-api/newsletter' || req.path.startsWith('/customer-api/newsletter/') || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/') || req.path === '/customer-api/orders' || req.path.startsWith('/customer-api/orders/')) {
+  if (req.path === '/customer-api/config' || req.path === '/customer-api/newsletter' || req.path.startsWith('/customer-api/newsletter/') || req.path === '/customer-api/notify-me' || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/') || req.path === '/customer-api/orders' || req.path.startsWith('/customer-api/orders/')) {
     next(); // the sign-in routes below
     return;
   }
@@ -129,6 +129,52 @@ app.all('/customer-api/newsletter{/*splat}', express.json({ limit: '2kb' }), asy
   } catch {
     res.status(502).json({ title: 'The storefront could not reach the API.' });
   }
+});
+
+/**
+ * Notify Me (customers/notify-me NTM-1 to NTM-10). The browser posts `{ variantId, email }` to `/customer-api/notify-me` and the server
+ * forwards it to `/api/notify-me` with the cookies, the browser `Origin` (the API checks it) and the real client address. The answer is
+ * passed back as it is (a 400 carries the reason) and is never cached.
+ */
+app.post('/customer-api/notify-me', express.json({ limit: '2kb' }), async (req, res) => {
+  try {
+    const upstream = await fetch(new URL('/api/notify-me', apiBaseUrl), {
+      method: 'POST',
+      headers: { ...clientHeaders(req), 'content-type': 'application/json' },
+      body: JSON.stringify({ variantId: req.body?.variantId, email: req.body?.email }),
+      redirect: 'manual',
+    });
+    res.status(upstream.status);
+    const type = upstream.headers.get('content-type');
+    if (type) res.setHeader('content-type', type);
+    res.setHeader('cache-control', 'private, no-store');
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
+
+/**
+ * The Notify Me form without JavaScript: the browser posts the size and the email here, the server records the request and sends the
+ * visitor on (303) to a page that says what happened. With JavaScript the same form is handled in the page and never reaches this route.
+ */
+app.post('/notify-me', express.urlencoded({ extended: false, limit: '2kb' }), async (req, res) => {
+  let status: 'ok' | 'invalid' | 'error' = 'error';
+  try {
+    const variantId = Number.parseInt(typeof req.body?.variantId === 'string' ? req.body.variantId : '', 10);
+    const email = typeof req.body?.email === 'string' ? req.body.email : '';
+    const upstream = await fetch(new URL('/api/notify-me', apiBaseUrl), {
+      method: 'POST',
+      headers: { ...clientHeaders(req), 'content-type': 'application/json' },
+      body: JSON.stringify({ variantId: Number.isSafeInteger(variantId) ? variantId : 0, email }),
+      redirect: 'manual',
+    });
+    status = outcome(upstream.status);
+  } catch {
+    status = 'error';
+  }
+  res.setHeader('cache-control', 'private, no-store');
+  res.redirect(303, `/notify-me/requested?status=${status}`);
 });
 
 /**

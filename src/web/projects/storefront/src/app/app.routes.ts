@@ -24,6 +24,8 @@ const devRoutes: Routes = isDevMode()
 export const productMatcher: UrlMatcher = (segments: UrlSegment[]) => (segments.length === 3 ? { consumed: segments } : null);
 
 const listing = () => import('./features/storefront/listings/containers/listing-page/listing-page.container').then((m) => m.ListingPageContainer);
+const notifyMeResult = () =>
+  import('./features/customers/notify-me/containers/notify-me-result-page/notify-me-result-page.container').then((m) => m.NotifyMeResultPageContainer);
 const newsletterResult = () =>
   import('./features/customers/newsletter/containers/newsletter-result-page/newsletter-result-page.container').then((m) => m.NewsletterResultPageContainer);
 
@@ -81,6 +83,8 @@ export const routes: Routes = [
   // Where the storefront server sends a visitor after the footer form without JavaScript and after an unsubscribe link (noindex, never cached).
   { path: 'newsletter/subscribed', data: { kind: 'subscribed' }, loadComponent: newsletterResult },
   { path: 'newsletter/unsubscribed', data: { kind: 'unsubscribed' }, loadComponent: newsletterResult },
+  // Where the storefront server sends a visitor after the Notify Me form without JavaScript (noindex, never cached).
+  { path: 'notify-me/requested', loadComponent: notifyMeResult },
   {
     path: 'wishlist',
     loadComponent: () => import('./features/customers/wishlist/containers/wishlist-page/wishlist-page.container').then((m) => m.WishlistPageContainer),

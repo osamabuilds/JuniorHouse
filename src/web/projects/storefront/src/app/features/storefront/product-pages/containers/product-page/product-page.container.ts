@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, RESPONSE_INIT, computed, effect, in
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WishlistHeartComponent } from '../../../../customers/wishlist/components/wishlist-heart/wishlist-heart.component';
+import { NotifyMeFormComponent } from '../../../../customers/notify-me/components/notify-me-form/notify-me-form.component';
 import { NotFoundComponent } from '../../../../../shared/ui/not-found/not-found.component';
 import { Store } from '@ngrx/store';
 import { map } from 'rxjs';
@@ -48,6 +49,7 @@ const META_DESCRIPTION_LENGTH = 155;
     SizeChartComponent,
     CompositionCareComponent,
     WishlistHeartComponent,
+    NotifyMeFormComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-page.container.html',

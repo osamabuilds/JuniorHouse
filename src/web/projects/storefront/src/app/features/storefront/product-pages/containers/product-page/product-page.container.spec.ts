@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
+import { notifyMeFeature } from '../../../../../features/customers/notify-me/store/notify-me.reducer';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideCart } from '../../../../cart/carts/cart.providers';
 import { CartActions } from '../../../../cart/carts/store/cart.actions';
@@ -63,6 +64,7 @@ function render(result: ProductPageResult, query: Record<string, string> = {}, r
       provideRouter([]),
       provideStore({}),
       provideState(wishlistFeature),
+      provideState(notifyMeFeature),
       provideHttpClient(),
       provideHttpClientTesting(),
       provideCart(),
@@ -252,6 +254,17 @@ describe('ProductPageContainer', () => {
 
     expect(button.disabled).toBe(true);
     expect(el.querySelector('#pdp-add-hint')!.textContent).toContain('not available');
+  });
+
+  it('NTM-1 a sold-out size shows the Notify me form for that size, and an in-stock size does not', () => {
+    const sold = render(found({ selectedSize: '7-8y' })).el;
+    const form = sold.querySelector('rp-notify-me-form');
+    expect(form).not.toBeNull();
+    expect(form!.querySelector('input[name=variantId]')).not.toBeNull();
+    TestBed.resetTestingModule();
+
+    const inStock = render(found()).el;
+    expect(inStock.querySelector('rp-notify-me-form')).toBeNull();
   });
 
   it('PDP-13 answers 200 for a page, 404 for a missing one and 410 for a removed one', () => {

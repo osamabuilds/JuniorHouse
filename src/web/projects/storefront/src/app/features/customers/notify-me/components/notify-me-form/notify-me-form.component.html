@@ -1,0 +1,26 @@
+<section class="notify" [attr.aria-labelledby]="fieldId() + '-title'">
+  <h2 class="notify__title" [id]="fieldId() + '-title'">Size {{ sizeName() }} is sold out</h2>
+  <form method="post" action="/notify-me" (submit)="submit($event, field)">
+    <input type="hidden" name="variantId" [value]="variantId()" />
+    <label class="rp-label" [for]="fieldId()">Email me when it is back</label>
+    <div class="rp-group">
+      <input
+        #field
+        class="rp-input"
+        type="email"
+        name="email"
+        required
+        maxlength="254"
+        autocomplete="email"
+        placeholder="Your email"
+        [id]="fieldId()"
+        [attr.aria-describedby]="fieldId() + '-help ' + fieldId() + '-status'"
+        [attr.aria-invalid]="invalid() ? 'true' : null"
+        (input)="edited()"
+      />
+      <button rpBtn="action" type="submit" [disabled]="sending()">Notify me</button>
+    </div>
+    <p class="rp-help" [id]="fieldId() + '-help'">One email when this size is back. We use your address for nothing else.</p>
+    <p class="rp-help" [id]="fieldId() + '-status'" role="status" aria-live="polite">{{ message() }}</p>
+  </form>
+</section>
