@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Customers.Domain.Accounts;
 using Romp.Modules.Customers.Domain.Addresses;
+using Romp.Modules.Customers.Domain.Wishlist;
 
 namespace Romp.Modules.Customers.Application.Abstractions;
 
@@ -13,6 +14,8 @@ public interface ICustomerDbContext
     DbSet<Customer> Customers { get; }
 
     DbSet<CustomerAddress> Addresses { get; }
+
+    DbSet<WishlistItem> Wishlist { get; }
 
     DbSet<CustomerSession> Sessions { get; }
 

@@ -11,7 +11,7 @@ Customer accounts for the storefront (Sprint 10, "Sell: customers"): registratio
 | [accounts](accounts/spec.md) | Register, sign in, sign out, password reset, failed-login protection | FR-38, FR-39, SEC-02, SEC-03, SEC-04, NFR-15, SEC-25 | Draft |
 | [addresses](addresses/spec.md) | Saved address book with a default, selectable at checkout later | FR-40, SEC-05 | Draft |
 | [newsletter](newsletter/spec.md) | Subscribe and unsubscribe, honoured on every future send | FR-41 | Draft |
-| [wishlist](wishlist/spec.md) | Save products, guest prompt with the item kept, sale and stock flags | FR-17, SEC-05 | Draft |
+| [wishlist](wishlist/spec.md) | Save products, guest prompt with the item kept, sale and stock flags | FR-17, SEC-05 | Built |
 | [child-profiles](child-profiles/spec.md) | Create, edit, delete profiles; owner-only; export and erase | FR-18, FR-21, NFR-27, NFR-29, SEC-05, SEC-25 | **Parked** (owner, 2026-10-25): not in Sprint 10, not built until the owner says |
 | [notify-me](notify-me/spec.md) | Back-in-stock capture on sold-out variants and the restock email | FR-11 | Draft |
 

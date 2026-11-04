@@ -4,6 +4,7 @@ using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Domain.Accounts;
 using Romp.Modules.Customers.Domain.Addresses;
+using Romp.Modules.Customers.Domain.Wishlist;
 
 namespace Romp.Modules.Customers.Infrastructure.Persistence;
 
@@ -16,6 +17,8 @@ public sealed class CustDbContext(DbContextOptions<CustDbContext> options) : DbC
     public DbSet<Customer> Customers => Set<Customer>();
 
     public DbSet<CustomerAddress> Addresses => Set<CustomerAddress>();
+
+    public DbSet<WishlistItem> Wishlist => Set<WishlistItem>();
 
     public DbSet<CustomerSession> Sessions => Set<CustomerSession>();
 

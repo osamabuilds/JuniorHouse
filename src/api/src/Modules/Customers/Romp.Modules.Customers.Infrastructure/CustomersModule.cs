@@ -19,6 +19,7 @@ using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Application.Accounts;
 using Romp.Modules.Customers.Infrastructure.Accounts;
 using Romp.Modules.Customers.Infrastructure.Addresses;
+using Romp.Modules.Customers.Infrastructure.Wishlist;
 using Romp.Modules.Customers.Infrastructure.Persistence;
 
 namespace Romp.Modules.Customers.Infrastructure;
@@ -45,7 +46,7 @@ public sealed class CustomersModule : IModule
 
         services.AddScoped<ICustomerDbContext>(sp => sp.GetRequiredService<CustDbContext>());
         services.AddOptions<Application.CustomersOptions>().Bind(configuration.GetSection(Application.CustomersOptions.SectionName))
-            .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50 and Customers:PublicBaseUrl must be an http or https address.").ValidateOnStart();
+            .Validate(Application.CustomersOptions.IsValid, "Customers:MaxAddresses must be between 1 and 50, Customers:MaxWishlistItems between 1 and 1000, and Customers:PublicBaseUrl must be an http or https address.").ValidateOnStart();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentCustomer, HttpContextCurrentCustomer>();
         services.AddScoped<Contracts.ICurrentCustomerAccessor>(sp => sp.GetRequiredService<ICurrentCustomer>());
@@ -96,6 +97,7 @@ public sealed class CustomersModule : IModule
         endpoints.MapCustomerAuthEndpoints();
         endpoints.MapAccountEndpoints();
         endpoints.MapAddressEndpoints();
+        endpoints.MapWishlistEndpoints();
     }
 
     /// <summary>

@@ -68,6 +68,7 @@ public sealed class StorefrontModule : IModule
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
         services.AddScoped<Contracts.IStorefrontImageQueries, Application.Listings.StorefrontImageQueries>();
+        services.AddScoped<Contracts.IStorefrontCatalogQueries, Application.Listings.StorefrontCatalogQueries>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(StorefrontTransactionBehavior<,>));

@@ -76,6 +76,8 @@ export interface Breadcrumb {
 }
 
 export interface ProductPage {
+  /** The Catalog product id, for the wishlist heart. */
+  readonly productId: number;
   readonly path: string;
   readonly name: string;
   readonly description: string;

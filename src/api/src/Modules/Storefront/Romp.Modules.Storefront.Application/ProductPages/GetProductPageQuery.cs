@@ -102,6 +102,7 @@ public sealed class GetProductPageQueryHandler(
             .Select(c => new BreadcrumbDto(c.Label, c.Path)).ToList();
 
         var page = new ProductPageDto(
+            product.Id,
             path,
             product.Name,
             product.Description,

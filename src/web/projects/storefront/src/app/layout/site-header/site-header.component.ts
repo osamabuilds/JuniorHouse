@@ -6,6 +6,7 @@ import { filter } from 'rxjs';
 import { CustomerAuthActions, selectAuthSession, selectAuthStatus } from '../../core/customer-auth';
 import { CartActions } from '../../features/cart/carts/store/cart.actions';
 import { selectCartItemCount } from '../../features/cart/carts/store/cart.selectors';
+import { selectWishlistCount } from '../../features/customers/wishlist/store/wishlist.selectors';
 import { selectMenuEntries } from '../../features/storefront/navigation';
 import { selectBrand } from '../../features/storefront/site-settings';
 import { NavItem } from '../../shared/models/site-settings.model';
@@ -35,6 +36,7 @@ export class SiteHeaderComponent {
   protected readonly auth = this.store.selectSignal(selectAuthStatus);
   private readonly session = this.store.selectSignal(selectAuthSession);
   protected readonly bagCount = this.store.selectSignal(selectCartItemCount);
+  protected readonly wishlistCount = this.store.selectSignal(selectWishlistCount);
   private readonly router = inject(Router);
 
   /** The key of the entry whose panel is open, or null. */

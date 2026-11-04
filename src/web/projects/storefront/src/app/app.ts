@@ -8,6 +8,7 @@ import { NavigationActions } from './features/storefront/navigation';
 import { SiteSettingsActions } from './features/storefront/site-settings';
 import { AnnouncementBarComponent } from './layout/announcement-bar/announcement-bar.component';
 import { VerifyEmailBarComponent } from './layout/verify-email-bar/verify-email-bar.component';
+import { WishlistGuestPromptComponent } from './features/customers/wishlist/components/guest-prompt/guest-prompt.component';
 import { MiniCartContainer } from './features/cart/carts/containers/mini-cart/mini-cart.container';
 import { MobileMenuComponent } from './layout/mobile-menu/mobile-menu.component';
 import { SearchOverlayComponent } from './layout/search-overlay/search-overlay.component';
@@ -15,7 +16,7 @@ import { SiteFooterComponent } from './layout/site-footer/site-footer.component'
 import { SiteHeaderComponent } from './layout/site-header/site-header.component';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, MiniCartContainer, AnnouncementBarComponent, VerifyEmailBarComponent, SiteHeaderComponent, SiteFooterComponent, MobileMenuComponent, SearchOverlayComponent],
+  imports: [RouterOutlet, RouterLink, MiniCartContainer, AnnouncementBarComponent, VerifyEmailBarComponent, SiteHeaderComponent, SiteFooterComponent, MobileMenuComponent, SearchOverlayComponent, WishlistGuestPromptComponent],
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'rp-root' },

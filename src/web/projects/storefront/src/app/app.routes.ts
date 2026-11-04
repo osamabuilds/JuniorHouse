@@ -71,6 +71,10 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'wishlist',
+    loadComponent: () => import('./features/customers/wishlist/containers/wishlist-page/wishlist-page.container').then((m) => m.WishlistPageContainer),
+  },
   { path: ':gender/new-in', data: { kind: 'new-in' }, loadComponent: listing },
   { path: ':gender/sale', data: { kind: 'sale' }, loadComponent: listing },
   { path: ':gender/:category', data: { kind: 'category' }, loadComponent: listing },

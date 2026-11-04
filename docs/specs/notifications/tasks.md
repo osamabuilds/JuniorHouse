@@ -45,7 +45,7 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## Optional last task (only if everything above is green)
 
-- [ ] **X1** Move Customers' restock and newsletter-welcome emails onto this subsystem (they keep raising the same events). *Proof:* existing Customers email tests stay green against the new handler.
+- [~] **X1** (2026-11-04: not applicable yet. Customers has no Newsletter or NotifyMe code, so there are no restock or newsletter-welcome emails to move. Customers' only emails are the verification and password-reset links, sent through `IEmailSender` by `EmailCustomerMailer`. Revisit when those two Customers features are built: raise events and add templates here from the start.) Move Customers' restock and newsletter-welcome emails onto this subsystem (they keep raising the same events). *Proof:* existing Customers email tests stay green against the new handler.
 
 ## Close the loop
 

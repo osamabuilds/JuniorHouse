@@ -1,6 +1,6 @@
 # Wishlist
 
-- **Status:** Draft (2026-10-25)
+- **Status:** Built (2026-11-04), see "As built"
 - **Jira:** SCRUM-37 (FR-17) under epic SCRUM-6; SCRUM-125 (SEC-05)
 - **BRD sections:** §5.3, §6.2 (TC-PDP-07), §6.4 (TC-ACC-15, 16), FEAT-ACC-08
 - **Requirement IDs:** FR-17, SEC-05, FR-10 (display only)
@@ -43,3 +43,16 @@ Shareable registry (P2, FEAT-ACC-11); wishlist per child; price-drop emails; gue
 - [ ] **Q-WSL-1 Move to bag.** Cart arrives in S11. Default: show the action as a link to the product page this sprint and wire it to the cart in S11.
 - [ ] **Q-WSL-2 What is saved.** A product, or a product plus the chosen colour/size? The BRD says "products". Default: the product (colour optional) and the price at save time, for the price-change flag.
 - [ ] **Q-WSL-3 Edge cache.** Default: the heart state is fetched client-side after load for signed-in customers so cached HTML stays shared.
+
+## As built (2026-11-04)
+
+What was built matches the criteria above, with these differences from the plan and the draft:
+
+- **Query shapes.** `GET /api/customers/me/wishlist` returns for each item the product name, path, current price, struck-through price, the price saved, availability, picture URLs (one bulk call to the storefront image contract) and `notes`: any of `PriceDropped`, `OnSale`, `SoldOut`, `Unavailable`. A product that is no longer published keeps its row with `Unavailable` and no name or price, so it can be removed (WSL-5). `GET .../ids` returns the product ids (at most the list limit) for the hearts.
+- **Storefront contract.** `IStorefrontCatalogQueries.GetProductSummariesAsync` returns sold-out products (with `IsAvailable` false) and leaves out only products that are not published. Listing tiles and the product page now carry `productId` so the heart knows which product it saves.
+- **Add is not `ON CONFLICT`.** The add handler takes the customer's row lock, then checks and adds; the unique index `UQ_CUST_WSHL_CUST_ID_PRDT_ID` is the backstop. Five simultaneous adds leave one row (`WishlistCommandTests`). Add and remove answer 204; removing a product that is not on the caller's list is 404 (WSL-7).
+- **Guest merge.** `POST .../merge` takes up to 50 ids, skips unknown, unpublished and already saved ones, never goes past the list limit, and answers `{ added }`. The storefront runs it once, after the session is known to be signed in, and clears the browser copy only when it succeeded (WSL-3). There is still no server-side sign-in hook (sign-in lives in the storefront), so the plan's `WishlistSignedInHook` was not built.
+- **Signed-out wishlist page.** A guest sees the products their browser remembers: the page asks the public `GET /api/storefront/products/summaries?ids=` (up to 50 ids, public facts only, cached 60 seconds) and shows the same cards as a signed-in customer, minus the price-drop note (a guest has no saved price). A remembered product that is no longer published shows as unavailable with a Remove button. A guest's heart takes a product off without a prompt.
+- **Q-WSL-1** Move to bag is a **Choose size** link to the product page. **Q-WSL-2** the product and the price at save time are stored. **Q-WSL-3** the hearts are drawn off on the server and filled in after the ids are read in the browser, so cached pages stay shared.
+- **Header** has a heart link to `/wishlist` on every screen size, with a count badge like the bag's, for guests (the browser's list) and signed-in customers (the account list). The count is in its accessible name.
+- **Not done:** `robots.txt` does not exist yet (the seo feature is deferred), so `/wishlist` is blocked only by `noindex` and `Cache-Control: private, no-store`.

@@ -23,6 +23,7 @@
     @if (onSale()) {
       <span class="rp-tag rp-tag--sale">−{{ tile().savingPercent }}%</span>
     }
+    <button rpWishlistHeart [productId]="tile().productId" [productName]="tile().name"></button>
   </div>
   <div class="rp-card__body">
     <h3 class="rp-card__name"><a [routerLink]="tile().path">{{ tile().name }}</a></h3>

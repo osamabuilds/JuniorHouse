@@ -1,9 +1,12 @@
 import { TestBed } from '@angular/core/testing';
+import { provideState, provideStore } from '@ngrx/store';
+import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
 import { provideRouter } from '@angular/router';
 import { ListingTile } from '../../models/listing.model';
 import { ProductTileComponent } from './product-tile.component';
 
 const tile = (extra: Partial<ListingTile> = {}): ListingTile => ({
+  productId: 1,
   path: '/girls/dresses/floral',
   name: 'Floral dress',
   price: 800,
@@ -18,7 +21,7 @@ const tile = (extra: Partial<ListingTile> = {}): ListingTile => ({
 });
 
 function render(t: ListingTile): HTMLElement {
-  TestBed.configureTestingModule({ providers: [provideRouter([])] });
+  TestBed.configureTestingModule({ providers: [provideRouter([]), provideStore({}), provideState(wishlistFeature)] });
   const fixture = TestBed.createComponent(ProductTileComponent);
   fixture.componentRef.setInput('tile', t);
   fixture.detectChanges();
@@ -78,7 +81,8 @@ describe('ProductTileComponent', () => {
   it('PR-9 the tile has no add-to-bag control until the cart exists', () => {
     const el = render(tile({ sizes: [{ code: '3-4y', name: '3-4Y', soldOut: false }] }));
 
-    expect(el.querySelector('button')).toBeNull();
+    expect(el.querySelector('button:not([rpWishlistHeart])')).toBeNull();
+    expect(el.querySelectorAll('button[aria-pressed]')).toHaveLength(1);
     expect(el.querySelectorAll('a')).toHaveLength(1);
   });
 });

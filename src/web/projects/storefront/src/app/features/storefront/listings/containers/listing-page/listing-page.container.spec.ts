@@ -1,7 +1,8 @@
 import { RESPONSE_INIT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { provideStore } from '@ngrx/store';
+import { provideState, provideStore } from '@ngrx/store';
+import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
 import { of } from 'rxjs';
 import { provideSiteSettings } from '../../../site-settings';
 import { ListingResult, ListingTile } from '../../models/listing.model';
@@ -10,6 +11,7 @@ import { provideListings } from '../../listings.providers';
 import { ListingPageContainer } from './listing-page.container';
 
 const tile = (n: number, extra: Partial<ListingTile> = {}): ListingTile => ({
+  productId: n,
   path: `/girls/dresses/dress-${n}`,
   name: `Dress ${n}`,
   price: 800,
@@ -40,6 +42,7 @@ function render(result: ListingResult, query: Record<string, string | string[]> 
     providers: [
       provideRouter([]),
       provideStore({}),
+      provideState(wishlistFeature),
       provideSiteSettings(),
       provideListings(),
       { provide: ListingsApi, useValue: { get } },

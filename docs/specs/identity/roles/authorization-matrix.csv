@@ -87,6 +87,11 @@ DELETE,/api/customers/me/addresses/{id:long},customer
 GET,/api/customers/me/addresses/{id:long},customer
 PUT,/api/customers/me/addresses/{id:long},customer
 POST,/api/customers/me/addresses/{id:long}/default,customer
+GET,/api/customers/me/wishlist/,customer
+GET,/api/customers/me/wishlist/ids,customer
+POST,/api/customers/me/wishlist/merge,customer
+DELETE,/api/customers/me/wishlist/{productId:long},customer
+PUT,/api/customers/me/wishlist/{productId:long},customer
 GET,/api/geography/provinces,anonymous
 GET,/api/geography/provinces/{id:int}/cities,anonymous
 GET,/api/identity/audit/,audit.read
@@ -245,6 +250,7 @@ GET,/api/storefront/listings/options,anonymous
 GET,/api/storefront/menu,anonymous
 GET,/api/storefront/pages/{slug},anonymous
 GET,/api/storefront/products/by-path,anonymous
+GET,/api/storefront/products/summaries,anonymous
 GET,/api/storefront/search/,anonymous
 GET,/api/storefront/search/sku,anonymous
 GET,/api/storefront/search/suggest,anonymous

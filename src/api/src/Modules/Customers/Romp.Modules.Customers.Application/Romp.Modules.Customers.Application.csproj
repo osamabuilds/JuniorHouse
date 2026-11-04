@@ -9,6 +9,7 @@
     <ProjectReference Include="..\Romp.Modules.Customers.Domain\Romp.Modules.Customers.Domain.csproj" />
     <ProjectReference Include="..\Romp.Modules.Customers.Contracts\Romp.Modules.Customers.Contracts.csproj" />
     <ProjectReference Include="..\..\Reference\Romp.Modules.Reference.Contracts\Romp.Modules.Reference.Contracts.csproj" />
+    <ProjectReference Include="..\..\Storefront\Romp.Modules.Storefront.Contracts\Romp.Modules.Storefront.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />
   </ItemGroup>

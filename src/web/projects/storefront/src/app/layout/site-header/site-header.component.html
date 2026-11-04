@@ -44,6 +44,12 @@
           }
         }
       </nav>
+      <a routerLink="/wishlist" class="rp-icon-btn" [attr.aria-label]="'Wishlist, ' + wishlistCount() + (wishlistCount() === 1 ? ' product saved' : ' products saved')">
+        <rp-icon name="heart" />
+        @if (wishlistCount() > 0) {
+          <span class="rp-count" aria-hidden="true">{{ wishlistCount() }}</span>
+        }
+      </a>
       <button type="button" class="rp-icon-btn rp-bag-btn" [attr.aria-label]="'Bag, ' + bagCount() + (bagCount() === 1 ? ' item' : ' items')" (click)="openBag()">
         <rp-icon name="bag" />
         @if (bagCount() > 0) {

@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { WishlistHeartComponent } from '../../../../customers/wishlist/components/wishlist-heart/wishlist-heart.component';
 import { ListingTile } from '../../models/listing.model';
 
 const SIZES = '(min-width: 64rem) 25vw, (min-width: 40rem) 33vw, 50vw';
@@ -11,7 +12,7 @@ const SIZES = '(min-width: 64rem) 25vw, (min-width: 40rem) 33vw, 50vw';
  */
 @Component({
   selector: 'rp-product-tile',
-  imports: [DecimalPipe, RouterLink],
+  imports: [DecimalPipe, RouterLink, WishlistHeartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-tile.component.html',
 })

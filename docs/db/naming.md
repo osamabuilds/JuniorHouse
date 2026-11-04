@@ -408,3 +408,11 @@ Reused as they are: `CHNL`, `ATMP`, `LEAS` (lease), `NXT` (next), `MSG`, `ERR`, 
 | subject | SUBJ | | body | BODY |
 | HTML | HTML | | resent | RSND |
 | of (e.g. fallback of) | OF | | signature | SGNT |
+
+### Added with the wishlist (Customers)
+
+Reused as they are: `CUST`, `PRDT` (product), `PRIC`, `AMT`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| wishlist | WSHL | | saved | SAVD |
