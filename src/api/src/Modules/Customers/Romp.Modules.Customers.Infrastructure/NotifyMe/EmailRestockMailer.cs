@@ -8,7 +8,8 @@ namespace Romp.Modules.Customers.Infrastructure.NotifyMe;
 
 /// <summary>
 /// Renders and sends the restock email through the shared <see cref="IEmailSender"/> (ADR 0022). It is a one-off answer to the shopper's
-/// own request, not marketing: no promotions, no unsubscribe headers, and it says it is the only email about the request. The link points
+/// own request, not marketing: no promotions, no unsubscribe headers, and it says it is the only email about the request. When the address is
+/// also a newsletter subscriber, a footer link unsubscribes it from the newsletter (signed token, never the address). The link points
 /// at the storefront (<c>Customers:PublicBaseUrl</c>), never at a host taken from a request. Every interpolated value is HTML-encoded and
 /// the subject has line breaks removed; a plain-text twin is always sent.
 /// </summary>
@@ -31,6 +32,15 @@ public sealed class EmailRestockMailer(IEmailSender sender, IOptions<CustomersOp
             + $"<p><strong>{WebUtility.HtmlEncode(detail)}</strong></p>"
             + $"<p><a href=\"{WebUtility.HtmlEncode(link)}\">View it in the shop</a></p>"
             + $"<p>{WebUtility.HtmlEncode(Outro)}</p>";
+
+        // Only a current newsletter subscriber gets the link; it unsubscribes from the newsletter, not from this request.
+        if (notice.UnsubscribeToken is { Length: > 0 } token)
+        {
+            const string Footer = "You also receive the Romp newsletter. You can unsubscribe from it at any time:";
+            var page = $"{baseUrl}/newsletter/unsubscribe?token={Uri.EscapeDataString(token)}";
+            text += $"\n{Footer}\n{page}\n";
+            html += $"<p>{WebUtility.HtmlEncode(Footer)} <a href=\"{WebUtility.HtmlEncode(page)}\">Unsubscribe</a></p>";
+        }
 
         return sender.SendAsync(new EmailMessage(toEmail, subject, text, html), cancellationToken);
     }
