@@ -43,12 +43,16 @@ app.get('/api/storefront/{*splat}', async (req, res) => {
  */
 const addressBook = /^\/customer-api\/addresses(\/[0-9]+(\/default)?)?$/;
 
+/** The wishlist (WSL-*): the list, the ids for the heart state, add and remove by product id, and the guest merge. */
+const wishlist = /^\/customer-api\/wishlist(\/(ids|merge|[0-9]+))?$/;
+
 app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res, next) => {
   if (req.path === '/customer-api/config' || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/') || req.path === '/customer-api/orders' || req.path.startsWith('/customer-api/orders/')) {
     next(); // the sign-in routes below
     return;
   }
-  if (!addressBook.test(req.path) || !['GET', 'POST', 'PUT', 'DELETE'].includes(req.method)) {
+  const isWishlist = wishlist.test(req.path);
+  if ((!addressBook.test(req.path) && !isWishlist) || !['GET', 'POST', 'PUT', 'DELETE'].includes(req.method)) {
     res.status(404).end();
     return;
   }
@@ -58,7 +62,10 @@ app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, r
     if (cookie) headers['cookie'] = cookie;
     const sendsJson = (req.method === 'POST' || req.method === 'PUT') && req.body && Object.keys(req.body).length > 0;
     if (sendsJson) headers['content-type'] = 'application/json';
-    const target = new URL(req.path.replace('/customer-api/addresses', '/api/customers/me/addresses'), apiBaseUrl);
+    const target = new URL(
+      isWishlist ? req.path.replace('/customer-api/wishlist', '/api/customers/me/wishlist') : req.path.replace('/customer-api/addresses', '/api/customers/me/addresses'),
+      apiBaseUrl,
+    );
     target.search = new URL(req.originalUrl, apiBaseUrl).search;
     const upstream = await fetch(target, {
       method: req.method,

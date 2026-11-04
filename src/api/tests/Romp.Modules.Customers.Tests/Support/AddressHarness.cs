@@ -10,6 +10,7 @@ using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Domain.Accounts;
 using Romp.Modules.Customers.Infrastructure.Persistence;
 using Romp.Modules.Reference.Contracts;
+using Romp.Modules.Storefront.Contracts;
 
 namespace Romp.Modules.Customers.Tests.Support;
 
@@ -22,7 +23,7 @@ internal sealed class AddressHarness : IDisposable
 {
     private readonly ServiceProvider _services;
 
-    public AddressHarness(CustomersPostgres postgres, int maxAddresses = 10)
+    public AddressHarness(CustomersPostgres postgres, int maxAddresses = 10, int maxWishlistItems = 200)
     {
         Geography = new FakeGeography();
         var services = new ServiceCollection();
@@ -37,7 +38,9 @@ internal sealed class AddressHarness : IDisposable
         services.AddScoped<TestCurrentCustomer>();
         services.AddScoped<ICurrentCustomer>(sp => sp.GetRequiredService<TestCurrentCustomer>());
         services.AddSingleton<IGeographyQueries>(Geography);
-        services.AddSingleton(Options.Create(new CustomersOptions { MaxAddresses = maxAddresses }));
+        Catalog = new FakeCatalog();
+        services.AddSingleton<IStorefrontCatalogQueries>(Catalog);
+        services.AddSingleton(Options.Create(new CustomersOptions { MaxAddresses = maxAddresses, MaxWishlistItems = maxWishlistItems }));
 
         var application = typeof(CustomersOptions).Assembly;
         services.AddValidatorsFromAssembly(application);
@@ -51,6 +54,8 @@ internal sealed class AddressHarness : IDisposable
     }
 
     public FakeGeography Geography { get; }
+
+    public FakeCatalog Catalog { get; }
 
     public async Task<long> NewCustomerAsync()
     {
@@ -83,6 +88,15 @@ internal sealed class AddressHarness : IDisposable
         var db = scope.ServiceProvider.GetRequiredService<CustDbContext>();
         var rows = await db.Addresses.AsNoTracking().Where(a => a.CustomerId == customerId).OrderBy(a => a.Id).ToListAsync();
         return rows.Select(a => (a.Id, a.IsDefault, a.RecipientName)).ToList();
+    }
+
+    /// <summary>Reads the stored wishlist rows straight from the database, bypassing every handler.</summary>
+    public async Task<List<(long ProductId, decimal SavedPrice)>> StoredWishlistAsync(long customerId)
+    {
+        await using var scope = _services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<CustDbContext>();
+        var rows = await db.Wishlist.AsNoTracking().Where(w => w.CustomerId == customerId).OrderBy(w => w.Id).ToListAsync();
+        return rows.Select(w => (w.ProductId, w.SavedPrice)).ToList();
     }
 
     public void Dispose() => _services.Dispose();
@@ -133,5 +147,24 @@ internal sealed class FakeGeography : IGeographyQueries
     {
         ByIdCalls++;
         return Task.FromResult<IReadOnlyDictionary<short, ProvinceInfo>>(Provinces.Where(p => ids.Contains(p.Id)).ToDictionary(p => p.Id));
+    }
+}
+
+/// <summary>A settable storefront catalogue that counts calls, so a test can prove a page is one bulk call and set prices and availability.</summary>
+internal sealed class FakeCatalog : IStorefrontCatalogQueries
+{
+    private readonly Dictionary<long, ProductSummary> _products = [];
+
+    public int Calls { get; private set; }
+
+    public void Publish(long id, decimal price, decimal? was = null, bool available = true) =>
+        _products[id] = new ProductSummary(id, $"Product {id}", $"/girls/dresses/product-{id}", price, was, available, id * 10);
+
+    public void Unpublish(long id) => _products.Remove(id);
+
+    public Task<IReadOnlyList<ProductSummary>> GetProductSummariesAsync(IReadOnlyCollection<long> productIds, CancellationToken cancellationToken)
+    {
+        Calls++;
+        return Task.FromResult<IReadOnlyList<ProductSummary>>(productIds.Where(_products.ContainsKey).Select(id => _products[id]).ToList());
     }
 }

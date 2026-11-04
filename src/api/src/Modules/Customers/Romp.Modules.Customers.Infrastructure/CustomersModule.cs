@@ -19,6 +19,7 @@ using Romp.Modules.Customers.Application.Abstractions;
 using Romp.Modules.Customers.Application.Accounts;
 using Romp.Modules.Customers.Infrastructure.Accounts;
 using Romp.Modules.Customers.Infrastructure.Addresses;
+using Romp.Modules.Customers.Infrastructure.Wishlist;
 using Romp.Modules.Customers.Infrastructure.Persistence;
 
 namespace Romp.Modules.Customers.Infrastructure;
@@ -96,6 +97,7 @@ public sealed class CustomersModule : IModule
         endpoints.MapCustomerAuthEndpoints();
         endpoints.MapAccountEndpoints();
         endpoints.MapAddressEndpoints();
+        endpoints.MapWishlistEndpoints();
     }
 
     /// <summary>
