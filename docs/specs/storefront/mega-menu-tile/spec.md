@@ -1,6 +1,6 @@
 # Mega menu image tile
 
-- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
+- **Status:** Implemented (2026-11-05)
 - **Jira:** none yet
 - **BRD sections:** FR-01 (navigation); design source `docs/design-system/components/MegaMenu/README.md`
 - **Requirement IDs:** FR-01, NFR-01, NFR-17, NFR-19, SEO-07
@@ -39,3 +39,9 @@ A separate admin editor for tile images and text (see Q-MGT-1), tiles for collec
 - [x] **Q-MGT-1** Where do the tile picture and line come from? Options: derive them (the newest listable product's first picture for that audience, eyebrow "New in", line "Just arrived") or add an admin field per audience. Recommendation: derive them now, with no admin change; if the business wants chosen pictures and copy, add the admin field in a later spec. **Resolved: recommendation accepted.**
 - [x] **Q-MGT-2** The design also lists a column "The edit". The live menu shows collections for it. Recommendation: unchanged (collections are "the edit"). **Resolved: recommendation accepted.**
 - [x] **Q-MGT-3** Colour contrast: the design's tile line is `display-xs` serif; the live site uses Manrope only. Recommendation: use the live heading style. **Resolved: recommendation accepted.**
+
+## As built
+
+**API:** `MenuAudienceDto` gained an optional `Tile` (`MenuTileDto`: eyebrow "New in", line "Just arrived", the New in path of the audience and its newest listable product's main picture). `GetMenuQueryHandler` adds three queries to the menu (one grouped query for the newest listable product of each audience, then the two picture queries for all of them), so the menu is five queries however many audiences there are (the existing constant-query test now expects 5). An audience with no listable product, or none with a processed picture, has no tile. Every audience entry in the menu already has a New in entry, so the tile always links to `/<audience>/new-in`; that page handles its own empty state. 6 new server tests (Docker).
+
+**Web:** `NavTile` on `NavItem` (set by `toNavItems` from the audience), rendered by `MegaMenuComponent` as a fourth-or-fifth column: one link named "Girls, new in", a lazy 5:4 picture with alt, size and srcset, a scrim and the text. The panel's columns now need 11rem each (was 14rem) so the four link columns and the tile fit on one row at 1280 px. The mobile menu uses the nav tree and never shows the tile (tested). The picture is not requested until the panel opens (browser test on a page with no product pictures).

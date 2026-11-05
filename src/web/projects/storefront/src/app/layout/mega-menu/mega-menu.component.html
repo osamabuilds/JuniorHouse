@@ -17,5 +17,22 @@
         <rp-nav-tree [items]="[member]" mode="list" (navigate)="navigate.emit()" />
       </div>
     }
+    @if (entry().tile; as tile) {
+      <div class="rp-mega__tilecol">
+        <a class="rp-mega__tile" [routerLink]="tile.path" [attr.aria-label]="entry().label + ', ' + tile.eyebrow.toLowerCase()" (click)="navigate.emit()">
+          <picture>
+            <source type="image/webp" [attr.srcset]="tileWebp()" sizes="20rem" />
+            @if (tileJpeg()) {
+              <source type="image/jpeg" [attr.srcset]="tileJpeg()" sizes="20rem" />
+            }
+            <img [src]="tileFallback()" [attr.width]="tile.image.width" [attr.height]="tile.image.height" [alt]="tile.image.altText" loading="lazy" decoding="async" />
+          </picture>
+          <span class="rp-mega__tilecap">
+            <span class="rp-eyebrow">{{ tile.eyebrow }}</span>
+            <span class="rp-mega__tileline">{{ tile.line }}</span>
+          </span>
+        </a>
+      </div>
+    }
   </div>
 </div>

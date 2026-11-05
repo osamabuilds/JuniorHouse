@@ -148,7 +148,8 @@ public sealed class GetMenuQueryTests(StorefrontPostgres postgres)
         await handler.Handle(new GetMenuQuery(), default);
 
         Assert.Equal(forOne, counter.Count);
-        Assert.Equal(2, counter.Count);
+        // Two for the entries, one for the newest product of each audience, two for their pictures: five however many audiences (MGT-1).
+        Assert.Equal(5, counter.Count);
     }
 
     [Fact]

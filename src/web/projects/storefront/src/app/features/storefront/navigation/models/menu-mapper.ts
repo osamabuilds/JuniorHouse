@@ -43,7 +43,7 @@ export function toNavItems(menu: Menu | null): readonly NavItem[] {
       column(`${key}-collections`, 'Collections', 2, a.entries.filter((e) => e.kind === 'collection')),
       column(`${key}-ages`, 'Shop by age', 3, a.entries.filter((e) => e.kind === 'age')),
     ].filter((c): c is NavItem => c !== null);
-    items.push({ key, label: a.name, kind: 'group', target: { kind: 'path', path: a.path }, enabled: true, sort: i, children: columns });
+    items.push({ key, label: a.name, kind: 'group', target: { kind: 'path', path: a.path }, enabled: true, sort: i, children: columns, ...(a.tile ? { tile: a.tile } : {}) });
   });
 
   const shared = menu.audiences.length;
