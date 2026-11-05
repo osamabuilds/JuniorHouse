@@ -333,6 +333,8 @@ const ordersMethods: Readonly<Record<string, readonly string[]>> = {
   '/customer-api/orders/cod/status': ['GET'],
   '/customer-api/orders/cod/confirm': ['POST'],
   '/customer-api/orders/cod/cancel': ['POST'],
+  '/customer-api/orders/lookup': ['POST'],
+  '/customer-api/orders/lookup/link': ['GET'],
   '/customer-api/orders': ['POST'],
 };
 

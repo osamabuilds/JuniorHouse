@@ -71,7 +71,7 @@ export const launchSettings: SiteSettings = {
     { title: 'Shop', sort: 1, links: [path('New in', '/new-in'), path('Girls', '/girls'), path('Boys', '/boys'), path('Collections', '/collections'), path('Sale', '/sale')] },
     {
       title: 'Help', sort: 2,
-      links: [page('Delivery', 'delivery'), page('Exchanges', 'exchanges'), page('Size guide', 'size-guide'), page('Contact', 'contact'),
+      links: [page('Delivery', 'delivery'), page('Exchanges', 'exchanges'), page('Size guide', 'size-guide'), page('Contact', 'contact'), path('Track order', '/track-order'),
         { label: 'WhatsApp', target: { kind: 'external', url: 'https://wa.me/923315613217' }, enabled: true }],
     },
     { title: 'Romp', sort: 3, links: [page('Our story', 'our-story'), page('Made in Pakistan', 'made-in-pakistan'), page('Privacy', 'privacy'), page('Terms', 'terms')] },

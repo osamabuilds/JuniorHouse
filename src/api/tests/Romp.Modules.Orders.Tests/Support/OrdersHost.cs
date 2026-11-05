@@ -151,6 +151,10 @@ internal sealed class OrdersHost : IDisposable
         Options = new OrdersOptions();
         services.AddSingleton<IOptions<OrdersOptions>>(Microsoft.Extensions.Options.Options.Create(Options));
         services.AddSingleton<ICodLinks>(new FakeCodLinks());
+        Captcha = new FakeCaptcha();
+        services.AddSingleton<Romp.BuildingBlocks.Application.Captcha.ICaptchaVerifier>(Captcha);
+        services.AddSingleton<Romp.Modules.Orders.Application.OrderLookup.ILookupAddressHasher>(new FakeAddressHasher());
+        services.AddSingleton<Romp.Modules.Orders.Application.OrderLookup.ILookupLinks>(new FakeLookupLinks());
         services.AddSingleton<ICheckoutPricing>(Pricing);
         services.AddSingleton<IDiscountRedemptions>(Redemptions);
         services.AddSingleton<IStockReservations>(Reservations);
@@ -179,6 +183,8 @@ internal sealed class OrdersHost : IDisposable
 
     public OrdersOptions Options { get; }
 
+    public FakeCaptcha Captcha { get; }
+
     public FakePricing Pricing { get; }
 
     public FakeRedemptions Redemptions { get; }
@@ -205,6 +211,33 @@ internal sealed class FixedTime(DateTimeOffset now) : TimeProvider
     public DateTimeOffset Now { get; set; } = now;
 
     public override DateTimeOffset GetUtcNow() => Now;
+}
+
+/// <summary>Passes exactly the token <see cref="PassToken"/>, and counts how often it was asked.</summary>
+internal sealed class FakeCaptcha : Romp.BuildingBlocks.Application.Captcha.ICaptchaVerifier
+{
+    public const string PassToken = "pass";
+
+    public int Asked { get; private set; }
+
+    public Task<bool> VerifyAsync(string? token, string? remoteIp, CancellationToken cancellationToken)
+    {
+        Asked++;
+        return Task.FromResult(token == PassToken);
+    }
+}
+
+/// <summary>The address, padded to the hash length, so a test can name its own callers.</summary>
+internal sealed class FakeAddressHasher : Romp.Modules.Orders.Application.OrderLookup.ILookupAddressHasher
+{
+    public string Hash(string? clientIp) => (clientIp ?? string.Empty).PadRight(Romp.Modules.Orders.Domain.Orders.LookupAttempt.AddressHashLength, 'x');
+}
+
+internal sealed class FakeLookupLinks : Romp.Modules.Orders.Application.OrderLookup.ILookupLinks
+{
+    public string Create(string orderNumber) => $"trk-{orderNumber}";
+
+    public string? TryRead(string? token) => token is not null && token.StartsWith("trk-", StringComparison.Ordinal) ? token[4..] : null;
 }
 
 /// <summary>Links made without a secret: a token is just the order number behind a prefix, so a test can build and break one.</summary>

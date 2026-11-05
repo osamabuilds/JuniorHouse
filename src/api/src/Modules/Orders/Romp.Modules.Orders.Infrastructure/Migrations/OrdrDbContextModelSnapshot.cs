@@ -556,6 +556,65 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.LookupAttempt", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AddressHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("ADDR_HASH");
+
+                    b.Property<DateTimeOffset>("AttemptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ATMP_DTE");
+
+                    b.Property<bool>("Failed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("FAIL_IND");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttemptedAt")
+                        .HasDatabaseName("IX_LOOK_ATMP_ATMP_DTE");
+
+                    b.HasIndex("AddressHash", "AttemptedAt")
+                        .HasDatabaseName("IX_LOOK_ATMP_ADDR_HASH_ATMP_DTE");
+
+                    b.ToTable("LOOK_ATMP", "ORDR");
+                });
+
             modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.Order", b =>
                 {
                     b.Property<long>("Id")

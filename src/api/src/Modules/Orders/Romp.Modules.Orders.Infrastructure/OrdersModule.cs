@@ -14,6 +14,7 @@ using Romp.Modules.Orders.Contracts;
 using Romp.Modules.Orders.Infrastructure.Checkout;
 using Romp.Modules.Orders.Infrastructure.OrderQueue;
 using Romp.Modules.Orders.Infrastructure.Orders;
+using Romp.Modules.Orders.Infrastructure.OrderLookup;
 using Romp.Modules.Orders.Infrastructure.Persistence;
 
 namespace Romp.Modules.Orders.Infrastructure;
@@ -40,7 +41,10 @@ public sealed class OrdersModule : IModule
         services.AddScoped<IOrdersDbContext>(sp => sp.GetRequiredService<OrdrDbContext>());
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IOrderNumberAllocator, OrderNumberAllocator>();
+        services.AddSingleton<OrdersLinkSigner>();
         services.AddScoped<Application.Orders.ICodLinks, CodLinks>();
+        services.AddScoped<Application.OrderLookup.ILookupLinks, OrderLookup.LookupLinks>();
+        services.AddScoped<Application.OrderLookup.ILookupAddressHasher, OrderLookup.LookupAddressHasher>();
         services.AddScoped<IOrderNotificationQueries, OrderNotificationQueries>();
         services.AddScoped<IOrderContactSummaries, OrderContactSummaries>();
         services.AddScoped<ICodCustomerResponses, CodCustomerResponses>();
@@ -64,5 +68,6 @@ public sealed class OrdersModule : IModule
     {
         endpoints.MapCheckoutEndpoints();
         endpoints.MapOrderQueueEndpoints();
+        endpoints.MapOrderLookupEndpoints();
     }
 }

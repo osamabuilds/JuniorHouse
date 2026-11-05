@@ -50,3 +50,21 @@ internal sealed class CodRiskConfiguration : IEntityTypeConfiguration<CodRisk>
         builder.HasAuditColumns();
     }
 }
+
+internal sealed class LookupAttemptConfiguration : IEntityTypeConfiguration<LookupAttempt>
+{
+    public void Configure(EntityTypeBuilder<LookupAttempt> builder)
+    {
+        builder.ToTable("LOOK_ATMP");
+        builder.HasKey(a => a.Id);
+        builder.Property(a => a.Id).HasColumnName("ID").ValueGeneratedOnAdd();
+        builder.Property(a => a.AddressHash).HasColumnName("ADDR_HASH").HasMaxLength(LookupAttempt.AddressHashLength).IsRequired();
+        builder.Property(a => a.Failed).HasColumnName("FAIL_IND").IsRequired();
+        builder.Property(a => a.AttemptedAt).HasColumnName("ATMP_DTE").IsRequired();
+
+        // The throttle reads one address's recent rows, newest first; the daily purge reads by time.
+        builder.HasIndex(a => new { a.AddressHash, a.AttemptedAt }).HasDatabaseName("IX_LOOK_ATMP_ADDR_HASH_ATMP_DTE");
+        builder.HasIndex(a => a.AttemptedAt).HasDatabaseName("IX_LOOK_ATMP_ATMP_DTE");
+        builder.HasAuditColumns();
+    }
+}

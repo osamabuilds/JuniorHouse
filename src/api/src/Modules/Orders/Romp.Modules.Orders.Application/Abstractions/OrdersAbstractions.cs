@@ -17,6 +17,8 @@ public interface IOrdersDbContext
 
     DbSet<CodRisk> CodRisks { get; }
 
+    DbSet<LookupAttempt> LookupAttempts { get; }
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
 

@@ -384,6 +384,14 @@
             "enabled": true
           },
           {
+            "label": "Track order",
+            "target": {
+              "kind": "path",
+              "path": "/track-order"
+            },
+            "enabled": true
+          },
+          {
             "label": "WhatsApp",
             "target": {
               "kind": "external",

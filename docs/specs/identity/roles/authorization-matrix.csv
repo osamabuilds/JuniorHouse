@@ -43,6 +43,8 @@ POST,/api/orders/,anonymous
 GET,/api/orders/cod/status,anonymous
 POST,/api/orders/cod/confirm,anonymous
 POST,/api/orders/cod/cancel,anonymous
+POST,/api/orders/lookup/,anonymous
+GET,/api/orders/lookup/link,anonymous
 POST,/api/newsletter/subscribe,anonymous
 GET,/api/newsletter/unsubscribe,anonymous
 POST,/api/newsletter/unsubscribe,anonymous
