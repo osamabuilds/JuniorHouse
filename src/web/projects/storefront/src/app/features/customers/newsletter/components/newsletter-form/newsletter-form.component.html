@@ -17,7 +17,7 @@
         [attr.aria-invalid]="invalid() ? 'true' : null"
         (input)="edited()"
       />
-      <button rpBtn="light" type="submit" [disabled]="status() === 'sending'">Join</button>
+      <button rpBtn type="submit" [disabled]="status() === 'sending'">Join</button>
     </div>
     <p class="rp-help" id="rp-newsletter-help">News and offers now and then. Unsubscribe any time. We never share your address.</p>
     <p class="rp-help" id="rp-newsletter-status" role="status" aria-live="polite">{{ message() }}</p>

@@ -46,3 +46,9 @@ dialog.rp-drawer-r[open] { display: flex; flex-direction: column; }
 @media (prefers-reduced-motion: no-preference) { dialog.rp-drawer-r[open] { animation: rp-slide-in-r var(--dur-base) var(--ease-inout); } }
 @keyframes rp-slide-in-r { from { transform: translateX(100%); } to { transform: none; } }
 .rp-drawer__body { flex: 1; overflow-y: auto; }
+
+/* One close control only: the browser's own clear button inside a search field would be a second, unlabelled "x". */
+.rp-search-ov__form input[type='search']::-webkit-search-cancel-button,
+.rp-search-ov__form input[type='search']::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.rp-search-ov__body section > .rp-chips { margin-block: var(--space-4) var(--space-6); }
+.rp-search-ov__body section > h2 { margin-bottom: 0; }

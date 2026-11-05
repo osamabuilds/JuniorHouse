@@ -14,6 +14,7 @@ Turning a cart into a paid or confirmed order (Sprint 12, "Sell: checkout") and 
 | [cod-confirmation](cod-confirmation/spec.md) | Pending-confirmation orders, up to 2 call attempts, auto-cancel, order-value cap, refusal tracking | FR-32, SEC-12, SEC-13, TC-CHK-14, 15 | S12 | Draft (OTP part SEC-11 **parked**) |
 | [order-queue](order-queue/spec.md) | Staff queue: confirm COD, cancel, view status (dispatch added in S15) | FR-55, FR-59, FR-60 | S13 | Draft |
 | [order-lookup](order-lookup/spec.md) | A guest finds an order by number plus mobile | FR-37 (part), SEC-06 | S13 (tracking-number part with couriers in S15) | Draft |
+| [order-line-images](order-line-images/spec.md) | The exact product picture is saved on each order line and shown in the HTML order emails | owner request | after S13 | Draft |
 
 The reservation of stock lives in the Warehouse module: [warehouse/reservations](../warehouse/reservations/spec.md).
 
