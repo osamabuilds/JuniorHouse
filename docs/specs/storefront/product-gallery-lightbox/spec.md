@@ -1,6 +1,6 @@
 # Product gallery and lightbox
 
-- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
+- **Status:** Implemented (2026-11-05)
 - **Jira:** none yet
 - **BRD sections:** §5 product page (FEAT-PDP-01..04); design source `docs/design-system/components/Gallery/README.md` and `Lightbox/README.md`
 - **Requirement IDs:** FR-07 (gallery), SEO-07, NFR-01, NFR-17, NFR-19 (WCAG 2.5.7)
@@ -47,3 +47,7 @@ Thumbnails strip (the design has none), video, 360 views, sharing a picture, pro
 - [x] **Q-GAL-1** Which source does the viewer use? The image pipeline already makes derivatives at several widths. Recommendation: the largest existing derivative of that picture (no new processing), requested when the viewer opens. **Resolved: recommendation accepted.**
 - [x] **Q-GAL-2** Adopt the design's class names (`rp-gallery`, `rp-gimg`, counter) in place of the component's own (`gallery`, `gallery__item`)? Recommendation: yes, so styling comes from the shared stylesheet and not from component CSS. **Resolved: recommendation accepted.**
 - [x] **Q-GAL-3** Wrap-around at the first and last picture: the design is silent. Recommendation: no wrap (buttons disable at the ends). **Resolved: recommendation accepted.**
+
+## As built
+
+`shared/ui/lightbox` (native dialog through `RpDialog`, Pointer Events) and `shared/utils/zoom.util` (pure zoom, pan and counter maths); `product-gallery` rebuilt to the design markup (one list: strip on a phone, two columns from 64rem; pictures are buttons; live `n / N` counter). The viewer asks for the largest listed derivative only when it opens. Two checks skip until a product has more than one picture (counter on scroll, moving between pictures); they are unit-tested. The old design CSS for a two-tree gallery was removed from `_components.scss`. Breadcrumb links got a 24px minimum target (axe target-size) because the product page axe test failed on them. `+` toggles 2x (GAL-4); `-` and the buttons step by 0.5 (GAL-7).

@@ -217,7 +217,7 @@ describe('ProductPageContainer', () => {
     expect(el.querySelector('h1')!.textContent).toContain('Floral Summer Dress');
     expect(el.querySelectorAll('rp-size-options a').length).toBe(basePage.sizes.length);
     expect(el.querySelector('rp-size-options a')!.textContent).toContain('Sold out');
-    expect(el.querySelector('button:not([aria-pressed])')).toBeNull();
+    expect([...el.querySelectorAll('button')].filter((b) => /add to bag/i.test(b.textContent ?? '')).length).toBe(0);
   });
 
   it('PDP-17 words availability as a guide and shows no count or reservation wording', () => {
