@@ -133,11 +133,9 @@ test.describe('search overlay', () => {
 });
 
 test.describe('smoothness', () => {
-  for (const path of ['/', '/girls', '/new-in', '/search?q=dress']) {
-    // Known issue (found 2026-11-05): search and listing pages start with empty state in the browser and flash "Searching…" while hydrating,
-    // which collapses the page for a frame and shifts the footer (CLS 0.2-0.4 on /search). Needs the server result transferred to the browser.
-    const known = path.startsWith('/search');
-    (known ? test.fixme : test)(`${path} has no layout shift over 0.1, no console errors and hydrates`, async ({ page }) => {
+  for (const path of ['/', '/girls', '/new-in', '/search?q=dress', '/girls/dresses/floral-summer-dress']) {
+    // HYD-2: the server result is handed to the browser (ADR 0028), so hydration shows the same content instead of a loading state.
+    test(`${path} has no layout shift over 0.1, no console errors and hydrates`, async ({ page }) => {
       const errors: string[] = [];
       page.on('console', (m) => {
         if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 160));

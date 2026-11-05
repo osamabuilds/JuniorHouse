@@ -1,6 +1,6 @@
 # 0028 — Transfer whitelisted store slices from server render to browser
 
-- Status: Proposed (draft, awaiting owner approval)
+- Status: Accepted (owner, 2026-11-05)
 - Date: 2026-11-05
 
 ## Context

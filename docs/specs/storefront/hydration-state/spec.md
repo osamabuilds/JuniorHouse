@@ -1,6 +1,6 @@
 # Hydration state: no flash when the browser takes over a server-rendered page
 
-- **Status:** Draft, awaiting owner approval
+- **Status:** Approved by owner 2026-11-05 (recommendations for Q-HYD-1 and Q-HYD-2); implemented
 - **Module:** Storefront (web only; no API change)
 - **Requirement IDs:** NFR-01 (CLS <= 0.1), SEO-01 (content in the server HTML), SEO-10 (budgets in CI), NFR-17
 - **Jira:** none yet
@@ -26,5 +26,9 @@ The server renders `/search`, listings and product pages with their full content
 
 ## Open questions
 
-- **Q-HYD-1** Which slices: `listings`, `searchResults`, `productPages` only, or also `page` (content pages)? Recommendation: all four, they have the same flash.
-- **Q-HYD-2** Is a new ADR acceptable for the mechanism? Recommendation: yes, ADR 0028 (draft).
+- [x] **Q-HYD-1** Which slices: `listings`, `searchResults`, `productPages` only, or also `page` (content pages)? Recommendation: all four, they have the same flash. **Resolved: all four slices.**
+- [x] **Q-HYD-2** Is a new ADR acceptable for the mechanism? Recommendation: yes, ADR 0028 (draft). **Resolved: yes.**
+
+## As built
+
+`core/state-transfer/` (whitelist, serialiser, seeding meta-reducer, `provideStateTransfer()`), wired in `app.config.ts`. Unit tests cover HYD-1, 3, 4, 6; the e2e CLS cases (`/`, `/girls`, `/new-in`, `/search?q=dress`, a product page) cover HYD-1, 2 and 5 against the rebuilt container. Pagination is already enforced by the API (page size cap), which bounds HYD-4; the server HTML for a search page is about 70 kB in total. A dedicated test that asserts the transferred payload size is not written yet.

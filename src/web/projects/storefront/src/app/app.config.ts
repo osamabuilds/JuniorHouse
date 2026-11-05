@@ -17,6 +17,7 @@ import { provideNewsletter } from './features/customers/newsletter/newsletter.pr
 import { provideNotifyMe } from './features/customers/notify-me/notify-me.providers';
 import { provideWishlist } from './features/customers/wishlist/wishlist.providers';
 import { provideRpImageLoader } from './shared/ui/image/image-loader';
+import { provideStateTransfer } from './core/state-transfer/state-transfer.providers';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,6 +27,7 @@ export const appConfig: ApplicationConfig = {
     // Browser: renew an expired customer session once and repeat the call. Server render: forward the browser's cookies to the customer API.
     provideHttpClient(withFetch(), withInterceptors([customerRefreshInterceptor, serverCookieInterceptor])),
     provideStore(),
+    provideStateTransfer(),
     provideEffects(),
     provideCustomerAuth(),
     provideSiteSettings(),
