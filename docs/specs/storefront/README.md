@@ -22,6 +22,10 @@ The public, server-rendered shop window (Sprint 9, "Sell: browse"): navigation, 
 | [hydration-state](hydration-state/spec.md) | Server-rendered result pages are handed to the browser (whitelisted store slices, ADR 0028) so hydration does not flash a loading state | NFR-01, SEO-01 | after S9 | Implemented |
 | [collections-page](collections-page/spec.md) | The `/collections` index (the nav and footer link to it today and get a 404) | FR-01, SEO-03, SEO-04 | after S9 | Approved, plan and tasks written |
 | [product-buy-bar](product-buy-bar/spec.md) | Sticky bottom buy bar on phones and the three perks under the buy button | FEAT-PDP-01..04, NFR-19 | after S9 | Approved, plan and tasks written |
+| [product-gallery-lightbox](product-gallery-lightbox/spec.md) | Live counter, pictures as buttons and a full-screen viewer with zoom on the product gallery | FR-07, SEO-07, NFR-19 | after S9 | Draft |
+| [listing-filter-bar](listing-filter-bar/spec.md) | Sticky filter bar with popovers, phone bottom-sheet drawer and colour swatches on listings and search; pagination kept | FR-02, FR-03, FR-05, SEO-06 | after S9 | Draft |
+| [product-card-quick-add](product-card-quick-add/spec.md) | Second picture, one tag and add-to-bag from the card (size bar and the + button) | FR-02, FR-10, FR-28, FR-29, SEC-09 | after S9 | Draft |
+| [mega-menu-tile](mega-menu-tile/spec.md) | One 5:4 image tile in the mega menu panel | FR-01, SEO-07 | after S9 | Draft |
 | [seo](seo/spec.md) | Server rendering, real status codes and redirects, meta templates, canonicals, Open Graph, structured data, sitemap, robots, edge cache headers, staging protection, Lighthouse budgets in CI | SEO-01, 03, 04, 05, 06, 08, 10, NFR-01 | Approved |
 
 Order of work: published-catalog → navigation and listings → product-pages → search → seo (the SEO pieces are built into each page as it is written; `seo` owns the shared machinery and the CI gate, starts first as a thin layer and closes last). **Code starts after Sprint 8 is merged to `main`; S9 branches from `main`.**

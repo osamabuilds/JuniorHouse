@@ -48,8 +48,8 @@ Method: the `rp-` classes used by each `components/<Name>/preview.html` were com
 | G4 | **Product page**: accordions (`rp-acc`), per-product fabric band (`rp-fabric`), "Complete the look" rail, perks, sticky buy bar | None of these | Already specified or waiting: buy bar and perks (`product-buy-bar`), rail (`product-recommendations`), accordions (PR-13 note) |
 | G5 | **Mega menu**: image tiles (`rp-mega__tile`) and `display-xs` column titles | Link columns only | New feature (needs images per entry) |
 | G6 | **Collections page** | Not built (404) | Specified and planned: `collections-page` |
-| G7 | **Auth screens**: `rp-formgrid`, `rp-label`, `rp-notice`, `rp-notice--error` | Own form markup and message styles | Markup alignment (no new behaviour) |
-| G8 | **Content page**: callout (`rp-callout`), table (`rp-table`), accordion (`rp-acc`) | Table exists in the block component under other classes; no callout or accordion in demo content | Markup alignment; accordion needs a content block (PR-13 note) |
+| G7 | **Retracted.** Auth screens: the class comparison flagged `rp-formgrid`, `rp-notice`, `rp-label`, but the live pages already use them (sign-in, forgot password, register) and the split photo layout exists. The preview only showed states the demo data does not trigger | none |
+| G8 | **Retracted.** Content page: `rp-callout`, `rp-fact` and `rp-table` exist in the styles and the block component uses them; the demo content simply has no such blocks. Accordions remain the PR-13 note | none |
 | G9 | **Home**: card slides, Quick view and low-stock tag (same as G2) | as G2 | covered by G2 |
 
 **Owner decisions that already override the previews (kept as they are unless you say otherwise):** the footer is light, with no big decorative wordmark (Q-CR-3, CR-3); the desktop header lays out wordmark, navigation, search (CR-1); the account control in the header (not in the design); black and white colours and Manrope (2026-10-24). The design's `SiteFooter` preview is therefore intentionally not matched.
@@ -61,5 +61,6 @@ Method: the `rp-` classes used by each `components/<Name>/preview.html` were com
 1. **Product page**: G3 gallery and lightbox, then the existing `product-buy-bar` (G4).
 2. **Listing**: G1 filter bar and drawer, swatches, banner; decide Show more vs pagination first.
 3. **Product card**: G2 (second image, low-stock tag, quick view).
-4. **Markup alignment** G7, G8 (no behaviour change, quick).
-5. **Mega menu tiles** G5 and the cart/checkout/wishlist audit with a seeded cart.
+4. **Mega menu tiles** G5, and the cart/checkout/wishlist audit with a seeded cart.
+
+**Specs written (drafts, awaiting approval), 2026-11-05:** [product-gallery-lightbox](product-gallery-lightbox/spec.md) (G3), [listing-filter-bar](listing-filter-bar/spec.md) (G1, pagination kept by decision), [product-card-quick-add](product-card-quick-add/spec.md) (G2), [mega-menu-tile](mega-menu-tile/spec.md) (G5). Buy bar and collections page already have approved plans.
