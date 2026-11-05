@@ -90,6 +90,7 @@ What was implemented differs from the text above in these ways. The code and tes
 - [x] **Q-ST-2 Page content format.** Structured blocks (heading, paragraph, list, table, call-out), edited with form fields.
 - [x] **Q-ST-3 Images in pages.** Text-only pages at launch.
 - [x] **Q-ST-4 Season.** A season is a **collection** (for example "Summer 2027"). Sold items show only when an entry has no in-stock item.
+- [ ] **Q-ST-7 ST-6 vs LST-15 (raised 2026-11-05).** ST-6 says an enabled entry with nothing in stock shows its sold items as sold-out cards, but listings LST-15 says a product with nothing in stock is never listed, and that is what is built (such an entry shows the empty state, ST-5). Which wins? Until answered, ST-6 is unbuilt and untested.
 - [x] **Q-ST-5 Who edits.** The **Admin role only**, for both edit and publish. Roles and login arrive in S8; until then the settings endpoints are not deployed publicly.
 - [x] **Q-ST-6 Sequence.** SCRUM-206 and SCRUM-205 proceed in parallel against one typed contract (`SiteSettings`), and 205 uses a built-in launch set until the 206 API exists.
 - [x] **Q-ST-7 Admin app is touched.** Confirmed: this story adds a "Storefront settings" section to the admin app; existing admin screens are not changed. The admin re-skin stays a separate story.

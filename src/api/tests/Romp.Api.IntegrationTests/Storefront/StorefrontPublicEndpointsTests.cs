@@ -121,6 +121,61 @@ public sealed class StorefrontPublicEndpointsTests(ProductionApiFixture api)
         Assert.Equal(HttpStatusCode.BadRequest, (await GetAsync($"{Listings}/empty?scope=bogus")).Status);
     }
 
+    [Fact]
+    [Trait("Spec", "MGT-1")]
+    public async Task Menu_Endpoint_KeepsCachingAndShape()
+    {
+        var response = await api.Client.GetAsync("/api/storefront/menu");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("public, max-age=60", response.Headers.CacheControl?.ToString());
+        var menu = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+        Assert.Equal(JsonValueKind.Array, menu.GetProperty("audiences").ValueKind);
+        Assert.Equal(JsonValueKind.Array, menu.GetProperty("collections").ValueKind);
+        Assert.True(menu.TryGetProperty("hasNewIn", out _) && menu.TryGetProperty("hasSale", out _));
+    }
+
+    private const string Collections = "/api/storefront/collections";
+
+    [Fact]
+    [Trait("Spec", "COL-1")]
+    public async Task Collections_Endpoint_IsAnonymousAndCached()
+    {
+        var response = await api.Client.GetAsync(Collections);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("public, max-age=60", response.Headers.CacheControl?.ToString());
+    }
+
+    [Fact]
+    [Trait("Spec", "COL-1")]
+    public async Task Collections_Endpoint_ReturnsPagedShape()
+    {
+        var (status, body) = await GetAsync(Collections);
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        var page = JsonDocument.Parse(body).RootElement;
+        Assert.Equal(JsonValueKind.Array, page.GetProperty("items").ValueKind);
+        Assert.True(page.GetProperty("total").GetInt32() >= 0);
+        Assert.Equal(1, page.GetProperty("page").GetInt32());
+        Assert.True(page.GetProperty("pageSize").GetInt32() > 0);
+        Assert.True(page.GetProperty("totalPages").GetInt32() >= 0);
+    }
+
+    [Theory]
+    [Trait("Spec", "COL-1")]
+    [InlineData("?page=abc&pageSize=-4")]
+    [InlineData("?page=0&pageSize=99999")]
+    [InlineData("?page=%3Cscript%3E")]
+    public async Task Collections_Endpoint_NeverErrorsOnAHostileQueryString(string query)
+    {
+        var (status, body) = await GetAsync(Collections + query);
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        Assert.DoesNotContain("script", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("   at ", body, StringComparison.Ordinal);
+    }
+
     [Theory]
     [Trait("Spec", "PCT-7")]
     [InlineData("not-a-name")]
