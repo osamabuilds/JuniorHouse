@@ -66,6 +66,13 @@ function render(result: ListingResult, query: Record<string, string | string[]> 
 }
 
 describe('ListingPageContainer', () => {
+  it('LST-12 headings never skip a level: the product names sit under an h2, not straight under the h1', () => {
+    const { el } = render(ok([tile(1), tile(2)]));
+    const levels = [...el.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => Number(h.tagName[1]));
+    expect(levels[0]).toBe(1);
+    levels.forEach((l, i) => i > 0 && expect(l - levels[i - 1]).toBeLessThanOrEqual(1));
+  });
+
   it('LST-12 shows one h1, the breadcrumb, and the tiles as articles in a list', () => {
     const { el } = render(ok([tile(1), tile(2)]));
     expect(el.querySelectorAll('h1').length).toBe(1);

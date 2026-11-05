@@ -40,6 +40,8 @@
               [message]="chips().length > 0 ? null : 'Check the spelling, try a shorter or more general word, or have a look around.'"
             />
           } @else {
+            <h2 class="sr-only">Search results</h2>
+
             <ul class="rp-grid">
               @for (tile of r.page.tiles; track tile.path; let i = $index) {
                 <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" /></li>
