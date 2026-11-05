@@ -40,6 +40,8 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "GET /api/orders/cod/status",
         "POST /api/orders/cod/confirm",
         "POST /api/orders/cod/cancel",
+        "POST /api/orders/lookup/", // guest order look-up (orders/order-lookup L4): order number + mobile, CAPTCHA after failures, strict rate limit, Origin check, one generic mismatch
+        "GET /api/orders/lookup/link", // the signed track link from the order email: the signature is the authority and names one order
         "POST /api/newsletter/subscribe", // newsletter consent (customers/newsletter NL7): a visitor's email, strict rate limit, Origin check
         "GET /api/newsletter/unsubscribe", // the signed link in an email: the signature is the authority and names one record
         "POST /api/newsletter/unsubscribe", // the one-click form mail clients send (List-Unsubscribe-Post)

@@ -56,11 +56,11 @@ Ordered, checkable steps; test-first; .NET in the Linux SDK container. Plan: [pl
 
 ## order-lookup (S13)
 
-- [ ] **L1** `LookupThrottle` (pure) and `LOOK_ATMP`. *Proof:* `LookupThrottleTests`, migration test (OLK-3, 4).
-- [ ] **L2** `LookupOrderQuery`: normalised mobile compare, constant-time, indistinguishable mismatch, masked view. *Proof:* `LookupOrderTests` (OLK-1, 2, 6, 7), `LookupTimingTests` (same status and body shape).
-- [ ] **L3** Signed emailed link opens the status page. *Proof:* `ViewOrderByLinkTests` (OLK-5).
-- [ ] **L4** Endpoints with CAPTCHA after failures and rate limit. *Proof:* `LookupEndpointsTests` (OLK-3, 4).
-- [ ] **L5** Storefront `features/orders/order-lookup` (Track order page, `noindex`, WCAG). *Proof:* component specs, `order-lookup.e2e.spec.ts` with axe (OLK-9).
+- [x] **L1** `LookupThrottle` (pure) and `LOOK_ATMP`. *Proof:* `LookupThrottleTests`, migration test (OLK-3, 4). (Built: `LookupThrottle` + `LookupAttempt` in `Domain/Orders/LookupThrottle.cs`; hashed address, `FAIL_IND`; migration `AddLookupAttempts`.)
+- [x] **L2** `LookupOrderQuery`: normalised mobile compare, constant-time, indistinguishable mismatch, masked view. *Proof:* `LookupOrderTests` (OLK-1, 2, 6, 7), `LookupTimingTests` (same status and body shape). (Built: `LookupOrderQuery` in `Application/OrderLookup`; digest compare with `FixedTimeEquals`; lines query runs for a miss too; tests in `LookupOrderTests`. The timing proof is structural: every mismatch is the one `LookupResult.Mismatch` instance, asserted in `AWrongNumber_AWrongMobile_AndBoth_GiveTheSameAnswer` and over HTTP in `AWrongMobile_AndAnUnknownNumber_GetTheSameStatusAndBody`; no wall-clock test, which would be flaky.)
+- [x] **L3** Signed emailed link opens the status page. *Proof:* `ViewOrderByLinkTests` (OLK-5). (Built: `ViewOrderByLinkQuery`, `ILookupLinks` (purpose `order-track`, no expiry). The link maker is ready; putting it in the order emails needs a Notifications template change, left for the owner to confirm: see the spec open question.)
+- [x] **L4** Endpoints with CAPTCHA after failures and rate limit. *Proof:* `LookupEndpointsTests` (OLK-3, 4). (Built: `POST /api/orders/lookup`, `GET /api/orders/lookup/link`; CAPTCHA-required is **428**, not 401, because the storefront session interceptor treats every 401 as an expired sign-in. Matrix and CSV updated.)
+- [x] **L5** Storefront `features/orders/order-lookup` (Track order page, `noindex`, WCAG). *Proof:* component specs, `order-lookup.e2e.spec.ts` with axe (OLK-9). (Built: `features/orders/order-lookup`, route `/track-order`; storefront server forwards `/customer-api/orders/lookup` and `/lookup/link`; linked from the order-placed page.)
 
 ## Close the loop
 

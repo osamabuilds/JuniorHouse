@@ -20,6 +20,8 @@ public sealed class OrdrDbContext(DbContextOptions<OrdrDbContext> options) : DbC
 
     public DbSet<CodRisk> CodRisks => Set<CodRisk>();
 
+    public DbSet<LookupAttempt> LookupAttempts => Set<LookupAttempt>();
+
     async Task IOrdersDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);
 

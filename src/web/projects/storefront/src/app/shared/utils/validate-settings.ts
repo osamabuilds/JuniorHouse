@@ -2,7 +2,7 @@ import { LinkTarget, MAX_NAV_DEPTH, NavItem, SiteSettings } from '../models/site
 import { resolveHref } from './resolve-href';
 
 /** Routes that exist or are owned by later stories. A path target must start with one of these. */
-const KNOWN_PATH_ROOTS = ['/girls', '/boys', '/new-in', '/collections', '/sale', '/search'];
+const KNOWN_PATH_ROOTS = ['/girls', '/boys', '/new-in', '/collections', '/sale', '/search', '/track-order'];
 
 function targetProblem(target: LinkTarget | undefined, settings: SiteSettings, where: string): string | null {
   if (!target) return null;
