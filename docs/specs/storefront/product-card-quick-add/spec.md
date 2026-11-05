@@ -41,9 +41,9 @@ QuickAdd replaces the older hover "Quick view" bar (the QuickAdd README says so)
 
 NFR-01: the second picture is lazy and absolutely positioned inside the 4:5 box, so nothing moves. SEC-09 and FR-29: stock and price decisions stay on the server. NFR-27/29 do not apply (no child data). Listing payloads stay paged and need no per-card requests (no N+1).
 
-## Plan note
+## Plan note (confirmed by the owner on 2026-11-05)
 
-The plan assumes that, for a product with several colours, the bar adds the colour the tile advertises (the cheapest matching variant) and names it in the confirmation. This was not in the spec; it is recorded in the plan for the owner to confirm before the add step is built.
+For a product with several colours, the bar adds the colour the card shows (the cheapest matching variant) and names it in the confirmation ("Added, size 4Y, Rose"). A "More colours" link goes to the product page.
 
 ## Out of scope
 

@@ -11,9 +11,9 @@
 - **Q-CRD-4:** the bar's **Notify me** links to the product page with that size chosen (`<path>?size=<code>`), where the existing notify-me form lives.
 - **Q-CRD-5:** reuse `CartActions.Add({ variantId, quantity: 1 })` and the existing bag drawer (`CartActions.OpenDrawer`) unchanged.
 
-## Assumption to confirm (not covered by the spec)
+## Multi-colour rule (confirmed by the owner on 2026-11-05)
 
-A product with several colours has several variants per size. The tile advertises the price of its cheapest matching variant, so the bar adds **that colour** and names it in the confirmation ("Added, size 4Y, Rose"). A "More colours" link goes to the product page. If you want a different rule (for example always open the product page when a product has more than one colour), say so before building the add step.
+A product with several colours has several variants per size. The tile advertises the price of its cheapest matching variant, so the bar adds **that colour** and names it in the confirmation ("Added, size 4Y, Rose"). A "More colours" link goes to the product page.
 
 ## Domain model
 
