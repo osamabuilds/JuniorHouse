@@ -27,4 +27,4 @@ Spec: [spec.md](spec.md) · Plan: [plan.md](plan.md). Each step is test-first; t
 - [x] **E1** Browser tests in `e2e/journeys/storefront-gallery.e2e.spec.ts` (rebuilt container): at 390 px the counter updates when the strip scrolls and tapping opens the viewer; at 1280 px a grid picture opens it; Esc closes and focus returns; buttons and keys zoom and move; no wheel or pinch needed for any action (GAL-3..8).
 - [x] **E2** Same file: no layout shift when the viewer opens, no horizontal scroll at 390, 768 and 1280 px, axe clean, controls at least 44px (GAL-13); without scripting every picture is in the HTML (GAL-14).
 - [x] **E3** Rebuild the docker storefront, check the product page by eye on phone and desktop width, then update `spec.md` ("As built"), the storefront README row, the design audit (G3 fixed) and the memory hand-off.
-- [x] **E4** PR description links this folder and lists GAL-1..14, FR-07, SEO-07, NFR-01, NFR-17, NFR-19.
+- [ ] **E4** PR description links this folder and lists GAL-1..14, FR-07, SEO-07, NFR-01, NFR-17, NFR-19.
