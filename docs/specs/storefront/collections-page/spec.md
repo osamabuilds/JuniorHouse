@@ -1,6 +1,6 @@
 # Collections page (`/collections`)
 
-- **Status:** Draft, awaiting owner approval (owner accepted building it on 2026-11-05; the details below are not yet approved)
+- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
 - **Jira:** none yet
 - **BRD sections:** §14 (SEO), navigation (FR-01); design source `docs/design-system/components/CollectionsPage/README.md`
 - **Requirement IDs:** FR-01, NFR-01, NFR-17, NFR-19, SEO-03, SEO-04
@@ -38,6 +38,6 @@ Collection editing (admin, already exists), collection descriptions beyond what 
 
 ## Open questions
 
-- [ ] **Q-COL-1** Where do the piece counts and tile images come from? The menu API carries only code, label and path. Recommendation: a small paged endpoint `GET /api/storefront/collections` from the read model returning name, code, live-product count and the first product's image.
-- [ ] **Q-COL-2** Order of the tiles: the settings order (recommended, the owner controls it) or alphabetical?
-- [ ] **Q-COL-3** Until collection photography exists, use the product's first image (recommended) or the garment placeholder?
+- [x] **Q-COL-1** Where do the piece counts and tile images come from? The menu API carries only code, label and path. Recommendation: a small paged endpoint `GET /api/storefront/collections` from the read model returning name, code, live-product count and the first product's image. **Resolved: recommendation accepted.**
+- [x] **Q-COL-2** Order of the tiles: the settings order (recommended, the owner controls it) or alphabetical? **Resolved: recommendation accepted.**
+- [x] **Q-COL-3** Until collection photography exists, use the product's first image (recommended) or the garment placeholder? **Resolved: recommendation accepted.**

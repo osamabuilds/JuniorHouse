@@ -1,6 +1,6 @@
 # Product page buy bar and perks
 
-- **Status:** Draft, awaiting owner approval (owner accepted building it on 2026-11-05; the details below are not yet approved)
+- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
 - **Jira:** none yet
 - **BRD sections:** §5 product page (FEAT-PDP-*); design source `docs/design-system/components/ProductDetail/README.md`
 - **Requirement IDs:** FEAT-PDP-01..04 (existing), NFR-01, NFR-17, NFR-19, SEC-09
@@ -41,6 +41,6 @@ Accordions (the content model has no accordion block; see the PR-13 note), the p
 
 ## Open questions
 
-- [ ] **Q-BUY-1** Perks text: the design lists delivery, exchange and WhatsApp. Take the wording from settings (recommended) or fixed copy?
-- [ ] **Q-BUY-2** Show the bar from tablet up to 64rem as well, or phone only (under 40rem)? Recommendation: under 64rem, because the design's two-column desktop layout starts at 64rem.
-- [ ] **Q-BUY-3** On a product with several colours, should the bar show the chosen colour name next to the price? Recommendation: no, keep it to price and button.
+- [x] **Q-BUY-1** Perks text: the design lists delivery, exchange and WhatsApp. Take the wording from settings (recommended) or fixed copy? **Resolved: recommendation accepted.**
+- [x] **Q-BUY-2** Show the bar from tablet up to 64rem as well, or phone only (under 40rem)? Recommendation: under 64rem, because the design's two-column desktop layout starts at 64rem. **Resolved: recommendation accepted.**
+- [x] **Q-BUY-3** On a product with several colours, should the bar show the chosen colour name next to the price? Recommendation: no, keep it to price and button. **Resolved: recommendation accepted.**
