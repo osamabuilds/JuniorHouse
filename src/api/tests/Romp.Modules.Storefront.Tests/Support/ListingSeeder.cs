@@ -23,12 +23,13 @@ internal static class ListingSeeder
         host.Lookups.AgeBrackets.AddRange([new(1, "AGE_3Y", "3Y", 10, true), new(2, "KIDS", "Kids 4-8Y", 20, true)]);
         host.Lookups.Sizes.AddRange([new(7, "3-4Y", "3-4 Years", 5, true), new(6, "9-10Y", "9-10 Years", 30, true)]);
         host.Storage.Files["images/a.jpg"] = [1, 2, 3];
+        host.Storage.Files["images/b.jpg"] = [4, 5, 6];
         return host;
     }
 
     public static async Task ListableAsync(
         StorefrontHost host, long id, string gender, string category, IReadOnlyList<SeedVariant>? variants = null,
-        string? collection = null, DateTimeOffset? publishedAt = null, string age = "KIDS", string? name = null)
+        string? collection = null, DateTimeOffset? publishedAt = null, string age = "KIDS", string? name = null, int imageCount = 1)
     {
         variants ??= [new SeedVariant("RED", "5-6Y", 800m, 10)];
         var published = variants.Select((v, i) => new PublishedVariant(
@@ -40,7 +41,7 @@ internal static class ListingSeeder
             v.CompareAt,
             true)).ToList();
 
-        var snapshot = Snapshots.Product(id: id, path: $"/{gender.ToLowerInvariant()}/{category.ToLowerInvariant()}/p-{id}", name: name ?? $"Product {id}", variants: published, images: [Snapshots.Image(100 * id + 1, 1)]) with
+        var snapshot = Snapshots.Product(id: id, path: $"/{gender.ToLowerInvariant()}/{category.ToLowerInvariant()}/p-{id}", name: name ?? $"Product {id}", variants: published, images: [.. Enumerable.Range(1, imageCount).Select(n => Snapshots.Image(100 * id + n, n, n == 1 ? "images/a.jpg" : "images/b.jpg"))]) with
         {
             Gender = new PublishedCode(1, gender, gender),
             Category = new PublishedCode(1, category, category),

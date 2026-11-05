@@ -106,6 +106,32 @@ describe('cart store', () => {
     expect(store.selectSignal(selectCartBusy)()).toBe(false);
   });
 
+  it('CRD-5 a quiet add (from a product card) updates the basket and the count but leaves the drawer closed', () => {
+    const api = new FakeApi();
+    api.add = () => of({ status: 'ok', cart: cartOf(line(501, 1)) });
+    const { store } = setUp(api);
+    store.dispatch(CartActions.load());
+
+    store.dispatch(CartActions.add({ variantId: 501, quantity: 1, quiet: true }));
+
+    expect(store.selectSignal(selectCartItemCount)()).toBe(1);
+    expect(store.selectSignal(selectCartDrawerOpen)()).toBe(false);
+    expect(store.selectSignal(selectCartBusy)()).toBe(false);
+  });
+
+  it('CRD-9 a refused quiet add shows the server words, adds nothing and stays closed', () => {
+    const api = new FakeApi();
+    api.add = () => of({ status: 'refused', message: 'That size has just sold out.' });
+    const { store } = setUp(api);
+    store.dispatch(CartActions.load());
+
+    store.dispatch(CartActions.add({ variantId: 501, quantity: 1, quiet: true }));
+
+    expect(store.selectSignal(selectCartMessage)()).toBe('That size has just sold out.');
+    expect(store.selectSignal(selectCartItemCount)()).toBe(0);
+    expect(store.selectSignal(selectCartDrawerOpen)()).toBe(false);
+  });
+
   it('a quantity change updates the basket without opening the drawer', () => {
     const api = new FakeApi();
     api.setQuantity = () => of({ status: 'ok', cart: cartOf(line(1, 4)) });

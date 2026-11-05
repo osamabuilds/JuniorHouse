@@ -86,6 +86,11 @@ export class SearchPageContainer {
   });
   protected readonly loading = computed(() => this.result() === null && this.shown() !== null);
 
+  /** A quick add was refused for a size this page still showed as available: load the results again from the server (CRD-9). */
+  protected reload(): void {
+    this.store.dispatch(SearchResultsActions.load({ key: this.currentKey(), query: this.query(), filter: this.filter() }));
+  }
+
   /** The phone sheet's live count for a filter that is not applied yet (FLT-13). */
   protected readonly countFor = (filter: ListingFilter) => this.api.count(this.query(), filter);
 

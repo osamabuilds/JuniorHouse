@@ -47,7 +47,9 @@ public sealed class SearchProductsQueryHandler(
     ISynonymCache synonyms,
     ISearchSettings settings,
     ICatalogLookupQueries lookups,
-    ICatalogLookupCache lookupCache) : IRequestHandler<SearchProductsQuery, SearchProductsResult>
+    ICatalogLookupCache lookupCache,
+    IListingSettings listingSettings,
+    TimeProvider clock) : IRequestHandler<SearchProductsQuery, SearchProductsResult>
 {
     public async Task<SearchProductsResult> Handle(SearchProductsQuery request, CancellationToken cancellationToken)
     {
@@ -107,7 +109,7 @@ public sealed class SearchProductsQueryHandler(
         }
 
         var page = ordered.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToList();
-        var tiles = await ListingTiles.BuildAsync(db, page, cancellationToken);
+        var tiles = await ListingTiles.BuildAsync(db, page, new TileContext(filter.Colours, listingSettings.LowStockThreshold, clock.GetUtcNow().AddDays(-listingSettings.NewArrivalsDays)), cancellationToken);
 
         var lookupRows = await lookupCache.GetOrLoadAsync(ct => CatalogLookups.LoadAsync(lookups, ct), cancellationToken);
         var scopeProducts = db.Products.AsNoTracking().Where(p => p.IsListable && ids.Contains(p.Id));

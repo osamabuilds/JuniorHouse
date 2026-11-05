@@ -25,7 +25,7 @@
         <div [attr.aria-busy]="loading()" [class.is-loading]="loading()">
         <ul class="rp-grid">
           @for (tile of r.page.tiles; track tile.path; let i = $index) {
-            <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" /></li>
+            <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" (stale)="reload()" /></li>
           }
         </ul>
         @if (range(); as x) {

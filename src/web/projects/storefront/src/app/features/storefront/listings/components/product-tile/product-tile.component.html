@@ -1,29 +1,59 @@
-<article class="rp-card">
+<article class="rp-card" [class.is-open]="open()" [class.is-dismissed]="dismissed()">
   <div class="rp-media">
-    @if (tile().image; as image) {
-      @if (image.sources.length > 0) {
-        <picture>
-          <source type="image/webp" [attr.srcset]="webpSet()" [attr.sizes]="sizes" />
-          @if (jpegSet()) {
-            <source type="image/jpeg" [attr.srcset]="jpegSet()" [attr.sizes]="sizes" />
-          }
-          <img
-            class="rp-tile-img"
-            [src]="fallbackSrc()"
-            [attr.width]="image.width"
-            [attr.height]="image.height"
-            [alt]="image.altText"
-            [attr.loading]="eager() ? 'eager' : 'lazy'"
-            [attr.fetchpriority]="priority() ? 'high' : null"
-            decoding="async"
-          />
-        </picture>
+    @if (main(); as pic) {
+      <div #strip class="rp-swipe" (scroll)="onScroll()">
+        <div class="rp-slide">
+          <picture>
+            <source type="image/webp" [attr.srcset]="pic.webpSet" [attr.sizes]="sizes" />
+            @if (pic.jpegSet) {
+              <source type="image/jpeg" [attr.srcset]="pic.jpegSet" [attr.sizes]="sizes" />
+            }
+            <img
+              class="rp-tile-img"
+              [src]="pic.fallback"
+              [attr.width]="pic.width"
+              [attr.height]="pic.height"
+              [alt]="pic.alt"
+              [attr.loading]="eager() ? 'eager' : 'lazy'"
+              [attr.fetchpriority]="priority() ? 'high' : null"
+              decoding="async"
+            />
+          </picture>
+        </div>
+        @if (second(); as alt) {
+          <div class="rp-slide rp-slide--alt">
+            <picture>
+              <source type="image/webp" [attr.srcset]="alt.webpSet" [attr.sizes]="sizes" />
+              @if (alt.jpegSet) {
+                <source type="image/jpeg" [attr.srcset]="alt.jpegSet" [attr.sizes]="sizes" />
+              }
+              <img class="rp-tile-img" [src]="alt.fallback" [attr.width]="alt.width" [attr.height]="alt.height" [alt]="alt.alt" loading="lazy" decoding="async" />
+            </picture>
+          </div>
+        }
+      </div>
+      @if (second()) {
+        <span class="rp-pagedots" aria-hidden="true"><i [class.is-on]="slide() === 0"></i><i [class.is-on]="slide() === 1"></i></span>
       }
     }
-    @if (onSale()) {
-      <span class="rp-tag rp-tag--sale">−{{ tile().savingPercent }}%</span>
+    @switch (tag()) {
+      @case ('sale') {
+        <span class="rp-tag rp-tag--sale">−{{ tile().savingPercent }}%</span>
+      }
+      @case ('low') {
+        <span class="rp-tag rp-tag--low">Low stock</span>
+      }
+      @case ('new') {
+        <span class="rp-tag">New</span>
+      }
     }
     <button rpWishlistHeart [productId]="tile().productId" [productName]="tile().name"></button>
+    @if (enhanced() && canQuickAdd()) {
+      <button type="button" class="rp-qa__plus" aria-label="Quick add to bag" [attr.aria-expanded]="open()" (click)="toggle()"><span aria-hidden="true">+</span></button>
+      <div class="rp-qa__host" [class.is-open]="open()" (focusin)="barFocused()">
+        <rp-quick-add [tile]="tile()" (closed)="close()" (stale)="stale.emit()" />
+      </div>
+    }
   </div>
   <div class="rp-card__body">
     <h3 class="rp-card__name"><a [routerLink]="tile().path">{{ tile().name }}</a></h3>

@@ -21,7 +21,7 @@ export class CartEffects {
   readonly add$ = createEffect(() =>
     this.actions$.pipe(
       ofType(CartActions.add),
-      concatMap(({ variantId, quantity }) => this.api.add(variantId, quantity).pipe(map((result) => CartActions.changeDone({ kind: 'add', result })))),
+      concatMap(({ variantId, quantity, quiet }) => this.api.add(variantId, quantity).pipe(map((result) => CartActions.changeDone({ kind: quiet ? 'quick-add' : 'add', result })))),
     ),
   );
 

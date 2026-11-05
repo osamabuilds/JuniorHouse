@@ -16,6 +16,8 @@ namespace Romp.Modules.Storefront.Infrastructure.Listings;
 public sealed class ListingSettings(IOptions<StorefrontOptions> options) : IListingSettings
 {
     public int NewArrivalsDays => options.Value.NewArrivalsDays;
+
+    public int LowStockThreshold => options.Value.LowStockThreshold;
 }
 
 /// <summary>

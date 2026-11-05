@@ -268,6 +268,8 @@ internal sealed class StorefrontHost : IDisposable
 internal sealed class FakeListingSettings : Romp.Modules.Storefront.Application.Listings.IListingSettings
 {
     public int NewArrivalsDays => 30;
+
+    public int LowStockThreshold => 5;
 }
 
 /// <summary>Catalog's path contract, answering what a test says; an unknown path is NotFound.</summary>

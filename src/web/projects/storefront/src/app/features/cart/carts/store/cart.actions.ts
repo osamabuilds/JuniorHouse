@@ -7,7 +7,7 @@ export const CartActions = createActionGroup({
     Load: emptyProps(),
     'Load Done': props<{ result: CartResult }>(),
     /** Add a variant (the product page's Add to bag). */
-    Add: props<{ variantId: number; quantity: number }>(),
+    Add: props<{ variantId: number; quantity: number; quiet?: boolean }>(),
     'Set Quantity': props<{ variantId: number; quantity: number }>(),
     Remove: props<{ variantId: number }>(),
     /** The shopper typed a code and pressed Apply (FR-25): never applied on its own. */

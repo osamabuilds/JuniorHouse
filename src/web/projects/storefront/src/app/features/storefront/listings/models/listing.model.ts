@@ -18,6 +18,12 @@ export interface ListingTileSize {
   readonly code: string;
   readonly name: string;
   readonly soldOut: boolean;
+  /** The variant a quick add would put in the bag: the colour the card shows, or another colour when that one lacks the size. */
+  readonly variantId?: number;
+  /** InStock, LowStock, SoldOut or NotYetAvailable for that variant. A hint: the server decides when the bag is changed. */
+  readonly availability?: string;
+  /** The name of that variant's colour, so the confirmation can say which colour was added. */
+  readonly colourName?: string;
 }
 
 export interface ListingTile {
@@ -34,6 +40,12 @@ export interface ListingTile {
   readonly hasSoldOutSizes: boolean;
   readonly sizes: readonly ListingTileSize[];
   readonly image: ListingImage | null;
+  /** Published within the New In window. */
+  readonly isNew?: boolean;
+  /** Some size is low on stock (the product page's rule). */
+  readonly hasLowStock?: boolean;
+  /** The next picture of the product, for the hover and touch views. */
+  readonly secondImage?: ListingImage | null;
 }
 
 export interface Breadcrumb {

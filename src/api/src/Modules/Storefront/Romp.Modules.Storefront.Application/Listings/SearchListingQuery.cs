@@ -54,7 +54,7 @@ public sealed class SearchListingQueryHandler(
         };
 
         var page = await ordered.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync(cancellationToken);
-        var tiles = await ListingTiles.BuildAsync(db, page, cancellationToken);
+        var tiles = await ListingTiles.BuildAsync(db, page, new TileContext(filter.Colours, settings.LowStockThreshold, cutoff), cancellationToken);
 
         var maxSaving = tiles.Count == 0 ? 0 : tiles.Max(t => t.SavingPercent);
         var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)filter.PageSize));
