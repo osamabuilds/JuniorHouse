@@ -1,4 +1,4 @@
-@if (result(); as r) {
+@if (shown(); as r) {
   @if (r.status === 'ok') {
     <div class="rp-wrap">
       <div class="rp-lhead">
@@ -10,7 +10,7 @@
 
     <div class="rp-filterbar">
       <div class="rp-wrap">
-        <rp-filter-panel [options]="r.options" [filter]="filter()" [action]="path()" [open]="chips().length > 0" (applied)="apply($event)" />
+        <rp-filter-bar [options]="r.options" [filter]="filter()" [action]="path()" [total]="r.page.total" [countFor]="countFor" (applied)="apply($event)" />
       </div>
     </div>
 
@@ -22,11 +22,16 @@
       } @else {
         <h2 class="sr-only">Products</h2>
 
+        <div [attr.aria-busy]="loading()" [class.is-loading]="loading()">
         <ul class="rp-grid">
           @for (tile of r.page.tiles; track tile.path; let i = $index) {
             <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" /></li>
           }
         </ul>
+        @if (range(); as x) {
+          <p class="rp-count-note rp-range" role="status">Showing {{ x.from }}-{{ x.to }} of {{ x.total }}</p>
+        }
+        </div>
         <rp-pagination [page]="r.page.page" [totalPages]="r.page.totalPages" [path]="path()" [filter]="filter()" />
       }
     </div>

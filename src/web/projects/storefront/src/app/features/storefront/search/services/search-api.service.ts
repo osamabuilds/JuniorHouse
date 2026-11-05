@@ -18,6 +18,14 @@ export class SearchApi {
       .pipe(catchError(() => of<SuggestResult>({ query, items: [] })));
   }
 
+  /** How many pieces a filter would show for these words, for the phone sheet's "Show N pieces" button (FLT-13). Null when it cannot be known. */
+  count(query: string, filter: ListingFilter): Observable<number | null> {
+    return this.http.get<SearchPageData>(BASE, { params: this.params(query, { ...filter, page: 1 }).set('pageSize', '1') }).pipe(
+      map((page) => page.total),
+      catchError(() => of(null)),
+    );
+  }
+
   /** An exact SKU or style code goes straight to its product (FR-06); anything else is searched by words. */
   find(query: string, filter: ListingFilter): Observable<SearchResult> {
     const code = skuCandidate(query);

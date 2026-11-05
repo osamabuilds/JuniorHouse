@@ -8,7 +8,7 @@ import {
   ActiveFiltersComponent,
   EmptyStateComponent,
   FilterChip,
-  FilterPanelComponent,
+  FilterBarComponent,
   ListingFilter,
   PaginationComponent,
   ProductTileComponent,
@@ -20,6 +20,7 @@ import { Crumb, BreadcrumbsComponent } from '../../../navigation/components/brea
 import { selectBrand, selectTopLinks } from '../../../site-settings';
 import { SearchResult } from '../../models/search.model';
 import { normaliseQuery, searchKey, searchUrl } from '../../models/search-query';
+import { SearchApi } from '../../services/search-api.service';
 import { SearchResultsActions } from '../../store/search-results.actions';
 import { selectSearchKey, selectSearchResult } from '../../store/search-results.selectors';
 
@@ -32,7 +33,7 @@ const PATH = '/search';
  */
 @Component({
   selector: 'rp-search-page',
-  imports: [NotFoundComponent, BreadcrumbsComponent, ProductTileComponent, FilterPanelComponent, ActiveFiltersComponent, PaginationComponent, EmptyStateComponent],
+  imports: [NotFoundComponent, BreadcrumbsComponent, ProductTileComponent, FilterBarComponent, ActiveFiltersComponent, PaginationComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './search-page.container.html',
   styleUrl: './search-page.container.scss',
@@ -42,6 +43,7 @@ export class SearchPageContainer {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly seo = inject(SeoService);
+  private readonly api = inject(SearchApi);
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
 
   private readonly queryMap = toSignal(this.route.queryParamMap, { requireSync: true });
@@ -71,6 +73,29 @@ export class SearchPageContainer {
 
   /** The result for the request now on screen, or null while it loads (or when there is nothing to look for). */
   protected readonly result = computed((): SearchResult | null => (this.key() === this.currentKey() ? this.stored() : null));
+
+  /**
+   * What to draw: the result for this request, or, while a new filter or page of the same search loads, the last one (dimmed and marked
+   * busy), so the grid never flashes blank (FLT-5). A different search never shows another search's page.
+   */
+  protected readonly shown = computed((): SearchResult | null => {
+    const now = this.result();
+    if (now) return now;
+    const sameSearch = (this.key() ?? '').split('|')[0] === this.currentKey().split('|')[0];
+    return sameSearch ? this.stored() : null;
+  });
+  protected readonly loading = computed(() => this.result() === null && this.shown() !== null);
+
+  /** The phone sheet's live count for a filter that is not applied yet (FLT-13). */
+  protected readonly countFor = (filter: ListingFilter) => this.api.count(this.query(), filter);
+
+  /** "Showing 1-24 of 48" under the grid (Q-FLT-1). */
+  protected readonly range = computed(() => {
+    const r = this.shown();
+    if (r?.status !== 'ok' || r.page.tiles.length === 0) return null;
+    const from = (r.page.page - 1) * r.page.pageSize + 1;
+    return { from, to: from + r.page.tiles.length - 1, total: r.page.total };
+  });
 
   protected readonly page = computed(() => {
     const r = this.result();

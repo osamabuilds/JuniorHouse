@@ -83,12 +83,13 @@ test.describe('a listing with products', () => {
     const path = await firstCategory(request);
     test.skip(!path, 'the shop has no listable product yet');
     await page.goto(path!);
-    await page.getByText('Filter and sort').click();
-    const size = page.locator('input[name="size"]').first();
-    test.skip((await size.count()) === 0, 'no size options in this scope');
+    const chip = page.locator('.rp-filterbar__desktop summary.rp-chip', { hasText: 'Size' });
+    test.skip((await chip.count()) === 0, 'no size options in this scope');
+    await chip.click();
+    const size = page.locator('.rp-filterbar__desktop .rp-chip-pop[open] input[name="size"]').first();
     const before = await page.locator('ul.rp-grid > li').count();
     await size.check();
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await page.locator('.rp-filterbar__desktop .rp-chip-pop[open] button[type="submit"]').click();
     await expect(page).toHaveURL(/size=/);
     await expect(page.locator('.rp-active .rp-chip')).toHaveCount(1);
     await page.getByRole('link', { name: 'Clear filters' }).click();
@@ -100,7 +101,7 @@ test.describe('a listing with products', () => {
     const path = await firstCategory(request);
     test.skip(!path, 'the shop has no listable product yet');
     await page.goto(`${path}?sort=price-asc`);
-    await expect(page.locator('select[name="sort"]')).toHaveValue('price-asc');
+    await expect(page.locator('.rp-filterbar__desktop select[name="sort"]')).toHaveValue('price-asc');
     const next = page.locator('nav[aria-label="Pagination"] a[rel="next"]');
     if (await next.count()) await expect(next).toHaveAttribute('href', /sort=price-asc/);
   });
@@ -111,9 +112,8 @@ test.describe('a listing with products', () => {
     const context = await browser.newContext({ javaScriptEnabled: false, baseURL: BASE });
     const page = await context.newPage();
     await page.goto(path!);
-    const form = page.locator('form.rp-filters');
+    const form = page.locator('.rp-filterbar__desktop form');
     await expect(form).toHaveAttribute('method', 'get');
-    await form.getByText('Filter and sort').click(); // a native details element opens without scripting
     await form.locator('select[name="sort"]').selectOption('price-desc');
     await form.getByRole('button', { name: 'Apply' }).click();
     await expect(page).toHaveURL(/sort=price-desc/);
@@ -136,7 +136,7 @@ test.describe('layout and accessibility', () => {
       const path = (await firstCategory(request)) ?? '/new-in';
       await page.setViewportSize({ width, height: 900 });
       await page.goto(path);
-      await page.getByText('Filter and sort').click();
+      await (width < 1024 ? page.locator('.rp-filterbar__sheet summary') : page.locator('.rp-filterbar__desktop summary.rp-chip').first()).click();
       const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
       expect(summary(results)).toEqual([]);
     });

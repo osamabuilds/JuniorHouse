@@ -19,6 +19,14 @@ function params(scope: ListingScope, filter: ListingFilter): HttpParams {
 export class ListingsApi {
   private readonly http = inject(HttpClient);
 
+  /** How many pieces a filter would show: one cheap call for the phone sheet's "Show N pieces" button (FLT-13). Null when it cannot be known. */
+  count(scope: ListingScope, filter: ListingFilter): Observable<number | null> {
+    return this.http.get<ListingPage>(BASE, { params: params(scope, { ...filter, page: 1 }).set('pageSize', '1') }).pipe(
+      map((page) => page.total),
+      catchError(() => of(null)),
+    );
+  }
+
   get(scope: ListingScope, filter: ListingFilter): Observable<ListingResult> {
     return this.http.get<ListingPage>(BASE, { params: params(scope, filter) }).pipe(
       switchMap((page) =>

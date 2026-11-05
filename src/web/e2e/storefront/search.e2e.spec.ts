@@ -84,8 +84,8 @@ test.describe('searching the demo shop', () => {
     expect(response!.status()).toBe(200);
     await expect(page.locator('h1')).toContainText('Results for “dress”');
     await expect(page.locator('rp-product-tile', { hasText: 'Floral Summer Dress' })).toBeVisible();
-    await expect(page.locator('rp-filter-panel')).toBeVisible();
-    await expect(page.locator('rp-filter-panel input[type="hidden"][name="q"]')).toHaveValue('dress');
+    await expect(page.locator('rp-filter-bar')).toBeVisible();
+    await expect(page.locator('rp-filter-bar .rp-filterbar__desktop input[type="hidden"][name="q"]')).toHaveValue('dress');
   });
 
   test('SRC-12 a synonym finds the same product (frock for dress)', async ({ page }) => {
@@ -154,9 +154,8 @@ test.describe('searching the demo shop', () => {
 
   test('SRC-1 applying a filter keeps the search text', async ({ page }) => {
     await page.goto('/search?q=dress');
-    await page.locator('rp-filter-panel summary').click();
-    await page.locator('rp-filter-panel select[name="sort"]').selectOption('price-asc');
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await page.locator('rp-filter-bar .rp-filterbar__desktop select[name="sort"]').selectOption('price-asc');
+    await page.locator('rp-filter-bar .rp-filterbar__desktop .rp-filterbar__right button[type="submit"]').click();
     await expect(page).toHaveURL(/q=dress/);
     await expect(page).toHaveURL(/sort=price-asc/);
   });

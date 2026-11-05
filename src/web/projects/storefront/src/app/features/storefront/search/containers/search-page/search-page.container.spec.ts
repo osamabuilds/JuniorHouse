@@ -95,7 +95,7 @@ describe('SearchPageContainer', () => {
 
     expect(el.querySelector('.rp-empty h2')!.textContent).toContain('Nothing found for “frock”');
     expect([...el.querySelectorAll('.rp-empty a')].map((a) => a.getAttribute('href'))).toEqual(['/new-in']);
-    expect(el.querySelector('rp-filter-panel')).toBeNull();
+    expect(el.querySelector('rp-filter-bar')).toBeNull();
   });
 
   it('SRC-2 filters that remove everything say so and keep the way back', () => {
@@ -108,8 +108,8 @@ describe('SearchPageContainer', () => {
   it('SRC-9 the filter form and the page links keep the search text', () => {
     const { el } = render(ok(Array.from({ length: 24 }, (_, i) => tile(i + 1)), { total: 60, totalPages: 3 }));
 
-    expect(el.querySelector<HTMLInputElement>('rp-filter-panel input[type="hidden"][name="q"]')!.value).toBe('frock');
-    expect(el.querySelector('rp-filter-panel option[value="recent"]')!.textContent).toContain('Best match');
+    expect(el.querySelector<HTMLInputElement>('rp-filter-bar input[type="hidden"][name="q"]')!.value).toBe('frock');
+    expect(el.querySelector('rp-filter-bar option[value="recent"]')!.textContent).toContain('Best match');
     expect(el.querySelector('rp-pagination a[rel="next"]')!.getAttribute('href')).toBe('/search?q=frock&page=2');
   });
 
@@ -161,8 +161,8 @@ describe('SearchPageContainer', () => {
     const { el } = render(ok([tile(1)]));
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    el.querySelector<HTMLInputElement>('rp-filter-panel input[name="size"]')!.click();
-    el.querySelector<HTMLFormElement>('rp-filter-panel form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    el.querySelector<HTMLInputElement>('rp-filter-bar input[name="size"]')!.click();
+    el.querySelector<HTMLFormElement>('rp-filter-bar form')!.dispatchEvent(new Event('submit', { cancelable: true }));
 
     expect(navigate).toHaveBeenCalledWith(['/search'], { queryParams: { q: 'frock', size: ['5-6y'] } });
   });

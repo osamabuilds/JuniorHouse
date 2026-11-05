@@ -1,0 +1,50 @@
+<div class="rp-filterbar__in rp-filterbar__desktop">
+  <form class="rp-filterbar__form" method="get" [attr.action]="action()" aria-label="Filter and sort" (submit)="submit($event)">
+    @for (field of extraFields(); track field[0]) {
+      <input type="hidden" [name]="field[0]" [value]="field[1]" />
+    }
+    <div class="rp-filterbar__chips">
+      @for (g of groups(); track g.key) {
+        <div class="rp-chipwrap">
+          <details class="rp-chip-pop">
+            <summary class="rp-chip" [class.is-on]="g.selected > 0">{{ g.label }}@if (g.selected > 0) { <span class="rp-chip__n"> ({{ g.selected }})</span> }</summary>
+            <div class="rp-chip-pop__panel">
+              <rp-filter-fields [options]="options()" [filter]="filter()" [group]="g.key" />
+              <button type="submit" class="rp-btn rp-btn--sm">Apply</button>
+            </div>
+          </details>
+          @if (g.selected > 0) {
+            <a class="rp-chip__x" [routerLink]="action()" [queryParams]="g.removeQuery" [attr.aria-label]="'Remove ' + g.label + ' filter'"><span aria-hidden="true">×</span></a>
+          }
+        </div>
+      }
+    </div>
+    <div class="rp-filterbar__right">
+      <span class="rp-count-note">{{ total() }} {{ total() === 1 ? 'piece' : 'pieces' }}</span>
+      <rp-filter-fields [options]="options()" [filter]="filter()" group="sort" [defaultSortLabel]="defaultSortLabel()" />
+      <button type="submit" class="rp-btn rp-btn--sm">Apply</button>
+    </div>
+  </form>
+</div>
+
+<div class="rp-filterbar__in rp-filterbar__phone">
+  <details class="rp-filterbar__sheet" rpSheet>
+    <summary class="rp-chip" [class.is-on]="activeCount() > 0">Filter and sort@if (activeCount() > 0) { <span class="rp-chip__n"> ({{ activeCount() }})</span> }</summary>
+    <form method="get" [attr.action]="action()" aria-label="Filter and sort" (submit)="submit($event)" (change)="draftChanged($event)">
+      @for (field of extraFields(); track field[0]) {
+        <input type="hidden" [name]="field[0]" [value]="field[1]" />
+      }
+      <div class="rp-sheethead">
+        <span>Filter and sort</span>
+        <button type="button" class="rp-icon-btn" aria-label="Close filters" (click)="closeSheet($event)"><span aria-hidden="true">×</span></button>
+      </div>
+      <div class="rp-sheetbody">
+        <rp-filter-fields [options]="options()" [filter]="filter()" [defaultSortLabel]="defaultSortLabel()" />
+      </div>
+      <div class="rp-sheetfoot">
+        <button type="submit" class="rp-btn rp-btn--primary rp-btn--block">Show {{ shown() }} {{ shown() === 1 ? 'piece' : 'pieces' }}</button>
+      </div>
+    </form>
+  </details>
+  <span class="rp-count-note">{{ total() }} {{ total() === 1 ? 'piece' : 'pieces' }}</span>
+</div>
