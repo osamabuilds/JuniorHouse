@@ -58,7 +58,7 @@
       </button>
       <form class="rp-search" role="search" action="/search" method="get">
         <rp-icon name="search" />
-        <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off" (focus)="searchOpen.emit()" />
+        <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off" (click)="searchOpen.emit()" (keydown.enter)="$event.preventDefault(); searchOpen.emit()" (keydown.arrowdown)="$event.preventDefault(); searchOpen.emit()" />
       </form>
     </div>
   </div>

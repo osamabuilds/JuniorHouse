@@ -109,6 +109,22 @@ describe('SiteHeaderComponent', () => {
     expect(input.getAttribute('aria-label')).toBe('Search');
   });
 
+  it('SC-10 the desktop search field opens the overlay on click and Enter, never on focus (closing returns focus to it, which would reopen the overlay)', () => {
+    const f = render();
+    let opened = 0;
+    f.componentInstance.searchOpen.subscribe(() => opened++);
+    const field = q(f, '.rp-search input') as HTMLInputElement;
+
+    field.focus();
+    field.dispatchEvent(new FocusEvent('focus'));
+    expect(opened).toBe(0);
+
+    field.click();
+    expect(opened).toBe(1);
+    field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+    expect(opened).toBe(2);
+  });
+
   it('SC-7 the menu and search icon buttons emit so the shell can open the dialogs', () => {
     const f = render();
     let menu = 0, search = 0;
