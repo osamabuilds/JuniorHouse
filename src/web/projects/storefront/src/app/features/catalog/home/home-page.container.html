@@ -19,7 +19,7 @@
   @if (h.audiences.length > 0) {
     <section class="rp-section" aria-label="Shop by audience">
       <div class="rp-wrap">
-        <ul class="rp-split rp-split--list">
+        <ul class="rp-split rp-split--list" [class.rp-split--single]="h.audiences.length === 1">
           @for (a of h.audiences; track a.code) {
             <li>
               <a class="rp-tile rp-zoomable" [routerLink]="a.path">

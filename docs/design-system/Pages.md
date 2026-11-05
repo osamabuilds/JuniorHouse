@@ -8,10 +8,10 @@ Blueprints for the storefront. Sections appear in the order listed.
 2. `Hero`: full-bleed photo or muted loop, `<h1>` "Dressed for the day", one primary action and one link.
 3. `CategorySplit`: Girls and Boys, two 4:5 tiles.
 4. New in: eight 4:5 `ProductCard`s on the tight grid, "View all".
-5. `EditorialBand` (espresso): one image, one italic line, link to the story.
+5. `EditorialBand` (dark): one image, one italic line, link to the story.
 6. `GiftsStrip`: four gift entries on a sand band.
 7. `FabricBand`: macro textures and Fabric and care.
-8. `TrustLine`, then `SiteFooter` (espresso, with the newsletter).
+8. `TrustLine`, then `SiteFooter` (light, with the newsletter; owner decision Q-CR-3).
 
 Heading order: one `<h1>`, `<h2>` per section, `<h3>` per card and tile. Landmarks: `<header>`, `<nav aria-label="Primary">`, `<main>`, `<section aria-labelledby>`, `<footer>`.
 

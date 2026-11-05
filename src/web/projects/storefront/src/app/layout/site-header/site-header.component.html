@@ -44,6 +44,11 @@
           }
         }
       </nav>
+      @if (auth() === 'signedIn' || auth() === 'signedOut') {
+        <a class="rp-icon-btn rp-acct-icon" [routerLink]="auth() === 'signedIn' ? '/account' : '/account/sign-in'" [attr.aria-label]="auth() === 'signedIn' ? 'Your account' : 'Sign in'">
+          <rp-icon name="user" />
+        </a>
+      }
       <a routerLink="/wishlist" class="rp-icon-btn" [attr.aria-label]="'Wishlist, ' + wishlistCount() + (wishlistCount() === 1 ? ' product saved' : ' products saved')">
         <rp-icon name="heart" />
         @if (wishlistCount() > 0) {

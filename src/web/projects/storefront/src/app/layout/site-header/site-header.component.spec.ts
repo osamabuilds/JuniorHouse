@@ -14,10 +14,12 @@ import { SiteSettingsActions } from '../../features/storefront/site-settings';
 import { launchSettings } from '../../shared/data/launch-settings';
 import { SiteHeaderComponent } from './site-header.component';
 import { Store } from '@ngrx/store';
+import { CustomerAuthActions } from '../../core/customer-auth/store/customer-auth.actions';
+import { customerAuthFeature } from '../../core/customer-auth/store/customer-auth.reducer';
 
 function render(menu: Menu = sampleMenu): ComponentFixture<SiteHeaderComponent> {
   TestBed.configureTestingModule({
-    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideState(wishlistFeature), provideSiteSettings(), provideNavigation(), provideHttpClient(), provideHttpClientTesting(), provideCart()],
+    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideState(wishlistFeature), provideState(customerAuthFeature), provideSiteSettings(), provideNavigation(), provideHttpClient(), provideHttpClientTesting(), provideCart()],
   });
   const store = TestBed.inject(Store);
   store.dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));
@@ -154,6 +156,27 @@ describe('SiteHeaderComponent', () => {
     const f = render();
     expect(q(f, '.rp-menu-btn').getAttribute('aria-label')).toBe('Open menu');
     expect(q(f, '.rp-search-btn').getAttribute('aria-label')).toBe('Search');
+  });
+
+  it('HDR-1 on a phone the account is one 44px icon link: to sign-in for a guest, to the account page when signed in', () => {
+    const f = render();
+    const store = TestBed.inject(Store);
+    store.dispatch(CustomerAuthActions.sessionLoaded({ result: { status: 'signedOut' } }));
+    f.detectChanges();
+    const guest = q(f, 'a.rp-acct-icon');
+    expect(guest.getAttribute('href')).toBe('/account/sign-in');
+    expect(guest.getAttribute('aria-label')).toBe('Sign in');
+    expect(guest.classList.contains('rp-icon-btn')).toBe(true);
+    store.dispatch(CustomerAuthActions.sessionLoaded({ result: { status: 'ok', session: { firstName: 'Ayesha', emailVerified: true, csrfToken: 'x' } } }));
+    f.detectChanges();
+    const member = q(f, 'a.rp-acct-icon');
+    expect(member.getAttribute('href')).toBe('/account');
+    expect(member.getAttribute('aria-label')).toBe('Your account');
+  });
+
+  it('HDR-1 the icon is not drawn until the session is known, so a signed-in visitor never sees Sign in flash', () => {
+    const f = render();
+    expect(q(f, 'a.rp-acct-icon')).toBeNull();
   });
 
   it('CR-5 has a bag button that names its count, no account control and no newsletter form until those features exist', () => {

@@ -157,3 +157,42 @@ test.describe('smoothness', () => {
     });
   }
 });
+
+test.describe('design audit fixes (2026-11-05)', () => {
+  test('HDR-1 on a phone the header shows one account icon, not wrapped Sign in text', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page, '/');
+    const icon = page.locator('header a.rp-acct-icon');
+    await expect(icon).toBeVisible();
+    const box = (await icon.boundingBox())!;
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    await expect(page.locator('header .rp-acct')).toBeHidden();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('HDR-1 from 40rem the words are shown and the icon is hidden', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await open(page, '/');
+    await expect(page.locator('header .rp-acct__link').first()).toBeVisible();
+    await expect(page.locator('header a.rp-acct-icon')).toBeHidden();
+  });
+
+  test('SEO-04 a missing page is 404, noindex and has no canonical', async ({ request }) => {
+    const res = await request.get('/this-page-does-not-exist');
+    expect(res.status()).toBe(404);
+    const html = await res.text();
+    expect(html).toContain('noindex');
+    expect(html).not.toMatch(/rel="canonical"/);
+  });
+
+  test('home: a single audience tile spans the row instead of leaving half of it empty', async ({ page, request }) => {
+    const home = await (await request.get('/api/storefront/home')).json();
+    test.skip(home.audiences.length !== 1, 'needs exactly one audience in the demo data');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await open(page, '/');
+    const list = (await page.locator('ul.rp-split').boundingBox())!;
+    const tile = (await page.locator('ul.rp-split li').first().boundingBox())!;
+    expect(tile.width).toBeGreaterThan(list.width * 0.95);
+  });
+});
