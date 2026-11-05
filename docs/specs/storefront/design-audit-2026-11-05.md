@@ -35,3 +35,31 @@ D2 and D4 need a spec (drafts: `collections-page`, `product-buy-bar`); D5 waits 
 ## Next
 
 Visual pass over the remaining pages (listing and search at 390 and 1280, cart and drawer, wishlist, sign-in, content pages, 404), then the fixes from D2 to D6 once the owner has decided.
+
+## Conformance gaps found by comparing previews with the live pages (2026-11-05, owner: "follow whatever the design folder says")
+
+Method: the `rp-` classes used by each `components/<Name>/preview.html` were compared with the classes the live page renders (1280 px), then each real difference was checked against the component README. Differences caused only by demo data (empty cart, no checkout) or by preview wrapper classes (`rp-vp`, `rp-hide-sm`) are left out. The owner decisions below the table already override the previews and are **not** treated as gaps.
+
+| # | Design says | Live page | Kind |
+|---|---|---|---|
+| G1 | **Listing** (`ListingPage`): sticky `FilterBar` (`rp-filterbar__in`), phone bottom-sheet drawer, colour swatches (`rp-swatches`), active-filter chips, 12 at a time then a "Show more" ghost button with "Showing 12 of 48", an editorial banner (`rp-banner`) after the fourth card | A form-style filter panel (`rp-filters`), numbered pagination, no drawer, no swatches, no banner | Rebuild of the filter and paging UI. **Conflict:** the approved `listings` spec chose server-rendered pagination for SEO (SEO-06); "Show more" needs a decision |
+| G2 | **Product card** (`ProductCard`): second image on hover and a swipe with page dots (`rp-slide`, `rp-pagedots`), Quick view (`rp-qv`), "low stock" tag (`rp-tag--low`), meta line (`rp-card__meta`) | Single image, wishlist heart, sale tag, price, availability line | New features (quick view, second image, low-stock tag) |
+| G3 | **Gallery** (`Gallery`, `Lightbox`): `rp-gallery`, swipe with count and arrows, thumbnails grid on desktop, lightbox with pinch zoom | Own markup (`gallery`, `gallery__item`), a plain list of images, no lightbox | Rebuild to the design's structure and class names |
+| G4 | **Product page**: accordions (`rp-acc`), per-product fabric band (`rp-fabric`), "Complete the look" rail, perks, sticky buy bar | None of these | Already specified or waiting: buy bar and perks (`product-buy-bar`), rail (`product-recommendations`), accordions (PR-13 note) |
+| G5 | **Mega menu**: image tiles (`rp-mega__tile`) and `display-xs` column titles | Link columns only | New feature (needs images per entry) |
+| G6 | **Collections page** | Not built (404) | Specified and planned: `collections-page` |
+| G7 | **Auth screens**: `rp-formgrid`, `rp-label`, `rp-notice`, `rp-notice--error` | Own form markup and message styles | Markup alignment (no new behaviour) |
+| G8 | **Content page**: callout (`rp-callout`), table (`rp-table`), accordion (`rp-acc`) | Table exists in the block component under other classes; no callout or accordion in demo content | Markup alignment; accordion needs a content block (PR-13 note) |
+| G9 | **Home**: card slides, Quick view and low-stock tag (same as G2) | as G2 | covered by G2 |
+
+**Owner decisions that already override the previews (kept as they are unless you say otherwise):** the footer is light, with no big decorative wordmark (Q-CR-3, CR-3); the desktop header lays out wordmark, navigation, search (CR-1); the account control in the header (not in the design); black and white colours and Manrope (2026-10-24). The design's `SiteFooter` preview is therefore intentionally not matched.
+
+**Cart, checkout and wishlist** could not be compared in the demo data (empty cart, checkout redirects, empty wishlist). They need a seeded cart to audit.
+
+### Proposed order (each group is a spec, then plan and tasks, then build)
+
+1. **Product page**: G3 gallery and lightbox, then the existing `product-buy-bar` (G4).
+2. **Listing**: G1 filter bar and drawer, swatches, banner; decide Show more vs pagination first.
+3. **Product card**: G2 (second image, low-stock tag, quick view).
+4. **Markup alignment** G7, G8 (no behaviour change, quick).
+5. **Mega menu tiles** G5 and the cart/checkout/wishlist audit with a seeded cart.
