@@ -6,6 +6,7 @@ import { provideStore } from '@ngrx/store';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { providePage } from './features/storefront/page/page.providers';
+import { provideCollectionsPage } from './features/storefront/collections-page';
 import { provideListings } from './features/storefront/listings';
 import { provideProductPages } from './features/storefront/product-pages';
 import { provideNavigation } from './features/storefront/navigation';
@@ -33,6 +34,7 @@ export const appConfig: ApplicationConfig = {
     provideSiteSettings(),
     provideNavigation(),
     provideListings(),
+    provideCollectionsPage(),
     provideProductPages(),
     provideSearch(),
     provideCart(),

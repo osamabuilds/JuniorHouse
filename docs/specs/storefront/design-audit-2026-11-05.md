@@ -28,7 +28,7 @@ D2 and D4 need a spec (drafts: `collections-page`, `product-buy-bar`); D5 waits 
 
 | # | Finding | Why it is not a silent fix |
 |---|---|---|
-| D2 | **`/collections` returns 404.** The footer link "Collections" and the nav entry (`kind: collection-list`, `/collections`) point at it, but only `collections/:code` is routed. `CollectionsPage` exists in the design system and was never built | Needs a spec (what the page lists, how it is ordered, empty state) |
+| D2 (fixed 2026-11-05) | **`/collections` returns 404.** The footer link "Collections" and the nav entry (`kind: collection-list`, `/collections`) point at it, but only `collections/:code` is routed. `CollectionsPage` exists in the design system and was never built | Needs a spec (what the page lists, how it is ordered, empty state) |
 | D4 (fixed 2026-11-05) | **Product page on a phone has no sticky buy bar.** `ProductDetail` and `Pages.md` require a bottom bar with price and Add to bag; only the header is sticky. `product-pages` and `pages-redesign` do not list it, so it was never specified. The same README also lists three perks (delivery, exchange, WhatsApp) | Needs spec criteria before building; `scroll-padding-bottom` must equal the bar height (WCAG 2.4.11) |
 | D5 | Product page lacks the per-product `FabricBand` and the "Complete the look" rail; accordions are not built (`PR-13` already records the missing accordion block). The rail overlaps the draft `product-recommendations` spec | Wait for the recommendations decision |
 

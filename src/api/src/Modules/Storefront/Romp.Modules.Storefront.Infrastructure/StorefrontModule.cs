@@ -17,6 +17,7 @@ using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Warehouse.Contracts;
 using Romp.Modules.Storefront.Infrastructure.Listings;
 using Romp.Modules.Storefront.Infrastructure.Search;
+using Romp.Modules.Storefront.Infrastructure.CollectionsPage;
 using Romp.Modules.Storefront.Infrastructure.Navigation;
 using Romp.Modules.Storefront.Infrastructure.ProductPages;
 using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
@@ -108,6 +109,7 @@ public sealed class StorefrontModule : IModule
     {
         endpoints.MapPublicStorefrontEndpoints();
         endpoints.MapPublicNavigationEndpoints();
+        endpoints.MapPublicCollectionsEndpoints();
         endpoints.MapPublicListingEndpoints();
         endpoints.MapPublicSearchEndpoints();
         endpoints.MapPublicProductPageEndpoints();

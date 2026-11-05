@@ -6,7 +6,7 @@ Spec: [spec.md](spec.md) · Plan: [plan.md](plan.md). Each step is test-first; t
 
 - [x] **M1** `MenuTileDto` and the optional `Tile` on `MenuAudienceDto`. *Test: serialisation keeps existing fields and omits a null tile.*
 - [x] **M2** Pick the newest listable product per gender and load its main image through `ListingTiles.ImagesAsync`. *Tests (Testcontainers, tagged `[Trait("Spec", "MGT-x")]`): `Menu_AudienceTileUsesTheNewestListableProduct`, `Menu_SkipsUnlistableProducts` (an unpublished newest gives the next), `Menu_NoTileWhenNoProcessedImage` (MGT-3), `Menu_TileLinksToTheAudienceNewIn` (MGT-2), `Menu_RunsAFixedNumberOfExtraQueries` (a query counter with one and with three audiences proves no N+1).*
-- [x] **M3** Endpoint test: `/api/storefront/menu` still has `Cache-Control: public, max-age=60` and the existing shape. *Test: `Menu_Endpoint_KeepsCachingAndShape`.*
+- [ ] **M3** Endpoint test: `/api/storefront/menu` still has `Cache-Control: public, max-age=60` and the existing shape. *Test: `Menu_Endpoint_KeepsCachingAndShape`.*
 - [x] **M4** `StructureSyncTests` and `Romp.ArchitectureTests` stay green.
 
 ## Web (Angular storefront)

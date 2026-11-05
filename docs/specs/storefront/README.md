@@ -20,7 +20,7 @@ The public, server-rendered shop window (Sprint 9, "Sell: browse"): navigation, 
 | [product-pages](product-pages/spec.md) | Gallery, price, SKU, variants and availability, sold-out state, size chart, composition and care | FR-07, FR-08, FR-09, FEAT-PDP-01..04 | Implemented (PDP-14 in seo) |
 | [product-recommendations](product-recommendations/spec.md) | "You may also like" (embeddings) and "Trending now" rows with quick add on the product page | owner request (backlog D-5) | after S9 | Draft |
 | [hydration-state](hydration-state/spec.md) | Server-rendered result pages are handed to the browser (whitelisted store slices, ADR 0028) so hydration does not flash a loading state | NFR-01, SEO-01 | after S9 | Implemented |
-| [collections-page](collections-page/spec.md) | The `/collections` index (the nav and footer link to it today and get a 404) | FR-01, SEO-03, SEO-04 | after S9 | Approved, plan and tasks written |
+| [collections-page](collections-page/spec.md) | The `/collections` index (the nav and footer link to it today and get a 404) | FR-01, SEO-03, SEO-04 | after S9 | Implemented |
 | [product-buy-bar](product-buy-bar/spec.md) | Sticky bottom buy bar on phones and the three perks under the buy button | FEAT-PDP-01..04, NFR-19 | after S9 | Implemented |
 | [product-gallery-lightbox](product-gallery-lightbox/spec.md) | Live counter, pictures as buttons and a full-screen viewer with zoom on the product gallery | FR-07, SEO-07, NFR-19 | after S9 | Implemented |
 | [listing-filter-bar](listing-filter-bar/spec.md) | Sticky filter bar with popovers, phone bottom-sheet drawer and colour swatches on listings and search; pagination kept | FR-02, FR-03, FR-05, SEO-06 | after S9 | Implemented |

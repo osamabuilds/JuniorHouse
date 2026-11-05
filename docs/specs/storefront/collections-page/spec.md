@@ -1,6 +1,6 @@
 # Collections page (`/collections`)
 
-- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
+- **Status:** Implemented (2026-11-05)
 - **Jira:** none yet
 - **BRD sections:** §14 (SEO), navigation (FR-01); design source `docs/design-system/components/CollectionsPage/README.md`
 - **Requirement IDs:** FR-01, NFR-01, NFR-17, NFR-19, SEO-03, SEO-04
@@ -41,3 +41,11 @@ Collection editing (admin, already exists), collection descriptions beyond what 
 - [x] **Q-COL-1** Where do the piece counts and tile images come from? The menu API carries only code, label and path. Recommendation: a small paged endpoint `GET /api/storefront/collections` from the read model returning name, code, live-product count and the first product's image. **Resolved: recommendation accepted.**
 - [x] **Q-COL-2** Order of the tiles: the settings order (recommended, the owner controls it) or alphabetical? **Resolved: recommendation accepted.**
 - [x] **Q-COL-3** Until collection photography exists, use the product's first image (recommended) or the garment placeholder? **Resolved: recommendation accepted.**
+
+## As built
+
+**API:** a new feature `CollectionsPage` (named like its spec folder, as the structure test requires) in Storefront Application and Infrastructure: `GET /api/storefront/collections?page=&pageSize=` (anonymous, `Cache-Control: public, max-age=60`). One grouped query gives each collection's live product count and newest product; the enabled lookup rows (from the lookup cache) decide which collections exist and their order (sort, then name); one two-query picture load covers the whole page; page size is clamped to 1..48 and page to 1 or more, and text or oversize values fall back to defaults. 7 new server tests (Docker); the existing public-route count test now expects 13 routes.
+
+**Web:** feature `features/storefront/collections-page` (store with a `collectionsPage` slice, API service, tile component, container), route `collections` ahead of `collections/:code`. The page is server-rendered with title, description, canonical, BreadcrumbList and an indexable robots state; an empty result is a 200 with a link to New in (COL-6), a page after the last is a real 404, a failure is a 503. The new slice is on the ADR 0028 whitelist (test updated). Tiles are two across from 40rem, stacked on a phone, each one link of at least 44px; the footer and header links to `/collections` now open it (COL-8).
+
+**Not done:** the read-table index check (C1) and a Testcontainers integration test for the endpoint (C4, CI only).
