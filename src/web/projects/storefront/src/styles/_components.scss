@@ -351,7 +351,10 @@
 .rp-acc summary::after { content: "+"; font: 300 22px/1 var(--font-sans); transition: transform var(--dur-base) var(--ease-out); }
 .rp-acc details[open] summary::after { transform: rotate(45deg); }
 .rp-acc details p, .rp-acc details ul { padding-bottom: var(--space-5); font: 400 15px/24px var(--font-sans); color: var(--ink-muted); }
-.rp-buybar { position: sticky; bottom: 0; z-index: 20; display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); align-items: center; padding: var(--space-3) var(--margin-mobile); background: var(--surface); border-top: var(--border-line) solid var(--line); }
+.rp-buybar { position: fixed; inset-inline: 0; bottom: 0; z-index: 20; padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); align-items: center; padding-top: var(--space-3); padding-inline: var(--margin-mobile); background: var(--surface); border-top: var(--border-line) solid var(--line); }
+.rp-buybar__price { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); margin: 0; }
+.rp-buybar__from { color: var(--ink-muted); }
+.rp-buybar__note { grid-column: 1 / -1; margin: 0; }
 @media (min-width: 64rem) {
   .rp-pdp { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: start; padding-top: var(--space-6); }
   .rp-buy { position: sticky; top: calc(var(--header-h-desktop) + var(--space-6)); padding-block: 0; max-width: 32rem; }

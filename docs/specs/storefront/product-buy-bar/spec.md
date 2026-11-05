@@ -1,6 +1,6 @@
 # Product page buy bar and perks
 
-- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
+- **Status:** Implemented (2026-11-05)
 - **Jira:** none yet
 - **BRD sections:** §5 product page (FEAT-PDP-*); design source `docs/design-system/components/ProductDetail/README.md`
 - **Requirement IDs:** FEAT-PDP-01..04 (existing), NFR-01, NFR-17, NFR-19, SEC-09
@@ -44,3 +44,7 @@ Accordions (the content model has no accordion block; see the PR-13 note), the p
 - [x] **Q-BUY-1** Perks text: the design lists delivery, exchange and WhatsApp. Take the wording from settings (recommended) or fixed copy? **Resolved: recommendation accepted.**
 - [x] **Q-BUY-2** Show the bar from tablet up to 64rem as well, or phone only (under 40rem)? Recommendation: under 64rem, because the design's two-column desktop layout starts at 64rem. **Resolved: recommendation accepted.**
 - [x] **Q-BUY-3** On a product with several colours, should the bar show the chosen colour name next to the price? Recommendation: no, keep it to price and button. **Resolved: recommendation accepted.**
+
+## As built
+
+`product-pages/components/buy-bar` (presentational), `product-perks`, `utils/perks.util.ts` (pure), and `shared/utils/viewport.ts` (in-view, media query and height observers, safe on the server). The product page container shows the bar below 64rem while the main Add to bag button is off screen, and sets `scroll-padding-bottom` and the page bottom padding to the bar height while it shows (the inner `.rp-buybar` is measured, not the host). The design CSS already had `.rp-buybar` as `sticky`; it is now `fixed` so it stays reachable at the end of the page. With a size chosen the bar adds it through `CartActions.add`; with none it scrolls to and focuses the sizes and shows the hint; a chosen size that cannot be bought disables it (BUY-5). The bar's hint and message are `aria-hidden` copies of what the main area already announces. Perks come from `selectFacts`; the demo settings now show delivery, exchange and WhatsApp.

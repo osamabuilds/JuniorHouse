@@ -10,7 +10,8 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, UrlSegment } from '@angular/router';
 import { provideStore } from '@ngrx/store';
 import { of } from 'rxjs';
-import { provideSiteSettings } from '../../../site-settings';
+import { SiteSettingsActions, provideSiteSettings } from '../../../site-settings';
+import { launchSettings } from '../../../../../shared/data/launch-settings';
 import { ProductPage, ProductPageResult } from '../../models/product-page.model';
 import { provideProductPages } from '../../product-pages.providers';
 import { ProductPagesApi } from '../../services/product-pages-api.service';
@@ -88,7 +89,7 @@ function render(result: ProductPageResult, query: Record<string, string> = {}, r
   fixture.detectChanges();
   TestBed.flushEffects?.();
   fixture.detectChanges();
-  return { el: fixture.nativeElement as HTMLElement, get };
+  return { el: fixture.nativeElement as HTMLElement, get, fixture };
 }
 
 const found = (over: Partial<ProductPage> = {}): ProductPageResult => ({ status: 'found', page: { ...basePage, ...over } });
@@ -314,5 +315,134 @@ describe('ProductPageContainer', () => {
     render({ status: 'error' }, {}, init);
 
     expect(init.status).toBe(503);
+  });
+});
+
+class FakeIntersectionObserver {
+  static all: FakeIntersectionObserver[] = [];
+  constructor(public cb: (entries: { isIntersecting: boolean }[]) => void) {
+    FakeIntersectionObserver.all.push(this);
+  }
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+class FakeResizeObserver {
+  constructor(public cb: () => void) {}
+  observe(): void {}
+  disconnect(): void {}
+}
+
+function stubViewport(narrow = true): void {
+  FakeIntersectionObserver.all = [];
+  vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+  vi.stubGlobal('ResizeObserver', FakeResizeObserver);
+  vi.stubGlobal('matchMedia', () => ({ matches: narrow, addEventListener: () => undefined, removeEventListener: () => undefined }));
+  Element.prototype.scrollIntoView = vi.fn();
+}
+/** Tell the page that its main Add to bag button is (or is not) on screen. */
+function mainButtonInView(fixture: { detectChanges(): void }, visible: boolean): void {
+  const observer = FakeIntersectionObserver.all[FakeIntersectionObserver.all.length - 1];
+  observer.cb([{ isIntersecting: visible }]);
+  fixture.detectChanges();
+}
+const bar = (el: HTMLElement) => el.querySelector<HTMLElement>('rp-buy-bar .rp-buybar');
+const barButton = (el: HTMLElement) => el.querySelector<HTMLButtonElement>('rp-buy-bar button');
+
+describe('ProductPageContainer buy bar and perks', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    document.documentElement.style.scrollPaddingBottom = '';
+    document.body.style.paddingBottom = '';
+  });
+
+  it('BUY-2 the bar is not drawn while the main Add to bag button is in view', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    mainButtonInView(fixture, true);
+    expect(bar(el)).toBeNull();
+  });
+
+  it('BUY-1 BUY-6 when the main button leaves the screen the bar appears with the server price', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    expect(bar(el)).toBeNull();
+    mainButtonInView(fixture, false);
+    expect(bar(el)).not.toBeNull();
+    expect(bar(el)!.querySelector('.rp-buybar__price')!.textContent).toContain('1,299');
+    expect(bar(el)!.querySelector('s')!.textContent).toContain('1,599');
+  });
+
+  it('BUY-9 at 64rem or wider the bar is never drawn', () => {
+    stubViewport(false);
+    const { el, fixture } = render(found());
+    mainButtonInView(fixture, false);
+    expect(bar(el)).toBeNull();
+  });
+
+  it('BUY-5 a sold-out product has no bar (its page shows the sold-out state and the Notify me form)', () => {
+    stubViewport();
+    const { el } = render(found({ isAvailable: false, selectedSize: null, sizes: basePage.sizes.map((s) => ({ ...s, availability: 'SoldOut' })) }));
+    // There is no main button to watch on a sold-out page, so the bar can never be asked for.
+    expect(FakeIntersectionObserver.all.length).toBe(0);
+    expect(bar(el)).toBeNull();
+  });
+
+  it('BUY-4 with a size chosen the bar adds that size through the same action, once', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    const dispatch = vi.spyOn(TestBed.inject(Store), 'dispatch');
+    mainButtonInView(fixture, false);
+    barButton(el)!.click();
+    const adds = dispatch.mock.calls.filter(([a]) => (a as unknown as { type: string }).type === CartActions.add.type);
+    expect(adds).toEqual([[CartActions.add({ variantId: 501, quantity: 1 })]]);
+  });
+
+  it('BUY-3 with no size chosen the bar scrolls to the sizes, says why, and adds nothing', () => {
+    stubViewport();
+    const { el, fixture } = render(found({ selectedSize: null }));
+    const dispatch = vi.spyOn(TestBed.inject(Store), 'dispatch');
+    mainButtonInView(fixture, false);
+    barButton(el)!.click();
+    fixture.detectChanges();
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    expect(bar(el)!.textContent).toContain('Choose a size');
+    expect(dispatch.mock.calls.some(([a]) => (a as unknown as { type: string }).type === CartActions.add.type)).toBe(false);
+  });
+
+  it('BUY-5 a chosen size that is sold out leaves the bar button disabled with the reason', () => {
+    stubViewport();
+    const { el, fixture } = render(found({ selectedSize: '7-8y' }));
+    mainButtonInView(fixture, false);
+    expect(barButton(el)!.disabled).toBe(true);
+    expect(bar(el)!.textContent).toContain('not available');
+  });
+
+  it('BUY-7 while the bar shows, scroll padding and bottom padding are set from its height, and both are cleared when it goes', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    expect(document.documentElement.style.scrollPaddingBottom).toBe('');
+    mainButtonInView(fixture, false);
+    expect(bar(el)).not.toBeNull();
+    // jsdom has no layout, so the measured height is 0; the real height is checked in the browser test.
+    expect(document.documentElement.style.scrollPaddingBottom).toBe('0px');
+    expect(document.body.style.paddingBottom).toBe('0px');
+    mainButtonInView(fixture, true);
+    expect(document.documentElement.style.scrollPaddingBottom).toBe('');
+    expect(document.body.style.paddingBottom).toBe('');
+  });
+
+  it('BUY-10 BUY-11 the perks follow the settings, and a missing fact leaves its line out', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    const store = TestBed.inject(Store);
+    store.dispatch(SiteSettingsActions.loadSuccess({ settings: { ...launchSettings, delivery: [{ city: 'Lahore', minDays: 2, maxDays: 4, charge: 200, courier: 'TCS', enabled: true }], exchange: { windowDays: 7, conditions: [] } }, source: 'api' }));
+    fixture.detectChanges();
+    const lines = [...el.querySelectorAll('.rp-perks li')].map((li) => li.textContent!.trim());
+    expect(lines).toEqual(['Delivery in 2-4 days', 'Exchange within 7 days', 'Questions? Message us on WhatsApp']);
+
+    store.dispatch(SiteSettingsActions.loadSuccess({ settings: { ...launchSettings, delivery: [], exchange: { windowDays: 0, conditions: [] }, brand: { ...launchSettings.brand, whatsapp: '' } }, source: 'api' }));
+    fixture.detectChanges();
+    expect(el.querySelector('.rp-perks')).toBeNull();
   });
 });
