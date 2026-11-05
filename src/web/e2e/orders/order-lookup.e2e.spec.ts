@@ -113,6 +113,35 @@ test.describe('track your order', () => {
     await expect(page.getByRole('alert')).toHaveText(wrongMobile);
   });
 
+  test('OLK-5 the confirmation email carries a track link that opens the order without further input', async ({ page }) => {
+    const mobile = `0300${Math.floor(1_000_000 + Math.random() * 8_999_999)}`;
+    const number = await placeOrder(page, mobile);
+    const mailpit = process.env['MAILPIT_URL'] ?? 'http://localhost:8025';
+
+    // The email goes out through the outbox, so wait for it to arrive.
+    let body = '';
+    await expect
+      .poll(
+        async () => {
+          const list = await (await page.request.get(`${mailpit}/api/v1/search?query=${encodeURIComponent(`subject:"${number}"`)}`)).json();
+          const hit = (list.messages ?? [])[0];
+          if (!hit) return '';
+          body = (await (await page.request.get(`${mailpit}/api/v1/message/${hit.ID}`)).json()).HTML as string;
+          return body;
+        },
+        { timeout: 30_000 },
+      )
+      .toContain('Track your order');
+
+    const link = /href="([^"]*\/track-order\?token=[^"]+)"/.exec(body)?.[1]?.replace(/&amp;/g, '&');
+    expect(link).toBeTruthy();
+
+    await page.goto(link!);
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText(`Order ${number}`)).toBeVisible();
+    expect(await page.locator('main').innerText()).not.toContain('House 4');
+  });
+
   test('OLK-4 after repeated misses the Turnstile check appears, and the development token lets the next try through', async ({ page }) => {
     const mobile = `0300${Math.floor(1_000_000 + Math.random() * 8_999_999)}`;
     const number = await placeOrder(page, mobile);

@@ -1,6 +1,6 @@
 # Order look-up
 
-- **Status:** Built (order number + mobile, signed link); tracking-number part waits for S15; email link awaits Q-OLK-4
+- **Status:** Built (order number + mobile, signed link); tracking-number part waits for S15; link is in the confirmation email (dispatch email is S15)
 - **Jira:** SCRUM-217 (sprint S13; the tracking-number part waits for S15)
 - **BRD sections:** §5.5
 - **Requirement IDs:** FR-37 (guest part), SEC-06, SEC-07. The signed-in history (FR-36) is S15.
@@ -43,7 +43,7 @@ Courier tracking events (S15), order history for accounts (S15), editing or canc
 - [x] **Q-OLK-1 Timing** (owner, 2026-11-02): order number + mobile look-up ships in S13; the tracking-number part ships in S15.
 - [x] **Q-OLK-2 Does the emailed link expire?** Recommendation: no expiry, but it shows only status and masked data, and a new link can be requested. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-OLK-3 Failed lookups before the CAPTCHA and the rate limit numbers** (recommendation: 3 failures, then CAPTCHA; 20 attempts per hour per IP). **Approved (owner, 2026-11-02: approve all recommendations).**
-- [ ] **Q-OLK-4 Put the track link in the order emails?** The signed link exists (`ILookupLinks`, page `/track-order?token=`) and works, but no email carries it yet, because that needs a new placeholder and a template migration in Notifications (confirmation, dispatch). **Recommendation:** add it to the order-confirmation and dispatch emails as "Track your order". Needs the owner's yes.
+- [x] **Q-OLK-4 Put the track link in the order emails?** Add it to the order-confirmation and dispatch emails as "Track your order". **Approved (owner, 2026-11-05).** The confirmation email carries it now; the dispatch email does not exist yet (S15), so it gets the same `{{TrackLink}}` line when it is written.
 
 ## As built
 - **Where:** `Orders/Application/OrderLookup` (`LookupOrderQuery`, `ViewOrderByLinkQuery`), `Orders/Domain/Orders/LookupThrottle.cs` (throttle and `LookupAttempt`), `Orders/Infrastructure/OrderLookup` (endpoints, link and address hash services), migration `AddLookupAttempts` (`ORDR.LOOK_ATMP`: hashed address, `FAIL_IND`, time). Storefront: `features/orders/order-lookup`, route `/track-order`.
@@ -53,4 +53,5 @@ Courier tracking events (S15), order history for accounts (S15), editing or canc
 - **What is shown:** status name, placed date, city, masked mobile (`03XX-XXX4567`), lines and totals. No street, recipient, email or full phone (OLK-6).
 - **Link:** no expiry (Q-OLK-2), purpose `order-track`, same secret as the COD links (`Orders:LinkSigningKey`).
 - **Footer:** "Track order" sits in the Help column before WhatsApp: web fallback (`launch-settings.ts`, `/track-order` added to the known roots in `validate-settings.ts`), contract fixture, and migration `AddTrackOrderFooterLink` (Storefront) for existing databases. The migration changes the **draft** only, so the owner presses Publish in the admin settings for it to show on the live site.
-- **Not built:** tracking-number-alone look-up (OLK-8, waits for S15), and the link in emails (Q-OLK-4).
+- **Email link (OLK-5, Q-OLK-4):** `OrderNotificationView.TrackUrl` (built in `OrderNotificationQueries` from `ILookupLinks` and `Site:PublicBaseUrl`), new placeholder `{{TrackLink}}` in `TemplateEngine`, and migration `SeedOrderConfirmationEmailV3` (Notifications) adding the "Track your order" link to the confirmation email, version 3. The WhatsApp template is provider-approved with fixed placeholders, so it has no link. The cancellation and COD request emails are unchanged.
+- **Not built:** tracking-number-alone look-up (OLK-8, waits for S15), and the link in the dispatch email (the email itself is S15).

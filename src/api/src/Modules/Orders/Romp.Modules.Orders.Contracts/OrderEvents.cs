@@ -85,7 +85,8 @@ public sealed record OrderNotificationView(
     decimal Total,
     IReadOnlyList<OrderNotificationLine> Lines,
     string? CancelReasonCode = null,
-    string? CodConfirmUrl = null);
+    string? CodConfirmUrl = null,
+    string? TrackUrl = null);
 
 /// <summary>How a customer's WhatsApp reply to the COD confirmation request ended (COD-14, COD-15, COD-16).</summary>
 public enum CodReplyOutcome
