@@ -36,6 +36,22 @@ public sealed class CodRequestMessageTests(NotificationsPostgres postgres) : ICl
     }
 
     [Fact]
+    [Trait("Spec", "OLK-5")]
+    public async Task Render_ConfirmationEmail_CarriesTheTrackLink_ButWhatsAppDoesNot()
+    {
+        await using var db = postgres.NewContext();
+        var url = "https://romp.pk/track-order?token=a%2Bb";
+        var renderer = new TemplateMessageRenderer(db);
+
+        var email = await renderer.RenderAsync(NotificationKind.OrderConfirmation, NotificationChannel.Email, OrderMessageKit.Order(trackUrl: url), CancellationToken.None);
+        var whatsApp = await renderer.RenderAsync(NotificationKind.OrderConfirmation, NotificationChannel.WhatsApp, OrderMessageKit.Order(trackUrl: url), CancellationToken.None);
+
+        Assert.Contains(url, email.Text, StringComparison.Ordinal);
+        Assert.Contains("<a href=\"" + url + "\">Track your order</a>", email.Html, StringComparison.Ordinal);
+        Assert.DoesNotContain("track-order", whatsApp.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     [Trait("Spec", "COD-18")]
     public async Task Render_Email_HostileLinkValueCannotBreakOutOfTheAttribute()
     {

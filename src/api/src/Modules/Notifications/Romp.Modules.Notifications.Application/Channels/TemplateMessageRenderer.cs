@@ -15,7 +15,7 @@ namespace Romp.Modules.Notifications.Application.Channels;
 /// Fills a template with values from the order, in one pass (a value that looks like <c>{{Total}}</c> is never expanded again). Every value is
 /// HTML-encoded in the HTML twin, and stripped of control characters everywhere, so a hostile product or customer name cannot inject markup, a
 /// header or a new line into a subject (CHN-9, OCF-7). WhatsApp values are also length-capped.
-/// Placeholders: <c>{{OrderNumber}}</c>, <c>{{CustomerName}}</c>, <c>{{Total}}</c>, <c>{{Lines}}</c>, <c>{{NextStep}}</c>, <c>{{Reason}}</c>, <c>{{ConfirmLink}}</c>.
+/// Placeholders: <c>{{OrderNumber}}</c>, <c>{{CustomerName}}</c>, <c>{{Total}}</c>, <c>{{Lines}}</c>, <c>{{NextStep}}</c>, <c>{{Reason}}</c>, <c>{{ConfirmLink}}</c>, <c>{{TrackLink}}</c>.
 /// </summary>
 public static partial class TemplateEngine
 {
@@ -41,6 +41,7 @@ public static partial class TemplateEngine
             ["NextStep"] = OrderWording.NextStep(order.PaymentMethodCode, order.CodConfirmUrl is null ? null : Clean(order.CodConfirmUrl)),
             ["Reason"] = OrderWording.Reason(order.CancelReasonCode),
             ["ConfirmLink"] = Plain(order.CodConfirmUrl ?? string.Empty),
+            ["TrackLink"] = Plain(order.TrackUrl ?? string.Empty),
         };
 
         var subject = Fill(template.Subject, textValues);
@@ -68,6 +69,7 @@ public static partial class TemplateEngine
                 ["NextStep"] = WebUtility.HtmlEncode(OrderWording.NextStep(order.PaymentMethodCode, order.CodConfirmUrl is null ? null : Clean(order.CodConfirmUrl))),
                 ["Reason"] = WebUtility.HtmlEncode(OrderWording.Reason(order.CancelReasonCode)),
                 ["ConfirmLink"] = WebUtility.HtmlEncode(Clean(order.CodConfirmUrl ?? string.Empty)),
+                ["TrackLink"] = WebUtility.HtmlEncode(Clean(order.TrackUrl ?? string.Empty)),
             };
             html = Fill(template.Html, htmlValues);
         }

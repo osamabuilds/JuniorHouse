@@ -92,13 +92,13 @@ public sealed class TemplateRendererTests(NotificationsPostgres postgres) : ICla
         var renderer = new TemplateMessageRenderer(db);
         await using var transaction = await db.Database.BeginTransactionAsync(); // rolled back: the seeded rows stay for the other tests
 
-        db.Templates.Add(new MessageTemplate(NotificationKind.OrderConfirmation, NotificationChannel.Email, "EN", 3, "v3 {{OrderNumber}}", "body", null, null));
+        db.Templates.Add(new MessageTemplate(NotificationKind.OrderConfirmation, NotificationChannel.Email, "EN", 4, "v4 {{OrderNumber}}", "body", null, null));
         await db.SaveChangesAsync();
         var newest = await renderer.RenderAsync(NotificationKind.OrderConfirmation, NotificationChannel.Email, Order(), CancellationToken.None);
         await db.Database.ExecuteSqlRawAsync("DELETE FROM \"NTFY\".\"NTFY_TMPL\" WHERE \"NTFY_KIND_ID\" = 1 AND \"CHNL_ID\" = 1");
         var fallback = await renderer.RenderAsync(NotificationKind.OrderConfirmation, NotificationChannel.Email, Order(), CancellationToken.None);
 
-        Assert.Equal("v3 RMP-0001", newest.Subject);
+        Assert.Equal("v4 RMP-0001", newest.Subject);
         Assert.Equal("Your Romp order RMP-0001", fallback.Subject);
     }
 }
