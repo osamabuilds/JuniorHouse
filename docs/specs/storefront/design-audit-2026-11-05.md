@@ -63,4 +63,4 @@ Method: the `rp-` classes used by each `components/<Name>/preview.html` were com
 3. **Product card**: G2 (second image, low-stock tag, quick view).
 4. **Mega menu tiles** G5, and the cart/checkout/wishlist audit with a seeded cart.
 
-**Specs written (drafts, awaiting approval), 2026-11-05:** [product-gallery-lightbox](product-gallery-lightbox/spec.md) (G3), [listing-filter-bar](listing-filter-bar/spec.md) (G1, pagination kept by decision), [product-card-quick-add](product-card-quick-add/spec.md) (G2), [mega-menu-tile](mega-menu-tile/spec.md) (G5). Buy bar and collections page already have approved plans.
+**Specs approved with plans and tasks, 2026-11-05:** [product-gallery-lightbox](product-gallery-lightbox/spec.md) (G3), [listing-filter-bar](listing-filter-bar/spec.md) (G1, pagination kept by decision), [product-card-quick-add](product-card-quick-add/spec.md) (G2), [mega-menu-tile](mega-menu-tile/spec.md) (G5). Buy bar and collections page already have approved plans.

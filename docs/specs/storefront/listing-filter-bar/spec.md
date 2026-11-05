@@ -1,6 +1,6 @@
 # Listing filter bar, drawer and swatches
 
-- **Status:** Draft, awaiting owner approval
+- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
 - **Jira:** none yet
 - **BRD sections:** FR-02, FR-03, FR-05 (filters and sorting); design source `docs/design-system/components/FilterBar/README.md` and `ListingPage/README.md`
 - **Requirement IDs:** FR-02, FR-03, FR-05, SEO-06, NFR-01, NFR-17, NFR-19
@@ -45,6 +45,6 @@ NFR-01 (no layout shift; skeletons are the same height as cards), SEO-06 (canoni
 
 ## Open questions
 
-- [ ] **Q-FLT-1** The design says "12 at a time". The live page size is 24. Recommendation: keep the current page size (fewer pages, same SEO), and show "Showing 1-24 of N" under the grid.
-- [ ] **Q-FLT-2** The banner after the fourth card needs an image and a line of text per audience. Recommendation: not now; add it when the business supplies the content, as a settings-driven block in its own spec.
-- [ ] **Q-FLT-3** The count in "Show N pieces" while the drawer is open needs one small extra API call per change. Recommendation: use the existing listing endpoint with page size 1 and read the total, so no new endpoint is needed.
+- [x] **Q-FLT-1** The design says "12 at a time". The live page size is 24. Recommendation: keep the current page size (fewer pages, same SEO), and show "Showing 1-24 of N" under the grid. **Resolved: recommendation accepted.**
+- [x] **Q-FLT-2** The banner after the fourth card needs an image and a line of text per audience. Recommendation: not now; add it when the business supplies the content, as a settings-driven block in its own spec. **Resolved: recommendation accepted.**
+- [x] **Q-FLT-3** The count in "Show N pieces" while the drawer is open needs one small extra API call per change. Recommendation: use the existing listing endpoint with page size 1 and read the total, so no new endpoint is needed. **Resolved: recommendation accepted.**

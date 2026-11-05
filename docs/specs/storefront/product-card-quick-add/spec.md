@@ -1,6 +1,6 @@
 # Product card: second picture, tags and quick add
 
-- **Status:** Draft, awaiting owner approval
+- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
 - **Jira:** none yet
 - **BRD sections:** FR-02 (listing), FR-10 (add to bag), FR-28, FR-29 (atomic stock decrement), FEAT-CAT-02..04; design source `docs/design-system/components/ProductCard/README.md`, `QuickAdd/README.md`, `Offers/README.md`
 - **Requirement IDs:** FR-02, FR-10, FR-28, FR-29, SEC-09, NFR-01, NFR-17, NFR-19
@@ -41,14 +41,18 @@ QuickAdd replaces the older hover "Quick view" bar (the QuickAdd README says so)
 
 NFR-01: the second picture is lazy and absolutely positioned inside the 4:5 box, so nothing moves. SEC-09 and FR-29: stock and price decisions stay on the server. NFR-27/29 do not apply (no child data). Listing payloads stay paged and need no per-card requests (no N+1).
 
+## Plan note
+
+The plan assumes that, for a product with several colours, the bar adds the colour the tile advertises (the cheapest matching variant) and names it in the confirmation. This was not in the spec; it is recorded in the plan for the owner to confirm before the add step is built.
+
 ## Out of scope
 
 The Quick view modal (replaced by QuickAdd), colour dots on cards, "Bestseller" badges (the design forbids them), recommendation rows (separate spec).
 
 ## Open questions
 
-- [ ] **Q-CRD-1** The listing API gives each tile its sizes as `code`, `name`, `soldOut` but no variant identifier, and only one picture. Recommendation: extend the tile with `variantId` per size (needed to add) and an optional `secondImage` (the product's second picture for the displayed colour), both additive fields, paged as today.
-- [ ] **Q-CRD-2** `Low stock`: reuse the product page's existing low-stock rule for a size (so the card and the page never disagree). Recommendation: reuse it, and tag the card when any size is low and none is hidden.
-- [ ] **Q-CRD-3** `New`: reuse the new-arrivals definition already used by the New in page. Recommendation: reuse it.
-- [ ] **Q-CRD-4** Notify me from the bar (CRD-7): the existing form needs an email address. Recommendation: the bar's **Notify me** opens the product page at that size (the existing form there), which avoids a second form on every card.
-- [ ] **Q-CRD-5** The design README said the bag flow needed its own spec. The cart exists and has specs; confirm that this spec may reuse the cart's add-to-bag action and the "View bag" drawer without changes. Recommendation: yes.
+- [x] **Q-CRD-1** The listing API gives each tile its sizes as `code`, `name`, `soldOut` but no variant identifier, and only one picture. Recommendation: extend the tile with `variantId` per size (needed to add) and an optional `secondImage` (the product's second picture for the displayed colour), both additive fields, paged as today. **Resolved: recommendation accepted.**
+- [x] **Q-CRD-2** `Low stock`: reuse the product page's existing low-stock rule for a size (so the card and the page never disagree). Recommendation: reuse it, and tag the card when any size is low and none is hidden. **Resolved: recommendation accepted.**
+- [x] **Q-CRD-3** `New`: reuse the new-arrivals definition already used by the New in page. Recommendation: reuse it. **Resolved: recommendation accepted.**
+- [x] **Q-CRD-4** Notify me from the bar (CRD-7): the existing form needs an email address. Recommendation: the bar's **Notify me** opens the product page at that size (the existing form there), which avoids a second form on every card. **Resolved: recommendation accepted.**
+- [x] **Q-CRD-5** The design README said the bag flow needed its own spec. The cart exists and has specs; confirm that this spec may reuse the cart's add-to-bag action and the "View bag" drawer without changes. Recommendation: yes. **Resolved: recommendation accepted.**

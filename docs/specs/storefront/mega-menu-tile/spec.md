@@ -1,6 +1,6 @@
 # Mega menu image tile
 
-- **Status:** Draft, awaiting owner approval
+- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
 - **Jira:** none yet
 - **BRD sections:** FR-01 (navigation); design source `docs/design-system/components/MegaMenu/README.md`
 - **Requirement IDs:** FR-01, NFR-01, NFR-17, NFR-19, SEO-07
@@ -36,6 +36,6 @@ A separate admin editor for tile images and text (see Q-MGT-1), tiles for collec
 
 ## Open questions
 
-- [ ] **Q-MGT-1** Where do the tile picture and line come from? Options: derive them (the newest listable product's first picture for that audience, eyebrow "New in", line "Just arrived") or add an admin field per audience. Recommendation: derive them now, with no admin change; if the business wants chosen pictures and copy, add the admin field in a later spec.
-- [ ] **Q-MGT-2** The design also lists a column "The edit". The live menu shows collections for it. Recommendation: unchanged (collections are "the edit").
-- [ ] **Q-MGT-3** Colour contrast: the design's tile line is `display-xs` serif; the live site uses Manrope only. Recommendation: use the live heading style.
+- [x] **Q-MGT-1** Where do the tile picture and line come from? Options: derive them (the newest listable product's first picture for that audience, eyebrow "New in", line "Just arrived") or add an admin field per audience. Recommendation: derive them now, with no admin change; if the business wants chosen pictures and copy, add the admin field in a later spec. **Resolved: recommendation accepted.**
+- [x] **Q-MGT-2** The design also lists a column "The edit". The live menu shows collections for it. Recommendation: unchanged (collections are "the edit"). **Resolved: recommendation accepted.**
+- [x] **Q-MGT-3** Colour contrast: the design's tile line is `display-xs` serif; the live site uses Manrope only. Recommendation: use the live heading style. **Resolved: recommendation accepted.**
