@@ -23,7 +23,7 @@ The owner added new design references (2026-10-24) and asked that the **shipped*
 | ID | Given / When / Then | Source |
 |---|---|---|
 | CR-1 | Given a viewport of 64rem or more, then the header shows the wordmark at the left, the primary nav in the middle and the search control at the right, all on one row with the hairline bottom border | design `shared/header.html` |
-| CR-2 | Given a viewport under 64rem, then the header is unchanged: menu button, wordmark, search icon | site-chrome SC-7 |
+| CR-2 | Given a viewport under 64rem, then the header is unchanged: menu button and search icon at the left, the wordmark centred (corrected 2026-11-05 to match what was built; the original wording listed the search icon after the wordmark) | site-chrome SC-7 |
 | CR-3 | Given the footer, then it is on the light surface with a hairline top border, a `romp kids` heading (brand name from configuration), the settings-driven columns and a legal row; the giant decorative wordmark is gone | design `shared/footer.html` |
 | CR-4 | Given the footer, then the tagline and the WhatsApp link are still read from the brand configuration, and the columns from the settings (SC-3, SC-11, SC-14 still hold) | site-chrome |
 | CR-5 | Given the chrome, then there is no Account icon, Bag icon or newsletter form until their features exist | O-4, O-5 |
