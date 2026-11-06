@@ -26,7 +26,7 @@ public sealed class GetHomeQueryHandler(ISender sender) : IRequestHandler<GetHom
 
     public async Task<HomeDto> Handle(GetHomeQuery request, CancellationToken cancellationToken)
     {
-        var filter = ListingFilter.Parse(null, null, null, null, null, null, TileCount.ToString(System.Globalization.CultureInfo.InvariantCulture)).Filter!;
+        var filter = ListingFilter.Parse(null, null, null, null, null, null, TileCount.ToString(System.Globalization.CultureInfo.InvariantCulture), "in").Filter!; // the home page shows what can be bought (SLD-11)
 
         var fresh = (await sender.Send(new SearchListingQuery(ListingScope.NewIn(null), filter), cancellationToken)).Value!.Tiles;
         var isFallback = fresh.Count == 0;

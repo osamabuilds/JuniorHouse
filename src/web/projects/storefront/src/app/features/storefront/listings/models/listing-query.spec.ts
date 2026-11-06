@@ -32,6 +32,23 @@ describe('listing query', () => {
     expect(toQueryString(a, false)).not.toContain('page');
   });
 
+  it('SLD-4 stock=in turns the in-stock filter on; any other value is dropped; the canonical query carries it before sort', () => {
+    expect(parseFilter({ stock: 'in' }).inStockOnly).toBe(true);
+    expect(parseFilter({ stock: 'IN' }).inStockOnly).toBe(true);
+    expect(parseFilter({ stock: ['<b>'] }).inStockOnly).toBe(false);
+    expect(parseFilter({}).inStockOnly).toBe(false);
+    expect(toQueryString(parseFilter({ sort: 'price-asc', stock: 'in', age: 'kids' }))).toBe('age=kids&stock=in&sort=price-asc');
+    expect(toQueryString(parseFilter({ stock: 'nope' }))).toBe('');
+  });
+
+  it('SLD-10 a season category has its own path and API query', () => {
+    const scope = { kind: 'collection', collection: 'winter', category: 'jackets' } as const;
+    expect(scopePath(scope)).toBe('/collections/winter/jackets');
+    expect(scopePath({ kind: 'collection', collection: 'winter' })).toBe('/collections/winter');
+    expect(toApiQuery(scope, parseFilter({}))).toEqual({ scope: 'collection', collection: 'winter', category: 'jackets' });
+    expect(listingKey(scope, parseFilter({}))).not.toBe(listingKey({ kind: 'collection', collection: 'winter' }, parseFilter({})));
+  });
+
   it('LST-16 the API gets the scope and the canonical filter', () => {
     expect(toApiQuery({ kind: 'category', gender: 'girls', category: 'dresses' }, parseFilter({ age: 'age-2y' }))).toEqual({
       scope: 'category', age: 'age-2y', gender: 'girls', category: 'dresses',

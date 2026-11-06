@@ -177,6 +177,9 @@
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .rp-tag { position: absolute; top: var(--space-3); left: var(--space-3); z-index: 3; font: 500 10px/14px var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; padding: 3px 8px; background: color-mix(in srgb, var(--surface-raised) 92%, transparent); color: var(--ink); border-radius: var(--radius-sm); }
 .rp-tag--low { color: var(--accent-deep); }
+.rp-tag--sold { color: var(--ink); }
+/* Sold out (SLD-5): the picture is dimmed and the label says why; the design system has no separate sold-out card. */
+.rp-card.is-sold-out .rp-media picture { opacity: 0.55; }
 .rp-wish { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 4; width: var(--tap); height: var(--tap); border: 0; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--surface-raised) 78%, transparent); color: var(--ink-on-light); display: grid; place-items: center; cursor: pointer; transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out); }
 .rp-wish:hover { transform: scale(1.08); background: var(--surface-raised); }
 .rp-wish .rp-ico { width: 20px; height: 20px; }

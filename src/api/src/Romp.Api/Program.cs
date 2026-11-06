@@ -212,6 +212,7 @@ if (app.Environment.IsDevelopment())
     if (builder.Configuration.GetValue("Demo:SeedSampleData", false))
     {
         await DemoDataSeeder.SeedAsync(catalogContext, vendorContext, productionContext, qualityContext, CancellationToken.None);
+        await DemoStorefrontSeeder.SeedAsync(scope.ServiceProvider, app.Logger, CancellationToken.None);
     }
 }
 

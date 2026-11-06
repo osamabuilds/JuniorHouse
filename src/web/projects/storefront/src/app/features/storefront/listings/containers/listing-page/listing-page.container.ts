@@ -121,10 +121,11 @@ export class ListingPageContainer {
     if (f.priceMin !== null || f.priceMax !== null) {
       chips.push({ label: `Price: ${f.priceMin ?? 0} to ${f.priceMax ?? 'any'}`, without: { ...f, priceMin: null, priceMax: null, page: 1 } });
     }
+    if (f.inStockOnly) chips.push({ label: 'In stock only', without: { ...f, inStockOnly: false, page: 1 } });
     return chips;
   });
 
-  protected readonly clearAll = computed((): ListingFilter => ({ ...this.filter(), sizes: [], colours: [], age: null, priceMin: null, priceMax: null, page: 1 }));
+  protected readonly clearAll = computed((): ListingFilter => ({ ...this.filter(), sizes: [], colours: [], age: null, priceMin: null, priceMax: null, inStockOnly: false, page: 1 }));
 
 
   constructor() {

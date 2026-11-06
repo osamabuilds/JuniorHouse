@@ -38,7 +38,7 @@ const ok = (tiles: ListingTile[], over: Record<string, unknown> = {}): ListingRe
   empty: tiles.length === 0 ? { suggestions: [{ label: 'New in', path: '/girls/new-in' }] } : null,
 });
 
-function render(result: ListingResult, query: Record<string, string | string[]> = {}, responseInit?: ResponseInit): { el: HTMLElement; get: ReturnType<typeof vi.fn>; fixture: ComponentFixture<ListingPageContainer> } {
+function render(result: ListingResult, query: Record<string, string | string[]> = {}, responseInit?: ResponseInit, route: { params?: Record<string, string>; kind?: string } = {}): { el: HTMLElement; get: ReturnType<typeof vi.fn>; fixture: ComponentFixture<ListingPageContainer> } {
   const get = vi.fn(() => of(result));
   TestBed.configureTestingModule({
     providers: [
@@ -52,9 +52,9 @@ function render(result: ListingResult, query: Record<string, string | string[]> 
       {
         provide: ActivatedRoute,
         useValue: {
-          paramMap: of(convertToParamMap({ gender: 'girls', category: 'dresses' })),
+          paramMap: of(convertToParamMap(route.params ?? { gender: 'girls', category: 'dresses' })),
           queryParamMap: of(convertToParamMap(query)),
-          data: of({ kind: 'category' }),
+          data: of({ kind: route.kind ?? 'category' }),
           snapshot: {},
         },
       },
@@ -66,6 +66,35 @@ function render(result: ListingResult, query: Record<string, string | string[]> 
   fixture.detectChanges();
   return { el: fixture.nativeElement as HTMLElement, get, fixture };
 }
+
+describe('ListingPageContainer season category', () => {
+  const season = { params: { code: 'winter', category: 'jackets' }, kind: 'collection' };
+  const crumbs = [{ label: 'Home', path: '/' }, { label: 'Collections', path: '/collections' }, { label: 'Winter', path: '/collections/winter' }, { label: 'Jackets', path: null }];
+
+  it('SLD-10 /collections/winter/jackets asks for the collection scope with the category and shows the four-level breadcrumb', () => {
+    const { el, get } = render(ok([tile(1)], { title: 'Winter Jackets', scopeKind: 'Collection', breadcrumbs: crumbs }), {}, undefined, season);
+    expect(get).toHaveBeenCalledWith({ kind: 'collection', collection: 'winter', category: 'jackets' }, expect.anything());
+    const items = [...el.querySelectorAll('nav[aria-label="Breadcrumb"] li')].map((li) => li.textContent!.trim());
+    expect(items).toEqual(['Home', 'Collections', 'Winter', 'Jackets']);
+    expect(el.querySelector('nav[aria-label="Breadcrumb"] [aria-current="page"]')!.textContent).toContain('Jackets');
+    expect(el.querySelector('h1')!.textContent).toContain('Winter Jackets');
+  });
+
+  it('SLD-10 its filter form posts to the season category address', () => {
+    const { el } = render(ok([tile(1)], { title: 'Winter Jackets', breadcrumbs: crumbs }), {}, undefined, season);
+    expect(el.querySelector('.rp-filterbar__desktop form')!.getAttribute('action')).toBe('/collections/winter/jackets');
+  });
+});
+
+describe('ListingPageContainer in stock only', () => {
+  it('SLD-4 stock=in is kept in the URL, sent to the API and shown as a removable chip', () => {
+    const { el, get } = render(ok([tile(1)]), { stock: 'in' });
+    expect(get).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ inStockOnly: true }));
+    const chip = [...el.querySelectorAll('rp-active-filters a.rp-chip')].find((a) => a.textContent!.includes('In stock only'))!;
+    expect(chip).toBeTruthy();
+    expect(chip.getAttribute('href')).toBe('/girls/dresses');
+  });
+});
 
 describe('ListingPageContainer', () => {
   it('FLT-5 while a new filter loads, the previous cards stay, dimmed and marked busy, and the page never flashes blank', () => {
@@ -135,7 +164,7 @@ describe('ListingPageContainer', () => {
     expect(el.querySelector('.rp-filterbar__desktop form')!.getAttribute('method')).toBe('get');
     expect(form.getAttribute('method')).toBe('get');
     expect(form.getAttribute('action')).toBe('/girls/dresses');
-    expect([...form.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Size', 'Colour', 'Price (Rs.)', 'Sort']);
+    expect([...form.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Size', 'Colour', 'Price (Rs.)', 'Availability', 'Sort']);
     expect(form.querySelector('input[type="checkbox"][name="size"]')).not.toBeNull();
     expect(form.querySelector('button[type="submit"]')).not.toBeNull();
   });

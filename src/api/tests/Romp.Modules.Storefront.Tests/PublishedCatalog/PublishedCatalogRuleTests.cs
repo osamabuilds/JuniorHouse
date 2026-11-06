@@ -97,12 +97,27 @@ public sealed class ProductVisibilityTests
 
     [Fact]
     [Trait("Spec", "PCT-3")]
-    public void AProductWithNothingToBuy_IsNotInStock_AndNotListable()
+    [Trait("Spec", "SLD-1")]
+    public void AProductWithNothingToBuy_AndAReadyImage_IsNotInStock_ButStillListable()
     {
         var soldOut = ProductVisibility.Evaluate([AvailabilityClass.SoldOut, AvailabilityClass.NotYetAvailable], primaryImageReady: true);
         var empty = ProductVisibility.Evaluate([], primaryImageReady: true);
 
-        Assert.All([soldOut, empty], r => Assert.False(r.IsInStock || r.IsListable));
+        Assert.All([soldOut, empty], r =>
+        {
+            Assert.False(r.IsInStock);
+            Assert.True(r.IsListable);
+        });
+    }
+
+    [Fact]
+    [Trait("Spec", "SLD-1")]
+    public void ASoldOutProduct_WhoseMainImageIsStillBeingMade_IsNotListable()
+    {
+        var result = ProductVisibility.Evaluate([AvailabilityClass.SoldOut], primaryImageReady: false);
+
+        Assert.False(result.IsInStock);
+        Assert.False(result.IsListable);
     }
 }
 

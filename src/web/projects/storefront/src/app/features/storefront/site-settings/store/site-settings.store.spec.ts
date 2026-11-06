@@ -30,7 +30,7 @@ describe('siteSettings reducer', () => {
 
 describe('siteSettings selectors', () => {
   it('SC-1 header entries are the enabled items in order', () => {
-    expect(selectHeaderEntries(state() as never).map((i) => i.label)).toEqual(['Girls', 'Boys', 'New in', 'Collections', 'Sale']);
+    expect(selectHeaderEntries(state() as never).map((i) => i.label)).toEqual(['Winter', 'Summer', 'Girls', 'Boys', 'New in', 'Sale']);
   });
 
   it('SC-3 renaming, disabling or adding an entry in the settings changes the header with no code change', () => {
@@ -43,7 +43,7 @@ describe('siteSettings selectors', () => {
         { key: 'gifts', label: 'Gifts', kind: 'link', target: { kind: 'path', path: '/sale' }, enabled: true, sort: 6, children: [] },
       ],
     };
-    expect(selectHeaderEntries(state(edited) as never).map((i) => i.label)).toEqual(['Little girls', 'New in', 'Collections', 'Sale', 'Gifts']);
+    expect(selectHeaderEntries(state(edited) as never).map((i) => i.label)).toEqual(['Little girls', 'Girls', 'Boys', 'New in', 'Sale', 'Gifts']);
   });
 
   it('SC-5 ages are the enabled steps in order', () => {

@@ -48,6 +48,8 @@ export const routes: Routes = [
   { path: 'search', loadComponent: () => import('./features/storefront/search/containers/search-page/search-page.container').then((m) => m.SearchPageContainer) },
   { path: 'collections', loadComponent: () => import('./features/storefront/collections-page/containers/collections-page/collections-page.container').then((m) => m.CollectionsPageContainer) },
   { path: 'collections/:code', data: { kind: 'collection' }, loadComponent: listing },
+  // A season's category (SLD-10). Three parts like a product address, so it must come before the product matcher.
+  { path: 'collections/:code/:category', data: { kind: 'collection' }, loadComponent: listing },
   {
     matcher: productMatcher,
     loadComponent: () =>

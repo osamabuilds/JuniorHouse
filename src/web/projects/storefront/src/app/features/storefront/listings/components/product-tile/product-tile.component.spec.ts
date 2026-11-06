@@ -113,6 +113,27 @@ function renderEnhanced(t: ListingTile, touch = false): { el: HTMLElement; host:
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe('ProductTileComponent sold out', () => {
+  it('SLD-5 a sold-out card shows one Sold out label instead of other tags, dims the card and names itself sold out', () => {
+    const el = render(tile({ soldOut: true, savingPercent: 20, isNew: true, image: picture('a') }));
+    expect([...el.querySelectorAll('.rp-tag')].map((e) => e.textContent!.trim())).toEqual(['Sold out']);
+    expect(el.querySelector('article')!.classList.contains('is-sold-out')).toBe(true);
+    expect(el.querySelector('h3 a')!.textContent).toContain('Floral dress, sold out');
+  });
+
+  it('SLD-5 a sold-out card has no quick add even when enhanced', () => {
+    const { el } = renderEnhanced(tile({ soldOut: true, image: picture('a'), sizes: quickSizes }));
+    expect(el.querySelector('.rp-qa__plus')).toBeNull();
+    expect(el.querySelector('rp-quick-add')).toBeNull();
+  });
+
+  it('SLD-5 an in-stock card has no sold-out label', () => {
+    const el = render(tile({ soldOut: false }));
+    expect(el.querySelector('.rp-tag--sold')).toBeNull();
+    expect(el.querySelector('.sr-only')).toBeNull();
+  });
+});
+
 describe('ProductTileComponent card extras', () => {
   it('CRD-3 shows at most one tag: sale, else Low stock, else New, else none', () => {
     const tag = (extra: Partial<ListingTile>) => {

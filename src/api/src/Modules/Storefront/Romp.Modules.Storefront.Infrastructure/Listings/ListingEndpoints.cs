@@ -113,12 +113,18 @@ public static class ListingEndpoints
         var gender = Segment(One("gender"));
         var category = Segment(One("category"));
         var collection = Segment(One("collection"));
+        if (kind == "collection" && One("category") is not null && category is null)
+        {
+            return (null, null, BadRequest("scope", "The scope is missing a code.")); // a category that cannot be a code is refused, not ignored
+        }
+
         ListingScope? scope = kind switch
         {
             "audience" when gender is not null => ListingScope.Audience(gender),
             "category" when gender is not null && category is not null => ListingScope.InCategory(gender, category),
             "new-in" => ListingScope.NewIn(gender),
             "sale" => ListingScope.Sale(gender),
+            "collection" when collection is not null && category is not null => ListingScope.OfCollectionCategory(collection, category),
             "collection" when collection is not null => ListingScope.OfCollection(collection),
             _ => null,
         };
@@ -129,7 +135,7 @@ public static class ListingEndpoints
         }
 
         var (filter, errors) = ListingFilter.Parse(
-            query["size"], query["colour"], One("age"), One("price"), One("sort"), One("page"), One("pageSize"));
+            query["size"], query["colour"], One("age"), One("price"), One("sort"), One("page"), One("pageSize"), One("stock"));
         if (filter is null)
         {
             return (scope, null, Results.ValidationProblem(

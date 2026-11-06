@@ -45,11 +45,32 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe('FilterBarComponent in stock only', () => {
+  it('SLD-4 the bar offers an unticked In stock only box named stock, and a ticked one when the filter is on', () => {
+    const off = render().el.querySelector<HTMLInputElement>('input[name="stock"]')!;
+    expect(off.value).toBe('in');
+    expect(off.checked).toBe(false);
+    expect(off.closest('label')!.textContent).toContain('In stock only');
+    TestBed.resetTestingModule();
+    const on = render({ filter: { ...EMPTY_FILTER, inStockOnly: true } });
+    expect(on.el.querySelector<HTMLInputElement>('input[name="stock"]')!.checked).toBe(true);
+    expect(on.el.querySelector('.rp-chip.is-on')!.textContent).toContain('Availability');
+  });
+
+  it('SLD-4 submitting the box emits a filter with inStockOnly, from page 1', () => {
+    const { el, applied } = render({ filter: { ...EMPTY_FILTER, page: 3 } });
+    const box = desktop(el).querySelector<HTMLInputElement>('input[name="stock"]')!;
+    box.checked = true;
+    box.form!.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(applied).toHaveBeenCalledWith(expect.objectContaining({ inStockOnly: true, page: 1 }));
+  });
+});
+
 describe('FilterBarComponent', () => {
   it('FLT-1 the desktop bar has a chip per filter group that has options, the count and a native sort select', () => {
     const { el } = render();
     const chips = [...desktop(el).querySelectorAll('details.rp-chip-pop > summary.rp-chip')].map((s) => s.textContent!.trim());
-    expect(chips).toEqual(['Age', 'Size', 'Colour', 'Price']);
+    expect(chips).toEqual(['Age', 'Size', 'Colour', 'Price', 'Availability']);
     expect(desktop(el).textContent).toContain('48 pieces');
     expect(desktop(el).querySelector('select[name="sort"]')).not.toBeNull();
   });
@@ -57,7 +78,7 @@ describe('FilterBarComponent', () => {
   it('FLT-1 a group with no options has no chip', () => {
     const { el } = render({ options: { ...options, colours: [], ages: [] } });
     const chips = [...desktop(el).querySelectorAll('summary.rp-chip')].map((s) => s.textContent!.trim());
-    expect(chips).toEqual(['Size', 'Price']);
+    expect(chips).toEqual(['Size', 'Price', 'Availability']);
   });
 
   it('FLT-2 a chip opens a panel with only that group, and a selected group shows as an ink chip with its count and a remove link', () => {
@@ -98,7 +119,7 @@ describe('FilterBarComponent', () => {
     const { el } = render();
     const sheet = phone(el).querySelector('details.rp-filterbar__sheet')!;
     expect(sheet.querySelector('summary')!.textContent).toContain('Filter and sort');
-    expect([...sheet.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Age', 'Size', 'Colour', 'Price (Rs.)', 'Sort']);
+    expect([...sheet.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Age', 'Size', 'Colour', 'Price (Rs.)', 'Availability', 'Sort']);
     expect(sheet.querySelector('button[type="submit"]')!.textContent).toContain('Show 48 pieces');
     expect(sheet.querySelectorAll('.rp-swatchbox').length).toBe(2);
   });

@@ -18,9 +18,9 @@ describe('MegaMenuComponent', () => {
   it('SC-3a shows the members and further members of the entry as links', () => {
     const el = render().nativeElement as HTMLElement;
     const hrefs = [...el.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs).toContain('/boys/tees-and-shirts');
-    expect(hrefs).toContain('/boys/bottoms/shorts');
-    expect(hrefs).toContain('/boys/casual-shirts');
+    expect(hrefs).toContain('/boys/t-shirts');
+    expect(hrefs).toContain('/boys/shorts');
+    expect(hrefs).toContain('/boys/jackets');
   });
 
   it('SC-5 shows one age link per configured age, carrying the age code as the query parameter', () => {

@@ -55,6 +55,9 @@ public sealed class StorefrontPublicEndpointsTests(ProductionApiFixture api)
     [InlineData("scope=new-in&page=0")]
     [InlineData("scope=new-in&page=-1")]
     [InlineData("scope=new-in&pageSize=-4")]
+    [InlineData("scope=new-in&stock=out")] // SLD-4: the only value is stock=in
+    [InlineData("scope=new-in&stock=%3Cscript%3E")]
+    [InlineData("scope=collection&category=dresses")] // SLD-10: a category alone is not a collection scope
     public async Task MalformedInput_Is400_WithProblemDetails_AndNoStackTrace(string query)
     {
         var (status, body) = await GetAsync($"{Listings}?{query}");
@@ -69,6 +72,8 @@ public sealed class StorefrontPublicEndpointsTests(ProductionApiFixture api)
     [InlineData("scope=audience&gender=martians")]
     [InlineData("scope=category&gender=girls&category=nope")]
     [InlineData("scope=collection&collection=nope")]
+    [InlineData("scope=collection&collection=nope&category=dresses")] // SLD-10
+    [InlineData("scope=collection&collection=summer&category=nope")]
     public async Task AnUnknownOrHostileCode_Is404_AndIsNeverEchoed(string query)
     {
         var (status, body) = await GetAsync($"{Listings}?{query}");
@@ -82,6 +87,7 @@ public sealed class StorefrontPublicEndpointsTests(ProductionApiFixture api)
     [Trait("Spec", "LST-11")]
     [InlineData("scope=audience&gender=%3Cscript%3Ealert(1)%3C%2Fscript%3E")]
     [InlineData("scope=audience&gender=..%2F..%2Fetc")]
+    [InlineData("scope=collection&collection=summer&category=%3Cscript%3E")] // SLD-10
     public async Task AHostileCode_IsRefused_AndIsNeverEchoed(string query)
     {
         var (status, body) = await GetAsync($"{Listings}?{query}");
@@ -89,6 +95,17 @@ public sealed class StorefrontPublicEndpointsTests(ProductionApiFixture api)
         Assert.Equal(HttpStatusCode.BadRequest, status);
         Assert.DoesNotContain("script", body, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("etc", body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [Trait("Spec", "SLD-4")]
+    [InlineData("scope=new-in&stock=in")]
+    [InlineData("scope=new-in&stock=IN")]
+    public async Task TheInStockOnlyFlag_IsAccepted(string query)
+    {
+        var (status, _) = await GetAsync($"{Listings}?{query}");
+
+        Assert.Equal(HttpStatusCode.OK, status);
     }
 
     [Fact]

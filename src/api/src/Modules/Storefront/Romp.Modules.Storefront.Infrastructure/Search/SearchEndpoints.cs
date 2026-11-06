@@ -26,7 +26,7 @@ public static class SearchEndpoints
             var query = http.Request.Query;
             string? One(string key) => query.TryGetValue(key, out var v) && v.Count > 0 ? v[0] : null;
 
-            var (filter, errors) = ListingFilter.Parse(query["size"], query["colour"], One("age"), One("price"), One("sort"), One("page"), One("pageSize"));
+            var (filter, errors) = ListingFilter.Parse(query["size"], query["colour"], One("age"), One("price"), One("sort"), One("page"), One("pageSize"), One("stock"));
             if (filter is null)
             {
                 return Results.ValidationProblem(errors.GroupBy(e => e.Field).ToDictionary(g => g.Key, g => g.Select(e => e.Message).ToArray()));

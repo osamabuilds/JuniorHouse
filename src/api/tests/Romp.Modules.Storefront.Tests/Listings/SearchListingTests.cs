@@ -8,8 +8,8 @@ namespace Romp.Modules.Storefront.Tests.Listings;
 [Collection(StorefrontPostgresFixtureDefinition.Name)]
 public sealed class SearchListingTests(StorefrontPostgres postgres)
 {
-    private static ListingFilter Filter(string? size = null, string? colour = null, string? age = null, string? price = null, string? sort = null, string? page = null, string? pageSize = null) =>
-        ListingFilter.Parse(size is null ? null : [size], colour is null ? null : [colour], age, price, sort, page, pageSize).Filter!;
+    private static ListingFilter Filter(string? size = null, string? colour = null, string? age = null, string? price = null, string? sort = null, string? page = null, string? pageSize = null, string? stock = null) =>
+        ListingFilter.Parse(size is null ? null : [size], colour is null ? null : [colour], age, price, sort, page, pageSize, stock).Filter!;
 
     private static async Task<ListingPageDto> PageAsync(StorefrontHost host, ListingScope scope, ListingFilter? filter = null)
     {
@@ -69,8 +69,8 @@ public sealed class SearchListingTests(StorefrontPostgres postgres)
     }
 
     [Fact]
-    [Trait("Spec", "LST-15")]
-    public async Task AProductWithNothingInStock_IsNeverListed_ButOneWithSomeSizesSoldOutIs()
+    [Trait("Spec", "SLD-1")]
+    public async Task AProductWithNothingInStock_IsListedAfterTheOnesInStock_AndOneWithSomeSizesSoldOutIsMarkedSo()
     {
         using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
         await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0)], name: "Gone");
@@ -78,21 +78,21 @@ public sealed class SearchListingTests(StorefrontPostgres postgres)
 
         var page = await PageAsync(host, ListingScope.Audience("girls"));
 
-        var tile = Assert.Single(page.Tiles);
-        Assert.Equal("Partly", tile.Name);
-        Assert.True(tile.HasSoldOutSizes);
+        Assert.Equal(["Partly", "Gone"], page.Tiles.Select(t => t.Name).ToArray());
+        Assert.True(page.Tiles[0].HasSoldOutSizes);
+        Assert.False(page.Tiles[0].SoldOut);
     }
 
     [Fact]
     [Trait("Spec", "LST-1")]
-    public async Task ASizeFilter_ShowsOnlyProductsWithThatSizeInStock()
+    public async Task ASizeFilter_WithInStockOnly_ShowsOnlyProductsWithThatSizeInStock()
     {
         using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
         await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 3)], name: "Has 5-6");
         await ListingSeeder.ListableAsync(host, 2, "GIRLS", "DRESSES", [new("RED", "7-8Y", 800m, 3)], name: "Has 7-8");
         await ListingSeeder.ListableAsync(host, 3, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0), new("RED", "7-8Y", 800m, 3)], name: "5-6 sold out");
 
-        Assert.Equal(["Has 5-6"], Names(await PageAsync(host, ListingScope.Audience("girls"), Filter(size: "5-6y"))));
+        Assert.Equal(["Has 5-6"], Names(await PageAsync(host, ListingScope.Audience("girls"), Filter(size: "5-6y", stock: "in"))));
     }
 
     [Fact]
@@ -203,7 +203,8 @@ public sealed class SearchListingTests(StorefrontPostgres postgres)
 
     [Fact]
     [Trait("Spec", "LST-5")]
-    public async Task ACategoryThatExistsButHasNothingInStock_IsAnEmptyPage_NotANotFound()
+    [Trait("Spec", "SLD-9")]
+    public async Task ACategoryThatExistsButHasNoProducts_IsAnEmptyPage_NotANotFound()
     {
         using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
         await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES");
@@ -290,9 +291,10 @@ public sealed class SearchListingTests(StorefrontPostgres postgres)
         var result = await host.SendAsync(new GetListingOptionsQuery(ListingScope.Audience("girls")));
 
         var options = result.Value!;
-        Assert.Equal(["5-6y"], options.Sizes.Select(o => o.Value).ToArray()); // 7-8Y is sold out
-        Assert.Equal(["red"], options.Colours.Select(o => o.Value).ToArray());
-        Assert.Equal((800m, 800m), (options.PriceMin, options.PriceMax));
+        // Sold-out variants still count as options (SLD-3): 7-8Y navy is sold out but it is offered.
+        Assert.Equal(["5-6y", "7-8y"], options.Sizes.Select(o => o.Value).ToArray());
+        Assert.Equal(["navy", "red"], options.Colours.Select(o => o.Value).ToArray());
+        Assert.Equal((800m, 1200m), (options.PriceMin, options.PriceMax));
         Assert.Equal(["age-3y"], options.Ages.Select(o => o.Value).ToArray());
     }
 

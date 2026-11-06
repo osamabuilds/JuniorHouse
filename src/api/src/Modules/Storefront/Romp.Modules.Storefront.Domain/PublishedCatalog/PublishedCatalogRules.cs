@@ -55,14 +55,15 @@ public sealed record ProductVisibilityResult(bool IsInStock, bool IsListable);
 public static class ProductVisibility
 {
     /// <summary>
-    /// A product is in stock when any variant can be bought, and listable when it is in stock and its main image is ready (the
-    /// derivatives exist, PCT-7). Its page is visible whenever it is published, which is why the read model holds only published products.
+    /// A product is in stock when any variant can be bought. It is listable when its main image is ready (the derivatives exist,
+    /// PCT-7), whether or not it is in stock: sold-out products stay on the listings as sold-out cards (SLD-1). Its page is visible
+    /// whenever it is published, which is why the read model holds only published products.
     /// </summary>
     public static ProductVisibilityResult Evaluate(IEnumerable<AvailabilityClass> variants, bool primaryImageReady)
     {
         ArgumentNullException.ThrowIfNull(variants);
         var inStock = variants.Any(v => v.IsPurchasable());
-        return new ProductVisibilityResult(inStock, inStock && primaryImageReady);
+        return new ProductVisibilityResult(inStock, primaryImageReady);
     }
 }
 

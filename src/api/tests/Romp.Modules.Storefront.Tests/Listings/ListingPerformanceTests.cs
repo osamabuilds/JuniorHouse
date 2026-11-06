@@ -114,6 +114,46 @@ public sealed class ListingPerformanceTests(StorefrontPostgres postgres)
 
     [Fact]
     [Trait("Spec", "LST-13")]
+    [Trait("Spec", "SLD-3")]
+    public async Task APageWithAThirdOfTheProductsSoldOut_IsTheSameFiveQueries_WithInStockFirst()
+    {
+        using var host = await HostWithThousandProductsAsync(postgres);
+        await using (var connection = new NpgsqlConnection(host.ConnectionString))
+        {
+            await connection.OpenAsync();
+            foreach (var sql in new[]
+            {
+                "UPDATE \"STFR\".\"PRDT_VRNT\" SET \"AVLB_QTY\" = 0 WHERE \"PRDT_ID\" % 3 = 0",
+                "UPDATE \"STFR\".\"PRDT_MAIN\" SET \"AVLB_IND\" = false WHERE \"ID\" % 3 = 0",
+            })
+            {
+                await using var update = new NpgsqlCommand(sql, connection);
+                await update.ExecuteNonQueryAsync();
+            }
+        }
+
+        var counter = new QueryCounter();
+        await using var context = StorefrontPostgres.NewContext(host.ConnectionString, counter);
+        var handler = new SearchListingQueryHandler(context, host.Lookups, new CatalogLookupCache(TimeProvider.System), new FakeListingSettings(), TimeProvider.System);
+        var scope = ListingScope.Audience("girls");
+        await handler.Handle(new SearchListingQuery(scope, Filter()), default);
+
+        foreach (var filter in new[] { Filter(), Filter(sort: "price-asc"), Filter(size: "5-6y", colour: "navy") })
+        {
+            counter.Reset();
+            var page = await handler.Handle(new SearchListingQuery(scope, filter), default);
+            Assert.Equal(5, counter.Count);
+            Assert.Equal(1_000, page.Value!.Total);
+        }
+
+        // Last page: the sold-out products are there, after every in-stock one.
+        var last = ListingFilter.Parse(null, null, null, null, null, "42", null).Filter!;
+        var lastPage = (await handler.Handle(new SearchListingQuery(scope, last), default)).Value!;
+        Assert.All(lastPage.Tiles, t => Assert.True(t.SoldOut));
+    }
+
+    [Fact]
+    [Trait("Spec", "LST-13")]
     public async Task ThePriceSort_PlanUsesTheProductIndex_NotAScanOfEveryVariantPerProduct()
     {
         using var host = await HostWithThousandProductsAsync(postgres);

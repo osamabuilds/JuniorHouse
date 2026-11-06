@@ -21,8 +21,8 @@ public sealed record ListingImageDto(string AltText, int Width, int Height, IRea
 
 /// <summary>
 /// One product tile (LST-12). <c>ProductId</c> is the Catalog product id, for the wishlist heart. The price is the lowest among the variants that match the filter; the compare-at price is the one of that
-/// variant; <c>SavingAmount</c> is the server difference in PKR (SEC-09). There is no stock count: only whether some sizes are sold out (PCT-3)
-/// and, per size, whether it is sold out.
+/// variant; <c>SavingAmount</c> is the server difference in PKR (SEC-09). There is no stock count: only whether some sizes are sold out (PCT-3),
+/// per size whether it is sold out, and <c>SoldOut</c>: nothing of the product can be bought, so the card shows "Sold out" (SLD-5).
 /// </summary>
 public sealed record ListingTileDto(
     long ProductId,
@@ -38,7 +38,8 @@ public sealed record ListingTileDto(
     ListingImageDto? Image,
     bool IsNew = false,
     bool HasLowStock = false,
-    ListingImageDto? SecondImage = null);
+    ListingImageDto? SecondImage = null,
+    bool SoldOut = false);
 
 /// <summary>A size the product comes in. <c>SoldOut</c> is true when no colour of that size can be bought; it is never hidden, so a shopper sees the whole range.</summary>
 /// <remarks>
@@ -113,6 +114,7 @@ public sealed record ResolvedScope(ListingScope Scope, LookupRow? Gender, Lookup
         ListingScopeKind.NewIn or ListingScopeKind.AllNewIn => "New in",
         ListingScopeKind.Sale or ListingScopeKind.AllSale => "Sale",
         ListingScopeKind.Collection => Collection!.Name,
+        ListingScopeKind.CollectionCategory => $"{Collection!.Name} {Category!.Name}",
         ListingScopeKind.All => "All products",
         _ => string.Empty,
     };

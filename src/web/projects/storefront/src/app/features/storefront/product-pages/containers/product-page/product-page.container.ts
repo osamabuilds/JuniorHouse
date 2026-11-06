@@ -10,7 +10,8 @@ import { CartActions } from '../../../../cart/carts/store/cart.actions';
 import { selectCartBusy, selectCartMessage } from '../../../../cart/carts/store/cart.selectors';
 import { ButtonDirective } from '../../../../../shared/ui/button/button.directive';
 import { IconComponent } from '../../../../../shared/ui/icon/icon.component';
-import { SeoService } from '../../../../../shared/seo/seo.service';
+import { SITE_URL, SeoService } from '../../../../../shared/seo/seo.service';
+import { productStructuredData } from '../../utils/product-structured-data.util';
 import { BreadcrumbsComponent } from '../../../navigation/components/breadcrumbs/breadcrumbs.component';
 import { watchHeight, watchInView, watchMedia } from '../../../../../shared/utils/viewport';
 import { selectBrand, selectFacts, selectTopLinks } from '../../../site-settings';
@@ -66,6 +67,7 @@ export class ProductPageContainer {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly seo = inject(SeoService);
+  private readonly site = inject(SITE_URL);
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
 
   private readonly segments = toSignal(this.route.url.pipe(map((u) => u.map((s) => s.path))), { requireSync: true });
@@ -208,6 +210,7 @@ export class ProductPageContainer {
         path: p.path,
         siteName,
         crumbs: p.breadcrumbs.map((c, i, all) => ({ name: c.label, path: c.path ?? (i === all.length - 1 ? p.path : '/') })),
+        structured: [productStructuredData(p, this.site)],
       });
     });
   }

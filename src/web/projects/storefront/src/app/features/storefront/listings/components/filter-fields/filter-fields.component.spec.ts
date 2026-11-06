@@ -52,7 +52,7 @@ describe('FilterFieldsComponent', () => {
 
   it('a group with no options is left out', () => {
     const el = render({ options: { ...options, colours: [], ages: [], priceMin: null, priceMax: null } });
-    expect([...el.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Size', 'Sort']);
+    expect([...el.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Size', 'Availability', 'Sort']);
   });
 
   it('the chosen values are checked and the sort is the current one', () => {

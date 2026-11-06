@@ -44,6 +44,8 @@ export interface ListingTile {
   readonly isNew?: boolean;
   /** Some size is low on stock (the product page's rule). */
   readonly hasLowStock?: boolean;
+  /** Nothing of the product can be bought (SLD-5): the card says so and offers no quick add. */
+  readonly soldOut?: boolean;
   /** The next picture of the product, for the hover and touch views. */
   readonly secondImage?: ListingImage | null;
 }

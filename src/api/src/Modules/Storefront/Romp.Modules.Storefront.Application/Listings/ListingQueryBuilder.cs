@@ -13,7 +13,7 @@ namespace Romp.Modules.Storefront.Application.Listings;
 /// </summary>
 internal static class ListingQueryBuilder
 {
-    /// <summary>Listable products of the scope (LST-15: nothing in stock is never listed). Not yet narrowed by the filter.</summary>
+    /// <summary>Listable products of the scope, sold-out ones included (SLD-1; they sort after the in-stock ones, SLD-2). Not yet narrowed by the filter.</summary>
     public static IQueryable<PublishedProduct> InScope(IStorefrontReadDbContext db, ResolvedScope scope, DateTimeOffset newInCutoff)
     {
         var products = db.Products.AsNoTracking().Where(p => p.IsListable);
@@ -38,7 +38,7 @@ internal static class ListingQueryBuilder
             case ListingScopeKind.Sale or ListingScopeKind.AllSale:
                 products = products.Where(p => p.IsOnSale);
                 break;
-            case ListingScopeKind.Collection:
+            case ListingScopeKind.Collection or ListingScopeKind.CollectionCategory: // the category, if any, was applied above
                 var collection = scope.Collection!.Code;
                 products = products.Where(p => db.Collections.Any(c => c.ProductId == p.Id && c.CollectionCode == collection));
                 break;
@@ -47,10 +47,17 @@ internal static class ListingQueryBuilder
         return products;
     }
 
-    /// <summary>The in-stock variants that satisfy the size, colour and price filters together. With no filters: every in-stock variant.</summary>
+    /// <summary>
+    /// The variants that satisfy the size, colour and price filters together. Sold-out variants count (SLD-8) unless the visitor asked for
+    /// "in stock only", then only in-stock ones do. With no filters: every sellable variant.
+    /// </summary>
     public static IQueryable<VariantRow> MatchingVariants(IStorefrontReadDbContext db, ListingFilter filter)
     {
-        var variants = db.Variants.AsNoTracking().Where(v => v.IsSellable && v.AvailableQuantity > 0);
+        var variants = db.Variants.AsNoTracking().Where(v => v.IsSellable);
+        if (filter.InStockOnly)
+        {
+            variants = variants.Where(v => v.AvailableQuantity > 0);
+        }
 
         if (filter.Sizes.Count > 0)
         {
@@ -86,8 +93,8 @@ internal static class ListingQueryBuilder
             products = products.Where(p => p.AgeCode.ToLower().Replace("_", "-") == age);
         }
 
-        return filter.HasVariantFilters
-            ? products.Where(p => matching.Any(v => v.ProductId == p.Id))
+        return filter.HasVariantFilters || filter.InStockOnly
+            ?products.Where(p => matching.Any(v => v.ProductId == p.Id))
             : products;
     }
 }

@@ -83,7 +83,7 @@ public sealed class GetMenuQueryHandler(
         }
 
         var newest = await db.Products.AsNoTracking()
-            .Where(p => p.IsListable)
+            .Where(p => p.IsListable && p.IsAvailable)
             .GroupBy(p => p.GenderCode)
             .Select(g => new { Gender = g.Key, ProductId = g.OrderByDescending(p => p.PublishedAt).ThenByDescending(p => p.Id).Select(p => p.Id).First() })
             .ToListAsync(cancellationToken);
@@ -114,13 +114,13 @@ public sealed class GetMenuQueryHandler(
     private async Task<MenuAvailability> ReadAvailabilityAsync(CancellationToken cancellationToken)
     {
         var scopes = await db.Products.AsNoTracking()
-            .Where(p => p.IsListable)
+            .Where(p => p.IsListable && p.IsAvailable)
             .GroupBy(p => new { p.GenderCode, p.CategoryCode, p.AgeCode, p.IsOnSale })
             .Select(g => g.Key)
             .ToListAsync(cancellationToken);
 
         var collectionScopes = await db.Collections.AsNoTracking()
-            .Join(db.Products.Where(p => p.IsListable), c => c.ProductId, p => p.Id, (c, p) => new { p.GenderCode, c.CollectionCode })
+            .Join(db.Products.Where(p => p.IsListable && p.IsAvailable), c => c.ProductId, p => p.Id, (c, p) => new { p.GenderCode, c.CollectionCode })
             .Distinct()
             .ToListAsync(cancellationToken);
 

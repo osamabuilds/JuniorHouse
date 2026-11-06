@@ -91,9 +91,10 @@ public sealed class SearchProductsQueryHandler(
         var rows = await ListingTiles.Project(db, products, matching).ToListAsync(cancellationToken);
         var ordered = filter.Sort switch
         {
-            ListingSort.PriceAscending => rows.OrderBy(x => x.From).ThenBy(x => x.Id),
-            ListingSort.PriceDescending => rows.OrderByDescending(x => x.From).ThenBy(x => x.Id),
-            _ => rows.OrderByDescending(x => ranks[x.Id]).ThenByDescending(x => x.PublishedAt).ThenByDescending(x => x.Id),
+            // Sold-out products match too (SLD-7) but always come after the in-stock ones (SLD-2).
+            ListingSort.PriceAscending => rows.OrderBy(x => !x.InStock).ThenBy(x => x.From).ThenBy(x => x.Id),
+            ListingSort.PriceDescending => rows.OrderBy(x => !x.InStock).ThenByDescending(x => x.From).ThenBy(x => x.Id),
+            _ => rows.OrderBy(x => !x.InStock).ThenByDescending(x => ranks[x.Id]).ThenByDescending(x => x.PublishedAt).ThenByDescending(x => x.Id),
         };
 
         var total = rows.Count;
