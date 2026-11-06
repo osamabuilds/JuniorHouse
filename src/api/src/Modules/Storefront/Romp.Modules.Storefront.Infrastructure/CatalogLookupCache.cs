@@ -37,6 +37,9 @@ public sealed class CatalogLookupCache(TimeProvider clock) : ICatalogLookupCache
         }
     }
 
+    /// <summary>Drops the copy so the next caller reloads (tests that add collections or categories, and any admin edit that must show at once).</summary>
+    public void Invalidate() => _value = null;
+
     public void Dispose() => _gate.Dispose();
 
     private CatalogLookups? Fresh() => _value is not null && clock.GetUtcNow() < _expires ? _value : null;

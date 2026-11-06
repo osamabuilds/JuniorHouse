@@ -33,6 +33,7 @@ public sealed class DemoStorefrontSeederTests(ProductionApiFixture api)
 
         await api.DispatchAsync();
         await MakeDerivativesAsync();
+        ((Romp.Modules.Storefront.Infrastructure.CatalogLookupCache)api.Services.GetRequiredService<ICatalogLookupCache>()).Invalidate(); // an earlier test may have cached the lookups before the demo collections existed
 
         await using (var scope = api.Services.CreateAsyncScope())
         {
