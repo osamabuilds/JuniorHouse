@@ -56,7 +56,7 @@ export class PageContainer {
         const path = `/${r.page.slug}`;
         this.seo.set({ title: r.page.title, description: r.page.description, path, siteName, crumbs: [{ name: 'Home', path: '/' }, { name: r.page.title, path }] });
       } else {
-        this.seo.set({ title: r.status === 'error' ? 'Something went wrong' : 'Page not found', description: 'This page is not available.', path: this.slug() ? `/${this.slug()}` : '/', siteName, crumbs: [], noindex: true });
+        this.seo.set({ title: r.status === 'error' ? 'Something went wrong' : 'Page not found', description: 'This page is not available.', path: this.slug() ? `/${this.slug()}` : '/', siteName, crumbs: [], noindex: true, error: true });
       }
     });
   }

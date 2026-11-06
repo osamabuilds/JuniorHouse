@@ -135,7 +135,7 @@ export class ProductPageContainer {
 
       if (r.status !== 'found') {
         const title = r.status === 'error' ? 'Something went wrong' : r.status === 'gone' ? 'No longer available' : 'Page not found';
-        this.seo.set({ title, description: 'This page is not available.', path: this.path(), siteName, crumbs: [], noindex: true });
+        this.seo.set({ title, description: 'This page is not available.', path: this.path(), siteName, crumbs: [], noindex: true, error: true });
         return;
       }
 

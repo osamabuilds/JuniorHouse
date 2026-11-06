@@ -115,7 +115,7 @@ export class ListingPageContainer {
       const siteName = this.brand().name;
       if (this.responseInit) this.responseInit.status = r.status === 'ok' ? 200 : r.status === 'notFound' ? 404 : 503;
       if (r.status !== 'ok') {
-        this.seo.set({ title: r.status === 'notFound' ? 'Page not found' : 'Something went wrong', description: 'This page is not available.', path: this.path(), siteName, crumbs: [], noindex: true });
+        this.seo.set({ title: r.status === 'notFound' ? 'Page not found' : 'Something went wrong', description: 'This page is not available.', path: this.path(), siteName, crumbs: [], noindex: true, error: true });
         return;
       }
       const page = r.page;

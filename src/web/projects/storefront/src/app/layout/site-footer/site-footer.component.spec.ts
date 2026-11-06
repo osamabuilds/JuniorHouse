@@ -28,7 +28,7 @@ describe('SiteFooterComponent', () => {
     expect(hrefs).toEqual(expect.arrayContaining(['/new-in', '/delivery', '/exchanges', '/size-guide', '/contact', '/our-story', '/made-in-pakistan']));
   });
 
-  it('SC-11 O-7 shows a WhatsApp link built from the brand number', () => {
+  it('SC-11 O-7 CR-4 shows a WhatsApp link built from the brand number', () => {
     const f = render();
     const wa = [...el(f).querySelectorAll('a')].find((a) => a.getAttribute('href') === 'https://wa.me/923315613217');
     expect(wa).toBeTruthy();

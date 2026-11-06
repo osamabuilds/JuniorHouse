@@ -17,6 +17,8 @@ export interface SeoInput {
   readonly noindex?: boolean;
   /** With noindex: still let crawlers follow the links (search results, SRC-11). */
   readonly follow?: boolean;
+  /** An error page (404, 410, 5xx): no canonical and no og:url, since the address is not a page that should be indexed. */
+  readonly error?: boolean;
   /** Extra JSON-LD objects for the page (for example Organization and WebSite on the home page). Each is a plain, serialisable object. */
   readonly structured?: readonly object[];
 }
@@ -37,14 +39,16 @@ export class SeoService {
     this.tag('property', 'og:title', title);
     this.tag('property', 'og:description', input.description);
     this.tag('property', 'og:type', 'website');
-    this.tag('property', 'og:url', url);
+    if (input.error) this.meta.removeTag('property="og:url"');
+    else this.tag('property', 'og:url', url);
     this.tag('property', 'og:site_name', input.siteName);
     this.tag('name', 'twitter:card', 'summary');
     this.tag('name', 'twitter:title', title);
     this.tag('name', 'twitter:description', input.description);
     if (input.noindex) this.tag('name', 'robots', input.follow ? 'noindex, follow' : 'noindex, nofollow');
     else this.meta.removeTag('name="robots"');
-    this.canonical(url);
+    if (input.error) this.doc.head.querySelector('link[rel="canonical"]')?.remove();
+    else this.canonical(url);
     this.breadcrumbs(input.crumbs);
     this.structured(input.structured ?? []);
   }

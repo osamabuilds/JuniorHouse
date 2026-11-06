@@ -147,6 +147,8 @@
 .rp-tile__cap { position: absolute; z-index: 3; left: var(--space-5); right: var(--space-5); bottom: var(--space-5); display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
 .rp-tile__cap .rp-eyebrow { color: var(--on-image); opacity: 0.9; display: block; margin-bottom: 2px; }
 @media (min-width: 40rem) { .rp-split { grid-template-columns: 1fr 1fr; gap: var(--grid-gap-desktop); } }
+/* One audience: a single full-width tile, wide on larger screens, instead of a half-empty row. */
+@media (min-width: 40rem) { .rp-split--single { grid-template-columns: 1fr; } .rp-split--single .rp-tile .rp-ph { aspect-ratio: 16 / 9; } }
 
 /* ---------- Section head ---------- */
 .rp-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-4); margin-bottom: var(--space-6); flex-wrap: wrap; }
@@ -455,6 +457,10 @@
 .rp-captcha { min-height: 65px; }
 .rp-acct { display: flex; align-items: center; gap: var(--space-3); margin-right: var(--space-2); }
 .rp-acct__link { display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--space-1); border: 0; background: transparent; color: var(--ink); font: 500 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; cursor: pointer; }
+/* Phone: the account is an icon like the others; from 40rem the words fit. */
+.rp-acct-icon { display: inline-flex; }
+@media (max-width: 39.99rem) { .rp-acct { display: none; } }
+@media (min-width: 40rem) { .rp-acct-icon { display: none; } }
 .rp-acct__link:hover { color: var(--accent-deep); }
 .rp-acct__link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 

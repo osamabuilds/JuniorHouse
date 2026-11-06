@@ -133,11 +133,9 @@ test.describe('search overlay', () => {
 });
 
 test.describe('smoothness', () => {
-  for (const path of ['/', '/girls', '/new-in', '/search?q=dress']) {
-    // Known issue (found 2026-11-05): search and listing pages start with empty state in the browser and flash "Searching…" while hydrating,
-    // which collapses the page for a frame and shifts the footer (CLS 0.2-0.4 on /search). Needs the server result transferred to the browser.
-    const known = path.startsWith('/search');
-    (known ? test.fixme : test)(`${path} has no layout shift over 0.1, no console errors and hydrates`, async ({ page }) => {
+  for (const path of ['/', '/girls', '/new-in', '/search?q=dress', '/girls/dresses/floral-summer-dress']) {
+    // HYD-2: the server result is handed to the browser (ADR 0028), so hydration shows the same content instead of a loading state.
+    test(`${path} has no layout shift over 0.1, no console errors and hydrates`, async ({ page }) => {
       const errors: string[] = [];
       page.on('console', (m) => {
         if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text().slice(0, 160));
@@ -158,4 +156,43 @@ test.describe('smoothness', () => {
       expect(errors).toEqual([]);
     });
   }
+});
+
+test.describe('design audit fixes (2026-11-05)', () => {
+  test('HDR-1 on a phone the header shows one account icon, not wrapped Sign in text', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page, '/');
+    const icon = page.locator('header a.rp-acct-icon');
+    await expect(icon).toBeVisible();
+    const box = (await icon.boundingBox())!;
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    await expect(page.locator('header .rp-acct')).toBeHidden();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('HDR-1 from 40rem the words are shown and the icon is hidden', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await open(page, '/');
+    await expect(page.locator('header .rp-acct__link').first()).toBeVisible();
+    await expect(page.locator('header a.rp-acct-icon')).toBeHidden();
+  });
+
+  test('SEO-04 a missing page is 404, noindex and has no canonical', async ({ request }) => {
+    const res = await request.get('/this-page-does-not-exist');
+    expect(res.status()).toBe(404);
+    const html = await res.text();
+    expect(html).toContain('noindex');
+    expect(html).not.toMatch(/rel="canonical"/);
+  });
+
+  test('home: a single audience tile spans the row instead of leaving half of it empty', async ({ page, request }) => {
+    const home = await (await request.get('/api/storefront/home')).json();
+    test.skip(home.audiences.length !== 1, 'needs exactly one audience in the demo data');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await open(page, '/');
+    const list = (await page.locator('ul.rp-split').boundingBox())!;
+    const tile = (await page.locator('ul.rp-split li').first().boundingBox())!;
+    expect(tile.width).toBeGreaterThan(list.width * 0.95);
+  });
 });
