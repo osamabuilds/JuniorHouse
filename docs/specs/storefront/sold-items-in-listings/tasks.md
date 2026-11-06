@@ -1,6 +1,6 @@
 # Sold items in listings: tasks
 
-Small, ordered, test-first. Nothing starts until the spec and plan are approved.
+Small, ordered, test-first. Spec and plan approved 2026-11-06. Start at task 1.
 
 ## API
 

@@ -1,6 +1,6 @@
 # Sold items in listings
 
-- **Status:** Draft (awaiting owner approval)
+- **Status:** Approved (owner, 2026-11-06, with all recommendations)
 - **Jira:** none yet
 - **Module:** storefront (API read side and web)
 - **Requirement IDs:** FR-05, SEO-03, SEO-06, NFR-19; amends listings LST-15 and storefront-settings S-4 / ST-6 (owner decisions of 2026-11-05 and 2026-11-06)
@@ -50,7 +50,7 @@ Today a product with nothing in stock vanishes from every listing, so a shopper 
 
 ## Open questions
 
-- [ ] **Q-SLD-1 Season URL (SLD-10).** Proposed `/collections/<season>/<category>`. A listing scope for "collection + category" does not exist yet. Confirm the URL, or say another.
-- [ ] **Q-SLD-2 Home and menu tile (SLD-11).** Proposed: in-stock only, because those are shop windows. Confirm.
-- [ ] **Q-SLD-3 Collections index (SLD-12).** Proposed: counts include sold-out pieces. Confirm.
-- [ ] **Q-SLD-4 Navigation labels.** The shape is Season (Winter, Summer) > categories (T-shirts, Sweaters, Jackets, Trousers, Shorts, Dresses...). Confirm the season names and which categories sit under each, or say it is entered in the admin settings by you.
+- [x] **Q-SLD-1 Season URL (SLD-10).** Proposed `/collections/<season>/<category>`. A listing scope for "collection + category" does not exist yet. Confirm the URL, or say another. **Resolved: recommendation accepted.**
+- [x] **Q-SLD-2 Home and menu tile (SLD-11).** Proposed: in-stock only, because those are shop windows. Confirm. **Resolved: recommendation accepted.**
+- [x] **Q-SLD-3 Collections index (SLD-12).** Proposed: counts include sold-out pieces. Confirm. **Resolved: recommendation accepted.**
+- [x] **Q-SLD-4 Navigation labels.** The shape is Season (Winter, Summer) > categories (T-shirts, Sweaters, Jackets, Trousers, Shorts, Dresses...). Confirm the season names and which categories sit under each, or say it is entered in the admin settings by you. **Resolved: the proposed shape and labels accepted (Winter and Summer, each with T-shirts, Sweaters, Jackets, Trousers, Shorts, Dresses).**

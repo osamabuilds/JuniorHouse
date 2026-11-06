@@ -1,6 +1,6 @@
 # Sold items in listings: technical plan
 
-- **Spec:** [spec.md](spec.md) (draft, not yet approved)
+- **Spec:** [spec.md](spec.md) (approved by the owner on 2026-11-06)
 - **Module(s):** Storefront. No new module. One data change (read model rebuild), no schema change proposed.
 
 ## Domain model
