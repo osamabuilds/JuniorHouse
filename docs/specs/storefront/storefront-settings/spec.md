@@ -14,7 +14,7 @@ Owner decision (2026-10-24): the storefront must be **highly or completely confi
 | S-1 | Header entries are configurable and **nested**. Launch set: **Girls, Boys, New in, Collections, Sale** (no Baby, no Unisex, no Gifts). every entry can be a main category with nested members (for example Boys: Tees and shirts, Bottoms, Casual shirts, each with further members). |
 | S-2 | Age steps are configurable. Launch set: **1Y to 8Y, one year apart** (the earlier "from 2" and "to 12" are superseded). |
 | S-3 | Footer links, delivery cities, times and charges, courier, exchange window, contact details (WhatsApp `+92 331 5613217`), the announcement bar text and the content pages are all configurable. |
-| S-4 | An enabled navigation entry with no products shows an empty page (the empty state), not a hidden entry. Where products have sold, the entry may show the **sold items for that season** (Q-ST-4). |
+| S-4 | An enabled navigation entry with no products shows an empty page (the empty state), not a hidden entry. Where products have sold, the entry shows its **sold items** with the in-stock ones, last and marked sold out (Q-ST-4 replaced by Q-ST-9 and Q-ST-10; built in sold-items-in-listings). |
 | S-5 | Black and white look (navigation D-6). |
 
 ## Scope
@@ -47,7 +47,7 @@ Visual theming and layout changes (colours, fonts, section order on the home pag
 | ST-3 | Given a draft with unpublished edits, then the public site shows only the last published set; after Publish the whole set appears at once | Section 4 |
 | ST-4 | Given an admin saves an invalid value (empty label, duplicate key, bad phone number, negative charge, link to a page that does not exist, a menu with no links), then it is rejected with a message naming the field and what to do, and nothing is saved | Validation |
 | ST-5 | Given a navigation entry that points to a listing with no live products, then the public page returns 200 with the empty state (and `noindex`) while the entry is enabled; the entry never 404s | S-4, FR-05 |
-| ST-6 | Given an enabled entry whose products have all sold, then the page shows the sold items for the current season as sold-out cards (rule in Q-ST-4). **Owner decisions 2026-11-05 and 2026-11-06: ST-6 wins; sold items appear on every listing, always, built under sold-items-in-listings.** | S-4 |
+| ST-6 | Given an enabled entry whose products have all sold, then the page shows the sold items for the current season as sold-out cards (rule in Q-ST-4). **Owner decisions 2026-11-05 and 2026-11-06: ST-6 wins; sold items appear on every listing, always, built under sold-items-in-listings (built 2026-11-06: every listing and every navigation entry shows its sold-out pieces, last).** | S-4 |
 | ST-7 | Given delivery or exchange facts change, then the delivery page, exchange page and footer show the new values, from one record each | S-3 |
 | ST-8 | Given a page is published, then it is server-rendered with its title, meta description, canonical, Open Graph tags, breadcrumb and `BreadcrumbList` JSON-LD; given it is unpublished or archived, then it returns 404 (unpublished) or 410 (archived) and leaves the sitemap | SEO-01, 04, 05 |
 | ST-9 | Given a page's slug changes, then the old URL returns a 301 to the new one | CLAUDE.md SEO |
@@ -71,6 +71,8 @@ What was implemented differs from the text above in these ways. The code and tes
 - Tables added to the plan: `POPL_SRCH` (popular searches), `FACT_LKP` (the six fact keys, referenced by `PAGE_BLCK.FACT_ID`), `DRFT_MAIN` (the draft version counter), `PAGE_RDIR` (redirects), `LINK_TGT_LKP` (link target kinds). The current snapshot is flagged by `CRNT_IND`. Delivery is one `DLVR_RULE` row per city (a new city is a new row).
 - Contract additions stored and published: `NavItem.showAges`, `popularSearches`, a `List` block `ordered` flag, a `Table` block caption (the block label) with its header as row 0, block labels up to 120 characters, and the six `Fact` keys.
 - The seed is the launch set (S-1, S-2), the WhatsApp number and eight **Draft** pages. Opening hours, the four delivery cities, the 7-day exchange window and its three conditions are **placeholders** to replace in the admin app before launch; the contact email is real.
+
+**Update 2026-11-06 (sold-items-in-listings):** ST-6 is built there, not here. The seeded launch navigation became Season > categories (migration `SeedSeasonNavigation`, which only replaces the original, unedited launch tree); the built-in set and the contract fixture follow it.
 
 **Behaviour**
 - Each save replaces its whole part (navigation, ages, footer, contact and popular searches, delivery and exchange) inside one transaction; row ids change on every save. Every save quotes the draft version it loaded and a stale one is a 409. Pages carry their own row version.

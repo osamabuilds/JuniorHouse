@@ -92,6 +92,23 @@ public sealed class MenuTileTests(StorefrontPostgres postgres)
     }
 
     [Fact]
+    [Trait("Spec", "SLD-11")]
+    public async Task TheTile_SkipsASoldOutNewestProduct_AndAnAudienceWithOnlySoldOutProductsGetsNone_NorMenuEntries()
+    {
+        using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
+        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", publishedAt: DateTimeOffset.UtcNow.AddDays(-10), name: "Older", mainFile: "images/a.jpg");
+        await ListingSeeder.ListableAsync(host, 2, "GIRLS", "TOPS", [new("RED", "5-6Y", 800m, 0)], publishedAt: DateTimeOffset.UtcNow.AddDays(-1), name: "Newest sold out", mainFile: "images/c.jpg");
+        await ListingSeeder.ListableAsync(host, 3, "BOYS", "TOPS", [new("RED", "5-6Y", 800m, 0)], name: "Boys sold out");
+
+        var menu = await host.SendAsync(new GetMenuQuery());
+
+        var girls = Audience(menu, "GIRLS");
+        Assert.Equal(await TilePictureAsync(host, "Older"), girls.Tile!.Image.Sources[0].Webp);
+        Assert.DoesNotContain(girls.Entries, e => e.Code == "TOPS");
+        Assert.DoesNotContain(menu.Audiences, a => a.Code == "BOYS");
+    }
+
+    [Fact]
     [Trait("Spec", "MGT-1")]
     public async Task TheTile_CostsAFixedNumberOfExtraQueries_WhateverTheNumberOfAudiences()
     {

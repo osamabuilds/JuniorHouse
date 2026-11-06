@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { ListingOptions } from '../../models/listing.model';
 import { ListingFilter } from '../../models/listing-query';
 
-export type FilterGroup = 'age' | 'size' | 'colour' | 'price' | 'sort';
+export type FilterGroup = 'age' | 'size' | 'colour' | 'price' | 'stock' | 'sort';
 
 /**
  * The form controls of the filter bar, as plain inputs inside whatever form holds them (FLT-4, FLT-6): the same names the listing already
- * reads (`size`, `colour`, `age`, `priceMin`, `priceMax`, `sort`), so a GET submit works with no scripting. One group, or all of them in the
+ * reads (`size`, `colour`, `age`, `priceMin`, `priceMax`, `stock`, `sort`), so a GET submit works with no scripting. One group, or all of them in the
  * phone sheet. A colour swatch is a native checkbox drawn as a round mark with its initial (the colour lookup carries no colour value, so
  * nothing is guessed) and its name in words, so colour is never the only signal. There are no ids: each control sits inside its own label.
  */

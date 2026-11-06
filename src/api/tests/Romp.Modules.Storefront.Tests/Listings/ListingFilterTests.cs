@@ -6,8 +6,38 @@ namespace Romp.Modules.Storefront.Tests.Listings;
 public sealed class ListingFilterTests
 {
     private static (ListingFilter? Filter, IReadOnlyList<ListingFilterError> Errors) Parse(
-        string?[]? sizes = null, string?[]? colours = null, string? age = null, string? price = null, string? sort = null, string? page = null, string? pageSize = null) =>
-        ListingFilter.Parse(sizes, colours, age, price, sort, page, pageSize);
+        string?[]? sizes = null, string?[]? colours = null, string? age = null, string? price = null, string? sort = null, string? page = null, string? pageSize = null, string? stock = null) =>
+        ListingFilter.Parse(sizes, colours, age, price, sort, page, pageSize, stock);
+
+    [Fact]
+    [Trait("Spec", "SLD-4")]
+    public void InStockOnly_IsOffByDefault_OnForStockIn_AndInTheCanonicalQuery()
+    {
+        Assert.False(Parse().Filter!.InStockOnly);
+        Assert.False(Parse().Filter!.HasAny);
+
+        var on = Parse(stock: "IN", sort: "price-asc", page: "2").Filter!;
+        Assert.True(on.InStockOnly);
+        Assert.True(on.HasAny);
+        Assert.Equal("stock=in&sort=price-asc&page=2", on.ToCanonicalQuery());
+        Assert.Equal("stock=in&sort=price-asc", on.ToCanonicalQuery(includePage: false));
+    }
+
+    [Theory]
+    [Trait("Spec", "SLD-4")]
+    [Trait("Spec", "LST-11")]
+    [InlineData("out")]
+    [InlineData("true")]
+    [InlineData("<script>")]
+    public void AnUnknownStockValue_IsRefused_NeverEchoed(string stock)
+    {
+        var (filter, errors) = Parse(stock: stock);
+
+        Assert.Null(filter);
+        var error = Assert.Single(errors);
+        Assert.Equal("stock", error.Field);
+        Assert.DoesNotContain(stock, error.Message, StringComparison.Ordinal);
+    }
 
     [Fact]
     [Trait("Spec", "LST-11")]
@@ -120,7 +150,8 @@ public sealed class ListingFilterTests
     [Trait("Spec", "LST-1")]
     [Trait("Spec", "LST-2")]
     [InlineData(true, "5-6y", "navy", 500, true)]
-    [InlineData(false, "5-6y", "navy", 500, false)] // sold out never matches
+    [InlineData(false, "5-6y", "navy", 500, true)] // sold out still matches unless "in stock only" (SLD-8)
+    [InlineData(false, "3-4y", "navy", 500, false)] // sold out but the wrong size
     [InlineData(true, "3-4y", "navy", 500, false)] // wrong size
     [InlineData(true, "5-6y", "red", 500, false)] // wrong colour
     [InlineData(true, "5-6y", "navy", 50, false)] // below the range
@@ -130,6 +161,17 @@ public sealed class ListingFilterTests
         var filter = Parse(sizes: ["5-6y"], colours: ["navy"], price: "100-1000").Filter!;
 
         Assert.Equal(expected, ListingRules.Matches(inStock, size, colour, price, filter));
+    }
+
+    [Theory]
+    [Trait("Spec", "SLD-8")]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void InStockOnly_MakesTheMatchingVariantBeInStock(bool inStock, bool expected)
+    {
+        var filter = Parse(sizes: ["5-6y"], stock: "in").Filter!;
+
+        Assert.Equal(expected, ListingRules.Matches(inStock, "5-6y", "navy", 500, filter));
     }
 
     [Fact]

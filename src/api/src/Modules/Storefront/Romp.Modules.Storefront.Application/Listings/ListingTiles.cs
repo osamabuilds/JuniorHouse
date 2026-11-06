@@ -15,13 +15,16 @@ internal sealed class TileRow
 
     public DateTimeOffset PublishedAt { get; init; }
 
+    /// <summary>Some variant can be bought. Listings put these before the sold-out products (SLD-2).</summary>
+    public bool InStock { get; init; }
+
     public decimal? From { get; init; }
 
     public decimal? CompareAt { get; init; }
 
     public int Colours { get; init; }
 
-    public bool SoldOut { get; init; }
+    public bool HasSoldOutSizes { get; init; }
 
     public decimal MaxDiscountPercent { get; init; }
 }
@@ -44,10 +47,11 @@ internal static class ListingTiles
             Path = p.Path,
             Name = p.Name,
             PublishedAt = p.PublishedAt,
+            InStock = p.IsAvailable,
             From = matching.Where(v => v.ProductId == p.Id).Min(v => v.Price),
             CompareAt = matching.Where(v => v.ProductId == p.Id && v.CompareAtPrice > v.Price).OrderBy(v => v.Price).Select(v => v.CompareAtPrice).FirstOrDefault(),
             Colours = matching.Where(v => v.ProductId == p.Id).Select(v => v.ColourCode).Distinct().Count(),
-            SoldOut = db.Variants.Any(v => v.ProductId == p.Id && v.IsSellable && v.AvailableQuantity <= 0),
+            HasSoldOutSizes = db.Variants.Any(v => v.ProductId == p.Id && v.IsSellable && v.AvailableQuantity <= 0),
             MaxDiscountPercent = p.MaxDiscountPercent,
         });
 
@@ -71,12 +75,13 @@ internal static class ListingTiles
                 x.CompareAt is > 0 && x.From is { } now && x.CompareAt > now ? (int)Math.Round((x.CompareAt.Value - now) / x.CompareAt.Value * 100m) : 0,
                 x.CompareAt is > 0 && x.From is { } was && x.CompareAt > was ? x.CompareAt.Value - was : 0m,
                 x.Colours,
-                x.SoldOut,
+                x.HasSoldOutSizes,
                 tileSizes,
                 pictures?.Main,
                 x.PublishedAt >= context.NewCutoff,
                 tileSizes.Any(s => s.Availability == nameof(AvailabilityClass.LowStock)),
-                pictures?.Second);
+                pictures?.Second,
+                !x.InStock);
         }).ToList();
     }
 

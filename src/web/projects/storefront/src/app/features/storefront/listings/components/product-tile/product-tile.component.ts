@@ -79,7 +79,8 @@ export class ProductTileComponent {
 
   /** The second picture exists only once it is wanted: on first hover or focus on a desktop, straight away on touch (never at page load). */
   protected readonly second = computed(() => (this.secondWanted() || (this.enhanced() && this.touch()) ? view(this.tile().secondImage) : null));
-  protected readonly canQuickAdd = computed(() => this.tile().sizes.some((s) => (s.variantId ?? 0) > 0));
+  protected readonly soldOut = computed(() => this.tile().soldOut === true);
+  protected readonly canQuickAdd = computed(() => !this.soldOut() && this.tile().sizes.some((s) => (s.variantId ?? 0) > 0));
 
   constructor() {
     afterNextRender(() => {

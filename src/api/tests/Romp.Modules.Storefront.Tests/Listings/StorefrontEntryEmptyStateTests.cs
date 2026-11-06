@@ -31,12 +31,28 @@ public sealed class StorefrontEntryEmptyStateTests(StorefrontPostgres postgres)
 
     [Fact]
     [Trait("Spec", "ST-5")]
-    public async Task AnEnabledAudienceWhoseProductsAreAllOutOfStock_IsFound_AndEmpty()
+    [Trait("Spec", "SLD-9")]
+    public async Task AnEnabledAudienceWhoseProductsAreAllOutOfStock_IsNotEmpty_TheSoldOutPiecesShow()
     {
         using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
         await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0)]);
 
         var result = await host.SendAsync(new SearchListingQuery(ListingScope.Audience("girls"), Filter()));
+
+        Assert.Equal(ListingOutcome.Found, result.Outcome);
+        Assert.Single(result.Value!.Tiles);
+        Assert.True(result.Value.Tiles[0].SoldOut);
+    }
+
+    [Fact]
+    [Trait("Spec", "SLD-9")]
+    public async Task AnAudienceWhoseProductsAreAllOutOfStock_IsEmpty_OnlyWhenInStockOnlyIsOn()
+    {
+        using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
+        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0)]);
+        var inStock = ListingFilter.Parse(null, null, null, null, null, null, null, "in").Filter!;
+
+        var result = await host.SendAsync(new SearchListingQuery(ListingScope.Audience("girls"), inStock));
 
         Assert.Equal(ListingOutcome.Found, result.Outcome);
         Assert.Empty(result.Value!.Tiles);

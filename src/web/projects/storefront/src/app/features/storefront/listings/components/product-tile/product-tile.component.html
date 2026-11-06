@@ -1,4 +1,4 @@
-<article class="rp-card" [class.is-open]="open()" [class.is-dismissed]="dismissed()">
+<article class="rp-card" [class.is-sold-out]="soldOut()" [class.is-open]="open()" [class.is-dismissed]="dismissed()">
   <div class="rp-media">
     @if (main(); as pic) {
       <div #strip class="rp-swipe" (scroll)="onScroll()">
@@ -36,7 +36,10 @@
         <span class="rp-pagedots" aria-hidden="true"><i [class.is-on]="slide() === 0"></i><i [class.is-on]="slide() === 1"></i></span>
       }
     }
-    @switch (tag()) {
+    @if (soldOut()) {
+      <span class="rp-tag rp-tag--sold">Sold out</span>
+    } @else {
+      @switch (tag()) {
       @case ('sale') {
         <span class="rp-tag rp-tag--sale">−{{ tile().savingPercent }}%</span>
       }
@@ -45,6 +48,7 @@
       }
       @case ('new') {
         <span class="rp-tag">New</span>
+      }
       }
     }
     <button rpWishlistHeart [productId]="tile().productId" [productName]="tile().name"></button>
@@ -56,7 +60,7 @@
     }
   </div>
   <div class="rp-card__body">
-    <h3 class="rp-card__name"><a [routerLink]="tile().path">{{ tile().name }}</a></h3>
+    <h3 class="rp-card__name"><a [routerLink]="tile().path">{{ tile().name }}@if (soldOut()) {<span class="sr-only">, sold out</span>}</a></h3>
     @if (colours(); as c) {
       <p class="rp-card__meta">{{ c }}</p>
     }

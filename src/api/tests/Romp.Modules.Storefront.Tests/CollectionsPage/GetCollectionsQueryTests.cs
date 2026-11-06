@@ -40,6 +40,20 @@ public sealed class GetCollectionsQueryTests(StorefrontPostgres postgres)
     }
 
     [Fact]
+    [Trait("Spec", "SLD-12")]
+    public async Task ThePieceCount_IncludesSoldOutPieces_AndACollectionOfOnlySoldOutPiecesIsStillListed()
+    {
+        using var host = await HostAsync(postgres);
+        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", collection: "SUMMER");
+        await ListingSeeder.ListableAsync(host, 2, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0)], collection: "SUMMER");
+        await ListingSeeder.ListableAsync(host, 3, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0)], collection: "WINTER");
+
+        var page = await PageAsync(host);
+
+        Assert.Equal([("WINTER", 1), ("SUMMER", 2)], page.Items.Select(i => (i.Code, i.Pieces)).ToArray());
+    }
+
+    [Fact]
     [Trait("Spec", "COL-3")]
     public async Task ACollectionSwitchedOff_IsNeverListed_EvenWithProducts()
     {

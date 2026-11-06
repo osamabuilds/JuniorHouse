@@ -62,6 +62,7 @@ export class FilterBarComponent {
       { key: 'size', label: 'Size', present: o.sizes.length > 0, selected: f.sizes.length, removeQuery: query({ ...f, sizes: [] }) },
       { key: 'colour', label: 'Colour', present: o.colours.length > 0, selected: f.colours.length, removeQuery: query({ ...f, colours: [] }) },
       { key: 'price', label: 'Price', present: o.priceMin !== null, selected: f.priceMin !== null || f.priceMax !== null ? 1 : 0, removeQuery: query({ ...f, priceMin: null, priceMax: null }) },
+      { key: 'stock', label: 'Availability', present: true, selected: f.inStockOnly ? 1 : 0, removeQuery: query({ ...f, inStockOnly: false }) },
     ];
     return all.filter((g) => g.present);
   });

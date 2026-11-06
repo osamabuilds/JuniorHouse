@@ -35,6 +35,12 @@
     <label class="rp-field">To <input class="rp-input" type="number" name="priceMax" inputmode="numeric" min="0" [attr.placeholder]="options().priceMax" [value]="filter().priceMax ?? ''" /></label>
   </fieldset>
 }
+@if (show('stock')) {
+  <fieldset>
+    <legend>Availability</legend>
+    <label class="rp-check"><input type="checkbox" name="stock" value="in" [checked]="filter().inStockOnly" /> In stock only</label>
+  </fieldset>
+}
 @if (show('sort')) {
   <fieldset>
     <legend>Sort</legend>

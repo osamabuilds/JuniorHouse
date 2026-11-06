@@ -66,14 +66,16 @@ describe('visibleEntries', () => {
     expect(visibleEntries(nav)).toEqual([]);
   });
 
-  it('SC-1 the launch set shows Girls, Boys, New in, Collections and Sale in that order', () => {
-    expect(visibleEntries(launchSettings.navigation).map((i) => i.label)).toEqual(['Girls', 'Boys', 'New in', 'Collections', 'Sale']);
+  it('SC-1 the launch set shows Winter, Summer, Girls, Boys, New in and Sale in that order', () => {
+    expect(visibleEntries(launchSettings.navigation).map((i) => i.label)).toEqual(['Winter', 'Summer', 'Girls', 'Boys', 'New in', 'Sale']);
   });
 
-  it('SC-3a the launch set nests members and further members under Boys and Girls', () => {
-    const boys = visibleEntries(launchSettings.navigation).find((i) => i.key === 'boys')!;
-    expect(boys.children.map((c) => c.label)).toEqual(expect.arrayContaining(['Tees and shirts', 'Bottoms', 'Casual shirts']));
-    expect(boys.children.some((c) => c.children.length > 0)).toBe(true);
+  it('SC-3a the launch set nests the categories under the seasons and the audiences', () => {
+    const entries = visibleEntries(launchSettings.navigation);
+    const boys = entries.find((i) => i.key === 'boys')!;
+    expect(boys.children.map((c) => c.label)).toEqual(['T-shirts', 'Sweaters', 'Jackets', 'Trousers', 'Shorts']);
+    const winter = entries.find((i) => i.key === 'winter')!;
+    expect(winter.children.map((c) => c.target)).toContainEqual({ kind: 'path', path: '/collections/winter/dresses' });
   });
 
   it('SC-5 the launch set ages run 1Y to 8Y one year apart', () => {

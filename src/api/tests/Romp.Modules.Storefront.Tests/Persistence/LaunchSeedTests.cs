@@ -42,9 +42,6 @@ public sealed partial class LaunchSeedTests : IAsyncLifetime
         return File.ReadAllText(Path.Combine(directory.FullName, "src", "web", "projects", "storefront", "src", "app", "shared", "data", file));
     }
 
-    [GeneratedRegex(@"link\('([a-z0-9-]+)'")]
-    private static partial Regex LinkKeys();
-
     [GeneratedRegex(@"(?:path|page)\('([^']+)'")]
     private static partial Regex FooterLabels();
 
@@ -65,18 +62,22 @@ public sealed partial class LaunchSeedTests : IAsyncLifetime
     [Fact]
     [Trait("Spec", "S-1")]
     [Trait("Spec", "ST-1a")]
-    public async Task Seed_Navigation_IsTheThreeLevelLaunchTree()
+    [Trait("Spec", "SLD-10")]
+    public async Task Seed_Navigation_IsTheSeasonThenCategoriesLaunchTree()
     {
         await using var context = await MigratedAsync();
         var items = await context.NavItems.Include(n => n.Children).ToListAsync();
 
         var roots = items.Where(i => !items.Any(p => p.Children.Contains(i))).OrderBy(i => i.SortSeq).ToList();
-        Assert.Equal(["girls", "boys", "new-in", "collections", "sale"], roots.Select(r => r.Key).ToArray());
-        Assert.Equal(NavKind.CollectionList, roots.Single(r => r.Key == "collections").Kind);
+        Assert.Equal(["winter", "summer", "girls", "boys", "new-in", "sale"], roots.Select(r => r.Key).ToArray());
         Assert.All(roots.Where(r => r.Key is "girls" or "boys"), r => Assert.True(r.ShowAges));
-        Assert.Equal(["girls-dresses", "girls-tops", "girls-bottoms"], roots[0].Children.OrderBy(c => c.SortSeq).Select(c => c.Key).ToArray());
-        Assert.Equal(["girls-tees", "girls-blouses"], roots[0].Children.Single(c => c.Key == "girls-tops").Children.OrderBy(c => c.SortSeq).Select(c => c.Key).ToArray());
-        Assert.Equal(19, items.Count);
+        Assert.All(roots.Where(r => r.Key is "winter" or "summer"), r => Assert.False(r.ShowAges));
+        Assert.Equal(
+            ["winter-t-shirts", "winter-sweaters", "winter-jackets", "winter-trousers", "winter-shorts", "winter-dresses"],
+            roots[0].Children.OrderBy(c => c.SortSeq).Select(c => c.Key).ToArray());
+        Assert.Equal("/collections/winter/jackets", roots[0].Children.Single(c => c.Key == "winter-jackets").TargetRef);
+        Assert.Equal(5, roots[3].Children.Count); // boys have no dresses
+        Assert.Equal(29, items.Count);
     }
 
     [Fact]
@@ -145,15 +146,14 @@ public sealed partial class LaunchSeedTests : IAsyncLifetime
         var settingsTs = WebData("launch-settings.ts");
         var pagesTs = WebData("launch-pages.ts");
 
-        // Navigation keys.
-        var tsKeys = LinkKeys().Matches(settingsTs).Select(m => m.Groups[1].Value).Append("collections").Order().ToArray();
-        Assert.Equal(tsKeys, (await context.NavItems.Select(n => n.Key).ToListAsync()).Order().ToArray());
+        // The navigation is built by a helper in the web file, so its keys are not spelled out there: the whole tree is compared by the
+        // storefront contract spec against the committed fixture, and the seeded tree by Seed_Navigation_IsTheSeasonThenCategoriesLaunchTree.
 
         // Ages and page slugs.
         Assert.Equal(8, await context.AgeSteps.CountAsync());
         Assert.Contains("length: 8", settingsTs, StringComparison.Ordinal);
         Assert.Equal(
-            PageSlugs().Matches(settingsTs).Select(m => m.Groups[1].Value).Order().ToArray(),
+            PageSlugs().Matches(settingsTs[settingsTs.IndexOf("const pageSlugs", StringComparison.Ordinal)..]).Select(m => m.Groups[1].Value).Order().ToArray(),
             (await context.Pages.Select(p => p.Slug).ToListAsync()).Order().ToArray());
 
         // Footer link labels (the WhatsApp link is spelled out in the web file).

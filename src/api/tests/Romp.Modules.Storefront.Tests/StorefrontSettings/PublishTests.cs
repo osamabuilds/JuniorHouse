@@ -62,7 +62,7 @@ public sealed class PublishTests(StorefrontPostgres postgres)
         var draft = await host.SendAsync(new GetDraftSettingsQuery());
         await host.SendAsync(new SaveNavigationCommand(draft.Version, [Link("sale", "Final sale", "/sale", 1)]));
 
-        Assert.Equal("Girls", Settings(await host.SendAsync(new GetPublishedSettingsQuery()))["navigation"]![0]!["label"]!.GetValue<string>());
+        Assert.Equal("Winter", Settings(await host.SendAsync(new GetPublishedSettingsQuery()))["navigation"]![0]!["label"]!.GetValue<string>());
 
         host.Cache.Invalidate();
         await host.SendAsync(new PublishSettingsCommand(await host.DraftVersionAsync(), "two"));
@@ -118,13 +118,13 @@ public sealed class PublishTests(StorefrontPostgres postgres)
     {
         using var host = await PublishableAsync(postgres);
         var draft = await host.SendAsync(new GetDraftSettingsQuery());
-        var tree = draft.Navigation.Select(n => n.Key == "girls" ? n with { Enabled = false } : n).ToList();
+        var tree = draft.Navigation.Select(n => n.Key == "winter" ? n with { Enabled = false } : n).ToList();
         await host.SendAsync(new SaveNavigationCommand(draft.Version, tree));
 
         await host.SendAsync(new PublishSettingsCommand(await host.DraftVersionAsync(), null));
 
         var keys = Settings(await host.SendAsync(new GetPublishedSettingsQuery()))["navigation"]!.AsArray().Select(n => n!["key"]!.GetValue<string>()).ToArray();
-        Assert.Equal(["boys", "new-in", "collections", "sale"], keys);
+        Assert.Equal(["summer", "girls", "boys", "new-in", "sale"], keys);
     }
 
     [Fact]
@@ -138,8 +138,8 @@ public sealed class PublishTests(StorefrontPostgres postgres)
 
         Assert.Equal("923315613217", settings["brand"]!["whatsapp"]!.GetValue<string>());
         Assert.Equal("group", settings["navigation"]![0]!["kind"]!.GetValue<string>());
-        Assert.True(settings["navigation"]![0]!["showAges"]!.GetValue<bool>());
-        Assert.Equal("collection-list", settings["navigation"]![3]!["kind"]!.GetValue<string>());
+        Assert.True(settings["navigation"]![2]!["showAges"]!.GetValue<bool>()); // girls
+        Assert.Equal("link", settings["navigation"]![4]!["kind"]!.GetValue<string>()); // new-in
         Assert.Equal(8, settings["ages"]!.AsArray().Count);
         Assert.Equal(7, settings["exchange"]!["windowDays"]!.GetValue<int>());
         Assert.Equal(("Islamabad", 300m), (settings["delivery"]![0]!["city"]!.GetValue<string>(), settings["delivery"]![0]!["charge"]!.GetValue<decimal>()));
@@ -166,7 +166,7 @@ public sealed class PublishTests(StorefrontPostgres postgres)
         host.Cache.Invalidate();
         var published = Settings(await host.SendAsync(new GetPublishedSettingsQuery()));
         Assert.Equal(3, published["version"]!.GetValue<int>());
-        Assert.Equal("Girls", published["navigation"]![0]!["label"]!.GetValue<string>());
+        Assert.Equal("Winter", published["navigation"]![0]!["label"]!.GetValue<string>());
 
         var again = await host.SendAsync(new RestoreSnapshotCommand(3, null));
         Assert.False(again.Created);

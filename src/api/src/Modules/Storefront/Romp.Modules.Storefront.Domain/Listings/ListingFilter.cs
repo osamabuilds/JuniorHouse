@@ -28,6 +28,9 @@ public enum ListingScopeKind
 
     /// <summary>Every listable product, newest first, with no window (the home page falls back to it when nothing is new).</summary>
     All = 8,
+
+    /// <summary><c>/collections/winter/jackets</c>: the products of a collection in one category, any audience (SLD-10).</summary>
+    CollectionCategory = 9,
 }
 
 /// <summary>
@@ -47,6 +50,9 @@ public sealed record ListingScope(ListingScopeKind Kind, string? Gender = null, 
     public static ListingScope Everything() => new(ListingScopeKind.All);
 
     public static ListingScope OfCollection(string collection) => new(ListingScopeKind.Collection, Collection: collection);
+
+    public static ListingScope OfCollectionCategory(string collection, string category) =>
+        new(ListingScopeKind.CollectionCategory, Category: category, Collection: collection);
 }
 
 public enum ListingSort
@@ -93,18 +99,34 @@ public sealed record ListingFilter
 
     public int PageSize { get; init; } = DefaultPageSize;
 
+    /// <summary>"In stock only" (<c>stock=in</c>): sold-out products are left out. Off by default (SLD-4).</summary>
+    public bool InStockOnly { get; init; }
+
     public bool HasVariantFilters => Sizes.Count > 0 || Colours.Count > 0 || PriceMin is not null || PriceMax is not null;
 
-    public bool HasAny => HasVariantFilters || Age is not null;
+    public bool HasAny => HasVariantFilters || Age is not null || InStockOnly;
 
     /// <summary>
     /// Parses the raw query values. <paramref name="price"/> is <c>min-max</c> with either side optional (<c>1000-3000</c>, <c>1000-</c>,
     /// <c>-3000</c>). Returns the filter, or the reasons it was refused.
     /// </summary>
     public static (ListingFilter? Filter, IReadOnlyList<ListingFilterError> Errors) Parse(
-        IEnumerable<string?>? sizes, IEnumerable<string?>? colours, string? age, string? price, string? sort, string? page, string? pageSize)
+        IEnumerable<string?>? sizes, IEnumerable<string?>? colours, string? age, string? price, string? sort, string? page, string? pageSize, string? stock = null)
     {
         var errors = new List<ListingFilterError>();
+
+        var inStockOnly = false;
+        if (!string.IsNullOrWhiteSpace(stock))
+        {
+            if (string.Equals(stock.Trim(), "in", StringComparison.OrdinalIgnoreCase))
+            {
+                inStockOnly = true;
+            }
+            else
+            {
+                errors.Add(new ListingFilterError("stock", "The stock filter is stock=in, or leave it off."));
+            }
+        }
 
         decimal? min = null, max = null;
         if (!string.IsNullOrWhiteSpace(price))
@@ -157,6 +179,7 @@ public sealed record ListingFilter
             Age = Codes([age]).FirstOrDefault(),
             PriceMin = min,
             PriceMax = max,
+            InStockOnly = inStockOnly,
             Sort = ParseSort(sort),
             Page = pageNumber,
             PageSize = size,
@@ -177,6 +200,11 @@ public sealed record ListingFilter
         if (PriceMin is not null || PriceMax is not null)
         {
             parts.Add(string.Create(CultureInfo.InvariantCulture, $"price={PriceMin:0.##}-{PriceMax:0.##}"));
+        }
+
+        if (InStockOnly)
+        {
+            parts.Add("stock=in");
         }
 
         if (Sort != ListingSort.Recent)
@@ -226,13 +254,13 @@ public sealed record ListingFilter
             .ToList();
 }
 
-/// <summary>The same-variant rule (Q-LST-9): size, colour and price must all hold on one in-stock variant.</summary>
+/// <summary>The same-variant rule (Q-LST-9): size, colour and price must all hold on one variant; with "in stock only" that variant must be in stock (SLD-8).</summary>
 public static class ListingRules
 {
     public static bool Matches(bool inStock, string sizeSegment, string colourSegment, decimal? price, ListingFilter filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        if (!inStock)
+        if (filter.InStockOnly && !inStock)
         {
             return false;
         }

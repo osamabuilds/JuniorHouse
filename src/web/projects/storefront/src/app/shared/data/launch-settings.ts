@@ -9,35 +9,23 @@ const link = (key: string, label: string, path: string, sort: number, children: 
   key, label, kind: children.length > 0 ? 'group' : 'link', target: { kind: 'path', path }, enabled: true, sort, children,
 });
 
-const girls: NavItem = {
-  showAges: true,
-  ...link('girls', 'Girls', '/girls', 1, [
-    link('girls-dresses', 'Dresses', '/girls/dresses', 1),
-    link('girls-tops', 'Tops and tees', '/girls/tops-and-tees', 2, [
-      link('girls-tees', 'T-shirts', '/girls/tops-and-tees/t-shirts', 1),
-      link('girls-blouses', 'Blouses', '/girls/tops-and-tees/blouses', 2),
-    ]),
-    link('girls-bottoms', 'Bottoms', '/girls/bottoms', 3, [
-      link('girls-skirts', 'Skirts', '/girls/bottoms/skirts', 1),
-      link('girls-trousers', 'Trousers', '/girls/bottoms/trousers', 2),
-    ]),
-  ]),
-};
+/** The categories of the first range, with our own labels; each is a category page of an audience and of a season (sold-out pieces included). */
+const categories: readonly (readonly [string, string])[] = [
+  ['t-shirts', 'T-shirts'],
+  ['sweaters', 'Sweaters'],
+  ['jackets', 'Jackets'],
+  ['trousers', 'Trousers'],
+  ['shorts', 'Shorts'],
+  ['dresses', 'Dresses'],
+];
 
-const boys: NavItem = {
-  showAges: true,
-  ...link('boys', 'Boys', '/boys', 2, [
-    link('boys-tees', 'Tees and shirts', '/boys/tees-and-shirts', 1, [
-      link('boys-t-shirts', 'T-shirts', '/boys/tees-and-shirts/t-shirts', 1),
-      link('boys-polos', 'Polo shirts', '/boys/tees-and-shirts/polo-shirts', 2),
-    ]),
-    link('boys-bottoms', 'Bottoms', '/boys/bottoms', 2, [
-      link('boys-jeans', 'Jeans', '/boys/bottoms/jeans', 1),
-      link('boys-shorts', 'Shorts', '/boys/bottoms/shorts', 2),
-    ]),
-    link('boys-casual', 'Casual shirts', '/boys/casual-shirts', 3),
-  ]),
-};
+const under = (key: string, label: string, path: string, sort: number, skip: readonly string[] = []): NavItem =>
+  link(key, label, path, sort, categories.filter(([slug]) => !skip.includes(slug)).map(([slug, name], i) => link(`${key}-${slug}`, name, `${path}/${slug}`, i + 1)));
+
+const winter: NavItem = under('winter', 'Winter', '/collections/winter', 1);
+const summer: NavItem = under('summer', 'Summer', '/collections/summer', 2);
+const girls: NavItem = { showAges: true, ...under('girls', 'Girls', '/girls', 3) };
+const boys: NavItem = { showAges: true, ...under('boys', 'Boys', '/boys', 4, ['dresses']) };
 
 const pageSlugs: readonly [string, string][] = [
   ['delivery', 'Delivery'],
@@ -60,11 +48,12 @@ export const launchSettings: SiteSettings = {
   brand: { name: 'Romp', tagline: 'Children’s clothing', whatsapp: '923315613217' },
   announcement: { text: '', enabled: false },
   navigation: [
+    winter,
+    summer,
     girls,
     boys,
-    link('new-in', 'New in', '/new-in', 3),
-    { key: 'collections', label: 'Collections', kind: 'collection-list', target: { kind: 'path', path: '/collections' }, enabled: true, sort: 4, children: [] },
-    link('sale', 'Sale', '/sale', 5),
+    link('new-in', 'New in', '/new-in', 5),
+    link('sale', 'Sale', '/sale', 6),
   ],
   ages: Array.from({ length: 8 }, (_, i) => ({ code: `${i + 1}y`, label: `${i + 1}Y`, sort: i + 1, enabled: true })),
   footer: [
