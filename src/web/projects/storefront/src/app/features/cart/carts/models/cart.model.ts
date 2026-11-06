@@ -51,4 +51,5 @@ export type CartResult =
   | { readonly status: 'refused'; readonly message: string }
   | { readonly status: 'error' };
 
-export type CartChange = 'add' | 'set' | 'remove';
+/** 'quick-add' is an add from a product card: the bag count changes but the drawer does not open (the card confirms in place). */
+export type CartChange = 'add' | 'quick-add' | 'set' | 'remove';

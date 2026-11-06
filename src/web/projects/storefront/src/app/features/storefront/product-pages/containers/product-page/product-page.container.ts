@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, RESPONSE_INIT, computed, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, RESPONSE_INIT, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WishlistHeartComponent } from '../../../../customers/wishlist/components/wishlist-heart/wishlist-heart.component';
@@ -12,16 +12,20 @@ import { ButtonDirective } from '../../../../../shared/ui/button/button.directiv
 import { IconComponent } from '../../../../../shared/ui/icon/icon.component';
 import { SeoService } from '../../../../../shared/seo/seo.service';
 import { BreadcrumbsComponent } from '../../../navigation/components/breadcrumbs/breadcrumbs.component';
-import { selectBrand, selectTopLinks } from '../../../site-settings';
+import { watchHeight, watchInView, watchMedia } from '../../../../../shared/utils/viewport';
+import { selectBrand, selectFacts, selectTopLinks } from '../../../site-settings';
 import { AvailabilityNoteComponent } from '../../components/availability-note/availability-note.component';
+import { BuyBarComponent } from '../../components/buy-bar/buy-bar.component';
 import { ColourOptionsComponent } from '../../components/colour-options/colour-options.component';
 import { CompositionCareComponent } from '../../components/composition-care/composition-care.component';
 import { ProductGalleryComponent } from '../../components/product-gallery/product-gallery.component';
+import { ProductPerksComponent } from '../../components/product-perks/product-perks.component';
 import { ProductPriceComponent } from '../../components/product-price/product-price.component';
 import { SizeChartComponent } from '../../components/size-chart/size-chart.component';
 import { SizeOptionsComponent } from '../../components/size-options/size-options.component';
 import { SoldOutStateComponent } from '../../components/sold-out-state/sold-out-state.component';
 import { ProductPageResult, SizeOption } from '../../models/product-page.model';
+import { buildPerks } from '../../utils/perks.util';
 import { parseSelection, productKey, selectionQueryString } from '../../models/product-selection';
 import { ProductPagesActions } from '../../store/product-pages.actions';
 import { selectProductPageKey, selectProductPageResult } from '../../store/product-pages.selectors';
@@ -50,6 +54,8 @@ const META_DESCRIPTION_LENGTH = 155;
     CompositionCareComponent,
     WishlistHeartComponent,
     NotifyMeFormComponent,
+    BuyBarComponent,
+    ProductPerksComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-page.container.html',
@@ -67,6 +73,7 @@ export class ProductPageContainer {
 
   protected readonly brand = this.store.selectSignal(selectBrand);
   protected readonly links = this.store.selectSignal(selectTopLinks);
+  private readonly facts = this.store.selectSignal(selectFacts);
   private readonly key = this.store.selectSignal(selectProductPageKey);
   private readonly stored = this.store.selectSignal(selectProductPageResult);
 
@@ -111,7 +118,37 @@ export class ProductPageContainer {
     return !!size && this.canBuy(size);
   });
 
+  /** Delivery, exchange and WhatsApp lines from the settings; a missing fact leaves its line out (BUY-10, BUY-11). */
+  protected readonly perks = computed(() => buildPerks(this.facts()));
+
+  // The bottom buy bar (BUY-1..9): below 64rem, while the main Add to bag button is off screen. It is created only in the browser.
+  private readonly addArea = viewChild<ElementRef<HTMLElement>>('addArea');
+  private readonly sizesArea = viewChild('sizesArea', { read: ElementRef });
+  private readonly barHost = viewChild(BuyBarComponent, { read: ElementRef });
+  private readonly mainAddVisible = signal(true);
+  private readonly narrow = signal(false);
+  private readonly pressedWithoutSize = signal(false);
+
+  protected readonly barVisible = computed(() => this.page()?.isAvailable === true && this.narrow() && !this.mainAddVisible());
+  /** A chosen size that cannot be bought blocks the bar exactly as it blocks the main button (BUY-5). */
+  protected readonly barBlocked = computed(() => !!this.chosenSize() && !this.canAdd());
+  protected readonly barHint = computed(() => (this.barBlocked() || this.pressedWithoutSize() ? this.addHint() : null));
+
   protected readonly addHint = computed(() => (this.chosenSize() ? 'That size is not available right now.' : 'Choose a size to add this to your bag.'));
+
+  /** The bar's button: add when a size can be bought; otherwise take the visitor to the sizes and say why (BUY-3). */
+  protected barAdd(): void {
+    if (this.canAdd()) {
+      this.pressedWithoutSize.set(false);
+      this.addToBag();
+      return;
+    }
+    if (this.barBlocked()) return;
+    this.pressedWithoutSize.set(true);
+    const sizes = this.sizesArea()?.nativeElement as HTMLElement | undefined;
+    sizes?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    sizes?.querySelector<HTMLElement>('a, button')?.focus({ preventScroll: true });
+  }
 
   protected addToBag(): void {
     const size = this.chosenSize();
@@ -119,6 +156,30 @@ export class ProductPageContainer {
   }
 
   constructor() {
+    effect((onCleanup) => {
+      const el = this.addArea()?.nativeElement;
+      if (el) onCleanup(watchInView(el, (visible) => this.mainAddVisible.set(visible)));
+    });
+    effect((onCleanup) => onCleanup(watchMedia('(max-width: 63.99rem)', (matches) => this.narrow.set(matches))));
+    // While the bar shows, a focused field is never hidden behind it and the page end is not covered (BUY-7, WCAG 2.4.11).
+    effect((onCleanup) => {
+      const bar = (this.barHost()?.nativeElement as HTMLElement | undefined)?.querySelector('.rp-buybar');
+      if (!bar) return;
+      const root = document.documentElement;
+      onCleanup(
+        watchHeight(bar, (height) => {
+          root.style.scrollPaddingBottom = height + 'px';
+          document.body.style.paddingBottom = height + 'px';
+        }),
+      );
+      onCleanup(() => {
+        root.style.scrollPaddingBottom = '';
+        document.body.style.paddingBottom = '';
+      });
+    });
+    effect(() => {
+      if (this.canAdd()) this.pressedWithoutSize.set(false);
+    });
     effect(() => {
       this.store.dispatch(ProductPagesActions.load({ key: this.currentKey(), path: this.path(), selection: this.selection() }));
     });

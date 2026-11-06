@@ -252,6 +252,7 @@ POST,/api/discounts/,discounts.manage
 GET,/api/discounts/{id:long},discounts.manage
 PUT,/api/discounts/{id:long},discounts.manage
 PUT,/api/discounts/{id:long}/active,discounts.manage
+GET,/api/storefront/collections,anonymous
 GET,/api/storefront/home,anonymous
 GET,/api/storefront/listings/,anonymous
 GET,/api/storefront/listings/empty,anonymous

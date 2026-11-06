@@ -11,9 +11,10 @@ import { ListingResult } from '../../models/listing.model';
 import { ListingFilter, ListingScope, ListingScopeKind, listingKey, parseFilter, scopePath, toCanonicalQuery, toQueryString } from '../../models/listing-query';
 import { ActiveFiltersComponent, FilterChip } from '../../components/active-filters/active-filters.component';
 import { EmptyStateComponent } from '../../components/empty-state/empty-state.component';
-import { FilterPanelComponent } from '../../components/filter-panel/filter-panel.component';
+import { FilterBarComponent } from '../../components/filter-bar/filter-bar.component';
 import { PaginationComponent } from '../../components/pagination/pagination.component';
 import { ProductTileComponent } from '../../components/product-tile/product-tile.component';
+import { ListingsApi } from '../../services/listings-api.service';
 import { ListingsActions } from '../../store/listings.actions';
 import { selectListingKey, selectListingResult } from '../../store/listings.selectors';
 
@@ -21,7 +22,7 @@ import { selectListingKey, selectListingResult } from '../../store/listings.sele
 /** One listing: New in, Sale, an audience, a category or a collection (FR-02, FR-03, FR-05). Server-rendered, with real 404 and 301 statuses. */
 @Component({
   selector: 'rp-listing-page',
-  imports: [NotFoundComponent, BreadcrumbsComponent, ProductTileComponent, FilterPanelComponent, ActiveFiltersComponent, PaginationComponent, EmptyStateComponent],
+  imports: [NotFoundComponent, BreadcrumbsComponent, ProductTileComponent, FilterBarComponent, ActiveFiltersComponent, PaginationComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './listing-page.container.html',
   styleUrl: './listing-page.container.scss',
@@ -31,6 +32,7 @@ export class ListingPageContainer {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly seo = inject(SeoService);
+  private readonly api = inject(ListingsApi);
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
 
   private readonly params = toSignal(this.route.paramMap, { requireSync: true });
@@ -69,6 +71,34 @@ export class ListingPageContainer {
 
   /** The result for the request now on screen, or null while it loads. */
   protected readonly result = computed((): ListingResult | null => (this.key() === this.currentKey() ? this.stored() : null));
+
+  /**
+   * What to draw: the result for this request, or, while a new filter or page of the same listing loads, the last one (dimmed and marked busy),
+   * so the grid never flashes blank (FLT-5). A different listing never shows another listing's page.
+   */
+  protected readonly shown = computed((): ListingResult | null => {
+    const now = this.result();
+    if (now) return now;
+    const sameListing = (this.key() ?? '').split('|').slice(0, 4).join('|') === this.currentKey().split('|').slice(0, 4).join('|');
+    return sameListing ? this.stored() : null;
+  });
+  protected readonly loading = computed(() => this.result() === null && this.shown() !== null);
+
+  /** A quick add was refused for a size this page still showed as available: load the listing again from the server (CRD-9). */
+  protected reload(): void {
+    this.store.dispatch(ListingsActions.load({ key: this.currentKey(), scope: this.scope(), filter: this.filter() }));
+  }
+
+  /** The phone sheet's live count for a filter that is not applied yet (FLT-13). */
+  protected readonly countFor = (filter: ListingFilter) => this.api.count(this.scope(), filter);
+
+  /** "Showing 1-24 of 48" under the grid (Q-FLT-1). */
+  protected readonly range = computed(() => {
+    const r = this.shown();
+    if (r?.status !== 'ok' || r.page.tiles.length === 0) return null;
+    const from = (r.page.page - 1) * r.page.pageSize + 1;
+    return { from, to: from + r.page.tiles.length - 1, total: r.page.total };
+  });
 
   protected readonly page = computed(() => {
     const r = this.result();

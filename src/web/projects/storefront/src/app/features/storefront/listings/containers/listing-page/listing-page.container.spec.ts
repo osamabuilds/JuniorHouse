@@ -1,12 +1,14 @@
 import { RESPONSE_INIT } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { provideState, provideStore } from '@ngrx/store';
+import { Store, provideState, provideStore } from '@ngrx/store';
 import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
 import { of } from 'rxjs';
 import { provideSiteSettings } from '../../../site-settings';
 import { ListingResult, ListingTile } from '../../models/listing.model';
+import { EMPTY_FILTER, listingKey } from '../../models/listing-query';
 import { ListingsApi } from '../../services/listings-api.service';
+import { ListingsActions } from '../../store/listings.actions';
 import { provideListings } from '../../listings.providers';
 import { ListingPageContainer } from './listing-page.container';
 
@@ -36,7 +38,7 @@ const ok = (tiles: ListingTile[], over: Record<string, unknown> = {}): ListingRe
   empty: tiles.length === 0 ? { suggestions: [{ label: 'New in', path: '/girls/new-in' }] } : null,
 });
 
-function render(result: ListingResult, query: Record<string, string | string[]> = {}, responseInit?: ResponseInit): { el: HTMLElement; get: ReturnType<typeof vi.fn> } {
+function render(result: ListingResult, query: Record<string, string | string[]> = {}, responseInit?: ResponseInit): { el: HTMLElement; get: ReturnType<typeof vi.fn>; fixture: ComponentFixture<ListingPageContainer> } {
   const get = vi.fn(() => of(result));
   TestBed.configureTestingModule({
     providers: [
@@ -62,10 +64,39 @@ function render(result: ListingResult, query: Record<string, string | string[]> 
   fixture.detectChanges();
   TestBed.flushEffects?.();
   fixture.detectChanges();
-  return { el: fixture.nativeElement as HTMLElement, get };
+  return { el: fixture.nativeElement as HTMLElement, get, fixture };
 }
 
 describe('ListingPageContainer', () => {
+  it('FLT-5 while a new filter loads, the previous cards stay, dimmed and marked busy, and the page never flashes blank', () => {
+    const { el, fixture } = render(ok([tile(1), tile(2)]));
+    expect(el.querySelector('[aria-busy="true"]')).toBeNull();
+    // The visitor changes the filter: a request for another key of the same listing is under way.
+    const scope = { kind: 'category' as const, gender: 'girls', category: 'dresses' };
+    const filter = { ...EMPTY_FILTER, sizes: ['5-6y'] };
+    TestBed.inject(Store).dispatch(ListingsActions.load({ key: listingKey(scope, filter), scope, filter }));
+    fixture.detectChanges();
+    const grid = el.querySelector('[aria-busy="true"]')!;
+    expect(grid).not.toBeNull();
+    expect(grid.classList.contains('is-loading')).toBe(true);
+    expect(grid.querySelectorAll('rp-product-tile').length).toBe(2);
+    expect(el.textContent).not.toContain('Loading');
+  });
+
+  it('FLT-5 a different listing never shows the previous listing page', () => {
+    const { el, fixture } = render(ok([tile(1)]));
+    const scope = { kind: 'category' as const, gender: 'boys', category: 'shirts' };
+    TestBed.inject(Store).dispatch(ListingsActions.load({ key: listingKey(scope, EMPTY_FILTER), scope, filter: EMPTY_FILTER }));
+    fixture.detectChanges();
+    expect(el.querySelector('rp-product-tile')).toBeNull();
+    expect(el.textContent).toContain('Loading');
+  });
+
+  it('FLT-8 shows how many of the pieces this page holds under the grid', () => {
+    const { el } = render(ok([tile(1), tile(2)], { total: 48, page: 2, pageSize: 24, totalPages: 2 }));
+    expect(el.querySelector('.rp-range')!.textContent!.trim()).toBe('Showing 25-26 of 48');
+  });
+
   it('LST-12 headings never skip a level: the product names sit under an h2, not straight under the h1', () => {
     const { el } = render(ok([tile(1), tile(2)]));
     const levels = [...el.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => Number(h.tagName[1]));
@@ -100,7 +131,8 @@ describe('ListingPageContainer', () => {
 
   it('LST-12 the filters are a real GET form with labelled fieldsets, working without scripting', () => {
     const { el } = render(ok([tile(1)]));
-    const form = el.querySelector('form.rp-filters')!;
+    const form = el.querySelector('.rp-filterbar__phone form')!;
+    expect(el.querySelector('.rp-filterbar__desktop form')!.getAttribute('method')).toBe('get');
     expect(form.getAttribute('method')).toBe('get');
     expect(form.getAttribute('action')).toBe('/girls/dresses');
     expect([...form.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Size', 'Colour', 'Price (Rs.)', 'Sort']);

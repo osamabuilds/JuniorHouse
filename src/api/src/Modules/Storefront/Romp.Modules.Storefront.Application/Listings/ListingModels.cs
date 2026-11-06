@@ -9,6 +9,9 @@ public interface IListingSettings
 {
     /// <summary>New In shows products published within this many days (LST-7, Q-LST-3 default 30).</summary>
     int NewArrivalsDays { get; }
+
+    /// <summary>A size with this many units or fewer is low stock: the same threshold the product page uses.</summary>
+    int LowStockThreshold { get; }
 }
 
 /// <summary>One resized picture of the main image: the WebP file and its JPEG fallback at one width. Both are <c>/media/{name}</c> URLs.</summary>
@@ -32,10 +35,18 @@ public sealed record ListingTileDto(
     int ColourCount,
     bool HasSoldOutSizes,
     IReadOnlyList<ListingTileSizeDto> Sizes,
-    ListingImageDto? Image);
+    ListingImageDto? Image,
+    bool IsNew = false,
+    bool HasLowStock = false,
+    ListingImageDto? SecondImage = null);
 
 /// <summary>A size the product comes in. <c>SoldOut</c> is true when no colour of that size can be bought; it is never hidden, so a shopper sees the whole range.</summary>
-public sealed record ListingTileSizeDto(string Code, string Name, bool SoldOut);
+/// <remarks>
+/// <c>VariantId</c>, <c>Availability</c> (InStock, LowStock, SoldOut or NotYetAvailable) and <c>ColourName</c> describe the variant a quick add would put in
+/// the bag: the colour the card shows, or the cheapest buyable one of another colour when the shown colour lacks the size. The server still
+/// decides stock and price when the bag is changed.
+/// </remarks>
+public sealed record ListingTileSizeDto(string Code, string Name, bool SoldOut, long VariantId = 0, string Availability = "", string ColourName = "");
 
 public sealed record BreadcrumbDto(string Label, string? Path);
 

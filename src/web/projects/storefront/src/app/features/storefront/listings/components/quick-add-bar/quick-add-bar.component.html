@@ -1,0 +1,33 @@
+<div class="rp-qa" role="group" aria-label="Quick add">
+  <button type="button" class="rp-qa__close" aria-label="Close quick add" (click)="close.emit()"><span aria-hidden="true">×</span></button>
+
+  @if (state() === 'added') {
+    <p class="rp-qa__label" role="status">{{ added() }}</p>
+    <button type="button" class="rp-btn rp-btn--sm rp-btn--ink" (click)="viewBag.emit()">View bag</button>
+  } @else {
+    @if (notice(); as text) {
+      <p class="rp-qa__notice" role="alert">{{ text }}</p>
+    }
+    @if (allSoldOut()) {
+      <p class="rp-qa__label">Sold out</p>
+      <a class="rp-btn rp-btn--sm rp-btn--ink" [routerLink]="productPath()" [queryParams]="notifyQuery()">Notify me</a>
+    } @else if (single()) {
+      <button type="button" class="rp-btn rp-btn--sm rp-btn--ink" [attr.aria-disabled]="busy()" (click)="press(rows()[0].size, rows()[0].buyable)">Add to bag</button>
+    } @else {
+      <p class="rp-qa__label">Choose a size</p>
+      <ul class="rp-qa__sizes">
+        @for (row of rows(); track row.size.code) {
+          <li>
+            <button type="button" class="rp-size" [attr.aria-disabled]="!row.buyable || busy()" (click)="press(row.size, row.buyable)">
+              @if (row.buyable) {
+                {{ row.size.name }}
+              } @else {
+                <s>{{ row.size.name }}</s><span class="sr-only">, sold out</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

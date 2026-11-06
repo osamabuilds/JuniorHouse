@@ -1,0 +1,34 @@
+@if (result(); as r) {
+  @if (r.status === 'ok' && !notFound(r)) {
+    <div class="rp-wrap">
+      <div class="rp-lhead">
+        <rp-breadcrumbs [crumbs]="crumbs()" />
+        <h1 class="rp-display-lg">Collections</h1>
+        <p class="rp-lead">Seasonal edits and favourites, each with the pieces in it.</p>
+      </div>
+    </div>
+
+    <div class="rp-wrap">
+      @if (r.page.items.length > 0) {
+        <ul class="rp-split rp-split--list">
+          @for (item of r.page.items; track item.code; let i = $index) {
+            <li><rp-collection-tile [item]="item" [eager]="i < 2" /></li>
+          }
+        </ul>
+        <rp-pagination [page]="r.page.page" [totalPages]="r.page.totalPages" [path]="path" [filter]="filter" />
+      } @else {
+        <div class="rp-empty">
+          <p class="rp-lead">No collections to show just yet. Have a look at what is new instead.</p>
+          <a class="rp-btn" href="/new-in">Shop new in</a>
+        </div>
+      }
+    </div>
+    <div style="height: 96px"></div>
+  } @else {
+    <div class="rp-wrap rp-page">
+      <rp-not-found [kind]="r.status === 'error' ? 'error' : 'page-missing'" [links]="links()" />
+    </div>
+  }
+} @else {
+  <div class="rp-wrap"><p class="rp-count-note" role="status">Loading…</p></div>
+}

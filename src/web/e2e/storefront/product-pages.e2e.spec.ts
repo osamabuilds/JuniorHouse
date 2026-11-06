@@ -42,7 +42,7 @@ test.describe('a product page', () => {
     expect(response!.status()).toBe(200);
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.getByRole('navigation', { name: 'Breadcrumb' }).locator('[aria-current="page"]')).toBeVisible();
-    const first = page.locator('.gallery img').first();
+    const first = page.locator('.rp-gallery img').first();
     await expect(first).toHaveAttribute('loading', 'eager');
     await expect(first).toHaveAttribute('fetchpriority', 'high');
     await expect(first).toHaveAttribute('width', /\d+/);

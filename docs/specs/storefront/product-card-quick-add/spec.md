@@ -1,6 +1,6 @@
 # Product card: second picture, tags and quick add
 
-- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
+- **Status:** Implemented (2026-11-05), with the notes below
 - **Jira:** none yet
 - **BRD sections:** FR-02 (listing), FR-10 (add to bag), FR-28, FR-29 (atomic stock decrement), FEAT-CAT-02..04; design source `docs/design-system/components/ProductCard/README.md`, `QuickAdd/README.md`, `Offers/README.md`
 - **Requirement IDs:** FR-02, FR-10, FR-28, FR-29, SEC-09, NFR-01, NFR-17, NFR-19
@@ -56,3 +56,15 @@ The Quick view modal (replaced by QuickAdd), colour dots on cards, "Bestseller" 
 - [x] **Q-CRD-3** `New`: reuse the new-arrivals definition already used by the New in page. Recommendation: reuse it. **Resolved: recommendation accepted.**
 - [x] **Q-CRD-4** Notify me from the bar (CRD-7): the existing form needs an email address. Recommendation: the bar's **Notify me** opens the product page at that size (the existing form there), which avoids a second form on every card. **Resolved: recommendation accepted.**
 - [x] **Q-CRD-5** The design README said the bag flow needed its own spec. The cart exists and has specs; confirm that this spec may reuse the cart's add-to-bag action and the "View bag" drawer without changes. Recommendation: yes. **Resolved: recommendation accepted.**
+
+## As built
+
+**API:** `ListingTileDto` gained `IsNew`, `HasLowStock` and `SecondImage`; `ListingTileSizeDto` gained `VariantId`, `Availability` and `ColourName`. The tile builder picks each size's variant from the colour the card shows (the colour the visitor filtered by, else the colour of the cheapest variant), falling back to the cheapest buyable variant of another colour, and names that colour. Low stock uses `Availability.Classify` with the storefront low-stock threshold (added to `IListingSettings`); New uses the New In cutoff. The second picture is the next picture of the same colour (or none). A listing page still costs exactly five queries (tested, also with a six-product page). 8 new server tests (Docker, Testcontainers).
+
+**Web:** `QuickAddBarComponent` (presentational), `QuickAddContainer` (adds through `CartActions.add` with a new optional `quiet` flag, so the bag drawer stays shut and the bar confirms in place; a refusal shows the server words and asks the page to reload the listing), `cardTag` (sale, else low stock, else new), and the tile now has the tag, a swipe strip with two dots, a second picture requested on first hover or focus (never at page load), the round + and the bar. All of it is added in the browser after hydration, so the server HTML is the plain card.
+
+**Notes:**
+- Focusing a chip while the bar was off screen made the browser scroll the card's clipped picture area; `.rp-media` now uses `overflow: clip`, which cannot be scrolled by focus (found by the browser test).
+- Escape (CRD-11) puts the bar away and moves focus to the card's link; the bar returns when the pointer or focus comes back to it.
+- The sell-out race (CRD-9) and the second picture are covered by unit tests only: the demo data has one picture and no stock to sell out.
+- Multi-colour rule confirmed by the owner (see plan).

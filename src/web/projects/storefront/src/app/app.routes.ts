@@ -46,6 +46,7 @@ export const routes: Routes = [
   { path: 'new-in', data: { kind: 'new-in' }, loadComponent: listing },
   { path: 'sale', data: { kind: 'sale' }, loadComponent: listing },
   { path: 'search', loadComponent: () => import('./features/storefront/search/containers/search-page/search-page.container').then((m) => m.SearchPageContainer) },
+  { path: 'collections', loadComponent: () => import('./features/storefront/collections-page/containers/collections-page/collections-page.container').then((m) => m.CollectionsPageContainer) },
   { path: 'collections/:code', data: { kind: 'collection' }, loadComponent: listing },
   {
     matcher: productMatcher,

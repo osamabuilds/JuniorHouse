@@ -1,6 +1,6 @@
 # Listing filter bar, drawer and swatches
 
-- **Status:** Approved by the owner on 2026-11-05 (recommendations accepted for all open questions); plan and tasks written
+- **Status:** Implemented (2026-11-05), with the deviations below
 - **Jira:** none yet
 - **BRD sections:** FR-02, FR-03, FR-05 (filters and sorting); design source `docs/design-system/components/FilterBar/README.md` and `ListingPage/README.md`
 - **Requirement IDs:** FR-02, FR-03, FR-05, SEO-06, NFR-01, NFR-17, NFR-19
@@ -48,3 +48,15 @@ NFR-01 (no layout shift; skeletons are the same height as cards), SEO-06 (canoni
 - [x] **Q-FLT-1** The design says "12 at a time". The live page size is 24. Recommendation: keep the current page size (fewer pages, same SEO), and show "Showing 1-24 of N" under the grid. **Resolved: recommendation accepted.**
 - [x] **Q-FLT-2** The banner after the fourth card needs an image and a line of text per audience. Recommendation: not now; add it when the business supplies the content, as a settings-driven block in its own spec. **Resolved: recommendation accepted.**
 - [x] **Q-FLT-3** The count in "Show N pieces" while the drawer is open needs one small extra API call per change. Recommendation: use the existing listing endpoint with page size 1 and read the total, so no new endpoint is needed. **Resolved: recommendation accepted.**
+
+## As built
+
+`listings/components/filter-bar` (two server-rendered GET forms: desktop chips with `<details>` popovers from 64rem, one "Filter and sort" disclosure that becomes an 88% bottom sheet below it), `filter-fields` (the shared controls and the colour swatches), `directives/sheet.directive.ts` (Escape, scrim click, focus trap and return, scroll lock, phone-sized screens only), `utils/filter-form.util.ts`, and `count` methods on `ListingsApi` and `SearchApi` (page size 1) for the live "Show N pieces" button. The old `filter-panel` component was removed. Listing and search pages keep the previous cards, dimmed and `aria-busy`, while a new filter of the same listing loads, and show "Showing 1-24 of N" under the grid.
+
+**Deviations from the spec, for the owner:**
+- **Swatches show the colour's initial, not its colour.** The colour lookup carries no colour value anywhere (no hex in Reference, the read model or the listing options), so nothing is guessed. Real colour dots need a colour value added to the colour lookup (a Reference change; its own spec).
+- **No auto-submit on the sort select.** Changing a select must not change the page by itself (WCAG 3.2.2), so the sort select has an explicit Apply button beside it. This also works with scripting off, so no `<noscript>` is needed (a `<noscript>` button caused a hydration error).
+- **FLT-5 skeleton cards were not built.** With a previous page the cards stay dimmed; with nothing on screen the existing "Loading…" text shows as before.
+- **Selected chip remove link** is a separate 28px link at the chip's right edge (a link cannot sit inside a `<summary>`).
+- **Banner after the fourth card (Q-FLT-2)** deliberately not built.
+- Colour swatch is part of `filter-fields`, not a separate component.

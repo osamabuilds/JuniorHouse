@@ -9,6 +9,22 @@ export type LinkTarget =
 export type NavKind = 'link' | 'group' | 'collection-list';
 
 /** One navigation item. A tree: main category, its members, and their further members (three levels in all). */
+/** One picture of a menu tile, with the widths the server made (the shape listing pictures have). */
+export interface NavTileImage {
+  readonly altText: string;
+  readonly width: number;
+  readonly height: number;
+  readonly sources: readonly { readonly width: number; readonly webp: string; readonly jpeg: string | null }[];
+}
+
+/** The picture tile in a mega menu panel: one link with a picture, a small eyebrow and a short line (design system: MegaMenu). */
+export interface NavTile {
+  readonly eyebrow: string;
+  readonly line: string;
+  readonly path: string;
+  readonly image: NavTileImage;
+}
+
 export interface NavItem {
   readonly key: string;
   readonly label: string;
@@ -21,6 +37,8 @@ export interface NavItem {
   readonly showAges?: boolean;
   /** Query parameters added to the link, for example the age filter. Values are lookup codes. */
   readonly query?: Readonly<Record<string, string>>;
+  /** A picture tile for the mega-menu panel of this entry (an audience); absent when there is no picture to show. */
+  readonly tile?: NavTile;
 }
 
 export interface AgeStep {

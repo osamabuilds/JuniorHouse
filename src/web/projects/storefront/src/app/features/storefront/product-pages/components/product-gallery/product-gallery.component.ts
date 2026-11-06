@@ -1,68 +1,34 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, effect, input, signal, viewChild } from '@angular/core';
+import { LightboxComponent, LightboxImage } from '../../../../../shared/ui/lightbox/lightbox.component';
+import { imageInView } from '../../../../../shared/utils/zoom.util';
 import { ProductImage } from '../../models/product-page.model';
 
 const SIZES = '(min-width: 64rem) 28vw, 100vw';
+const SETTLE_MS = 120;
 
 /**
- * The product pictures (PDP-1, 10, 11). One list serves every screen: a swipeable strip on a phone, a two-column grid on a desktop, so
- * nothing needs scripting and every picture is in the server HTML. The first picture is the LCP image: eager, high priority. The rest are
- * lazy. Every picture has its alt text and explicit width and height, so nothing shifts while it loads.
+ * The product pictures (PDP-1, 10, 11; GAL-1, 2, 3, 9, 11). One list serves every screen: a snap-scrolling strip on a phone, a two-column
+ * grid on a desktop, so nothing needs scripting and every picture is in the server HTML. Each picture is a button that opens the viewer
+ * (an enhancement: without scripting the button does nothing and the pictures are still all there). The first picture is the LCP image:
+ * eager, high priority. The rest are lazy. Every picture has its alt text and explicit width and height, so nothing shifts.
  */
 @Component({
   selector: 'rp-product-gallery',
+  imports: [LightboxComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <section class="gallery" aria-label="Product images">
-      @if (images().length > 0) {
-        <ul class="gallery__list" tabindex="0" aria-label="Images, scroll sideways for more">
-          @for (image of items(); track $index) {
-            <li class="gallery__item">
-              <figure>
-                <picture>
-                  <source type="image/webp" [attr.srcset]="image.webpSet" [attr.sizes]="sizes" />
-                  @if (image.jpegSet) {
-                    <source type="image/jpeg" [attr.srcset]="image.jpegSet" [attr.sizes]="sizes" />
-                  }
-                  <img
-                    [src]="image.fallback"
-                    [attr.width]="image.width"
-                    [attr.height]="image.height"
-                    [alt]="image.alt"
-                    [attr.loading]="$first ? 'eager' : 'lazy'"
-                    [attr.fetchpriority]="$first ? 'high' : null"
-                    decoding="async"
-                  />
-                </picture>
-              </figure>
-            </li>
-          }
-        </ul>
-        @if (images().length > 1) {
-          <p class="gallery__count">{{ images().length }} images</p>
-        }
-      } @else {
-        <p class="gallery__none">Photographs of this piece are on their way.</p>
-      }
-    </section>
-  `,
-  styles: `
-    .gallery__list { display: flex; gap: var(--grid-gap-mobile); margin: 0 calc(var(--margin-mobile) * -1); padding: 0; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-    .gallery__list::-webkit-scrollbar { display: none; }
-    .gallery__list:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
-    .gallery__item { flex: 0 0 100%; scroll-snap-align: start; }
-    figure { margin: 0; }
-    img { display: block; width: 100%; height: auto; aspect-ratio: var(--image-ratio); object-fit: cover; background: var(--surface-sunken, var(--line)); }
-    .gallery__count, .gallery__none { margin: var(--space-2) 0 0; font: 400 13px/20px var(--font-sans); color: var(--ink-muted); }
-    @media (min-width: 64rem) {
-      .gallery__list { display: grid; grid-template-columns: 1fr 1fr; margin: 0; overflow: visible; }
-      .gallery__count { display: none; }
-    }
-  `,
+  templateUrl: './product-gallery.component.html',
 })
-export class ProductGalleryComponent {
+export class ProductGalleryComponent implements OnDestroy {
   readonly images = input.required<readonly ProductImage[]>();
 
+  private readonly list = viewChild<ElementRef<HTMLElement>>('list');
+  private readonly viewer = viewChild(LightboxComponent);
+  private timer: ReturnType<typeof setTimeout> | undefined;
+
   protected readonly sizes = SIZES;
+  /** The picture most in view on the phone strip, for the counter. */
+  protected readonly current = signal(0);
+
   protected readonly items = computed(() =>
     this.images().map((image) => {
       const jpegs = image.sources.filter((s) => s.jpeg);
@@ -77,4 +43,37 @@ export class ProductGalleryComponent {
       };
     }),
   );
+
+  /** What the viewer shows: the largest derivative that exists for each picture (Q-GAL-1), asked for only when it opens. */
+  protected readonly viewerImages = computed((): readonly LightboxImage[] =>
+    this.images().map((image) => {
+      const largest = [...image.sources].sort((a, b) => b.width - a.width)[0];
+      return { alt: image.altText, width: image.width, height: image.height, src: largest?.webp ?? '', fallback: largest?.jpeg ?? null };
+    }),
+  );
+
+  constructor() {
+    // A different colour brings different pictures: start again at the first.
+    effect(() => {
+      this.images();
+      this.current.set(0);
+    });
+  }
+
+  protected open(index: number): void {
+    this.viewer()?.open(index);
+  }
+
+  /** Update the counter when the strip stops moving, so a screen reader hears one change, not one per frame. */
+  protected onScroll(): void {
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      const el = this.list()?.nativeElement;
+      if (el) this.current.set(imageInView(el.scrollLeft, el.clientWidth, this.images().length));
+    }, SETTLE_MS);
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.timer);
+  }
 }

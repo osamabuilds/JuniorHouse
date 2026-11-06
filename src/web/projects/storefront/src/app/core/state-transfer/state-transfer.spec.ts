@@ -11,7 +11,7 @@ const reducerOf = (keys: readonly string[]) => (state: Record<string, unknown> |
 describe('state transfer', () => {
   it('HYD-3 the whitelist never names a customer, cart, wishlist, address, checkout or order slice', () => {
     for (const forbidden of FORBIDDEN_SLICES) expect(TRANSFERRED_SLICES as readonly string[]).not.toContain(forbidden);
-    expect([...TRANSFERRED_SLICES].sort()).toEqual(['listings', 'page', 'productPages', 'searchResults']);
+    expect([...TRANSFERRED_SLICES].sort()).toEqual(['collectionsPage', 'listings', 'page', 'productPages', 'searchResults']);
   });
 
   it('HYD-3 HYD-4 serialise keeps only whitelisted slices and clears loading', () => {
