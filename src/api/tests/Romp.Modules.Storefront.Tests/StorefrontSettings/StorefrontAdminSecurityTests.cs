@@ -137,8 +137,8 @@ public sealed class StorefrontAdminSecurityTests
 
         var routes = Routes(app, StorefrontSettingsEndpoints.PublicPrefix);
 
-        Assert.Equal(13, routes.Count); // settings and pages, menu, collections, home, listings (3), search (3), product page, product cards
-        Assert.All(routes, r => Assert.Equal("GET", r.Method));
+        Assert.Equal(15, routes.Count); // settings and pages, menu, collections, home, listings (3), search (3), product page, product cards, recommendations and its event counter
+        Assert.All(routes.Where(r => !r.Path.EndsWith("/recommendations/events", StringComparison.Ordinal)), r => Assert.Equal("GET", r.Method)); // the event counter is the one POST (REC-12)
         Assert.All(routes, r => Assert.Contains(r.Endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(), a => a.Policy == Policies.Public));
         var policy = await app.Services.GetRequiredService<IAuthorizationPolicyProvider>().GetPolicyAsync(Policies.Public);
         Assert.Empty(policy!.AuthenticationSchemes);
@@ -152,7 +152,7 @@ public sealed class StorefrontAdminSecurityTests
         await using var app = await StartAsync(enableAdminRoutes: false);
 
         Assert.Empty(Routes(app, StorefrontSettingsEndpoints.AdminPrefix));
-        Assert.Equal(13, Routes(app, StorefrontSettingsEndpoints.PublicPrefix).Count);
+        Assert.Equal(15, Routes(app, StorefrontSettingsEndpoints.PublicPrefix).Count);
         Assert.Equal(HttpStatusCode.NotFound, await SendAsync(app, "GET", $"{StorefrontSettingsEndpoints.AdminPrefix}/draft", "catalog.read"));
     }
 

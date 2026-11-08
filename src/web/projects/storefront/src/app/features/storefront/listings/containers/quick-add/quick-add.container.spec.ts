@@ -66,6 +66,25 @@ describe('QuickAddContainer', () => {
     expect(store.selectSignal(selectCartDrawerOpen)()).toBe(false);
   });
 
+  it('REC-7 REC-12 a successful add says so to the page once (so a recommendation row can count it), a refused one does not', () => {
+    const ok = render();
+    const bagged = vi.fn();
+    ok.f.componentInstance.bagged.subscribe(bagged);
+    chip(ok.el, '3Y').click();
+    ok.f.detectChanges();
+    expect(bagged).toHaveBeenCalledTimes(1);
+
+    TestBed.resetTestingModule();
+    const api = new FakeApi();
+    api.add = () => of({ status: 'refused', message: 'That size has just sold out.' });
+    const refused = render(api);
+    const baggedRefused = vi.fn();
+    refused.f.componentInstance.bagged.subscribe(baggedRefused);
+    chip(refused.el, '3Y').click();
+    refused.f.detectChanges();
+    expect(baggedRefused).not.toHaveBeenCalled();
+  });
+
   it('CRD-5 a product with several colours names the colour that was added', () => {
     const { f, el } = render(new FakeApi(), tile({ colourCount: 2 }));
     chip(el, '3Y').click();

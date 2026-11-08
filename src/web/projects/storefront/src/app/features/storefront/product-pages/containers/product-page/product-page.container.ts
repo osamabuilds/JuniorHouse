@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, RESPONSE_INIT, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, PLATFORM_ID, RESPONSE_INIT, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WishlistHeartComponent } from '../../../../customers/wishlist/components/wishlist-heart/wishlist-heart.component';
@@ -29,6 +30,11 @@ import { ProductPageResult, SizeOption } from '../../models/product-page.model';
 import { buildPerks } from '../../utils/perks.util';
 import { parseSelection, productKey, selectionQueryString } from '../../models/product-selection';
 import { ProductPagesActions } from '../../store/product-pages.actions';
+import { ProductRecommendationsComponent } from '../../components/product-recommendations/product-recommendations.component';
+import { NO_RECOMMENDATIONS, ProductRecommendations, RecommendationRow } from '../../models/product-recommendations.model';
+import { ProductRecommendationsActions } from '../../store/product-recommendations.actions';
+import { selectRecommendationsKey, selectRecommendationsResult } from '../../store/product-recommendations.selectors';
+import { buildEventBody, sendRecommendationEvent } from '../../utils/recommendation-event.util';
 import { selectProductPageKey, selectProductPageResult } from '../../store/product-pages.selectors';
 
 const META_DESCRIPTION_LENGTH = 155;
@@ -57,6 +63,7 @@ const META_DESCRIPTION_LENGTH = 155;
     NotifyMeFormComponent,
     BuyBarComponent,
     ProductPerksComponent,
+    ProductRecommendationsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-page.container.html',
@@ -69,6 +76,7 @@ export class ProductPageContainer {
   private readonly seo = inject(SeoService);
   private readonly site = inject(SITE_URL);
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private readonly segments = toSignal(this.route.url.pipe(map((u) => u.map((s) => s.path))), { requireSync: true });
   private readonly query = toSignal(this.route.queryParamMap, { requireSync: true });
@@ -99,6 +107,31 @@ export class ProductPageContainer {
     }
     return p.isAvailable ? p.price : { ...p.price, compareAtPrice: null, savingPercent: 0, savingAmount: 0 };
   });
+
+  // The two recommendation rows (REC-1, REC-4). Loaded for the address alone, in parallel with the product, and never held up by it: a
+  // failed or slow call leaves the page complete without them (REC-10).
+  private readonly recommendationsKey = this.store.selectSignal(selectRecommendationsKey);
+  private readonly recommendationsStored = this.store.selectSignal(selectRecommendationsResult);
+  protected readonly recommendations = computed((): ProductRecommendations =>
+    this.recommendationsKey() === this.path() ? (this.recommendationsStored() ?? NO_RECOMMENDATIONS) : NO_RECOMMENDATIONS);
+
+  /** A card of a recommendation row was opened. Counted in the browser only, by the row it came from (REC-12). */
+  protected recommendationOpened(row: RecommendationRow, productId: number): void {
+    this.countRecommendation(row, productId, 'click');
+  }
+
+  /** A size was added to the bag from a card of a row. */
+  protected recommendationAdded(row: RecommendationRow, productId: number): void {
+    this.countRecommendation(row, productId, 'add');
+  }
+
+  private countRecommendation(row: RecommendationRow, productId: number, action: 'click' | 'add'): void {
+    if (!this.browser) return;
+    sendRecommendationEvent(buildEventBody(row, productId, action), {
+      sendBeacon: typeof navigator !== 'undefined' && 'sendBeacon' in navigator ? (url, data) => navigator.sendBeacon(url, data) : undefined,
+      fetch: typeof fetch === 'function' ? (url, init) => fetch(url, init) : undefined,
+    });
+  }
 
   protected readonly bagBusy = this.store.selectSignal(selectCartBusy);
   protected readonly bagMessage = this.store.selectSignal(selectCartMessage);
@@ -184,6 +217,10 @@ export class ProductPageContainer {
     });
     effect(() => {
       this.store.dispatch(ProductPagesActions.load({ key: this.currentKey(), path: this.path(), selection: this.selection() }));
+    });
+    // Keyed by the path only, so choosing a colour or size does not fetch the rows again.
+    effect(() => {
+      this.store.dispatch(ProductRecommendationsActions.load({ key: this.path() }));
     });
 
     effect(() => {

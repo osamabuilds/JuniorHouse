@@ -15,6 +15,10 @@ import { launchSettings } from '../../../../../shared/data/launch-settings';
 import { ProductPage, ProductPageResult } from '../../models/product-page.model';
 import { provideProductPages } from '../../product-pages.providers';
 import { ProductPagesApi } from '../../services/product-pages-api.service';
+import { ProductRecommendationsApi } from '../../services/product-recommendations-api.service';
+import { NO_RECOMMENDATIONS, ProductRecommendations } from '../../models/product-recommendations.model';
+import { ListingTile } from '../../../listings/models/listing.model';
+import { Observable, throwError } from 'rxjs';
 import { ProductPageContainer } from './product-page.container';
 
 const basePage: ProductPage = {
@@ -58,8 +62,9 @@ const basePage: ProductPage = {
   isAvailable: true,
 };
 
-function render(result: ProductPageResult, query: Record<string, string> = {}, responseInit?: ResponseInit) {
+function render(result: ProductPageResult, query: Record<string, string> = {}, responseInit?: ResponseInit, recs: Observable<ProductRecommendations> = of(NO_RECOMMENDATIONS)) {
   const get = vi.fn(() => of(result));
+  const recsGet = vi.fn(() => recs);
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
@@ -72,6 +77,7 @@ function render(result: ProductPageResult, query: Record<string, string> = {}, r
       provideSiteSettings(),
       provideProductPages(),
       { provide: ProductPagesApi, useValue: { get } },
+      { provide: ProductRecommendationsApi, useValue: { get: recsGet } },
       ...(responseInit ? [{ provide: RESPONSE_INIT, useValue: responseInit }] : []),
       {
         provide: ActivatedRoute,
@@ -89,7 +95,7 @@ function render(result: ProductPageResult, query: Record<string, string> = {}, r
   fixture.detectChanges();
   TestBed.flushEffects?.();
   fixture.detectChanges();
-  return { el: fixture.nativeElement as HTMLElement, get, fixture };
+  return { el: fixture.nativeElement as HTMLElement, get, recsGet, fixture };
 }
 
 const found = (over: Partial<ProductPage> = {}): ProductPageResult => ({ status: 'found', page: { ...basePage, ...over } });
@@ -444,5 +450,58 @@ describe('ProductPageContainer buy bar and perks', () => {
     store.dispatch(SiteSettingsActions.loadSuccess({ settings: { ...launchSettings, delivery: [], exchange: { windowDays: 0, conditions: [] }, brand: { ...launchSettings.brand, whatsapp: '' } }, source: 'api' }));
     fixture.detectChanges();
     expect(el.querySelector('.rp-perks')).toBeNull();
+  });
+});
+
+const recTile = (id: number): ListingTile => ({
+  productId: id,
+  path: `/girls/dresses/p-${id}`,
+  name: `Dress ${id}`,
+  price: 800,
+  compareAtPrice: null,
+  savingPercent: 0,
+  savingAmount: 0,
+  colourCount: 1,
+  hasSoldOutSizes: false,
+  sizes: [{ code: '2y', name: '2Y', soldOut: false, variantId: id * 10, availability: 'InStock', colourName: 'Rose' }],
+  image: null,
+});
+
+describe('ProductPageContainer recommendations', () => {
+  it('REC-1 REC-9 REC-14 shows both rows under the product, headings running h1 then h2 with nothing skipped', () => {
+    const { el } = render(found(), {}, undefined, of({ similar: [recTile(2), recTile(3)], trending: [recTile(4)] }));
+
+    const headings = [...el.querySelectorAll('h1, h2, h3')].map((h) => h.tagName);
+    expect(headings[0]).toBe('H1');
+    expect(headings.filter((h) => h === 'H1').length).toBe(1);
+    // Each row is an h2 followed by card names at h3: no level is skipped.
+    expect([...el.querySelectorAll('rp-product-recommendations h2, rp-product-recommendations h3')].map((h) => h.tagName).slice(0, 2)).toEqual(['H2', 'H3']);
+    expect([...el.querySelectorAll('rp-product-recommendations section h2')].map((h) => h.textContent!.trim())).toEqual(['You may also like', 'Trending now']);
+    expect(el.querySelectorAll('rp-product-recommendations ul.rp-rail > li').length).toBe(3);
+    // The rows come after the composition and care block, inside the page but not inside the buying column.
+    const care = el.querySelector('rp-composition-care')!;
+    const firstRow = el.querySelector('rp-product-recommendations')!;
+    expect(care.compareDocumentPosition(firstRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('REC-10 the page is complete when the recommendations call fails, with no rows and no error shown', () => {
+    const { el } = render(found(), {}, undefined, throwError(() => new Error('down')));
+
+    expect(el.querySelector('h1')!.textContent).toContain('Floral Summer Dress');
+    expect(el.querySelector('rp-product-recommendations section')).toBeNull();
+    expect(el.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('REC-10 an empty row leaves out its heading, and the other row still shows', () => {
+    const { el } = render(found(), {}, undefined, of({ similar: [], trending: [recTile(4)] }));
+
+    expect([...el.querySelectorAll('rp-product-recommendations section h2')].map((h) => h.textContent!.trim())).toEqual(['Trending now']);
+  });
+
+  it('REC-11 asks for the rows once for the product, not again when a colour or size is chosen', () => {
+    const { recsGet } = render(found(), { colour: 'navy' });
+
+    expect(recsGet).toHaveBeenCalledTimes(1);
+    expect(recsGet).toHaveBeenCalledWith('/girls/dresses/floral-summer-dress');
   });
 });

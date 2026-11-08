@@ -55,7 +55,7 @@
     @if (enhanced() && canQuickAdd()) {
       <button type="button" class="rp-qa__plus" aria-label="Quick add to bag" [attr.aria-expanded]="open()" (click)="toggle()"><span aria-hidden="true">+</span></button>
       <div class="rp-qa__host" [class.is-open]="open()" (focusin)="barFocused()">
-        <rp-quick-add [tile]="tile()" (closed)="close()" (stale)="stale.emit()" />
+        <rp-quick-add [tile]="tile()" (closed)="close()" (stale)="stale.emit()" (bagged)="quickAdded.emit()" />
       </div>
     }
   </div>

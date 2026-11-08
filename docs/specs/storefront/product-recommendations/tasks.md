@@ -42,17 +42,17 @@ Spec: [spec.md](spec.md) · Plan: [plan.md](plan.md) · ADR: [0029](../../../adr
 
 ## Endpoints
 
-- [ ] **E1** `GET /api/storefront/products/recommendations?path=` in feature folder `ProductRecommendations`. *Tests (integration, CI only): 200 with both rows for a published product; 404 problem details for an unknown or unpublished path with nothing about unpublished products leaked; a malformed path is a 400; no auth needed (REC-1, REC-9 data, SEC-05 n/a recorded).*
+- [x] **E1** `GET /api/storefront/products/recommendations?path=` in feature folder `ProductRecommendations`. *Tests (integration, CI only): 200 with both rows for a published product; 404 problem details for an unknown or unpublished path with nothing about unpublished products leaked; a malformed path is a 400; no auth needed (REC-1, REC-9 data, SEC-05 n/a recorded).*
 - [x] **E2** `POST /api/storefront/products/recommendations/events` and `RecordRecommendationEventCommand`. *Tests (REC-12): `click` and `add` increment the day counter atomically (two concurrent calls give +2); an unknown row code or action, a non-positive product id and a body over 1 KB are rejected with problem details; no personal data is stored.*
 
 ## Web (storefront, `product-pages` feature)
 
-- [ ] **W1** `product-recommendations-api.service.ts` and models; errors map to empty rows. *Tests: a 500 or a network error returns empty rows, never an exception (REC-10); the request is made once per product.*
-- [ ] **W2** State-transfer whitelist entry for the recommendations (ADR 0028). *Test: the server render writes the rows and the browser store starts with them, with no second request on hydration.*
-- [ ] **W3** `ProductRecommendationsComponent` on the design's `ProductRail`: a `<section aria-labelledby>`, an `h2`, existing `ProductTileComponent`s, Previous and Next buttons, a keyboard-scrollable list. *Tests (component spec, REC-6, REC-9, REC-14): server-rendered markup has the section, the `h2` and one `<a href>` per card; nothing is rendered for an empty list (no empty heading); the arrows scroll by one card and have accessible names; the list is focusable and has an `aria-label`.*
-- [ ] **W4** Place the two rows in the product-page container after the composition and care block, loaded without holding the product. *Tests: the page renders and is complete when the recommendations call is slow or fails; headings run `h1` then `h2` with no skipped level.*
-- [ ] **W5** Quick add from a card: uses the cart `Add` with `quiet`, then the event call with `add`. *Tests (REC-7, REC-8): picking a size and pressing add sends that `VariantId`; a card with every size sold out offers no add and says so; the bag count updates.*
-- [ ] **W6** `recommendation-event.util.ts` and the click beacon (browser only). *Tests (REC-12): the body has only the row code, product id and action; nothing is sent on the server render; `sendBeacon` is used with a fetch fallback.*
+- [x] **W1** `product-recommendations-api.service.ts` and models; errors map to empty rows. *Tests: a 500 or a network error returns empty rows, never an exception (REC-10); the request is made once per product.*
+- [x] **W2** State-transfer whitelist entry for the recommendations (ADR 0028). *Test: the server render writes the rows and the browser store starts with them, with no second request on hydration.*
+- [x] **W3** `ProductRecommendationsComponent` on the design's `ProductRail`: a `<section aria-labelledby>`, an `h2`, existing `ProductTileComponent`s, Previous and Next buttons, a keyboard-scrollable list. *Tests (component spec, REC-6, REC-9, REC-14): server-rendered markup has the section, the `h2` and one `<a href>` per card; nothing is rendered for an empty list (no empty heading); the arrows scroll by one card and have accessible names; the list is focusable and has an `aria-label`.*
+- [x] **W4** Place the two rows in the product-page container after the composition and care block, loaded without holding the product. *Tests: the page renders and is complete when the recommendations call is slow or fails; headings run `h1` then `h2` with no skipped level.*
+- [x] **W5** Quick add from a card: uses the cart `Add` with `quiet`, then the event call with `add`. *Tests (REC-7, REC-8): picking a size and pressing add sends that `VariantId`; a card with every size sold out offers no add and says so; the bag count updates.*
+- [x] **W6** `recommendation-event.util.ts` and the click beacon (browser only). *Tests (REC-12): the body has only the row code, product id and action; nothing is sent on the server render; `sendBeacon` is used with a fetch fallback.*
 - [ ] **W7** Port any missing `ProductRail` rules into `_components.scss`, tokens only. *Proves: the raw-colour audit and the e2e check below.*
 
 ## End to end and close-out

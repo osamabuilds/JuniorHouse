@@ -66,6 +66,22 @@
         </div>
       </article>
     </div>
+    <rp-product-recommendations
+      headingId="pdp-similar-h"
+      heading="You may also like"
+      eyebrow="More to love"
+      [tiles]="recommendations().similar"
+      (opened)="recommendationOpened('SIMILAR', $event)"
+      (added)="recommendationAdded('SIMILAR', $event)"
+    />
+    <rp-product-recommendations
+      headingId="pdp-trending-h"
+      heading="Trending now"
+      eyebrow="Popular this fortnight"
+      [tiles]="recommendations().trending"
+      (opened)="recommendationOpened('TRENDING', $event)"
+      (added)="recommendationAdded('TRENDING', $event)"
+    />
     @if (barVisible()) {
       <rp-buy-bar [price]="price()" [busy]="bagBusy() || barBlocked()" [hint]="barHint()" [message]="bagMessage()" (add)="barAdd()" />
     }

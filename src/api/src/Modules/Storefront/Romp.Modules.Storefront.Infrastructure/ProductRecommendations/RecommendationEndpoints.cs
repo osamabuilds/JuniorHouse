@@ -1,7 +1,9 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
@@ -51,8 +53,29 @@ public static class RecommendationEndpoints
             return Results.Ok(result);
         });
 
-        group.MapPost("/events", async (RecommendationEventRequest body, ISender sender, CancellationToken cancellationToken) =>
+        group.MapPost("/events", async (HttpContext http, ISender sender, CancellationToken cancellationToken) =>
             {
+                // Kestrel enforces the size limit below for every request; this also refuses a declared length over it before the body is read.
+                if (http.Request.ContentLength > MaxEventBodyBytes)
+                {
+                    return Results.Problem(statusCode: StatusCodes.Status413PayloadTooLarge, title: "The request is too large.");
+                }
+
+                RecommendationEventRequest? body;
+                try
+                {
+                    body = await http.Request.ReadFromJsonAsync<RecommendationEventRequest>(cancellationToken);
+                }
+                catch (Exception ex) when (ex is JsonException or BadHttpRequestException or InvalidOperationException)
+                {
+                    body = null;
+                }
+
+                if (body is null)
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["event"] = ["A JSON body with row, productId and action is required."] });
+                }
+
                 var outcome = await sender.Send(new RecordRecommendationEventCommand(body.Row, body.ProductId, body.Action), cancellationToken);
                 return outcome switch
                 {
