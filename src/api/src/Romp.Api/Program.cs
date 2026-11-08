@@ -213,6 +213,7 @@ if (app.Environment.IsDevelopment())
     {
         await DemoDataSeeder.SeedAsync(catalogContext, vendorContext, productionContext, qualityContext, CancellationToken.None);
         await DemoStorefrontSeeder.SeedAsync(scope.ServiceProvider, app.Logger, CancellationToken.None);
+        await DemoOrderSeeder.SeedAsync(scope.ServiceProvider, app.Logger, CancellationToken.None);
     }
 }
 
