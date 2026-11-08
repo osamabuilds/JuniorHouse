@@ -106,18 +106,23 @@ public sealed class RecommendationRefreshTests(StorefrontPostgres postgres)
 
     [Fact]
     [Trait("Spec", "REC-2")]
-    public async Task AGirlsToddlerDress_NeverGetsABoysOrOtherAgeProduct()
+    public async Task AGirlsToddlerDress_GetsItsOwnGroupFirst_ThenSameGender_ThenSameAge_ThenTheRest_EvenWhenAnOutsiderSellsBetter()
     {
         using var host = await HostAsync();
         await SeedAsync(host, 1);
         await SeedAsync(host, 2);
         await SeedAsync(host, 3, gender: "BOYS");
         await SeedAsync(host, 4, age: "AGE_3Y");
+        await SeedAsync(host, 5, gender: "BOYS", age: "AGE_3Y");
+        host.Sales.Rows.AddRange([new(3, Day(1), 90), new(4, Day(1), 50), new(5, Day(1), 70)]);
+        await host.SendAsync(new SyncProductSalesCommand());
 
         var written = await host.SendAsync(new RefreshSimilarProductsCommand("GIRLS", "KIDS"));
 
-        Assert.Equal(2, written);
-        Assert.Equal([(1L, 2L, 1), (2L, 1L, 1)], await RowsAsync(host));
+        Assert.Equal(2, written); // rows are written for the group only
+        var forOne = (await RowsAsync(host)).Where(r => r.Product == 1).Select(r => r.Similar).ToArray();
+        Assert.Equal([2L, 4L, 3L, 5L], forOne);
+        Assert.DoesNotContain(await RowsAsync(host), r => r.Product is 3 or 4 or 5);
     }
 
     [Fact]
