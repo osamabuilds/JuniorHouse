@@ -8,10 +8,12 @@
           }
           <h2 [id]="headingId()" class="rp-display-md">{{ heading() }}</h2>
         </div>
+        @if (overflows()) {
         <div class="rp-arrows">
-          <button class="rp-arrow" type="button" aria-label="Previous" (click)="scroll(-1)"><rp-icon name="arrow-left" /></button>
-          <button class="rp-arrow" type="button" aria-label="Next" (click)="scroll(1)"><rp-icon name="arrow" /></button>
+          <button class="rp-arrow" type="button" aria-label="Previous" [disabled]="!canPrev()" (click)="scroll(-1)"><rp-icon name="arrow-left" /></button>
+          <button class="rp-arrow" type="button" aria-label="Next" [disabled]="!canNext()" (click)="scroll(1)"><rp-icon name="arrow" /></button>
         </div>
+        }
       </div>
       <ul #rail class="rp-rail" tabindex="0" [attr.aria-label]="heading()">
         @for (tile of tiles(); track tile.productId) {

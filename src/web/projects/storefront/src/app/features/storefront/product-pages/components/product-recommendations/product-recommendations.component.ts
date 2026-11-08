@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, input, output, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, afterNextRender, inject, input, output, signal, viewChild } from '@angular/core';
 import { IconComponent } from '../../../../../shared/ui/icon/icon.component';
 import { ProductTileComponent } from '../../../listings/components/product-tile/product-tile.component';
 import { ListingTile } from '../../../listings/models/listing.model';
@@ -30,6 +30,37 @@ export class ProductRecommendationsComponent {
   readonly added = output<number>();
 
   private readonly rail = viewChild<ElementRef<HTMLElement>>('rail');
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Set in the browser from the real sizes: the arrows show only when the list is wider than its box, and each stops at its end. */
+  protected readonly canPrev = signal(false);
+  protected readonly canNext = signal(false);
+  protected readonly overflows = signal(false);
+
+  constructor() {
+    afterNextRender(() => {
+      const list = this.rail()?.nativeElement;
+      if (!list) return;
+      const update = () => this.measure();
+      list.addEventListener('scroll', update, { passive: true });
+      const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null;
+      observer?.observe(list);
+      this.destroyRef.onDestroy(() => {
+        list.removeEventListener('scroll', update);
+        observer?.disconnect();
+      });
+      update();
+    });
+  }
+
+  private measure(): void {
+    const list = this.rail()?.nativeElement;
+    if (!list) return;
+    const max = list.scrollWidth - list.clientWidth;
+    this.overflows.set(max > 1);
+    this.canPrev.set(list.scrollLeft > 1);
+    this.canNext.set(list.scrollLeft < max - 1);
+  }
 
   /** Scrolls by one card (its width and the gap), smoothly unless the visitor prefers less motion. */
   protected scroll(direction: 1 | -1): void {

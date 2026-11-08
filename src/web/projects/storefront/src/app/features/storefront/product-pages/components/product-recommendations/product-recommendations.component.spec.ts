@@ -32,6 +32,16 @@ function render(tiles: readonly ListingTile[]) {
   return { f, el: f.nativeElement as HTMLElement };
 }
 
+function overflow(f: { detectChanges(): void }, el: HTMLElement, scrollWidth: number, scrollLeft = 0): HTMLElement {
+  const list = el.querySelector<HTMLElement>('ul.rp-rail')!;
+  Object.defineProperty(list, 'scrollWidth', { configurable: true, value: scrollWidth });
+  Object.defineProperty(list, 'clientWidth', { configurable: true, value: 800 });
+  list.scrollLeft = scrollLeft;
+  list.dispatchEvent(new Event('scroll'));
+  f.detectChanges();
+  return list;
+}
+
 describe('ProductRecommendationsComponent', () => {
   it('REC-9 the server markup is a labelled section with one h2 and one real link per card', () => {
     const { el } = render([tile(1), tile(2), tile(3)]);
@@ -54,7 +64,8 @@ describe('ProductRecommendationsComponent', () => {
   });
 
   it('REC-14 the list is focusable and named, and the arrows are buttons with names', () => {
-    const { el } = render([tile(1), tile(2)]);
+    const { f, el } = render([tile(1), tile(2)]);
+    overflow(f, el, 1600);
 
     const list = el.querySelector('ul.rp-rail')!;
     expect(list.getAttribute('tabindex')).toBe('0');
@@ -66,9 +77,9 @@ describe('ProductRecommendationsComponent', () => {
     ]);
   });
 
-  it('REC-14 the arrows scroll the list by one card', () => {
-    const { el } = render([tile(1), tile(2)]);
-    const list = el.querySelector<HTMLElement>('ul.rp-rail')!;
+  it('REC-14 the arrows scroll the list by one card, and each stops at its end', () => {
+    const { f, el } = render([tile(1), tile(2)]);
+    const list = overflow(f, el, 1600, 100);
     list.scrollBy = vi.fn();
     vi.spyOn(el.querySelector('li')!, 'getBoundingClientRect').mockReturnValue({ width: 200 } as DOMRect);
 
@@ -77,6 +88,19 @@ describe('ProductRecommendationsComponent', () => {
 
     const moves = (list.scrollBy as ReturnType<typeof vi.fn>).mock.calls.map(([o]) => (o as { left: number }).left);
     expect(moves).toEqual([200, -200]);
+  });
+
+  it('REC-14 no arrows when everything fits, and the ends are disabled when it does not', () => {
+    const { f, el } = render([tile(1), tile(2)]);
+    overflow(f, el, 800);
+    expect(el.querySelector('.rp-arrows')).toBeNull();
+
+    overflow(f, el, 1600, 0);
+    const [prev, next] = [...el.querySelectorAll<HTMLButtonElement>('.rp-arrows button')];
+    expect([prev.disabled, next.disabled]).toEqual([true, false]);
+
+    overflow(f, el, 1600, 800);
+    expect([prev.disabled, next.disabled]).toEqual([false, true]);
   });
 
   it('REC-12 using a card link says which product was opened', async () => {
