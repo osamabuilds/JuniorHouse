@@ -435,3 +435,13 @@ Reused as they are: `CUST`, `EML`, `STS`, `VRNT`, `REQ`, `SENT`, `LKP`, `DTE`, `
 |---|---|---|---|---|
 | notify-me (back-in-stock request) | NTFM | | notified | NTFD |
 | expired | EXPD | | | |
+
+### Added with product recommendations (Storefront)
+
+Reused as they are: `RECM` (recommended, also used for "recommendation"), `EVNT`, `SALE`, `DAY`, `UNIT`, `QTY`, `CNT`, `GRP`, `VAL`, `NO`, `STRT`, `END`, `PRDT`, `LKP`, `DTE`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| similar | SMLR | | click | CLK |
+| score | SCOR | | calculated | CALC |
+| rank | RANK | | added (to the bag) | ADD |

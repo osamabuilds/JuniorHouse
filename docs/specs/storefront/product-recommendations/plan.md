@@ -15,9 +15,9 @@ All in `Romp.Modules.Storefront.Domain/ProductRecommendations`. Pure, no EF or A
 - **`SalesSignal`** (static, pure): `Normalise(unitsByProduct)` gives `log(1 + units) / log(1 + max)` within the candidate group, 0 when nobody sold.
 - **`SimilarProduct`** (entity, `STFR.PRDT_SMLR`): the precomputed row: product, similar product, rank (1 = closest), score, computed-at. Invariants: rank 1..12, no row where product = similar product, one row per (product, rank) and per (product, similar product).
 - **`ProductSaleDay`** (entity, `STFR.PRDT_SALE_DAY`): units sold of a product on one day (UTC date). One row per (product, day).
-- **`RecommendationRun`** (entity, `STFR.RCMD_RUN`): one worker pass (started, ended, groups scored, products written). A run with no end date is unfinished; the worker uses the latest finished run as its watermark.
-- **`RecommendationRow`** lookup (`STFR.RCMD_ROW_LKP`, codes `SIMILAR`, `TRENDING`): which row a tracked event came from (REC-12).
-- **`RecommendationDay`** (entity, `STFR.RCMD_EVT_DAY`): clicks and adds per row, product and day; counters only, no person (REC-12).
+- **`RecommendationRun`** (entity, `STFR.RECM_RUN`): one worker pass (started, ended, groups scored, products written). A run with no end date is unfinished; the worker uses the latest finished run as its watermark.
+- **`RecommendationRow`** lookup (`STFR.RECM_ROW_LKP`, codes `SIMILAR`, `TRENDING`): which row a tracked event came from (REC-12).
+- **`RecommendationDay`** (entity, `STFR.RECM_EVNT_DAY`): clicks and adds per row, product and day; counters only, no person (REC-12).
 
 Port (Application/Abstractions): **`ITextSimilarityProvider`** with `IsAvailable` and `ScoreAsync(productId, candidateIds) → IReadOnlyDictionary<long, double>?` (null = unavailable). Implementations: `NoTextSimilarityProvider` (default everywhere), `FakeTextSimilarityProvider` (tests). A real provider arrives with its own ADR (ADR 0029, point 4).
 
@@ -63,18 +63,18 @@ Orders contract (new, read-only): `Romp.Modules.Orders.Contracts.IProductSalesQu
 
 ## Data
 
-Schema `STFR` (Storefront's own). New words for the glossary (`docs/db/naming.md`) added in the same PR if missing: similar `SMLR`, recommendation `RCMD`, score `SCOR`, event `EVT`, rank `RANK`, click `CLK`.
+Schema `STFR` (Storefront's own). Glossary (`docs/db/naming.md`): reused as they are `RECM` (recommended; used for "recommendation"), `EVNT`, `SALE`, `DAY`, `UNIT`, `QTY`, `CNT`, `GRP`, `VAL`, `NO`, `STRT`, `END`, `PRDT`, `LKP`. New words, added in the same PR: similar `SMLR`, score `SCOR`, rank `RANK`, click `CLK`, calculated `CALC`, added `ADD`.
 
 | Table | Columns (besides `ID` bigint identity and the audit columns `INSR_DTE`, `INSR_BY`, `UPDT_DTE`, `UPDT_BY`, concurrency token) | Keys and indexes |
 |---|---|---|
 | `STFR.PRDT_SMLR` | `PRDT_ID` bigint, `SMLR_PRDT_ID` bigint, `RANK_NO` smallint, `SCOR_VAL` numeric(7,6), `CALC_DTE` timestamptz | unique (`PRDT_ID`, `RANK_NO`); unique (`PRDT_ID`, `SMLR_PRDT_ID`); FKs to `PRDT_MAIN` on both columns, each indexed; check rank 1..12; check ids differ |
 | `STFR.PRDT_SALE_DAY` | `PRDT_ID`, `SALE_DTE` date, `UNIT_QTY` int | unique (`PRDT_ID`, `SALE_DTE`); index on `SALE_DTE`; FK to `PRDT_MAIN`; check `UNIT_QTY` ≥ 0 |
-| `STFR.RCMD_RUN` | `STRT_DTE`, `END_DTE` null, `GRP_CNT`, `PRDT_CNT` | index on `END_DTE` |
-| `STFR.RCMD_ROW_LKP` | standard lookup shape (`ID` smallint, `CODE`, `NAME`, `DSCR`, `SORT_SEQ`, `ACT_IND`), seeded `SIMILAR`, `TRENDING` | unique `CODE` |
-| `STFR.RCMD_EVT_DAY` | `ROW_ID` smallint, `PRDT_ID`, `EVT_DTE` date, `CLK_CNT` int, `ADD_CNT` int | unique (`ROW_ID`, `PRDT_ID`, `EVT_DTE`); FKs indexed |
+| `STFR.RECM_RUN` | `STRT_DTE`, `END_DTE` null, `GRP_CNT`, `PRDT_CNT` | index on `END_DTE` |
+| `STFR.RECM_ROW_LKP` | standard lookup shape (`ID` smallint, `CODE`, `NAME`, `DSCR`, `SORT_SEQ`, `ACT_IND`), seeded `SIMILAR`, `TRENDING` | unique `CODE` |
+| `STFR.RECM_EVNT_DAY` | `ROW_ID` smallint, `PRDT_ID`, `EVNT_DTE` date, `CLK_CNT` int, `ADD_CNT` int | unique (`ROW_ID`, `PRDT_ID`, `EVNT_DTE`); FKs indexed |
 
 - Normalisation: 3NF; the precomputed rows are a derived read table, not a transactional one (the reason a product's similar list is stored as rows, not a delimited column). Rows hold ids, never names; names, prices and sizes come from the live read model at read time, so they cannot go stale.
-- Growth: `PRDT_SMLR` is at most 12 rows per product and `PRDT_SALE_DAY` at most 14 live days per product (older days are deleted by the sync), so neither needs partitioning. `RCMD_EVT_DAY` grows by at most rows × products per day; its partitioning key (`EVT_DTE`) is noted for later and nothing reads it yet.
+- Growth: `PRDT_SMLR` is at most 12 rows per product and `PRDT_SALE_DAY` at most 14 live days per product (older days are deleted by the sync), so neither needs partitioning. `RECM_EVNT_DAY` grows by at most rows × products per day; its partitioning key (`EVNT_DTE`) is noted for later and nothing reads it yet.
 - Concurrency: the refresh replaces a product's rows in one transaction; two overlapping runs end with the later one's rows because of the unique keys and delete-then-insert. Counters use `UPDATE ... SET CLK_CNT = CLK_CNT + 1` (atomic), with insert-or-update on the unique key.
 - Migration: one EF migration `AddProductRecommendations` in the Storefront context; every table and column mapped explicitly (`ToTable`, `HasColumnName`), and the lookup seeded in the migration. The naming test covers it. No data migration: the first worker pass fills the tables.
 
@@ -128,7 +128,7 @@ Rules and rationale: [ADR 0011](../../../adr/0011-security-and-coupling-baseline
 | Resource limits (sizes, counts, page size, queue length, rate limits) | Response is at most 8 tiles; stored rows at most 12 per product; event body capped at 1 KB and the endpoint rate limited by the public policy; the worker processes one group at a time with a per-run time budget. |
 | Concurrency (constraints, conditional updates, concurrency tokens) | Unique keys on every table; refresh replaces a product's rows in one transaction; counters increment atomically in SQL; entities carry the concurrency token. |
 | Idempotency (inbox, retried commands) | The sales sync rewrites its window (same result when repeated); the refresh is deterministic for the same inputs; event increments are deliberately not idempotent (counters, not records). |
-| Audit (who, when, why; append-only; log-injection safe) | Audit columns on every table; `RCMD_RUN` is an append-only log of passes. Log lines carry numbers and ids only, never request text. |
+| Audit (who, when, why; append-only; log-injection safe) | Audit columns on every table; `RECM_RUN` is an append-only log of passes. Log lines carry numbers and ids only, never request text. |
 | Data protection (money as decimal, no personal data in events/logs/errors, child data) | Prices are `decimal`. The Orders contract returns product and day totals only. No customer, order id or child data in the new tables, logs or errors (SEC-25, NFR-27..30). |
 | Secrets and dangerous configuration | None now. A future provider key comes from secrets and the host refuses to start if a provider is switched on without one. Weights are validated at startup (non-negative, not all zero). |
 | Error responses (problem details only) | Yes. A recommendation failure on the product page is swallowed on the server and shown as absent rows, never as a stack trace or a failed page. |
