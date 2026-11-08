@@ -55,6 +55,24 @@ internal static class ListingTiles
             MaxDiscountPercent = p.MaxDiscountPercent,
         });
 
+    /// <summary>
+    /// Tiles for the given products, in the order given, with the same sizes, <c>VariantId</c>s and sold-out flags as a listing tile of the same
+    /// product (recommendations REC-6, REC-7, REC-8). A constant number of queries however many ids; ids not in the read model are left out.
+    /// </summary>
+    public static async Task<List<ListingTileDto>> ByIdsAsync(IStorefrontReadDbContext db, IReadOnlyList<long> productIds, TileContext context, CancellationToken cancellationToken)
+    {
+        if (productIds.Count == 0)
+        {
+            return [];
+        }
+
+        var ids = productIds.Distinct().ToList();
+        var matching = db.Variants.AsNoTracking().Where(v => v.IsSellable);
+        var rows = await Project(db, db.Products.AsNoTracking().Where(p => ids.Contains(p.Id)), matching).ToListAsync(cancellationToken);
+        var byId = rows.ToDictionary(r => r.Id);
+        return await BuildAsync(db, [.. ids.Where(byId.ContainsKey).Select(id => byId[id])], context, cancellationToken);
+    }
+
     /// <summary>Attaches the pictures and the sizes (three queries) and builds the tiles in the order given.</summary>
     public static async Task<List<ListingTileDto>> BuildAsync(IStorefrontReadDbContext db, IReadOnlyList<TileRow> page, TileContext context, CancellationToken cancellationToken)
     {
