@@ -80,6 +80,9 @@ public sealed class StorefrontOptions
     /// <summary>Weight of the recent-sales score in the recommendation blend.</summary>
     public double RecommendationSalesWeight { get; set; } = 0.15;
 
+    /// <summary>Cards in each recommendation row (4 to 12); more than fit across make the row scroll.</summary>
+    public int RecommendationRowSize { get; set; } = 8;
+
     /// <summary>Days of sales that count as recent for similar and trending products (REC-4).</summary>
     public int RecommendationSalesWindowDays { get; set; } = 14;
 
@@ -120,6 +123,8 @@ public sealed class RecommendationSettings(IOptions<StorefrontOptions> options) 
     public double MeaningWeight => options.Value.RecommendationMeaningWeight;
 
     public double SalesWeight => options.Value.RecommendationSalesWeight;
+
+    public int RowSize => options.Value.RecommendationRowSize;
 
     public int SalesWindowDays => options.Value.RecommendationSalesWindowDays;
 

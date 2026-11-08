@@ -21,9 +21,6 @@ public sealed partial class GetProductRecommendationsQueryHandler(
     IStorefrontReadDbContext db, IListingSettings listing, IRecommendationSettings settings, TimeProvider clock, ILogger<GetProductRecommendationsQueryHandler> logger)
     : IRequestHandler<GetProductRecommendationsQuery, ProductRecommendationsDto?>
 {
-    /// <summary>Cards per row.</summary>
-    public const int RowSize = 4;
-
     public async Task<ProductRecommendationsDto?> Handle(GetProductRecommendationsQuery request, CancellationToken cancellationToken)
     {
         if (ProductPath.Normalise(request.Path) is not { } path)
@@ -82,7 +79,7 @@ public sealed partial class GetProductRecommendationsQueryHandler(
             .Join(db.Products.Where(p => p.IsAvailable && p.IsListable), s => s.SimilarProductId, p => p.Id, (s, p) => new { s.Rank, p.Id })
             .OrderBy(x => x.Rank)
             .Select(x => x.Id)
-            .Take(RowSize)
+            .Take(settings.RowSize)
             .ToListAsync(cancellationToken);
 
     /// <summary>Top sellers over the window: the same gender and age group first, then the whole shop to fill the row (REC-4).</summary>
@@ -91,14 +88,14 @@ public sealed partial class GetProductRecommendationsQueryHandler(
         var since = DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime).AddDays(1 - settings.SalesWindowDays);
         var excluded = new List<long>(similar) { productId };
 
-        var inGroup = await TopSellersAsync(since, p => p.IsAvailable && p.IsListable && p.GenderCode == gender && p.AgeCode == age && !excluded.Contains(p.Id), RowSize, cancellationToken);
-        if (inGroup.Count >= RowSize)
+        var inGroup = await TopSellersAsync(since, p => p.IsAvailable && p.IsListable && p.GenderCode == gender && p.AgeCode == age && !excluded.Contains(p.Id), settings.RowSize, cancellationToken);
+        if (inGroup.Count >= settings.RowSize)
         {
             return inGroup;
         }
 
         excluded.AddRange(inGroup);
-        var rest = await TopSellersAsync(since, p => p.IsAvailable && p.IsListable && !excluded.Contains(p.Id), RowSize - inGroup.Count, cancellationToken);
+        var rest = await TopSellersAsync(since, p => p.IsAvailable && p.IsListable && !excluded.Contains(p.Id), settings.RowSize - inGroup.Count, cancellationToken);
         return [.. inGroup, .. rest];
     }
 

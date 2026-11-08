@@ -99,6 +99,11 @@ public sealed class StorefrontOptionsValidator : IValidateOptions<StorefrontOpti
             failures.Add("Storefront:RecommendationFieldWeight, RecommendationMeaningWeight and RecommendationSalesWeight must not be negative, and at least one must be above 0.");
         }
 
+        if (options.RecommendationRowSize is < 4 or > SimilarProduct.MaxRank)
+        {
+            failures.Add($"Storefront:RecommendationRowSize must be between 4 and {SimilarProduct.MaxRank}.");
+        }
+
         if (options.RecommendationSalesWindowDays is < 1 or > 90)
         {
             failures.Add("Storefront:RecommendationSalesWindowDays must be between 1 and 90.");

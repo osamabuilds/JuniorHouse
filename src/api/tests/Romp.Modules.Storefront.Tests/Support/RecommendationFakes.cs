@@ -20,6 +20,8 @@ internal sealed class FakeRecommendationSettings : IRecommendationSettings
 
     public double SalesWeight { get; set; } = 0.15;
 
+    public int RowSize { get; set; } = 4;
+
     public int SalesWindowDays { get; set; } = 14;
 
     public TimeSpan RunBudget { get; set; } = TimeSpan.FromMinutes(5);

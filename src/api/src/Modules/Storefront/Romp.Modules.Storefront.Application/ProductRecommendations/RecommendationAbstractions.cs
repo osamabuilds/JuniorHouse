@@ -24,6 +24,9 @@ public sealed class NoTextSimilarityProvider : ITextSimilarityProvider
 /// <summary>The configuration recommendations need, behind a port so Application never reads configuration itself (Infrastructure binds <c>Storefront:*</c>).</summary>
 public interface IRecommendationSettings
 {
+    /// <summary>Cards in each row: 4 to <see cref="Romp.Modules.Storefront.Domain.ProductRecommendations.SimilarProduct.MaxRank"/>.</summary>
+    int RowSize { get; }
+
     /// <summary>Weight of the field score (category, colours, price) in the blend.</summary>
     double FieldWeight { get; }
 

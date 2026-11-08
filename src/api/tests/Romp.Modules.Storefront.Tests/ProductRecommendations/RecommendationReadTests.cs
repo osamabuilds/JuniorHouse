@@ -101,6 +101,32 @@ public sealed class RecommendationReadTests(StorefrontPostgres postgres)
     }
 
     [Fact]
+    [Trait("Spec", "REC-1")]
+    public async Task TheRowSize_IsASetting_UpToTheTwelveStored()
+    {
+        using var host = await GroupAsync(postgres, 14);
+        host.RecoSettings.RowSize = 8;
+
+        var eight = (await host.SendAsync(new GetProductRecommendationsQuery(PathOf(1))))!;
+        host.RecoSettings.RowSize = 12;
+        var twelve = (await host.SendAsync(new GetProductRecommendationsQuery(PathOf(1))))!;
+
+        Assert.Equal(8, eight.Similar.Count);
+        Assert.Equal(12, twelve.Similar.Count);
+    }
+
+    [Theory]
+    [Trait("Spec", "REC-1")]
+    [InlineData(3)]
+    [InlineData(13)]
+    public void ARowSizeOutsideFourToTwelve_StopsTheHostStarting(int size)
+    {
+        var result = new Romp.Modules.Storefront.Infrastructure.StorefrontOptionsValidator().Validate(null, new Romp.Modules.Storefront.Infrastructure.StorefrontOptions { RecommendationRowSize = size });
+
+        Assert.True(result.Failed);
+    }
+
+    [Fact]
     [Trait("Spec", "REC-5")]
     public async Task ASoldOutProduct_LeavesTheRowAtOnce_AndTheNextOneFillsThePlace()
     {
