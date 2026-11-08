@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Romp.Modules.Orders.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Romp.Modules.Orders.Application\Romp.Modules.Orders.Application.csproj" />
     <ProjectReference Include="../../../BuildingBlocks/Romp.BuildingBlocks.Web/Romp.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="..\Romp.Modules.Orders.Contracts\Romp.Modules.Orders.Contracts.csproj" />

@@ -6,23 +6,23 @@ Spec: [spec.md](spec.md) · Plan: [plan.md](plan.md) · ADR: [0029](../../../adr
 
 - [x] **P1** Owner approves spec, plan and ADR 0029; create the Jira task (label `REC`, key into the spec header); branch `<KEY>-product-recommendations` from main. *Proves: spec status changed to Approved.*
 - [x] **P2** Two checks the plan left open. (a) `IProductSalesQueries` is implemented in the existing Orders feature folder `Orders` (Infrastructure/Orders), not a new folder, so `StructureSyncTests` needs no new spec card. (b) `.rp-rail` rules already exist in `_components.scss` (line 210); the arrow buttons use the existing `.rp-arrows`. *Proves: this note, no code.*
-- [ ] **P3** Glossary: add the new words `SMLR`, `SCOR`, `RANK`, `CLK`, `CALC`, `ADD` to `docs/db/naming.md`; `RECM` and `EVNT` already exist and are reused (table names `RECM_*`, `RECM_EVNT_DAY`). *Proves: the naming test in the same PR.*
+- [x] **P3** Glossary: add the new words `SMLR`, `SCOR`, `RANK`, `CLK`, `CALC`, `ADD` to `docs/db/naming.md`; `RECM` and `EVNT` already exist and are reused (table names `RECM_*`, `RECM_EVNT_DAY`). *Proves: the naming test in the same PR.*
 
 ## Pure scoring (Domain)
 
-- [ ] **R1** `SimilarityBlend`. *Tests (`SimilarityBlendTests`, REC-3, REC-13): equal weights average the parts; a null part is dropped and the other weights renormalise so the result stays in 0..1; all parts null gives 0; weights that are negative or all zero are rejected; the result is clamped to 0..1.*
-- [ ] **R2** `FieldSimilarity`. *Tests (REC-2 inputs, REC-13): same category scores higher than a different one; identical colours score 1 on colour and disjoint colours 0; equal prices score 1 on price and a tenfold gap scores 0; the total is the stated 0.5 / 0.3 / 0.2 mix.*
-- [ ] **R3** `SalesSignal.Normalise`. *Tests (REC-3): the best seller is 1, a product with no sales is 0, nobody sold gives all 0, the scale is logarithmic (twice the units is less than twice the score).*
-- [ ] **R4** Entities `SimilarProduct`, `ProductSaleDay`, `RecommendationRun`, `RecommendationDay` and the row lookup ids. *Tests: rank outside 1..12 and a product similar to itself are rejected; negative units are rejected.*
+- [x] **R1** `SimilarityBlend`. *Tests (`SimilarityBlendTests`, REC-3, REC-13): equal weights average the parts; a null part is dropped and the other weights renormalise so the result stays in 0..1; all parts null gives 0; weights that are negative or all zero are rejected; the result is clamped to 0..1.*
+- [x] **R2** `FieldSimilarity`. *Tests (REC-2 inputs, REC-13): same category scores higher than a different one; identical colours score 1 on colour and disjoint colours 0; equal prices score 1 on price and a tenfold gap scores 0; the total is the stated 0.5 / 0.3 / 0.2 mix.*
+- [x] **R3** `SalesSignal.Normalise`. *Tests (REC-3): the best seller is 1, a product with no sales is 0, nobody sold gives all 0, the scale is logarithmic (twice the units is less than twice the score).*
+- [x] **R4** Entities `SimilarProduct`, `ProductSaleDay`, `RecommendationRun`, `RecommendationDay` and the row lookup ids. *Tests: rank outside 1..12 and a product similar to itself are rejected; negative units are rejected.*
 
 ## Orders contract (units sold)
 
-- [ ] **O1** `IProductSalesQueries` and `ProductDayUnits` in `Orders.Contracts`; implementation in Orders.Infrastructure over `ORDR_LINE` and the order status. *Tests (Testcontainers, REC-4, CI only): units are summed per product per UTC day; cancelled orders are excluded; orders outside the range are excluded; only product, day and units are returned (no order id, customer or address).*
-- [ ] **O2** Register the interface in the Orders module and add the contract to the architecture rules. *Test: `Romp.ArchitectureTests` stays green; Storefront references only `Orders.Contracts`.*
+- [x] **O1** `IProductSalesQueries` and `ProductDayUnits` in `Orders.Contracts`; implementation in Orders.Infrastructure over `ORDR_LINE` and the order status. *Tests (Testcontainers, REC-4, CI only): units are summed per product per UTC day; cancelled orders are excluded; orders outside the range are excluded; only product, day and units are returned (no order id, customer or address).*
+- [x] **O2** Register the interface in the Orders module and add the contract to the architecture rules. *Test: `Romp.ArchitectureTests` stays green; Storefront references only `Orders.Contracts`.*
 
 ## Data (Storefront)
 
-- [ ] **D1** EF configurations and migration `AddProductRecommendations`: the five tables, keys, unique and check constraints, indexed FKs, the lookup seeded with `SIMILAR` and `TRENDING`. Every table and column mapped explicitly. *Tests: the existing naming test passes; a Testcontainers test applies the migration, rejects a duplicate (product, rank), a duplicate (product, similar product), rank 13 and a self-pair (CI only).*
+- [x] **D1** EF configurations and migration `AddProductRecommendations`: the five tables, keys, unique and check constraints, indexed FKs, the lookup seeded with `SIMILAR` and `TRENDING`. Every table and column mapped explicitly. *Tests: the existing naming test passes; a Testcontainers test applies the migration, rejects a duplicate (product, rank), a duplicate (product, similar product), rank 13 and a self-pair (CI only).*
 
 ## Sales sync and refresh (Application and worker)
 
