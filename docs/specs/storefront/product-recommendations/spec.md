@@ -1,6 +1,6 @@
 # Product recommendations on the product page
 
-- **Status:** Draft (awaiting owner approval)
+- **Status:** Draft (awaiting owner approval; plan and ADR 0029 written 2026-11-08)
 - **Jira:** to be created on approval (owner request 2026-11-05). This picks up the backlog item D-5 / Q-PDP-5 ("cross-sell rail") from [product-pages](../product-pages/spec.md).
 - **BRD sections:** none confirmed (owner request). Phase-3-style AI recommendations (NFR-03) were descoped with the Fit Finder; this is a smaller, owner-requested feature, not that one.
 - **Requirement IDs:** none from the BRD. SEO-01, SEO-03, SEO-07, NFR-01, NFR-19 apply. Criterion IDs are prefixed `REC-`.
@@ -15,6 +15,7 @@ When a shopper opens a product, the page should keep them shopping: products tha
 4. **Dynamic:** hot sellers come from real orders and are refreshed on a schedule; similar products are refreshed when a product is published, changed, goes out of stock or is unpublished.
 5. **Quick add is needed:** each card has a size choice and an add-to-bag action, using the design system's `QuickAdd`.
 6. Hot-seller window **14 days**; **4 + 4** cards in a row each (recommendations accepted).
+7. **Blend, with the meaning part off at first (2026-11-08):** similarity is one blended score of field similarity (category, colours, price), meaning similarity (an embeddings provider) and recent sales. Release 1 ships with the meaning part switched off, so it runs on fields and sales alone; a provider can be added later behind the same port without changing the pages (ADR 0029). This still satisfies REC-13.
 
 ## User flow
 1. A shopper opens a product page. Below the details they see "You may also like" (4 cards) and "Trending now" (4 cards).
@@ -53,10 +54,10 @@ When a shopper opens a product, the page should keep them shopping: products tha
 - Any change to the admin app.
 
 ## Open questions
-- [ ] **Q-REC-1 Embeddings provider and key.** The vendor is the owner's choice, and the key must come from secrets. **Recommendation:** plan it behind an interface with a fake provider first (as payments), so nothing waits for the key, and add the real provider when named.
+- [x] **Q-REC-1 Embeddings provider and key (deferred by owner 2026-11-08; not needed for release 1).** The vendor is the owner's choice, and the key must come from secrets. **Recommendation:** plan it behind an interface with a fake provider first (as payments), so nothing waits for the key, and add the real provider when named.
 - [x] **Q-REC-2 Hot-seller basis (owner answered 2026-11-08: units sold in non-cancelled orders over 14 days, no revenue weighting).** Finding (2026-11-08): no module holds units sold per product that Storefront may read, and Storefront must not query Orders tables. Orders publishes integration events (Orders.Contracts, OrderEvents.cs), so Storefront would keep its own daily units-sold read table, fed by those events (placed adds, cancelled subtracts). **Recommendation:** units sold in orders that were placed and not cancelled in the last 14 days (cancelled orders do not count). Alternative: also weight by revenue.
 - [x] **Q-REC-3 Shared age group (resolved by code check, 2026-11-08).** The published-product read model already carries gender and age group names (GNDR_NAME, AGE_NAME) and the product page DTO has AgeMinMonths/AgeMaxMonths, so no new catalogue data is needed. "Same group" means the same gender and the same age group.
-- [ ] **Q-REC-4 Where the embeddings live.** A vector store (the pgvector extension in PostgreSQL 17) is a new infrastructure choice, so it needs an ADR in the plan. Finding (2026-11-08): docker-compose uses `postgres:17-alpine`, which does not include pgvector, so this means changing the database image (e.g. `pgvector/pgvector:pg17`) locally and on the VPS, then `CREATE EXTENSION`. **Recommendation:** pgvector inside the Storefront schema's own read tables, no new service. Alternative with no infrastructure change: store each vector as a column and compute nearest neighbours in the refresh job (a catalogue of a few hundred products is small enough), writing only the top 4 per product to a table; the page then never does vector maths. Choose before the ADR.
+- [x] **Q-REC-4 Where the embeddings live (deferred 2026-11-08 with Q-REC-1; nothing to store in release 1; decided in a follow-up ADR when a provider is named).** A vector store (the pgvector extension in PostgreSQL 17) is a new infrastructure choice, so it needs an ADR in the plan. Finding (2026-11-08): docker-compose uses `postgres:17-alpine`, which does not include pgvector, so this means changing the database image (e.g. `pgvector/pgvector:pg17`) locally and on the VPS, then `CREATE EXTENSION`. **Recommendation:** pgvector inside the Storefront schema's own read tables, no new service. Alternative with no infrastructure change: store each vector as a column and compute nearest neighbours in the refresh job (a catalogue of a few hundred products is small enough), writing only the top 4 per product to a table; the page then never does vector maths. Choose before the ADR.
 
 ## As built
 (filled in when implemented)
