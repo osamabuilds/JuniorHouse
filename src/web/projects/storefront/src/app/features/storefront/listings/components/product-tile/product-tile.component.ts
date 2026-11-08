@@ -58,6 +58,8 @@ export class ProductTileComponent {
   readonly priority = input(false);
   /** The server refused a quick add for a size this card still showed as available: the page should load the listing again. */
   readonly stale = output<void>();
+  /** A size from this card was added to the bag. */
+  readonly quickAdded = output<void>();
 
   protected readonly sizes = SIZES;
   protected readonly main = computed(() => view(this.tile().image));

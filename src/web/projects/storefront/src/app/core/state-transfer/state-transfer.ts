@@ -4,7 +4,7 @@ import { makeStateKey } from '@angular/core';
  * Server-rendered result pages are handed to the browser so the first client render shows the same content (ADR 0028, HYD-*).
  * Only the slices named here are ever sent. They hold public catalogue and content data, read without the visitor's cookies.
  */
-export const TRANSFERRED_SLICES = ['listings', 'searchResults', 'productPages', 'page', 'collectionsPage'] as const;
+export const TRANSFERRED_SLICES = ['listings', 'searchResults', 'productPages', 'page', 'collectionsPage', 'productRecommendations'] as const;
 
 /** Slices that hold personal or session data. They must never be transferred; a test checks the whitelist against this list. */
 export const FORBIDDEN_SLICES = ['cart', 'carts', 'customerAuth', 'wishlist', 'addresses', 'checkout', 'orderLookup', 'codConfirm', 'newsletter', 'notifyMe'] as const;

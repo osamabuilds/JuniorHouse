@@ -36,6 +36,8 @@ export class QuickAddContainer implements OnDestroy {
   readonly closed = output<void>();
   /** The server refused a size the card still showed as available: the page should load the listing again. */
   readonly stale = output<void>();
+  /** The bag took the size: the add finished with no refusal. The page may count it (recommendation events, REC-12). */
+  readonly bagged = output<void>();
 
   protected readonly busy = this.store.selectSignal(selectCartBusy);
   private readonly message = this.store.selectSignal(selectCartMessage);
@@ -63,6 +65,7 @@ export class QuickAddContainer implements OnDestroy {
       const colour = this.tile().colourCount > 1 && choice.colourName ? `, ${choice.colourName}` : '';
       this.added.set(`Added, size ${choice.sizeName}${colour}`);
       this.state.set('added');
+      this.bagged.emit();
       this.timer = setTimeout(() => this.state.set('choosing'), CONFIRMATION_MS);
     });
   }

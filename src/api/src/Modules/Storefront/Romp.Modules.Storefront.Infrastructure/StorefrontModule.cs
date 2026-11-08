@@ -65,6 +65,9 @@ public sealed class StorefrontModule : IModule
         services.AddSingleton<Search.SearchMissWorker>();
         services.AddSingleton<Application.Search.ISearchMissSink>(sp => sp.GetRequiredService<Search.SearchMissWorker>());
         services.AddHostedService(sp => sp.GetRequiredService<Search.SearchMissWorker>());
+        services.AddSingleton<Application.ProductRecommendations.IRecommendationSettings, RecommendationSettings>();
+        services.AddSingleton<Application.ProductRecommendations.ITextSimilarityProvider, Application.ProductRecommendations.NoTextSimilarityProvider>();
+        services.AddScoped<Application.ProductRecommendations.IRecommendationEventStore, ProductRecommendations.RecommendationEventStore>();
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
@@ -96,6 +99,11 @@ public sealed class StorefrontModule : IModule
             services.AddHostedService<ReconcileWorker>();
         }
 
+        if (configuration.GetValue("Storefront:RecommendationWorkerEnabled", true))
+        {
+            services.AddHostedService<ProductRecommendations.RecommendationRefreshWorker>();
+        }
+
         services.AddScoped<IOutboxMessageHandler<ProductPublishedEvent>, ProductPublishedConsumer>();
         services.AddScoped<IOutboxMessageHandler<ProductChangedEvent>, ProductChangedConsumer>();
         services.AddScoped<IOutboxMessageHandler<ProductUnpublishedEvent>, ProductUnpublishedConsumer>();
@@ -113,6 +121,7 @@ public sealed class StorefrontModule : IModule
         endpoints.MapPublicListingEndpoints();
         endpoints.MapPublicSearchEndpoints();
         endpoints.MapPublicProductPageEndpoints();
+        ProductRecommendations.RecommendationEndpoints.MapPublicRecommendationEndpoints(endpoints);
 
         var services = endpoints.ServiceProvider;
         var options = services.GetRequiredService<IOptions<StorefrontOptions>>().Value;

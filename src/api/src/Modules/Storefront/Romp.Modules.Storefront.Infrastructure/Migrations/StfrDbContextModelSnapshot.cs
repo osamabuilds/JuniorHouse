@@ -124,6 +124,329 @@ namespace Romp.Modules.Storefront.Infrastructure.Migrations
                     b.ToTable("OUTB_MSG", "STFR");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.ProductRecommendations.ProductSaleDay", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateOnly>("Day")
+                        .HasColumnType("date")
+                        .HasColumnName("SALE_DTE");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("integer")
+                        .HasColumnName("UNIT_QTY");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Day")
+                        .HasDatabaseName("IX_PRDT_SALE_DAY_SALE_DTE");
+
+                    b.HasIndex("ProductId", "Day")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_PRDT_SALE_DAY_PRDT_ID_SALE_DTE");
+
+                    b.ToTable("PRDT_SALE_DAY", "STFR", t =>
+                        {
+                            t.HasCheckConstraint("CK_PRDT_SALE_DAY_UNIT_QTY", "\"UNIT_QTY\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.ProductRecommendations.RecommendationDay", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("AddCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("ADD_CNT");
+
+                    b.Property<int>("ClickCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("CLK_CNT");
+
+                    b.Property<DateOnly>("Day")
+                        .HasColumnType("date")
+                        .HasColumnName("EVNT_DTE");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<short>("Row")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ROW_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("IX_RECM_EVNT_DAY_PRDT_ID");
+
+                    b.HasIndex("Row", "ProductId", "Day")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_RECM_EVNT_DAY_ROW_ID_PRDT_ID_EVNT_DTE");
+
+                    b.ToTable("RECM_EVNT_DAY", "STFR", t =>
+                        {
+                            t.HasCheckConstraint("CK_RECM_EVNT_DAY_CNTS", "\"CLK_CNT\" >= 0 AND \"ADD_CNT\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.ProductRecommendations.RecommendationRowLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("RECM_ROW_LKP", "STFR");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "SIMILAR",
+                            Description = "Products like the one being viewed",
+                            IsActive = true,
+                            Name = "You may also like",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "TRENDING",
+                            Description = "Products selling well lately",
+                            IsActive = true,
+                            Name = "Trending now",
+                            SortSeq = (short)2
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.ProductRecommendations.RecommendationRun", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset?>("EndedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("END_DTE");
+
+                    b.Property<int>("GroupCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("GRP_CNT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<int>("ProductCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("PRDT_CNT");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("STRT_DTE");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EndedAt")
+                        .HasDatabaseName("IX_RECM_RUN_END_DTE");
+
+                    b.ToTable("RECM_RUN", "STFR");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.ProductRecommendations.SimilarProduct", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CalculatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CALC_DTE");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PRDT_ID");
+
+                    b.Property<short>("Rank")
+                        .HasColumnType("smallint")
+                        .HasColumnName("RANK_NO");
+
+                    b.Property<decimal>("Score")
+                        .HasPrecision(7, 6)
+                        .HasColumnType("numeric(7,6)")
+                        .HasColumnName("SCOR_VAL");
+
+                    b.Property<long>("SimilarProductId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("SMLR_PRDT_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SimilarProductId")
+                        .HasDatabaseName("IX_PRDT_SMLR_SMLR_PRDT_ID");
+
+                    b.HasIndex("ProductId", "Rank")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_PRDT_SMLR_PRDT_ID_RANK_NO");
+
+                    b.HasIndex("ProductId", "SimilarProductId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_PRDT_SMLR_PRDT_ID_SMLR_PRDT_ID");
+
+                    b.ToTable("PRDT_SMLR", "STFR", t =>
+                        {
+                            t.HasCheckConstraint("CK_PRDT_SMLR_DIFF_PRDT", "\"PRDT_ID\" <> \"SMLR_PRDT_ID\"");
+
+                            t.HasCheckConstraint("CK_PRDT_SMLR_RANK_NO", "\"RANK_NO\" BETWEEN 1 AND 12");
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Storefront.Domain.PublishedCatalog.CareRow", b =>
                 {
                     b.Property<long>("Id")
@@ -2946,6 +3269,50 @@ namespace Romp.Modules.Storefront.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DRFT_MAIN", "STFR");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.ProductRecommendations.ProductSaleDay", b =>
+                {
+                    b.HasOne("Romp.Modules.Storefront.Domain.PublishedCatalog.PublishedProduct", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_SALE_DAY_PRDT_ID");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.ProductRecommendations.RecommendationDay", b =>
+                {
+                    b.HasOne("Romp.Modules.Storefront.Domain.PublishedCatalog.PublishedProduct", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_RECM_EVNT_DAY_PRDT_ID");
+
+                    b.HasOne("Romp.Modules.Storefront.Domain.ProductRecommendations.RecommendationRowLookup", null)
+                        .WithMany()
+                        .HasForeignKey("Row")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_RECM_EVNT_DAY_RECM_ROW_LKP");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Storefront.Domain.ProductRecommendations.SimilarProduct", b =>
+                {
+                    b.HasOne("Romp.Modules.Storefront.Domain.PublishedCatalog.PublishedProduct", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_SMLR_PRDT_ID");
+
+                    b.HasOne("Romp.Modules.Storefront.Domain.PublishedCatalog.PublishedProduct", null)
+                        .WithMany()
+                        .HasForeignKey("SimilarProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PRDT_SMLR_SMLR_PRDT_ID");
                 });
 
             modelBuilder.Entity("Romp.Modules.Storefront.Domain.PublishedCatalog.CareRow", b =>

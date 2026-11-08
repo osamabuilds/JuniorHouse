@@ -3,3 +3,6 @@ export { ProductPagesActions } from './store/product-pages.actions';
 export * from './store/product-pages.selectors';
 export * from './models/product-page.model';
 export * from './models/product-selection';
+export * from './models/product-recommendations.model';
+export { ProductRecommendationsActions } from './store/product-recommendations.actions';
+export * from './store/product-recommendations.selectors';
