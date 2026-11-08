@@ -1,6 +1,6 @@
 # 0029 — Product recommendations: a precomputed, blended similarity score with an optional meaning provider
 
-- Status: Proposed (awaiting owner approval with the product-recommendations plan)
+- Status: Accepted (owner, 2026-11-08)
 - Date: 2026-11-08
 
 ## Context

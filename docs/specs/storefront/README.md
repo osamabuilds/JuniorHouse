@@ -18,7 +18,7 @@ The public, server-rendered shop window (Sprint 9, "Sell: browse"): navigation, 
 | [listings](listings/spec.md) | New Arrivals, Sale, Category and Collection views; size, colour, price (and age) filters; sorting; pagination; empty states | FR-02, FR-03, FR-05, FEAT-CAT-02..04, 07 | Implemented |
 | [search](search/spec.md) | Keyword search, autosuggest, synonyms as data, zero-result log, safe input handling, exact SKU lookup | FR-04, FR-05, FR-06, FEAT-CAT-05, 06, NFR-02 | Implemented (SRC-10 rate limit deferred with seo) |
 | [product-pages](product-pages/spec.md) | Gallery, price, SKU, variants and availability, sold-out state, size chart, composition and care | FR-07, FR-08, FR-09, FEAT-PDP-01..04 | Implemented (PDP-14 in seo) |
-| [product-recommendations](product-recommendations/spec.md) | "You may also like" (embeddings) and "Trending now" rows with quick add on the product page | owner request (backlog D-5) | after S9 | Draft |
+| [product-recommendations](product-recommendations/spec.md) | "You may also like" (blended similarity) and "Trending now" rows with quick add on the product page | owner request (backlog D-5) | after S9 | Draft |
 | [hydration-state](hydration-state/spec.md) | Server-rendered result pages are handed to the browser (whitelisted store slices, ADR 0028) so hydration does not flash a loading state | NFR-01, SEO-01 | after S9 | Implemented |
 | [collections-page](collections-page/spec.md) | The `/collections` index (the nav and footer link to it today and get a 404) | FR-01, SEO-03, SEO-04 | after S9 | Implemented |
 | [sold-items-in-listings](sold-items-in-listings/spec.md) | Sold-out products stay on every listing, marked sold out (replaces LST-15; ST-6) | FR-05, SEO-03, SEO-06 | after S9 | Implemented |

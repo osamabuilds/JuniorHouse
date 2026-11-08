@@ -4,7 +4,7 @@ Spec: [spec.md](spec.md) · Plan: [plan.md](plan.md) · ADR: [0029](../../../adr
 
 ## Before code
 
-- [ ] **P1** Owner approves spec, plan and ADR 0029; create the Jira task (label `REC`, key into the spec header); branch `<KEY>-product-recommendations` from main. *Proves: spec status changed to Approved.*
+- [x] **P1** Owner approves spec, plan and ADR 0029; create the Jira task (label `REC`, key into the spec header); branch `<KEY>-product-recommendations` from main. *Proves: spec status changed to Approved.*
 - [ ] **P2** Two checks the plan left open. (a) Which existing Orders feature folder the `IProductSalesQueries` implementation goes in without breaking `StructureSyncTests` (API feature folder names must equal spec names). (b) Whether the `ProductRail` rules are already in `_components.scss`. *Proves: note added to plan.md, no code.*
 - [ ] **P3** Glossary: add any of `SMLR`, `RCMD`, `SCOR`, `EVT`, `RANK`, `CLK` not already in `docs/db/naming.md` (one abbreviation per word). *Proves: the naming test in the same PR.*
 

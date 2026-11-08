@@ -1,7 +1,7 @@
 # Product recommendations on the product page
 
-- **Status:** Draft (awaiting owner approval; plan and ADR 0029 written 2026-11-08)
-- **Jira:** to be created on approval (owner request 2026-11-05). This picks up the backlog item D-5 / Q-PDP-5 ("cross-sell rail") from [product-pages](../product-pages/spec.md).
+- **Status:** Approved (owner, 2026-11-08)
+- **Jira:** SCRUM-218 (owner request 2026-11-05). This picks up the backlog item D-5 / Q-PDP-5 ("cross-sell rail") from [product-pages](../product-pages/spec.md).
 - **BRD sections:** none confirmed (owner request). Phase-3-style AI recommendations (NFR-03) were descoped with the Fit Finder; this is a smaller, owner-requested feature, not that one.
 - **Requirement IDs:** none from the BRD. SEO-01, SEO-03, SEO-07, NFR-01, NFR-19 apply. Criterion IDs are prefixed `REC-`.
 

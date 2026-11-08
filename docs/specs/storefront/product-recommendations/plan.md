@@ -3,7 +3,7 @@
 - **Spec:** [spec.md](spec.md) (REC-1..14)
 - **ADR:** [0029](../../../adr/0029-product-recommendations-blended-score.md) (precomputed blended score, meaning provider as an optional port)
 - **Module(s):** Storefront (API feature `ProductRecommendations`, web feature `product-pages`), plus one read-only contract in Orders
-- **Jira:** to be created on approval (spec header)
+- **Jira:** SCRUM-218
 - **Owner decisions applied (2026-11-08):** blend field, meaning and sales scores, with the meaning part off until a provider is named (Q-REC-1, Q-REC-4 deferred); hot sellers = units in non-cancelled orders over 14 days (Q-REC-2); same gender and age group come from the read model (Q-REC-3).
 
 ## Domain model
