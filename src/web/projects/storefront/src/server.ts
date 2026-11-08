@@ -6,6 +6,7 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import { cacheControlFor } from './static-cache';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -423,7 +424,8 @@ app.get('/media/:name', async (req, res) => {
  */
 app.use(
   express.static(browserDistFolder, {
-    maxAge: '1y',
+    etag: true,
+    setHeaders: (res, filePath) => res.setHeader('Cache-Control', cacheControlFor(filePath)),
     index: false,
     redirect: false,
   }),
