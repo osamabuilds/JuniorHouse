@@ -60,6 +60,19 @@ for (const vp of [
       await expect(first).toBeFocused();
     });
 
+    test('GAL-3 the viewer picture is fitted at 4:5 inside the stage, never stretched or cropped', async ({ page }) => {
+      expect(await open(page)).toBeGreaterThan(0);
+      await page.locator('.rp-gimg').first().click();
+      await expect(page.locator('.rp-lb__img img')).toHaveCount(1);
+      const { pic, stage } = await page.evaluate(() => {
+        const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
+        return { pic: r('.rp-lb__img'), stage: r('.rp-lb__stage') };
+      });
+      expect(Math.abs(pic.width / pic.height - 0.8)).toBeLessThan(0.01);
+      expect(pic.width).toBeLessThanOrEqual(stage.width + 0.5);
+      expect(pic.height).toBeLessThanOrEqual(stage.height + 0.5);
+    });
+
     test('GAL-9 the viewer picture is requested only when it opens', async ({ page }) => {
       await open(page);
       expect(await page.locator('.rp-lb__img img').count()).toBe(0);
