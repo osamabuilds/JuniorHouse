@@ -1,0 +1,55 @@
+<h1>Manifests</h1>
+<p class="page-intro">The list of parcels handed to each courier for the day. Count the parcels the courier collects and compare them with the sheet.</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+<div class="form-actions">
+  <button type="button" class="button button--primary" [disabled]="busy()" (click)="generate()">Make today's manifests</button>
+</div>
+
+<section aria-labelledby="mf-heading">
+  <h2 id="mf-heading">{{ total() }} {{ total() === 1 ? 'manifest' : 'manifests' }}</h2>
+  @if (loading() && rows().length === 0) {
+    <p role="status">Loading…</p>
+  } @else {
+    <table class="table">
+      <caption class="sr-only">Manifests, newest first</caption>
+      <thead>
+        <tr>
+          <th scope="col">Day</th>
+          <th scope="col">Courier</th>
+          <th scope="col" class="num">Parcels</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.id) {
+          <tr>
+            <th scope="row" data-label="Day"><a [routerLink]="['/dispatch/manifests', row.id]">{{ row.businessDate | date: 'mediumDate' }}</a></th>
+            <td data-label="Courier">{{ row.courierName }}</td>
+            <td data-label="Parcels" class="num">{{ row.parcelCount }}</td>
+            <td data-label="Status">{{ words(row) }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4">No manifests yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>

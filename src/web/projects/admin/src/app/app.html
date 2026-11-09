@@ -32,6 +32,9 @@
         <li *hasPermission="'fulfilment.pack'"><a routerLink="/fulfilment/pack" routerLinkActive="is-active">Pack</a></li>
         <li *hasPermission="'fulfilment.view'"><a routerLink="/fulfilment/exceptions" routerLinkActive="is-active">Pick exceptions</a></li>
         <li *hasPermission="'inventory.read'"><a routerLink="/customers/notify-me" routerLinkActive="is-active">Notify Me demand</a></li>
+        <li *hasPermission="'shipping.view'"><a routerLink="/dispatch/shipments" routerLinkActive="is-active">Shipments</a></li>
+        <li *hasPermission="'shipping.view'"><a routerLink="/dispatch/queue" routerLinkActive="is-active">Booking queue</a></li>
+        <li *hasPermission="'shipping.view'"><a routerLink="/dispatch/manifests" routerLinkActive="is-active">Manifests</a></li>
         <li *hasPermission="'shipping.manage'"><a routerLink="/shipping" routerLinkActive="is-active">Delivery fees</a></li>
         <li *hasPermission="'discounts.manage'"><a routerLink="/discounts" routerLinkActive="is-active">Discount codes</a></li>
         <li *hasPermission="'staff.manage'"><a routerLink="/staff" routerLinkActive="is-active">Staff</a></li>
