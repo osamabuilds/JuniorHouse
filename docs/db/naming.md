@@ -470,3 +470,14 @@ Reused as they are: `ORDR`, `LINE`, `QTY`, `BIN`, `SKU`, `GTIN`, `SCAN`, `STS`, 
 | gram | GRM | | pack | PACK |
 | slip (packing slip) | SLIP | | put-back | PTBK |
 | raised | RAIS | | restocked | RSTK |
+
+### Added in Sprint 15 (shipping: bookings, labels, manifests, tracking)
+
+Reused as they are: `SHPG` (shipping, also the shipment), `CRER` (courier), `LBL` (label), `FAIL`, `DLVR`, `SRC`, `EVNT`, `CNTD`, `CNT`, `ATMP`, `ORDR`, `NO`, `STS`, `DTE`, `LKP`, `CASH`, `AMT`, `WGHT`, `GRM`, `NOTE`, `ERR`, `LAST`, `NXT`, `PRT`, `IND`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| manifest | MNFS | | booking | BKNG |
+| waybill | WYBL | | staff | STAF |
+| needs | NEED | | poll | POLL |
+| handed over | HAND | | | |

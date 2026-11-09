@@ -75,6 +75,7 @@ public sealed class ProductionApiFixture : IAsyncLifetime
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Orders.Infrastructure.Persistence.OrdrDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Notifications.Infrastructure.Persistence.NtfyDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Fulfilment.Infrastructure.Persistence.FulfDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Shipping.Infrastructure.Persistence.ShpgDbContext>().Database.MigrateAsync();
         await Romp.Modules.Customers.Infrastructure.Accounts.StandInCustomer.SeedAsync(customers, CancellationToken.None);
 
         var style = new Style("STY-IT-001", "Integration Dress", "Test", categoryId: 3, genderId: 2, ageBracketId: 3, fabricId: 1, targetUnitCost: 450m, targetRetailPrice: 1200m);

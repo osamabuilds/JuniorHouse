@@ -51,6 +51,13 @@ internal sealed class OrderLineDelayedNotificationConsumer(NtfyDbContext dbConte
         OrderEventIntake.RunAsync(OrderEventMapper.Map(domainEvent), "NotifyOnOrderLineDelayed", dbContext, guard, create, cancellationToken);
 }
 
+/// <summary>A parcel was collected or a delivery failed: tell the customer (TRK-7, OHS-7). Other statuses need no message.</summary>
+internal sealed class ShipmentStatusNotificationConsumer(NtfyDbContext dbContext, InboxGuard guard, CreateNotification create) : IOutboxMessageHandler<Romp.Modules.Shipping.Contracts.ShipmentStatusChangedEvent>
+{
+    public Task HandleAsync(Romp.Modules.Shipping.Contracts.ShipmentStatusChangedEvent domainEvent, CancellationToken cancellationToken) =>
+        OrderEventIntake.RunAsync(OrderEventMapper.Map(domainEvent), "NotifyOnShipmentStatus", dbContext, guard, create, cancellationToken);
+}
+
 internal sealed class CodConfirmationRequestedNotificationConsumer(NtfyDbContext dbContext, InboxGuard guard, CreateNotification create) : IOutboxMessageHandler<CodConfirmationRequestedEvent>
 {
     public Task HandleAsync(CodConfirmationRequestedEvent domainEvent, CancellationToken cancellationToken) =>

@@ -6,6 +6,7 @@ using Romp.Modules.Orders.Application.Abstractions;
 using Romp.Modules.Orders.Application.OrderQueue;
 using Romp.Modules.Orders.Domain.Orders;
 using Romp.Modules.Orders.Domain.Payments;
+using Romp.Modules.Shipping.Contracts;
 
 namespace Romp.Modules.Orders.Application.Orders;
 
@@ -32,7 +33,8 @@ public sealed record MyOrderDetailDto(
     string CityName,
     string ProvinceName,
     IReadOnlyList<MyOrderLineDto> Lines,
-    IReadOnlyList<MyOrderStepDto> Timeline);
+    IReadOnlyList<MyOrderStepDto> Timeline,
+    ShipmentTrackingView? Tracking = null);
 
 /// <summary>
 /// The signed-in customer's own orders, newest first, paged (ORD-14). The customer is the one on the session, never a value in the request, and
@@ -87,7 +89,7 @@ public sealed class ListMyOrdersQueryHandler(IOrdersDbContext dbContext, ICurren
 /// <summary>One of the customer's own orders. Anyone else's order, or none at all, is the same answer: not found (ORD-13).</summary>
 public sealed record GetMyOrderQuery(string? OrderNumber) : IRequest<MyOrderDetailDto?>;
 
-public sealed class GetMyOrderQueryHandler(IOrdersDbContext dbContext, ICurrentCustomerAccessor customers) : IRequestHandler<GetMyOrderQuery, MyOrderDetailDto?>
+public sealed class GetMyOrderQueryHandler(IOrdersDbContext dbContext, ICurrentCustomerAccessor customers, IShipmentTrackingQueries tracking) : IRequestHandler<GetMyOrderQuery, MyOrderDetailDto?>
 {
     public async Task<MyOrderDetailDto?> Handle(GetMyOrderQuery request, CancellationToken cancellationToken)
     {
@@ -111,6 +113,7 @@ public sealed class GetMyOrderQueryHandler(IOrdersDbContext dbContext, ICurrentC
             order.OrderNumber, order.PlacedAt, OrderLabels.Status(order.StatusId), OrderLabels.Method(order.PaymentMethodId), ListMyOrdersQueryHandler.PaymentLabel(paymentStatus),
             order.Subtotal, order.Discount, order.Shipping, order.Total, order.RecipientName, order.AddressLine1, order.AddressLine2, order.CityName, order.ProvinceName,
             [.. order.Lines.OrderBy(l => l.Id).Select(l => new MyOrderLineDto(l.Name, l.Colour, l.Size, l.UnitPrice, l.Quantity, l.LineTotal))],
-            [.. order.History.OrderBy(h => h.Id).Select(h => new MyOrderStepDto(OrderLabels.Status(h.ToStatusId), h.At))]);
+            [.. order.History.OrderBy(h => h.Id).Select(h => new MyOrderStepDto(OrderLabels.Status(h.ToStatusId), h.At))],
+            await tracking.FindByOrderAsync(order.Id, cancellationToken));
     }
 }

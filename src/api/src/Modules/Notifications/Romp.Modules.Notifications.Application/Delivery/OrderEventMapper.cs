@@ -25,6 +25,14 @@ public static class OrderEventMapper
     public static NotificationIntent Map(OrderCancelledEvent cancelled) =>
         new(NotificationKind.OrderCancelled, cancelled.OrderId, cancelled.EventId);
 
+    /// <summary>Only a pick-up and a failed attempt need a message; every other courier status is for the timeline (TRK-7, OHS-7).</summary>
+    public static NotificationIntent? Map(Romp.Modules.Shipping.Contracts.ShipmentStatusChangedEvent shipment) => shipment.StatusCode switch
+    {
+        Romp.Modules.Shipping.Contracts.ShipmentStatusCodes.PickedUp => new NotificationIntent(NotificationKind.OrderShipped, shipment.OrderId, shipment.EventId),
+        Romp.Modules.Shipping.Contracts.ShipmentStatusCodes.FailedAttempt => new NotificationIntent(NotificationKind.DeliveryAttemptFailed, shipment.OrderId, shipment.EventId),
+        _ => null,
+    };
+
     public static NotificationIntent Map(Romp.Modules.Fulfilment.Contracts.OrderLineDelayedEvent delayed) =>
         new(NotificationKind.OrderDelayed, delayed.OrderId, delayed.EventId);
 

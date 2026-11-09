@@ -60,6 +60,8 @@ internal static class RoleSeed
         new(26, "fulfilment.view", "View fulfilment", "Read the pick queue, pick lists, the exception queue and packing slips"),
         new(27, "fulfilment.pick", "Pick orders", "Take a pick, scan bins and units, flag a pick exception and complete the pick"),
         new(28, "fulfilment.pack", "Pack orders", "Open an order at the pack station, scan, weigh, complete the pack and print the slip"),
+        new(30, "shipping.view", "View shipping", "Read shipments, the manual booking queue, labels and manifests"),
+        new(31, "shipping.ops", "Operate shipping", "Retry or hand-enter a booking, print labels, make, count and resolve manifests"),
         new(29, "fulfilment.manage", "Manage fulfilment", "Resolve pick exceptions and take over a pick held by someone else"),
     ];
 
@@ -74,8 +76,8 @@ internal static class RoleSeed
         void Grant(short role, params string[] codes) => rows.AddRange(codes.Select(c => new MappingRow(role, id[c])));
 
         Grant(Catalogue, "ref.read", "catalog.read", "catalog.write", "warehouse.read");
-        Grant(OrderOps, "ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend", "fulfilment.view", "fulfilment.pick", "fulfilment.pack", "fulfilment.manage");
-        Grant(Support, "ref.read", "catalog.read", "orders.view", "notifications.view", "notifications.resend", "fulfilment.view");
+        Grant(OrderOps, "ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend", "fulfilment.view", "fulfilment.pick", "fulfilment.pack", "fulfilment.manage", "shipping.view", "shipping.ops");
+        Grant(Support, "ref.read", "catalog.read", "orders.view", "notifications.view", "notifications.resend", "fulfilment.view", "shipping.view");
         Grant(Marketing, "ref.read", "catalog.read", "discounts.manage");
 
         return rows;

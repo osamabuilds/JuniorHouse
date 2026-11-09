@@ -17,7 +17,9 @@ internal static class NotificationsLookupConfiguration
             (NotificationKind.OrderConfirmation, "Order confirmation", "The order was received (cash on delivery) or paid (online)"),
             (NotificationKind.OrderCancelled, "Order cancelled", "The order was cancelled; says why in a category"),
             (NotificationKind.CodConfirmationRequest, "Cash on delivery confirmation request", "Asks the customer to confirm or cancel a cash on delivery order"),
-            (NotificationKind.OrderDelayed, "Order delayed", "A line of the order is waiting for stock; the customer is told it will ship later"));
+            (NotificationKind.OrderDelayed, "Order delayed", "A line of the order is waiting for stock; the customer is told it will ship later"),
+            (NotificationKind.OrderShipped, "Order shipped", "The courier collected the parcel; carries the tracking link"),
+            (NotificationKind.DeliveryAttemptFailed, "Delivery attempt failed", "The courier could not deliver; the customer can act before the parcel goes back"));
 
         Configure<ChannelLookup, NotificationChannel>(modelBuilder, "CHNL_LKP", DeliveryConversions.ChannelId, k => (NotificationChannel)(k - 1), NotificationCodes.Of,
             (NotificationChannel.Email, "Email", "Email through the SMTP sender"),

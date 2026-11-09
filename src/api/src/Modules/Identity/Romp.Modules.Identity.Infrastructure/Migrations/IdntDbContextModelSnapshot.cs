@@ -638,6 +638,24 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         },
                         new
                         {
+                            Id = (short)30,
+                            Code = "shipping.view",
+                            Description = "Read shipments, the manual booking queue, labels and manifests",
+                            IsActive = true,
+                            Name = "View shipping",
+                            SortSeq = (short)30
+                        },
+                        new
+                        {
+                            Id = (short)31,
+                            Code = "shipping.ops",
+                            Description = "Retry or hand-enter a booking, print labels, make, count and resolve manifests",
+                            IsActive = true,
+                            Name = "Operate shipping",
+                            SortSeq = (short)31
+                        },
+                        new
+                        {
                             Id = (short)29,
                             Code = "fulfilment.manage",
                             Description = "Resolve pick exceptions and take over a pick held by someone else",
@@ -841,6 +859,16 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         },
                         new
                         {
+                            RoleId = (short)3,
+                            PermissionId = (short)30
+                        },
+                        new
+                        {
+                            RoleId = (short)3,
+                            PermissionId = (short)31
+                        },
+                        new
+                        {
                             RoleId = (short)4,
                             PermissionId = (short)1
                         },
@@ -868,6 +896,11 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         {
                             RoleId = (short)4,
                             PermissionId = (short)26
+                        },
+                        new
+                        {
+                            RoleId = (short)4,
+                            PermissionId = (short)30
                         },
                         new
                         {
