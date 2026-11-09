@@ -110,6 +110,9 @@ public sealed class StockAllocator(ISender sender) : IStockAllocator
     public async Task ConfirmPickAsync(string orderKey, IReadOnlyList<PickedUnit> picks, string staff, CancellationToken cancellationToken) =>
         await sender.Send(new ConfirmPickCommand(orderKey, picks, staff), cancellationToken);
 
+    public async Task ShortenClaimAsync(string orderKey, long variantId, long binId, int quantity, CancellationToken cancellationToken) =>
+        await sender.Send(new ShortenClaimCommand(orderKey, variantId, binId, quantity), cancellationToken);
+
     public async Task FlagBinAsync(long binId, string reasonCode, CancellationToken cancellationToken) =>
         await sender.Send(new SetBinReviewCommand(binId, reasonCode), cancellationToken);
 

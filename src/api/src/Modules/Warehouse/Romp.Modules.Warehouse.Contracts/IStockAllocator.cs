@@ -47,6 +47,12 @@ public interface IStockAllocator
     /// </summary>
     Task ConfirmPickAsync(string orderKey, IReadOnlyList<PickedUnit> picks, string staff, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Gives up part of a bin claim: a picker found fewer units than the system claimed there (PEX-1). The units already picked stay claimed; the
+    /// rest become allocatable elsewhere. Asking for more than is claimed gives up what there is.
+    /// </summary>
+    Task ShortenClaimAsync(string orderKey, long variantId, long binId, int quantity, CancellationToken cancellationToken);
+
     /// <summary>Marks a bin "under review": it is skipped by allocation until cleared (PEX-6). Stock is never overwritten.</summary>
     Task FlagBinAsync(long binId, string reasonCode, CancellationToken cancellationToken);
 

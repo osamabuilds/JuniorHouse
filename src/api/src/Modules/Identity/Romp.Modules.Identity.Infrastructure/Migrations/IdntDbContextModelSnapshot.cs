@@ -608,6 +608,42 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Resend notifications",
                             SortSeq = (short)25
+                        },
+                        new
+                        {
+                            Id = (short)26,
+                            Code = "fulfilment.view",
+                            Description = "Read the pick queue, pick lists, the exception queue and packing slips",
+                            IsActive = true,
+                            Name = "View fulfilment",
+                            SortSeq = (short)26
+                        },
+                        new
+                        {
+                            Id = (short)27,
+                            Code = "fulfilment.pick",
+                            Description = "Take a pick, scan bins and units, flag a pick exception and complete the pick",
+                            IsActive = true,
+                            Name = "Pick orders",
+                            SortSeq = (short)27
+                        },
+                        new
+                        {
+                            Id = (short)28,
+                            Code = "fulfilment.pack",
+                            Description = "Open an order at the pack station, scan, weigh, complete the pack and print the slip",
+                            IsActive = true,
+                            Name = "Pack orders",
+                            SortSeq = (short)28
+                        },
+                        new
+                        {
+                            Id = (short)29,
+                            Code = "fulfilment.manage",
+                            Description = "Resolve pick exceptions and take over a pick held by someone else",
+                            IsActive = true,
+                            Name = "Manage fulfilment",
+                            SortSeq = (short)29
                         });
                 });
 
@@ -785,6 +821,26 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         },
                         new
                         {
+                            RoleId = (short)3,
+                            PermissionId = (short)26
+                        },
+                        new
+                        {
+                            RoleId = (short)3,
+                            PermissionId = (short)27
+                        },
+                        new
+                        {
+                            RoleId = (short)3,
+                            PermissionId = (short)28
+                        },
+                        new
+                        {
+                            RoleId = (short)3,
+                            PermissionId = (short)29
+                        },
+                        new
+                        {
                             RoleId = (short)4,
                             PermissionId = (short)1
                         },
@@ -807,6 +863,11 @@ namespace Romp.Modules.Identity.Infrastructure.Migrations
                         {
                             RoleId = (short)4,
                             PermissionId = (short)25
+                        },
+                        new
+                        {
+                            RoleId = (short)4,
+                            PermissionId = (short)26
                         },
                         new
                         {

@@ -87,6 +87,9 @@ public sealed class WarehouseModule : IModule
         services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderPlacedEvent>, Reservations.OrderPlacedReservationConsumer>();
         services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderCancelledEvent>, Reservations.OrderCancelledReservationConsumer>();
 
+        // A pick exception flags its bin so nothing more is allocated from it until it is counted (PEX-6, ADR 0030).
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Fulfilment.Contracts.PickExceptionRaisedEvent>, Allocations.PickExceptionBinFlagConsumer>();
+
         // Putaway: QC's accepted batches become items waiting to be shelved (FR-SC-08).
         services.AddScoped<IPoStyleLookup, ContractsPoStyleLookup>();
         services.AddScoped<IPutawayRowLocks, PutawayRowLocks>();

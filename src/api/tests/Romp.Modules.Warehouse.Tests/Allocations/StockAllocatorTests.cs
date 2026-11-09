@@ -238,6 +238,25 @@ public sealed class StockAllocatorTests(WarehousePostgres postgres)
     }
 
     [Fact]
+    [Trait("Spec", "PEX-1")]
+    public async Task GivingUpPartOfAClaim_FreesThoseUnits_AndKeepsTheRest()
+    {
+        using var host = new WarehouseHost(postgres);
+        var variant = await host.NewVariantAsync();
+        var bin = await host.NewBinAsync();
+        await PutAsync(host, variant.RefId, bin.Id, 5);
+        var key = NewKey();
+        await AllocateAsync(host, key, (variant.VariantId, 4));
+
+        await host.InScopeAsync(async sp => { await sp.GetRequiredService<IStockAllocator>().ShortenClaimAsync(key, variant.VariantId, bin.Id, 3, CancellationToken.None); return 0; });
+
+        var other = await AllocateAsync(host, NewKey(), (variant.VariantId, 4));
+        Assert.Equal(4, other.Allocations.Sum(a => a.Quantity));
+        var again = await AllocateAsync(host, key, (variant.VariantId, 1));
+        Assert.Equal(1, again.Allocations.Sum(a => a.Quantity));
+    }
+
+    [Fact]
     [Trait("Spec", "PCK-8")]
     public async Task ConfirmingThePickTwice_DecrementsOnlyOnce()
     {

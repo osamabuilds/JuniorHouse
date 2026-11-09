@@ -12,20 +12,20 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 - [x] **O1** `IOrderFulfilmentQueries` (lines, totals, method, recipient name and city) in `Orders.Contracts`, implemented in Orders. *Proof:* `OrderFulfilmentQueriesTests`.
 
 ## Fulfilment module
-- [ ] **F1** Module skeleton, ADR 0030, `ModuleNames`, glossary words, `FULF` schema, domain model and lookups, migration. *Proof:* architecture and naming tests; `FulfilmentMigrationTests`.
-- [ ] **F2** `PackagingRule` and `WeightCheck` pure functions. *Proof:* `PackagingRuleTests`, `WeightCheckTests` (PAK-4, 6, 7, 8).
-- [ ] **F3** Create from `OrderConfirmedEvent` / `OrderPaidEvent` behind the inbox, allocate through the contract. *Proof:* `CreateFulfilmentOrderTests` (ALC-1, 2, 5, 8, 11).
-- [ ] **F4** Cancel: release before pick, put-back task after. *Proof:* `CancelFulfilmentOrderTests` (ALC-6, 7, PCK-12).
-- [ ] **F5** Queue and pick list queries (paged, walking order, constant queries). *Proof:* `PickListQueryTests` (PCK-1, 11, APP-8).
-- [ ] **F6** Claim and release the pick. *Proof:* `PickClaimTests` (PCK-9).
-- [ ] **F7** Scan bin and GTIN with refusals, over-pick guard, under 300 ms. *Proof:* `PickScanTests` (PCK-2 to 6, 10).
-- [ ] **F8** Complete pick: decrement once, event. *Proof:* `CompletePickTests` (PCK-7, 8).
-- [ ] **F9** Pick exceptions: raise, hold, resolve, delayed-line event, bin flag. *Proof:* `PickExceptionTests` (PEX-1 to 10).
-- [ ] **F10** Pack: open, scan, weight, complete, packed event, idempotent. *Proof:* `PackStationTests` (PAK-1 to 13).
-- [ ] **F11** Packing slip from Orders at print time, print through the printer port. *Proof:* `PackingSlipTests` (SLP-1 to 8).
+- [x] **F1** Module skeleton, ADR 0030, `ModuleNames`, glossary words, `FULF` schema, domain model and lookups, migration. *Proof:* architecture and naming tests; `FulfilmentMigrationTests`.
+- [x] **F2** `PackagingRule` and `WeightCheck` pure functions. *Proof:* `PackagingRuleTests`, `WeightCheckTests` (PAK-4, 6, 7, 8).
+- [x] **F3** Create from `OrderConfirmedEvent` / `OrderPaidEvent` behind the inbox, allocate through the contract. *Proof:* `CreateFulfilmentOrderTests` (ALC-1, 2, 5, 8, 11).
+- [x] **F4** Cancel: release before pick, put-back task after. *Proof:* `CancelFulfilmentOrderTests` (ALC-6, 7, PCK-12).
+- [x] **F5** Queue and pick list queries (paged, walking order, constant queries). *Proof:* `PickListQueryTests` (PCK-1, 11, APP-8).
+- [x] **F6** Claim and release the pick. *Proof:* `PickClaimTests` (PCK-9).
+- [x] **F7** Scan bin and GTIN with refusals, over-pick guard, under 300 ms. *Proof:* `PickScanTests` (PCK-2 to 6, 10).
+- [x] **F8** Complete pick: decrement once, event. *Proof:* `CompletePickTests` (PCK-7, 8).
+- [x] **F9** Pick exceptions: raise, hold, resolve, delayed-line event, bin flag. *Proof:* `PickExceptionTests` (PEX-1 to 10).
+- [x] **F10** Pack: open, scan, weight, complete, packed event, idempotent. *Proof:* `PackStationTests` (PAK-1 to 13).
+- [x] **F11** Packing slip from Orders at print time, print through the printer port. *Proof:* `PackingSlipTests` (SLP-1 to 8).
 - [ ] **F12** Endpoints, permissions, authorization matrix rows. *Proof:* `FulfilmentEndpointsTests`, matrix test (APP-1, 2).
 - [ ] **F13** Notifications consumer for `OrderLineDelayedEvent` with a template. *Proof:* `DelayedLineNotificationTests` (PEX-3).
-- [ ] **F14** Scan log purge job. *Proof:* `ScanLogPurgeTests`.
+- [x] **F14** Scan log purge job. *Proof:* `ScanLogPurgeTests`.
 
 ## Admin app
 - [ ] **A1** Pick queue and pick list screens with a focused scan box. *Proof:* component specs (APP-3, 4, 5, 8).

@@ -27,6 +27,8 @@ using Romp.Modules.Customers.Infrastructure.Accounts;
 using Romp.Modules.Customers.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure;
+using Romp.Modules.Fulfilment.Infrastructure;
+using Romp.Modules.Fulfilment.Infrastructure.Persistence;
 using Romp.Modules.Storefront.Infrastructure;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure.Persistence;
@@ -54,7 +56,7 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 
 // Each entry is a Strategy implementing IModule; the host only knows the interface; it never
 // references another module's internals (ADR 0002).
-IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule(), new CustomersModule(), new CartModule(), new OrdersModule(), new NotificationsModule()];
+IModule[] modules = [new ReferenceModule(), new CatalogModule(), new VendorModule(), new ProductionModule(), new QualityModule(), new LabellingModule(), new WarehouseModule(), new StorefrontModule(), new IdentityModule(), new CustomersModule(), new CartModule(), new OrdersModule(), new NotificationsModule(), new FulfilmentModule()];
 
 builder.Services.AddSharedPersistence();
 builder.Services.AddHttpContextCurrentActor();
@@ -78,7 +80,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(Romp.Modules.Customers.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Cart.Application.AssemblyReference).Assembly,
         typeof(Romp.Modules.Orders.Application.AssemblyReference).Assembly,
-        typeof(Romp.Modules.Notifications.Application.AssemblyReference).Assembly);
+        typeof(Romp.Modules.Notifications.Application.AssemblyReference).Assembly,
+        typeof(Romp.Modules.Fulfilment.Application.AssemblyReference).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
@@ -199,7 +202,8 @@ if (app.Environment.IsDevelopment())
         scope.ServiceProvider.GetRequiredService<CustDbContext>().Database.MigrateAsync(),
         scope.ServiceProvider.GetRequiredService<CartDbContext>().Database.MigrateAsync(),
         scope.ServiceProvider.GetRequiredService<OrdrDbContext>().Database.MigrateAsync(),
-        scope.ServiceProvider.GetRequiredService<NtfyDbContext>().Database.MigrateAsync());
+        scope.ServiceProvider.GetRequiredService<NtfyDbContext>().Database.MigrateAsync(),
+        scope.ServiceProvider.GetRequiredService<FulfDbContext>().Database.MigrateAsync());
 
     if (RompAuthorizationExtensions.IsDevelopmentLike(app.Environment))
     {

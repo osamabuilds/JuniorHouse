@@ -35,6 +35,12 @@
     <Project Path="src/Modules/Warehouse/Romp.Modules.Warehouse.Domain/Romp.Modules.Warehouse.Domain.csproj" />
     <Project Path="src/Modules/Warehouse/Romp.Modules.Warehouse.Infrastructure/Romp.Modules.Warehouse.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Fulfilment/">
+    <Project Path="src/Modules/Fulfilment/Romp.Modules.Fulfilment.Application/Romp.Modules.Fulfilment.Application.csproj" />
+    <Project Path="src/Modules/Fulfilment/Romp.Modules.Fulfilment.Contracts/Romp.Modules.Fulfilment.Contracts.csproj" />
+    <Project Path="src/Modules/Fulfilment/Romp.Modules.Fulfilment.Domain/Romp.Modules.Fulfilment.Domain.csproj" />
+    <Project Path="src/Modules/Fulfilment/Romp.Modules.Fulfilment.Infrastructure/Romp.Modules.Fulfilment.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Customers/">
     <Project Path="src/Modules/Customers/Romp.Modules.Customers.Application/Romp.Modules.Customers.Application.csproj" />
     <Project Path="src/Modules/Customers/Romp.Modules.Customers.Contracts/Romp.Modules.Customers.Contracts.csproj" />
@@ -102,6 +108,7 @@
     <Project Path="tests/Romp.Modules.Vendor.Tests/Romp.Modules.Vendor.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Labelling.Tests/Romp.Modules.Labelling.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Warehouse.Tests/Romp.Modules.Warehouse.Tests.csproj" />
+    <Project Path="tests/Romp.Modules.Fulfilment.Tests/Romp.Modules.Fulfilment.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Customers.Tests/Romp.Modules.Customers.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Cart.Tests/Romp.Modules.Cart.Tests.csproj" />
     <Project Path="tests/Romp.Modules.Notifications.Tests/Romp.Modules.Notifications.Tests.csproj" />

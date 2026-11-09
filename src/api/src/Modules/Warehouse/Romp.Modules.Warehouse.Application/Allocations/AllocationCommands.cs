@@ -206,6 +206,19 @@ public sealed class ConfirmPickCommandHandler(IWarehouseDbContext dbContext, ISt
     }
 }
 
+/// <summary>Give up part of a bin claim after a pick exception (PEX-1).</summary>
+public sealed record ShortenClaimCommand(string OrderKey, long VariantId, long BinId, int Quantity) : IRequest<int>, IWarehouseCommand;
+
+public sealed class ShortenClaimCommandHandler(IWarehouseDbContext dbContext) : IRequestHandler<ShortenClaimCommand, int>
+{
+    public async Task<int> Handle(ShortenClaimCommand request, CancellationToken cancellationToken)
+    {
+        var allocation = await dbContext.Allocations.Include(a => a.Lines).FirstOrDefaultAsync(a => a.OrderKey == request.OrderKey, cancellationToken);
+        var refId = await dbContext.VariantRefs.AsNoTracking().Where(v => v.VariantId == request.VariantId).Select(v => (long?)v.Id).FirstOrDefaultAsync(cancellationToken);
+        return allocation is null || refId is null ? 0 : allocation.Shorten(refId.Value, request.BinId, request.Quantity);
+    }
+}
+
 /// <summary>Mark a bin "under review", or clear the mark (PEX-6). Stock is never changed by this.</summary>
 public sealed record SetBinReviewCommand(long BinId, string? ReasonCode) : IRequest<bool>, IWarehouseCommand;
 

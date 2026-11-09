@@ -121,6 +121,29 @@ public sealed class StockAllocation : AggregateRoot<long>, IAuditable
         }
     }
 
+    /// <summary>Gives up units of a claim in one bin; the row goes when nothing is left. Returns how many were given up.</summary>
+    public int Shorten(long variantRefId, long binId, int quantity)
+    {
+        if (!IsActive || quantity <= 0)
+        {
+            return 0;
+        }
+
+        var remaining = quantity;
+        foreach (var line in _lines.Where(l => l.VariantRefId == variantRefId && l.BinId == binId).OrderBy(l => l.GradeId).ToList())
+        {
+            var take = Math.Min(remaining, line.Quantity);
+            line.Add(-take);
+            remaining -= take;
+            if (line.Quantity == 0)
+            {
+                _lines.Remove(line);
+            }
+        }
+
+        return quantity - remaining;
+    }
+
     public int ClaimedFor(long variantRefId) => _lines.Where(l => l.VariantRefId == variantRefId).Sum(l => l.Quantity);
 
     /// <summary>The allocation is given back. A repeat is a no-op; a picked allocation cannot be released.</summary>
