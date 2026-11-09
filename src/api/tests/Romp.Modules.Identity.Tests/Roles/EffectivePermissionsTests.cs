@@ -14,7 +14,7 @@ namespace Romp.Modules.Identity.Tests.Roles;
 [Collection(IdentityPostgresFixtureDefinition.Name)]
 public sealed class EffectivePermissionsTests(IdentityPostgres postgres)
 {
-    private static readonly string[] OrderOpsPermissions = ["ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend", "fulfilment.view", "fulfilment.pick", "fulfilment.pack", "fulfilment.manage"];
+    private static readonly string[] OrderOpsPermissions = ["ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend", "fulfilment.view", "fulfilment.pick", "fulfilment.pack", "fulfilment.manage", "shipping.view", "shipping.ops"];
     private static readonly string[] CataloguePermissions = ["ref.read", "catalog.read", "catalog.write", "warehouse.read"];
 
     private static async Task<long> UserWithAsync(IdentityHost host, params string[] roleCodes)
@@ -84,7 +84,7 @@ public sealed class EffectivePermissionsTests(IdentityPostgres postgres)
         {
             var permissions = await PermissionsAsync(host, await UserWithAsync(host, role));
             string[] expected = role == RoleCodes.Support
-                ? ["catalog.read", "fulfilment.view", "notifications.resend", "notifications.view", "orders.view", "ref.read"]
+                ? ["catalog.read", "fulfilment.view", "notifications.resend", "notifications.view", "orders.view", "ref.read", "shipping.view"]
                 : ["catalog.read", "discounts.manage", "ref.read"];
             Assert.Equal(expected, permissions.Order(StringComparer.Ordinal));
             Assert.DoesNotContain(permissions, c => c.EndsWith(".write", StringComparison.Ordinal));

@@ -24,6 +24,8 @@ public sealed class PlainMessageRenderer : IMessageRenderer
             NotificationKind.OrderConfirmation => ($"Your Romp order {order.OrderNumber}", "Thank you for your order."),
             NotificationKind.OrderCancelled => ($"Your Romp order {order.OrderNumber} was cancelled", "Your order has been cancelled."),
             NotificationKind.CodConfirmationRequest => ($"Please confirm your Romp order {order.OrderNumber}", "Please confirm your cash on delivery order."),
+            NotificationKind.OrderShipped => ($"Your Romp order {order.OrderNumber} is on its way", "The courier has collected your parcel."),
+            NotificationKind.DeliveryAttemptFailed => ($"We could not deliver your Romp order {order.OrderNumber}", "The courier tried to deliver your parcel and could not. Please make sure your phone is on and someone can receive it. The courier will try again; if it fails too often the parcel comes back to us."),
             NotificationKind.OrderDelayed => ($"Part of your Romp order {order.OrderNumber} is delayed", "One item in your order is waiting for stock, so it will ship a little later. We will tell you as soon as it is on its way."),
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
@@ -38,6 +40,11 @@ public sealed class PlainMessageRenderer : IMessageRenderer
         }
 
         text.Append("Total: ").Append(total);
+        var trackLink = kind is NotificationKind.OrderShipped or NotificationKind.DeliveryAttemptFailed && !string.IsNullOrWhiteSpace(order.TrackUrl) ? Clean(order.TrackUrl) : null;
+        if (trackLink is not null)
+        {
+            text.Append("\nTrack your parcel: ").Append(trackLink);
+        }
 
         if (channel == NotificationChannel.WhatsApp)
         {
@@ -53,6 +60,11 @@ public sealed class PlainMessageRenderer : IMessageRenderer
         }
 
         html.Append("</ul><p>Total: ").Append(WebUtility.HtmlEncode(total)).Append("</p>");
+        if (trackLink is not null)
+        {
+            html.Append("<p><a href=\"").Append(WebUtility.HtmlEncode(trackLink)).Append("\">Track your parcel</a></p>");
+        }
+
         return new RenderedMessage(subject, text.ToString(), html.ToString());
     }
 

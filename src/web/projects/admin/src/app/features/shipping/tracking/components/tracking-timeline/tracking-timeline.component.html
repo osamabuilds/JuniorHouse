@@ -1,0 +1,17 @@
+@if (events().length === 0) {
+  <p>The courier has not reported anything yet.</p>
+} @else {
+  <ol class="timeline">
+    @for (event of events(); track event.courierEventId) {
+      <li>
+        <strong>{{ event.statusName }}</strong>
+        @if (isProblem(event.status)) {
+          <span> (needs attention)</span>
+        }
+        <br />
+        <time [attr.datetime]="event.occurredAt">{{ event.occurredAt | date: 'd MMM y, HH:mm' }}</time>
+        <small> · {{ source(event.source) }}</small>
+      </li>
+    }
+  </ol>
+}

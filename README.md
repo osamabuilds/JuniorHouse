@@ -382,3 +382,14 @@ Features follow spec-driven development: spec → plan → tasks → test-first 
 5. Admin, **Pack**: open the picked order, scan every item again, weigh the parcel (a weight that does not fit needs a note), seal it, then open the packing slip (cash to collect is printed large).
 6. The numbers are settings (`Fulfilment:PolyBagMaxGrams`, `PolyBagMaxItems`, `WeightTolerancePercent`, `WeightToleranceGrams`, `GarmentGrams`, `PackagingGrams`). On a phone, "Add to home screen" installs the admin app.
 7. Tests: `dotnet test` in the Linux SDK container (see the notes), `node scripts/security/fulfilment-pentest.mjs`, and `npx playwright test e2e/journeys/pick-pack.e2e.spec.ts` (needs `E2E_OWNER_PASSWORD`).
+
+## Try Sprint 15 (ship and track)
+
+1. Start the stack (`docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build`) and sign in to the admin app (http://localhost:4201) as the Owner.
+2. Place a cash on delivery order in the storefront (http://localhost:4000), confirm it, then pick and pack it as in Sprint 14. Sealing the parcel books it with the fake primary courier and gives it a waybill.
+3. Admin, **Shipments**: open the parcel to see the courier, waybill and timeline. "Open the shipping label" shows the label with the barcode; "Print the label" prints it and the next print is marked a reprint.
+4. Admin, **Booking queue**: when no courier can be reached the parcel waits here with the reason. Try again now, or enter a waybill from a phone call. The parcel stays in the pending-booking area until it has a label.
+5. Admin, **Manifests**: "Make today's manifests", open one, print it, type the number of parcels the courier took. A short count shows a mismatch: tick the parcels that were handed over and close it with a note. Parcels not handed over go on the next manifest.
+6. Tracking: the fake courier posts signed status pushes to `/api/shipping/webhooks/{courier}`. In the storefront, "Track order" shows the timeline under the order status, and http://localhost:4000/track-parcel shows the timeline for a tracking number alone, with no order data.
+7. The numbers are settings (`Shipping:RetryMinutes`, `MaxAttempts`, `PollMinutes`, `ManifestHour`).
+8. Tests: `dotnet test` in the Linux SDK container (see the notes), `npx ng test admin` and `npx ng test storefront`, and `npx playwright test e2e/journeys/ship-track.e2e.spec.ts` (needs `E2E_OWNER_PASSWORD`).

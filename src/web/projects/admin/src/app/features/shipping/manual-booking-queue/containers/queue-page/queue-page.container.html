@@ -1,0 +1,100 @@
+<h1>Booking queue</h1>
+<p class="page-intro">
+  Parcels no courier would take yet. Keep each one in the marked pending-booking area: never ship it without a label. They are tried again by themselves;
+  you can try now, or enter a waybill you got from the courier by phone.
+</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+<div class="card">
+  <div class="form-field form-field--inline">
+    <input id="mq-staff" type="checkbox" [checked]="needsStaffOnly()" (change)="toggleStaffOnly($event)" />
+    <label for="mq-staff">Only parcels that need me</label>
+  </div>
+  <button type="button" class="button button--small" (click)="refresh()">Refresh</button>
+</div>
+
+<section aria-labelledby="mq-heading">
+  <h2 id="mq-heading">{{ total() }} {{ total() === 1 ? 'parcel' : 'parcels' }} waiting</h2>
+  @if (loading() && rows().length === 0) {
+    <p role="status">Loading…</p>
+  } @else {
+    <table class="table">
+      <caption class="sr-only">Parcels waiting for a booking, oldest first</caption>
+      <thead>
+        <tr>
+          <th scope="col">Order</th>
+          <th scope="col">Waiting</th>
+          <th scope="col">Why</th>
+          <th scope="col" class="num">Tries</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.id) {
+          <tr>
+            <th scope="row" data-label="Order"><a [routerLink]="['/dispatch/shipments', row.id]">{{ row.orderNumber }}</a></th>
+            <td data-label="Waiting">{{ wait(row.waitingMinutes) }}</td>
+            <td data-label="Why">
+              {{ words(row) }}
+              @if (row.needsStaff) {
+                <strong> (needs staff)</strong>
+              }
+            </td>
+            <td data-label="Tries" class="num">{{ row.attempts }}</td>
+            <td data-label="Actions">
+              <button type="button" class="button button--small" [disabled]="busyId() === row.id" (click)="retry(row.id)">
+                Try again now<span class="sr-only"> for {{ row.orderNumber }}</span>
+              </button>
+              <button type="button" class="button button--small" (click)="entering.set(row.id)">
+                Enter a waybill<span class="sr-only"> for {{ row.orderNumber }}</span>
+              </button>
+            </td>
+          </tr>
+          @if (entering() === row.id) {
+            <tr>
+              <td colspan="5">
+                <form class="card" (submit)="submitWaybill($event, row.id)" novalidate>
+                  <div class="form-field">
+                    <label [for]="'mq-courier-' + row.id">Courier that gave the waybill</label>
+                    <select [id]="'mq-courier-' + row.id" (change)="type('courier', $event)">
+                      @for (c of couriers; track c.code) {
+                        <option [value]="c.code" [selected]="courier() === c.code">{{ c.name }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label [for]="'mq-waybill-' + row.id">Waybill</label>
+                    <input [id]="'mq-waybill-' + row.id" type="text" maxlength="40" autocomplete="off" [value]="waybill()" (input)="type('waybill', $event)" />
+                  </div>
+                  <div class="form-actions">
+                    <button type="submit" class="button button--primary" [disabled]="busyId() === row.id">Save the waybill</button>
+                    <button type="button" class="button" (click)="entering.set(null)">Cancel</button>
+                  </div>
+                </form>
+              </td>
+            </tr>
+          }
+        } @empty {
+          <tr>
+            <td colspan="5">Nothing is waiting.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>

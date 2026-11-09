@@ -53,6 +53,26 @@ const staffRoutes: Routes = [
     loadChildren: () => import('@features/fulfilment/pick-exceptions/pick-exceptions.routes').then((m) => m.PICK_EXCEPTIONS_ROUTES),
   },
   {
+    path: 'dispatch/shipments',
+    canActivate: [permissionGuard('shipping.view')],
+    loadChildren: () => import('@features/shipping/bookings/bookings.routes').then((m) => m.BOOKINGS_ROUTES),
+  },
+  {
+    path: 'dispatch/queue',
+    canActivate: [permissionGuard('shipping.view')],
+    loadChildren: () => import('@features/shipping/manual-booking-queue/manual-booking-queue.routes').then((m) => m.MANUAL_BOOKING_QUEUE_ROUTES),
+  },
+  {
+    path: 'dispatch/label',
+    canActivate: [permissionGuard('shipping.view')],
+    loadChildren: () => import('@features/shipping/labels/labels.routes').then((m) => m.LABELS_ROUTES),
+  },
+  {
+    path: 'dispatch/manifests',
+    canActivate: [permissionGuard('shipping.view')],
+    loadChildren: () => import('@features/shipping/manifests/manifests.routes').then((m) => m.MANIFESTS_ROUTES),
+  },
+  {
     path: 'shipping',
     canActivate: [permissionGuard('shipping.manage')],
     loadChildren: () => import('@features/cart/totals/shipping.routes').then((m) => m.SHIPPING_ROUTES),

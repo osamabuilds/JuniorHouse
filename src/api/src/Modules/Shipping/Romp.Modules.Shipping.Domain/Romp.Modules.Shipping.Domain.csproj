@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../../../BuildingBlocks/Romp.BuildingBlocks/Romp.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Romp.Modules.Shipping.Contracts/Romp.Modules.Shipping.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

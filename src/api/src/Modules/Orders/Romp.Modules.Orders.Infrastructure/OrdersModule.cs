@@ -51,6 +51,8 @@ public sealed class OrdersModule : IModule
         services.AddScoped<IOrderNotificationQueries, OrderNotificationQueries>();
         services.AddScoped<IOrderContactSummaries, OrderContactSummaries>();
         services.AddScoped<IOrderFulfilmentQueries, OrderFulfilmentQueries>();
+        services.AddScoped<IOrderShippingQueries, OrderShippingQueries>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Shipping.Contracts.ShipmentStatusChangedEvent>, ShipmentStatusOrderConsumer>();
         services.AddScoped<IProductSalesQueries, ProductSalesQueries>();
         services.AddScoped<ICodCustomerResponses, CodCustomerResponses>();
         services.AddHostedService<CodConfirmationWorker>();

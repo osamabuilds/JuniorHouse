@@ -103,7 +103,7 @@ public sealed class MyOrdersTests(OrdersPostgres postgres) : IClassFixture<Order
         var guest = (await PlaceAsAsync(host, null, 1))[0];
         var (db, _) = Counting();
         await using var dbScope = db;
-        var asMine = new GetMyOrderQueryHandler(db, new FakeCustomer { CustomerId = 4201 });
+        var asMine = new GetMyOrderQueryHandler(db, new FakeCustomer { CustomerId = 4201 }, new Support.NoTrackingQueries());
 
         Assert.NotNull(await asMine.Handle(new GetMyOrderQuery(mine), CancellationToken.None));
         Assert.Null(await asMine.Handle(new GetMyOrderQuery(theirs), CancellationToken.None));
@@ -123,7 +123,7 @@ public sealed class MyOrdersTests(OrdersPostgres postgres) : IClassFixture<Order
         await using var dbScope = db;
 
         var list = await new ListMyOrdersQueryHandler(db, new FakeCustomer { CustomerId = null }).Handle(new ListMyOrdersQuery(), CancellationToken.None);
-        var one = await new GetMyOrderQueryHandler(db, new FakeCustomer { CustomerId = null }).Handle(new GetMyOrderQuery("RMP-2026-00001-4"), CancellationToken.None);
+        var one = await new GetMyOrderQueryHandler(db, new FakeCustomer { CustomerId = null }, new Support.NoTrackingQueries()).Handle(new GetMyOrderQuery("RMP-2026-00001-4"), CancellationToken.None);
 
         Assert.Empty(list.Items);
         Assert.Equal(0, list.TotalCount);
@@ -139,7 +139,7 @@ public sealed class MyOrdersTests(OrdersPostgres postgres) : IClassFixture<Order
         var (db, counter) = Counting();
         await using var dbScope = db;
 
-        var order = await new GetMyOrderQueryHandler(db, new FakeCustomer { CustomerId = 4401 }).Handle(new GetMyOrderQuery(number.ToLowerInvariant()), CancellationToken.None);
+        var order = await new GetMyOrderQueryHandler(db, new FakeCustomer { CustomerId = 4401 }, new Support.NoTrackingQueries()).Handle(new GetMyOrderQuery(number.ToLowerInvariant()), CancellationToken.None);
 
         Assert.NotNull(order);
         Assert.Equal((number, 2900m, 250m, 3150m), (order.OrderNumber, order.Subtotal, order.Shipping, order.Total));

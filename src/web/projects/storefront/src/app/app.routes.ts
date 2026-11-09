@@ -63,6 +63,7 @@ export const routes: Routes = [
   { path: 'checkout', data: { shell: 'slim' }, providers: [provideCheckout()], loadComponent: () => import('./features/orders/checkout/containers/checkout-page/checkout-page.container').then((m) => m.CheckoutPageContainer) },
   { path: 'order-placed/:number', data: { shell: 'slim' }, providers: [provideCodConfirm()], loadComponent: () => import('./features/orders/confirmation/containers/order-placed-page/order-placed-page.container').then((m) => m.OrderPlacedPageContainer) },
   { path: 'track-order', providers: [provideOrderLookup()], loadComponent: () => import('./features/orders/order-lookup/containers/track-order-page/track-order-page.container').then((m) => m.TrackOrderPageContainer) },
+  { path: 'track-parcel', loadComponent: () => import('./features/orders/order-lookup/containers/track-parcel-page/track-parcel-page.container').then((m) => m.TrackParcelPageContainer) },
   { path: 'cart', loadComponent: () => import('./features/cart/carts/containers/cart-page/cart-page.container').then((m) => m.CartPageContainer) },
   { path: 'account/sign-in', data: { shell: 'slim' }, canActivate: [signedOutGuard], loadComponent: () => import('./features/customers/sign-in/containers/sign-in-page/sign-in-page.container').then((m) => m.SignInPageContainer) },
   { path: 'account/register', data: { shell: 'slim' }, canActivate: [signedOutGuard], loadComponent: () => import('./features/customers/sign-in/containers/register-page/register-page.container').then((m) => m.RegisterPageContainer) },

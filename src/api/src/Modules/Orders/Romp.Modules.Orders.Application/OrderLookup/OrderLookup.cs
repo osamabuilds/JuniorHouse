@@ -44,7 +44,8 @@ public sealed record TrackedOrderDto(
     decimal Discount,
     decimal Shipping,
     decimal Total,
-    IReadOnlyList<TrackedLine> Lines);
+    IReadOnlyList<TrackedLine> Lines,
+    Romp.Modules.Shipping.Contracts.ShipmentTrackingView? Tracking = null);
 
 public enum LookupStatus
 {
@@ -82,7 +83,7 @@ internal static class TrackedOrders
     public static Task<List<OrderLine>> LinesAsync(IOrdersDbContext dbContext, long orderId, CancellationToken cancellationToken) =>
         dbContext.OrderLines.AsNoTracking().Where(l => l.OrderId == orderId).OrderBy(l => l.Id).ToListAsync(cancellationToken);
 
-    public static TrackedOrderDto Build(Order order, IReadOnlyList<OrderLine> lines) => new TrackedOrderDto(
+    public static TrackedOrderDto Build(Order order, IReadOnlyList<OrderLine> lines, Romp.Modules.Shipping.Contracts.ShipmentTrackingView? tracking = null) => new TrackedOrderDto(
             order.OrderNumber,
             OrderStatuses.CodeOf(order.StatusId),
             OrderStatusNames.NameOf(order.StatusId),
@@ -94,7 +95,8 @@ internal static class TrackedOrders
             order.Discount,
             order.Shipping,
             order.Total,
-            lines.Select(l => new TrackedLine(l.Name, l.Colour, l.Size, l.Quantity, l.LineTotal)).ToList());
+            lines.Select(l => new TrackedLine(l.Name, l.Colour, l.Size, l.Quantity, l.LineTotal)).ToList(),
+            tracking);
 }
 
 /// <summary>
@@ -105,7 +107,7 @@ internal static class TrackedOrders
 public sealed record LookupOrderQuery(string? OrderNumber, string? Mobile, string? CaptchaToken, string? ClientIp) : IRequest<LookupResult>, IOrdersCommand;
 
 public sealed class LookupOrderQueryHandler(
-    IOrdersDbContext dbContext, ICaptchaVerifier captcha, ILookupAddressHasher hasher, TimeProvider clock)
+    IOrdersDbContext dbContext, ICaptchaVerifier captcha, ILookupAddressHasher hasher, TimeProvider clock, Romp.Modules.Shipping.Contracts.IShipmentTrackingQueries tracking)
     : IRequestHandler<LookupOrderQuery, LookupResult>
 {
     // Compared when there is no such order, so the comparison always runs on two real values.
@@ -158,7 +160,7 @@ public sealed class LookupOrderQueryHandler(
         }
 
         dbContext.LookupAttempts.Add(LookupAttempt.Record(address, failed: false, now));
-        return new LookupResult(LookupStatus.Found, TrackedOrders.Build(order, lines));
+        return new LookupResult(LookupStatus.Found, TrackedOrders.Build(order, lines, await tracking.FindByOrderAsync(order.Id, cancellationToken)));
     }
 
     private static byte[] Digest(string value) => SHA256.HashData(Encoding.UTF8.GetBytes(value));
@@ -167,12 +169,12 @@ public sealed class LookupOrderQueryHandler(
 /// <summary>The signed link from the order email (OLK-5): opens the same masked status page with no further input.</summary>
 public sealed record ViewOrderByLinkQuery(string? Token) : IRequest<TrackedOrderDto?>;
 
-public sealed class ViewOrderByLinkQueryHandler(IOrdersDbContext dbContext, ILookupLinks links) : IRequestHandler<ViewOrderByLinkQuery, TrackedOrderDto?>
+public sealed class ViewOrderByLinkQueryHandler(IOrdersDbContext dbContext, ILookupLinks links, Romp.Modules.Shipping.Contracts.IShipmentTrackingQueries tracking) : IRequestHandler<ViewOrderByLinkQuery, TrackedOrderDto?>
 {
     public async Task<TrackedOrderDto?> Handle(ViewOrderByLinkQuery request, CancellationToken cancellationToken)
     {
         var number = links.TryRead(request.Token);
         var order = number is null ? null : await dbContext.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.OrderNumber == number, cancellationToken);
-        return order is null ? null : TrackedOrders.Build(order, await TrackedOrders.LinesAsync(dbContext, order.Id, cancellationToken));
+        return order is null ? null : TrackedOrders.Build(order, await TrackedOrders.LinesAsync(dbContext, order.Id, cancellationToken), await tracking.FindByOrderAsync(order.Id, cancellationToken));
     }
 }

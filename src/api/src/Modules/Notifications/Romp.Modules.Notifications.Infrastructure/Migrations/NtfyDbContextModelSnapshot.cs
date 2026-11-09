@@ -1139,6 +1139,24 @@ namespace Romp.Modules.Notifications.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Order delayed",
                             SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "ORSH",
+                            Description = "The courier collected the parcel; carries the tracking link",
+                            IsActive = true,
+                            Name = "Order shipped",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "DAFL",
+                            Description = "The courier could not deliver; the customer can act before the parcel goes back",
+                            IsActive = true,
+                            Name = "Delivery attempt failed",
+                            SortSeq = (short)6
                         });
                 });
 

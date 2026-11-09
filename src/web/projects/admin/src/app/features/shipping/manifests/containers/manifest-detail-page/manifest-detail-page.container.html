@@ -1,0 +1,85 @@
+<p class="page-intro no-print"><a routerLink="/dispatch/manifests">Back to the manifests</a></p>
+
+@if (error()) {
+  <p class="banner banner--error no-print" role="alert">{{ error()?.message }}</p>
+}
+
+@if (loading() && !detail()) {
+  <p role="status">Loading the manifest…</p>
+} @else if (detail(); as d) {
+  <h1>Manifest for {{ d.summary.courierName }}, {{ d.summary.businessDate | date: 'longDate' }}</h1>
+  <p>
+    <strong>{{ words(d.summary) }}.</strong>
+    @if (d.summary.countedBy) {
+      Counted by {{ d.summary.countedBy }} on {{ d.summary.countedAt | date: 'medium' }}.
+    }
+  </p>
+  @if (d.note) {
+    <p>Note: {{ d.note }}</p>
+  }
+
+  <table class="table">
+    <caption>
+      {{ d.summary.parcelCount }} {{ d.summary.parcelCount === 1 ? 'parcel' : 'parcels' }}, cash to collect {{ d.totalCash | currency: 'PKR' : 'symbol-narrow' : '1.0-0' }}, {{ d.totalWeightGrams }} g
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Order</th>
+        <th scope="col">Waybill</th>
+        <th scope="col" class="num">Cash to collect</th>
+        <th scope="col" class="num">Weight (g)</th>
+        <th scope="col" class="no-print">Handed over</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (line of d.lines; track line.shipmentId) {
+        <tr>
+          <th scope="row" data-label="Order">{{ line.orderNumber }}</th>
+          <td data-label="Waybill">{{ line.waybill }}</td>
+          <td data-label="Cash to collect" class="num">{{ line.cashToCollect | currency: 'PKR' : 'symbol-narrow' : '1.0-0' }}</td>
+          <td data-label="Weight (g)" class="num">{{ line.weightGrams }}</td>
+          <td data-label="Handed over" class="no-print">
+            @if (d.summary.status === 'MISMATCH') {
+              <input type="checkbox" [id]="'mf-ho-' + line.shipmentId" [checked]="line.handedOver" [disabled]="busy()" (change)="toggle(line.shipmentId, $event)" />
+              <label [for]="'mf-ho-' + line.shipmentId"><span class="sr-only">Parcel {{ line.orderNumber }} handed over</span></label>
+            } @else {
+              {{ line.handedOver ? 'Yes' : 'Not marked' }}
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <p>Courier signature: ______________________ Staff signature: ______________________</p>
+
+  <div class="no-print">
+    <div class="form-actions">
+      <button type="button" class="button" (click)="print()">Print the manifest</button>
+    </div>
+
+    @if (d.summary.status === 'OPEN' || d.summary.status === 'MISMATCH') {
+      <form class="card" (submit)="submitCount($event)" novalidate>
+        <div class="form-field">
+          <label for="mf-count">Parcels the courier took</label>
+          <input id="mf-count" type="number" min="0" inputmode="numeric" [value]="counted()" (input)="type('counted', $event)" />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="button button--primary" [disabled]="busy()">Save the count</button>
+        </div>
+      </form>
+    }
+
+    @if (d.summary.status === 'MISMATCH') {
+      <form class="card" (submit)="submitResolve($event)" novalidate>
+        <div class="form-field">
+          <label for="mf-note">Note (what happened)</label>
+          <textarea id="mf-note" rows="3" maxlength="500" [value]="note()" (input)="type('note', $event)"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="button button--primary" [disabled]="busy()">Close the manifest</button>
+        </div>
+      </form>
+    }
+  </div>
+}

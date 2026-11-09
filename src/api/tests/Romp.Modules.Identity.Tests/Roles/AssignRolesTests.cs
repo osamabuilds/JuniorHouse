@@ -172,7 +172,7 @@ public sealed class RoleMatrixQueryTests(IdentityPostgres postgres)
         Assert.True(owner.HasAllPermissions);
         Assert.Equal(Permissions.All.Count, owner.PermissionCodes.Count); // the superset flag, shown as every permission
         var orderOps = Assert.Single(matrix.Roles, r => r.Code == RoleCodes.OrderOps);
-        Assert.Equal(["catalog.read", "fulfilment.manage", "fulfilment.pack", "fulfilment.pick", "fulfilment.view", "inventory.read", "notifications.resend", "notifications.view", "orders.manage", "orders.view", "ref.read", "warehouse.read"], orderOps.PermissionCodes.Order(StringComparer.Ordinal));
+        Assert.Equal(["catalog.read", "fulfilment.manage", "fulfilment.pack", "fulfilment.pick", "fulfilment.view", "inventory.read", "notifications.resend", "notifications.view", "orders.manage", "orders.view", "ref.read", "shipping.ops", "shipping.view", "warehouse.read"], orderOps.PermissionCodes.Order(StringComparer.Ordinal));
         Assert.DoesNotContain(orderOps.PermissionCodes, c => c.EndsWith(".write", StringComparison.Ordinal));
     }
 }

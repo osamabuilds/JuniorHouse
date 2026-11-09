@@ -1,0 +1,17 @@
+<h1 class="no-print">Shipping label</h1>
+<p class="page-intro no-print"><a [routerLink]="['/dispatch/shipments', id()]">Back to the shipment</a></p>
+
+@if (error()) {
+  <p class="banner banner--error no-print" role="alert">{{ error()?.message }}</p>
+}
+
+@if (loading() && !label()) {
+  <p role="status">Loading the label…</p>
+} @else if (label(); as l) {
+  <div class="form-actions no-print">
+    <button type="button" class="button button--primary" (click)="print()">Print the label</button>
+  </div>
+  <app-label-sheet [label]="l" />
+} @else {
+  <p class="no-print">There is no label yet. A parcel is labelled only after a courier has booked it.</p>
+}

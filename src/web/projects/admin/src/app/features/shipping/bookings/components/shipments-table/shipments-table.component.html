@@ -1,0 +1,41 @@
+<table class="table">
+  <caption class="sr-only">Shipments, newest first</caption>
+  <thead>
+    <tr>
+      <th scope="col">Order</th>
+      <th scope="col">Courier</th>
+      <th scope="col">Waybill</th>
+      <th scope="col">Status</th>
+      <th scope="col">Since</th>
+      <th scope="col" class="num">Cash to collect</th>
+      <th scope="col"><span class="sr-only">Open</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.id) {
+      <tr>
+        <th scope="row" data-label="Order">{{ row.orderNumber }}</th>
+        <td data-label="Courier">{{ row.courierName ?? 'Not booked' }}</td>
+        <td data-label="Waybill">{{ row.waybill ?? '-' }}</td>
+        <td data-label="Status">
+          {{ row.statusName }}
+          @if (attention(row)) {
+            <strong> (needs attention)</strong>
+          }
+          @if (row.failedAttempts > 0) {
+            <small> · {{ row.failedAttempts }} failed {{ row.failedAttempts === 1 ? 'attempt' : 'attempts' }}</small>
+          }
+        </td>
+        <td data-label="Since">{{ row.statusAt | date: 'd MMM, HH:mm' }}</td>
+        <td data-label="Cash to collect" class="num">{{ row.cashToCollect > 0 ? (row.cashToCollect | currency: 'PKR ' : 'symbol' : '1.0-0') : 'Paid' }}</td>
+        <td data-label="Open">
+          <button type="button" class="button button--small" (click)="open.emit(row.id)">Open<span class="sr-only"> {{ row.orderNumber }}</span></button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="7">No shipments.</td>
+      </tr>
+    }
+  </tbody>
+</table>

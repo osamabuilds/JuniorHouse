@@ -9,6 +9,7 @@ using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Labelling.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure.Persistence;
 using Romp.Modules.Fulfilment.Infrastructure.Persistence;
+using Romp.Modules.Shipping.Infrastructure.Persistence;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Quality.Infrastructure;
@@ -53,6 +54,7 @@ public sealed partial class NamingConventionTests
             { "ORDR", BuildModel<OrdrDbContext>(options => new OrdrDbContext(options)) },
             { "NTFY", BuildModel<NtfyDbContext>(options => new NtfyDbContext(options)) },
             { "FULF", BuildModel<FulfDbContext>(options => new FulfDbContext(options)) },
+            { "SHPG", BuildModel<ShpgDbContext>(options => new ShpgDbContext(options)) },
         };
 
         return data;

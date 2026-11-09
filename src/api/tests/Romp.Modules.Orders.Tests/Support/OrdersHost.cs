@@ -153,6 +153,8 @@ internal sealed class OrdersHost : IDisposable
         Options = new OrdersOptions();
         services.AddSingleton<IOptions<OrdersOptions>>(Microsoft.Extensions.Options.Options.Create(Options));
         services.AddSingleton<ICodLinks>(new FakeCodLinks());
+        Tracking = new FakeTrackingQueries();
+        services.AddSingleton<Romp.Modules.Shipping.Contracts.IShipmentTrackingQueries>(Tracking);
         services.AddSingleton<IPaymentLinks>(new FakePaymentLinks());
         Options.GatewayProvider = "fake";
         Options.FakeGatewayWebhookSecret = "test-only-fake-gateway-secret-0123456789";
@@ -215,6 +217,8 @@ internal sealed class OrdersHost : IDisposable
     public FakeCustomer Customer { get; }
 
     public FakeSavedAddresses Addresses { get; }
+
+    public FakeTrackingQueries Tracking { get; }
 
     public FixedTime Time { get; }
 

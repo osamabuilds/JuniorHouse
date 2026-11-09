@@ -48,7 +48,7 @@ const addressBook = /^\/customer-api\/addresses(\/[0-9]+(\/default)?)?$/;
 const wishlist = /^\/customer-api\/wishlist(\/(ids|merge|[0-9]+))?$/;
 
 app.all('/customer-api/{*splat}', express.json({ limit: '16kb' }), async (req, res, next) => {
-  if (req.path === '/customer-api/config' || req.path === '/customer-api/newsletter' || req.path.startsWith('/customer-api/newsletter/') || req.path === '/customer-api/notify-me' || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/') || req.path === '/customer-api/orders' || req.path.startsWith('/customer-api/orders/')) {
+  if (req.path === '/customer-api/config' || req.path === '/customer-api/newsletter' || req.path.startsWith('/customer-api/newsletter/') || req.path === '/customer-api/notify-me' || req.path.startsWith('/customer-api/auth/') || req.path === '/customer-api/cart' || req.path.startsWith('/customer-api/cart/') || req.path === '/customer-api/orders' || req.path.startsWith('/customer-api/orders/') || req.path === '/customer-api/shipping/track') {
     next(); // the sign-in routes below
     return;
   }
@@ -316,6 +316,29 @@ app.all('/customer-api/cart{/*splat}', express.json({ limit: '2kb' }), async (re
     if (type) res.setHeader('content-type', type);
     const cookies = upstream.headers.getSetCookie();
     if (cookies.length > 0) res.setHeader('set-cookie', cookies);
+    res.setHeader('cache-control', 'private, no-store');
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(502).json({ title: 'The storefront could not reach the API.' });
+  }
+});
+
+/**
+ * Track a parcel by its tracking number (shipping tracking TRK-9, TRK-10). The browser asks `/customer-api/shipping/track?waybill=...` and the
+ * server forwards to `/api/shipping/track` with the real client address, so the API's rate limit and CAPTCHA rules see the visitor and not this
+ * server. Only this one GET is reachable. Answers are never cached.
+ */
+app.get('/customer-api/shipping/track', async (req, res) => {
+  try {
+    const headers: Record<string, string> = {};
+    const forwardedFor = [req.header('x-forwarded-for'), req.socket.remoteAddress].filter(Boolean).join(', ');
+    if (forwardedFor) headers['x-forwarded-for'] = forwardedFor;
+    const target = new URL('/api/shipping/track', apiBaseUrl);
+    target.search = new URL(req.originalUrl, apiBaseUrl).search;
+    const upstream = await fetch(target, { method: 'GET', headers, redirect: 'manual' });
+    res.status(upstream.status);
+    const type = upstream.headers.get('content-type');
+    if (type) res.setHeader('content-type', type);
     res.setHeader('cache-control', 'private, no-store');
     res.send(Buffer.from(await upstream.arrayBuffer()));
   } catch {

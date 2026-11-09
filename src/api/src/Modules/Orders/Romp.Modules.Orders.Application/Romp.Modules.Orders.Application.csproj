@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\Warehouse\Romp.Modules.Warehouse.Contracts\Romp.Modules.Warehouse.Contracts.csproj" />
     <ProjectReference Include="..\..\Customers\Romp.Modules.Customers.Contracts\Romp.Modules.Customers.Contracts.csproj" />
     <ProjectReference Include="../../Cart/Romp.Modules.Cart.Contracts/Romp.Modules.Cart.Contracts.csproj" />
+    <ProjectReference Include="../../Shipping/Romp.Modules.Shipping.Contracts/Romp.Modules.Shipping.Contracts.csproj" />
     <ProjectReference Include="..\..\Reference\Romp.Modules.Reference.Contracts\Romp.Modules.Reference.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks\Romp.BuildingBlocks.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Application\Romp.BuildingBlocks.Application.csproj" />

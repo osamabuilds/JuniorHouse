@@ -56,6 +56,10 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "DELETE /api/cart/discount",
         "PUT /api/cart/lines/{variantId:long}",
         "DELETE /api/cart/lines/{variantId:long}",
+        "POST /api/shipping/webhooks/{courier}", // the courier status push: no session, the proof is the signature on the raw body, checked before it is read (shipping tracking TRK-2, SEC-10)
+        "GET /api/shipping/track", // public tracking by waybill: statuses only, strict rate limit, CAPTCHA after failures, one generic miss (TRK-9, TRK-10, SEC-06)
+        "POST /dev/shipping/outage", // Development and Testing only: switches a pretend courier down and up (ADR 0031)
+        "POST /dev/shipping/push", // Development and Testing only: makes a pretend courier push a signed status through the real webhook code
         "GET /dev/customer", // Development and Testing only: switches the stand-in customer off and on (ADR 0021)
     ];
 
