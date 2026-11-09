@@ -372,3 +372,13 @@ Features follow spec-driven development: spec → plan → tasks → test-first 
 
 - One branch per Jira issue, e.g. `SCRUM-162-ef-core-wiring`, and a PR into `main`.
 - CI (GitHub Actions) must pass before merging.
+
+## Try Sprint 14 (pick and pack)
+
+1. Start the stack (`docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build`) and sign in to the admin app (http://localhost:4201) as the Owner.
+2. In the storefront (http://localhost:4000) place a cash on delivery order and press "Confirm my order". The order enters the queue with its stock set aside in a bin, oldest putaway first.
+3. Admin, **Pick**: open the order. The scan box has the focus. Type (or scan) the shelf code, then the item barcode (13 digits) and press Enter. A wrong shelf or item is refused in words and nothing is counted. When every unit is scanned, "Complete the pick" turns the reserved stock into a real decrement.
+4. "The shelf does not match" flags a line instead of forcing the pick: the line waits for restock, the customer is told and the bin is marked for review. Staff close it under **Pick exceptions**.
+5. Admin, **Pack**: open the picked order, scan every item again, weigh the parcel (a weight that does not fit needs a note), seal it, then open the packing slip (cash to collect is printed large).
+6. The numbers are settings (`Fulfilment:PolyBagMaxGrams`, `PolyBagMaxItems`, `WeightTolerancePercent`, `WeightToleranceGrams`, `GarmentGrams`, `PackagingGrams`). On a phone, "Add to home screen" installs the admin app.
+7. Tests: `dotnet test` in the Linux SDK container (see the notes), `node scripts/security/fulfilment-pentest.mjs`, and `npx playwright test e2e/journeys/pick-pack.e2e.spec.ts` (needs `E2E_OWNER_PASSWORD`).

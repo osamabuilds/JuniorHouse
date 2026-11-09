@@ -44,3 +44,11 @@ Turning a confirmed or paid order into a packed parcel (Sprint 14, "Pick and pac
 ## Out of scope
 
 Courier booking, the waybill, the shipping label, manifests and tracking (S15). Returns and reverse logistics (S16, S17). Batch picking, zone picking, carton labels (SSCC). Inbound putaway (done in S6).
+
+## As built (Sprint 14)
+
+- **Warehouse** gained `IStockAllocator` (allocate FIFO per bin under variant row locks, release, `ShortenClaimAsync`, `ConfirmPickAsync`, flag and clear a bin under review), tables `STCK_ALOC` and `STCK_ALOC_LINE`, `BIN_MAIN.RVW_RSN`, movement kind `PICK`. Confirming a pick releases the order's whole reservation first and then decrements the picked bins; units of a delayed line are no longer reserved and are re-allocated when staff resolve the exception. Added beyond the plan: `ShortenClaimAsync` and `ClearBinFlagAsync`, needed by exceptions.
+- **Orders** gained `IOrderFulfilmentQueries`; **Storefront** gained `IShopSettingsQueries` (exchange window and support contact for the slip); **Notifications** gained the `OrderDelayed` kind and a consumer of `OrderLineDelayedEvent` (plain-text wording until the business adds a template).
+- **Fulfilment** is the `FULF` module. Events carry ids and codes only and use the order id as the aggregate id. The scan code is classified by shape: 13 digits is an item, anything else a shelf.
+- **Deviations:** no per-category garment weight table (Q-FUL-3): weights are settings, because order lines carry no category. No automatic cycle-count task on an exception (PEX-6): the bin flag and the exception queue are the hand-off. A line with units already picked cannot be dropped. The slip printer port has a logging implementation until a device exists; the browser prints the slip page. Scanner retry (APP-6): only 502/503/504 are retried, because a scan with no answer may have been counted.
+- **Rules:** a domain refusal answers 409. The pack scan is a surplus check by count; the weight catches a unit that was never scanned.
