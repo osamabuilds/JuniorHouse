@@ -84,8 +84,8 @@ public sealed class IdentityLookupSeedTests(IdentityPostgres postgres) : IClassF
 
     [Theory]
     [InlineData("CATALOGUE", new[] { "ref.read", "catalog.read", "catalog.write", "warehouse.read" })]
-    [InlineData("ORDER_OPS", new[] { "ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend" })]
-    [InlineData("SUPPORT", new[] { "ref.read", "catalog.read", "orders.view", "notifications.view", "notifications.resend" })]
+    [InlineData("ORDER_OPS", new[] { "ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend", "fulfilment.view", "fulfilment.pick", "fulfilment.pack", "fulfilment.manage" })]
+    [InlineData("SUPPORT", new[] { "ref.read", "catalog.read", "orders.view", "notifications.view", "notifications.resend", "fulfilment.view" })]
     [InlineData("MARKETING", new[] { "ref.read", "catalog.read", "discounts.manage" })]
     [Trait("Spec", "FR-60")]
     public async Task Role_HoldsExactlyThePermissionsOfTheSpec(string role, string[] expected)

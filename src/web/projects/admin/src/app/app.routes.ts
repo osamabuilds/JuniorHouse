@@ -33,6 +33,26 @@ const staffRoutes: Routes = [
     loadChildren: () => import('@features/notifications/delivery-log/delivery-log.routes').then((m) => m.DELIVERY_LOG_ROUTES),
   },
   {
+    path: 'fulfilment/pick',
+    canActivate: [permissionGuard('fulfilment.pick')],
+    loadChildren: () => import('@features/fulfilment/pick-lists/pick-lists.routes').then((m) => m.PICK_LISTS_ROUTES),
+  },
+  {
+    path: 'fulfilment/pack',
+    canActivate: [permissionGuard('fulfilment.pack')],
+    loadChildren: () => import('@features/fulfilment/pack-station/pack-station.routes').then((m) => m.PACK_STATION_ROUTES),
+  },
+  {
+    path: 'fulfilment/slip',
+    canActivate: [permissionGuard('fulfilment.pack')],
+    loadChildren: () => import('@features/fulfilment/packing-slips/packing-slips.routes').then((m) => m.PACKING_SLIPS_ROUTES),
+  },
+  {
+    path: 'fulfilment/exceptions',
+    canActivate: [permissionGuard('fulfilment.view')],
+    loadChildren: () => import('@features/fulfilment/pick-exceptions/pick-exceptions.routes').then((m) => m.PICK_EXCEPTIONS_ROUTES),
+  },
+  {
     path: 'shipping',
     canActivate: [permissionGuard('shipping.manage')],
     loadChildren: () => import('@features/cart/totals/shipping.routes').then((m) => m.SHIPPING_ROUTES),

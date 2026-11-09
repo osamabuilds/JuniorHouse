@@ -21,5 +21,6 @@ Each feature folder has a `README.md` card (what it is, status, where the code i
 | [cart](cart/README.md) | Basket, discount codes, server-side totals and shipping (Sprint 11; built 2026-11-02, discount hold confirmation waits for Orders) | carts, discount-codes, totals |
 | [orders](orders/README.md) | Checkout, orders, payments, COD confirmation, admin queue, guest look-up (Sprints 12-13; specs approved, plan drafted 2026-11-02) | checkout, orders, payments, cod-confirmation, order-queue, order-lookup, order-line-images |
 | [notifications](notifications/README.md) | Guaranteed email and WhatsApp delivery, fallback, delivery log and resend (Sprint 13; specs approved, plan drafted 2026-11-02; WhatsApp in scope) | delivery, channels, order-confirmation, delivery-log |
+| [fulfilment](fulfilment/README.md) | Allocation, pick lists, pick exceptions, pack station, packing slips, the warehouse app (Sprint 14; specs written, applied by delegation) | allocations, pick-lists, pick-exceptions, pack-station, packing-slips, warehouse-app |
 
-Later sprints add `fulfilment`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).
+Later sprints add `shipping`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).

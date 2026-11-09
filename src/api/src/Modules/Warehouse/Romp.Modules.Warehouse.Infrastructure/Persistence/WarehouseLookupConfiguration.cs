@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Romp.Modules.Warehouse.Domain;
 using Romp.Modules.Warehouse.Domain.Adjustments;
+using Romp.Modules.Warehouse.Domain.Allocations;
 using Romp.Modules.Warehouse.Domain.CycleCounts;
 using Romp.Modules.Warehouse.Domain.Putaway;
 using Romp.Modules.Warehouse.Domain.Reservations;
@@ -23,7 +24,13 @@ internal static class WarehouseLookupConfiguration
 
         Configure<MovementKindLookup>(modelBuilder, "MVMT_KIND_LKP",
             (MovementKinds.Putaway, "PUTAWAY", "Putaway", "Stock shelved by scan"),
-            (MovementKinds.Adjustment, "ADJUSTMENT", "Adjustment", "Reason-coded correction"));
+            (MovementKinds.Adjustment, "ADJUSTMENT", "Adjustment", "Reason-coded correction"),
+            (MovementKinds.Pick, "PICK", "Pick", "Picked for an order: the reservation became a decrement"));
+
+        Configure<AllocationStatusLookup>(modelBuilder, "ALOC_STS_LKP",
+            (AllocationStatuses.Active, "ACTIVE", "Active", "Units are set aside in bins for the order"),
+            (AllocationStatuses.Picked, "PICKED", "Picked", "The pick was confirmed and the ledger decremented"),
+            (AllocationStatuses.Released, "RELEASED", "Released", "Given back: the order was cancelled"));
 
         Configure<PutawayStatusLookup>(modelBuilder, "PUT_STS_LKP",
             (PutawayStatuses.AwaitingGtin, "AWAITING_GTIN", "Awaiting GTIN", "Accepted by QC; Labelling has not assigned the barcode yet"),

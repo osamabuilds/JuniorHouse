@@ -1,0 +1,26 @@
+<h1 class="no-print">Packing slip</h1>
+<p class="page-intro no-print"><a routerLink="/fulfilment/pack">Back to the pack queue</a></p>
+
+@if (error()) {
+  <p class="banner banner--error no-print" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success no-print" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (loading() && !slip()) {
+  <p role="status">Loading the slip…</p>
+} @else if (slip(); as s) {
+  <div class="form-actions no-print">
+    <button type="button" class="button button--primary" [disabled]="printing()" (click)="sendToPrinter()">Send to the printer</button>
+    <button type="button" class="button" (click)="printPage()">Print this page</button>
+  </div>
+  @if (s.printPending) {
+    <p class="banner banner--error no-print" role="status">The printer did not answer last time. The slip will print by itself when it is back.</p>
+  }
+  <app-slip-document [slip]="s" />
+} @else {
+  <p>The slip is available once the order is at the pack station.</p>
+}

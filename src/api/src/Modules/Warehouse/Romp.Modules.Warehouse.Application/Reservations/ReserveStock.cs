@@ -14,6 +14,7 @@ public static class ReservationReasons
     public const string Reserved = "RESERVED";
     public const string Released = "RELEASED";
     public const string Expired = "RESERVATION_EXPIRED";
+    public const string Picked = "PICKED";
 }
 
 /// <summary>Reserve stock for one order, all lines or none, idempotent on the placement key (RSV-1 to RSV-4).</summary>

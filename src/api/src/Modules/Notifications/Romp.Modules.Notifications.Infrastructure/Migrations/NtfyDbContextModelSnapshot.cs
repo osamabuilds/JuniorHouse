@@ -1130,6 +1130,15 @@ namespace Romp.Modules.Notifications.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Cash on delivery confirmation request",
                             SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "ORDL",
+                            Description = "A line of the order is waiting for stock; the customer is told it will ship later",
+                            IsActive = true,
+                            Name = "Order delayed",
+                            SortSeq = (short)4
                         });
                 });
 

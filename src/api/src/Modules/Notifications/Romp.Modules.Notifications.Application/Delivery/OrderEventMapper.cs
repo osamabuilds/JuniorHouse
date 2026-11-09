@@ -25,6 +25,9 @@ public static class OrderEventMapper
     public static NotificationIntent Map(OrderCancelledEvent cancelled) =>
         new(NotificationKind.OrderCancelled, cancelled.OrderId, cancelled.EventId);
 
+    public static NotificationIntent Map(Romp.Modules.Fulfilment.Contracts.OrderLineDelayedEvent delayed) =>
+        new(NotificationKind.OrderDelayed, delayed.OrderId, delayed.EventId);
+
     public static NotificationIntent Map(CodConfirmationRequestedEvent requested) =>
         new(NotificationKind.CodConfirmationRequest, requested.OrderId, requested.EventId);
 }

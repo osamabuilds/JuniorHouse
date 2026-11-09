@@ -61,6 +61,10 @@ public static class Permissions
     public static readonly PermissionCode ShippingManage = new("shipping.manage");
     public static readonly PermissionCode NotificationsView = new("notifications.view");
     public static readonly PermissionCode NotificationsResend = new("notifications.resend");
+    public static readonly PermissionCode FulfilmentView = new("fulfilment.view");
+    public static readonly PermissionCode FulfilmentPick = new("fulfilment.pick");
+    public static readonly PermissionCode FulfilmentPack = new("fulfilment.pack");
+    public static readonly PermissionCode FulfilmentManage = new("fulfilment.manage");
 
     /// <summary>Every declared code, for the seed test (<c>PERM_LKP</c> must hold exactly these) and the authorization matrix.</summary>
     public static IReadOnlyList<PermissionCode> All { get; } =

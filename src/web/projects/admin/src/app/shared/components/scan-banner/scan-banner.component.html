@@ -1,0 +1,7 @@
+<p class="scan-banner" [class.scan-banner--ok]="accepted()" [class.scan-banner--refused]="!accepted()" role="status" aria-live="polite" aria-atomic="true">
+  <span class="scan-banner__icon" aria-hidden="true">{{ accepted() ? '✔' : '✖' }}</span>
+  <span class="scan-banner__text">
+    <strong class="scan-banner__verdict">{{ accepted() ? 'Accepted' : 'Refused' }}</strong>
+    <span class="scan-banner__message">{{ message() }}</span>
+  </span>
+</p>

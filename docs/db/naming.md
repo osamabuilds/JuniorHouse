@@ -91,6 +91,7 @@ Note: there is no `_AT` suffix in this convention — every timestamp column, au
 | Logistics | `LOGS` |
 | Returns | `RTRN` |
 | Notifications | `NTFY` |
+| Fulfilment | `FULF` |
 | Outbox (per module) | the module's own schema, table `OUTB_MSG` |
 | Inbox (per module, once a module registers a handler with a DB effect) | the module's own schema, table `INBX`, composite PK (`MSG_ID`, `HNDL_NAME`) |
 
@@ -454,3 +455,18 @@ Reused as they are: `PAYM` (payment), `ATMP`, `WBHK`, `ORDR`, `STS`, `LKP`, `RSN
 |---|---|---|---|---|
 | review | RVW | | paid | PAID |
 | verified | VRFD | | url (address of a page) | URL |
+
+### Added in Sprint 14 (SCRUM-100, fulfilment: allocations, pick, pack)
+
+Reused as they are: `ORDR`, `LINE`, `QTY`, `BIN`, `SKU`, `GTIN`, `SCAN`, `STS`, `LKP`, `RSN`, `OTCM`, `CLM`, `WGHT`, `EXPC`, `NOTE`, `KIND`, `SIZE`, `UNIT`, `PRIC`, `COD`, `AMT`, `RVW` (review), `SYS` (system), `PLCE`, `KEY`, `BY`, `DTE`, `IND`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| allocation | ALOC | | pick | PICK |
+| deviation | DVTN | | queued | QUED |
+| exception | EXCP | | resolved | RSLV |
+| found | FND | | stage | STG |
+| fulfilment | FULF | | walk (walking order) | WALK |
+| gram | GRM | | pack | PACK |
+| slip (packing slip) | SLIP | | put-back | PTBK |
+| raised | RAIS | | restocked | RSTK |

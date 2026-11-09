@@ -1,0 +1,37 @@
+<table class="table">
+  <caption class="sr-only">Pick list in walking order</caption>
+  <thead>
+    <tr>
+      <th scope="col">Shelf</th>
+      <th scope="col">Item</th>
+      <th scope="col">Size</th>
+      <th scope="col">Colour</th>
+      <th scope="col" class="num">Picked</th>
+      <th scope="col">State</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.lineId + '-' + row.binCode) {
+      <tr [class.is-current]="row.binCode !== '' && row.binCode === currentBin()">
+        <th scope="row" data-label="Shelf">{{ row.binCode || 'No shelf' }}</th>
+        <td data-label="Item">{{ row.name }} <small>{{ row.sku }}</small></td>
+        <td data-label="Size">{{ row.size }}</td>
+        <td data-label="Colour">{{ row.colour }}</td>
+        <td data-label="Picked" class="num">{{ row.picked }} of {{ row.quantity }}</td>
+        <td data-label="State">
+          @if (isWaiting(row)) {
+            <strong>Waiting for restock</strong>
+          } @else if (isDone(row)) {
+            Done
+          } @else {
+            To pick
+          }
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="6">This order has nothing to pick.</td>
+      </tr>
+    }
+  </tbody>
+</table>

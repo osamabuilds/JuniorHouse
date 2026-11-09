@@ -814,3 +814,12 @@ app-revision-history {
 .card + .card, .card + .detail-grid, .detail-grid + .card, .card + section, section + section { margin-top: var(--space-4); }
 .table th.num, .table td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .table tbody th a { white-space: nowrap; }
+
+/* The packing slip prints on its own (fulfilment packing-slips SLP-8): the shell, the buttons and the notices stay off the paper. */
+@media print {
+  .shell-header,
+  .shell-nav,
+  .no-print {
+    display: none !important;
+  }
+}

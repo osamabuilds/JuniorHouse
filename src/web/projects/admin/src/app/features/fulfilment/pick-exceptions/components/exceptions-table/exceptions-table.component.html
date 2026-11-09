@@ -1,0 +1,56 @@
+<table class="table">
+  <caption class="sr-only">Pick exceptions, oldest first</caption>
+  <thead>
+    <tr>
+      <th scope="col">Order</th>
+      <th scope="col">SKU</th>
+      <th scope="col">Bin</th>
+      <th scope="col">Reason</th>
+      <th scope="col">System count</th>
+      <th scope="col">Found</th>
+      <th scope="col">Picker</th>
+      <th scope="col">Raised</th>
+      <th scope="col">Status</th>
+      @if (canResolve()) {
+        <th scope="col">Resolve</th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.id) {
+      <tr>
+        <th scope="row" data-label="Order">{{ row.orderNumber }}</th>
+        <td data-label="SKU">{{ row.sku ?? '-' }}</td>
+        <td data-label="Bin">{{ row.binCode }}</td>
+        <td data-label="Reason">{{ reason(row.reason) }}</td>
+        <td data-label="System count">{{ row.systemCount }}</td>
+        <td data-label="Found">{{ row.foundCount }}</td>
+        <td data-label="Picker">{{ row.raisedBy }}</td>
+        <td data-label="Raised">{{ row.raisedAt | date: 'd MMM, HH:mm' }}</td>
+        <td data-label="Status">
+          @if (row.status === 'OPEN') {
+            <strong>Open</strong>
+          } @else {
+            Resolved by {{ row.resolvedBy }}
+          }
+        </td>
+        @if (canResolve()) {
+          <td data-label="Resolve">
+            @if (row.status === 'OPEN') {
+              <button type="button" class="button button--small" [disabled]="resolvingId() === row.id" (click)="resolve.emit({ id: row.id, action: 'restocked' })">
+                Stock is back
+              </button>
+              <button type="button" class="button button--small" [disabled]="resolvingId() === row.id" (click)="resolve.emit({ id: row.id, action: 'cancel-line' })">
+                Drop the line
+              </button>
+            }
+          </td>
+        }
+      </tr>
+    } @empty {
+      <tr>
+        <td [attr.colspan]="canResolve() ? 10 : 9">No exceptions.</td>
+      </tr>
+    }
+  </tbody>
+</table>

@@ -105,6 +105,7 @@ public sealed class NotificationsModule : IModule
         services.AddScoped<IOutboxMessageHandler<OrderPaidEvent>, OrderPaidNotificationConsumer>();
         services.AddScoped<IOutboxMessageHandler<OrderCancelledEvent>, OrderCancelledNotificationConsumer>();
         services.AddScoped<IOutboxMessageHandler<CodConfirmationRequestedEvent>, CodConfirmationRequestedNotificationConsumer>();
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Fulfilment.Contracts.OrderLineDelayedEvent>, OrderLineDelayedNotificationConsumer>();
         services.TryAdd(ServiceDescriptor.Scoped(typeof(IOutboxMessageHandler<>), typeof(LoggingOutboxMessageHandler<>)));
     }
 

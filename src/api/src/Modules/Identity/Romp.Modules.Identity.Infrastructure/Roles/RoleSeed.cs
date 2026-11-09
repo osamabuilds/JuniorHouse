@@ -57,6 +57,10 @@ internal static class RoleSeed
         new(23, "shipping.manage", "Manage shipping rates", "Set the shipping fee per city, the default fee and the free-shipping threshold"),
         new(24, "notifications.view", "View notifications", "Read the delivery log and dead letters"),
         new(25, "notifications.resend", "Resend notifications", "Resend a notification from the delivery log"),
+        new(26, "fulfilment.view", "View fulfilment", "Read the pick queue, pick lists, the exception queue and packing slips"),
+        new(27, "fulfilment.pick", "Pick orders", "Take a pick, scan bins and units, flag a pick exception and complete the pick"),
+        new(28, "fulfilment.pack", "Pack orders", "Open an order at the pack station, scan, weigh, complete the pack and print the slip"),
+        new(29, "fulfilment.manage", "Manage fulfilment", "Resolve pick exceptions and take over a pick held by someone else"),
     ];
 
     /// <summary>Owner has no rows: the <c>ALL_PERM_IND</c> flag grants everything.</summary>
@@ -70,8 +74,8 @@ internal static class RoleSeed
         void Grant(short role, params string[] codes) => rows.AddRange(codes.Select(c => new MappingRow(role, id[c])));
 
         Grant(Catalogue, "ref.read", "catalog.read", "catalog.write", "warehouse.read");
-        Grant(OrderOps, "ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend");
-        Grant(Support, "ref.read", "catalog.read", "orders.view", "notifications.view", "notifications.resend");
+        Grant(OrderOps, "ref.read", "catalog.read", "warehouse.read", "inventory.read", "orders.view", "orders.manage", "notifications.view", "notifications.resend", "fulfilment.view", "fulfilment.pick", "fulfilment.pack", "fulfilment.manage");
+        Grant(Support, "ref.read", "catalog.read", "orders.view", "notifications.view", "notifications.resend", "fulfilment.view");
         Grant(Marketing, "ref.read", "catalog.read", "discounts.manage");
 
         return rows;

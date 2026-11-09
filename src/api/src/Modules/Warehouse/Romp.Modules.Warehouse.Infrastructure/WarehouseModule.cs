@@ -61,6 +61,8 @@ public sealed class WarehouseModule : IModule
         services.AddScoped<Romp.Modules.Warehouse.Application.Reservations.IReservationLedger, Romp.Modules.Warehouse.Infrastructure.Reservations.ReservationLedger>();
         services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockReservations, Romp.Modules.Warehouse.Infrastructure.Reservations.StockReservations>();
         services.AddHostedService<Romp.Modules.Warehouse.Infrastructure.Reservations.ReservationSweeper>();
+        services.AddScoped<Romp.Modules.Warehouse.Application.Allocations.IAllocationCandidates, Romp.Modules.Warehouse.Infrastructure.Allocations.AllocationCandidates>();
+        services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockAllocator, Romp.Modules.Warehouse.Infrastructure.Allocations.StockAllocator>();
         services.AddScoped<IAdjustmentPoster, AdjustmentPoster>();
         services.AddScoped<ICountNumberAllocator, CountNumberAllocator>();
         services.AddScoped<AlertEvaluator>();
@@ -84,6 +86,9 @@ public sealed class WarehouseModule : IModule
         // Orders' events keep stock holds in step with orders: confirm on placement, release on cancellation (ADR 0025).
         services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderPlacedEvent>, Reservations.OrderPlacedReservationConsumer>();
         services.AddScoped<IOutboxMessageHandler<Romp.Modules.Orders.Contracts.OrderCancelledEvent>, Reservations.OrderCancelledReservationConsumer>();
+
+        // A pick exception flags its bin so nothing more is allocated from it until it is counted (PEX-6, ADR 0030).
+        services.AddScoped<IOutboxMessageHandler<Romp.Modules.Fulfilment.Contracts.PickExceptionRaisedEvent>, Allocations.PickExceptionBinFlagConsumer>();
 
         // Putaway: QC's accepted batches become items waiting to be shelved (FR-SC-08).
         services.AddScoped<IPoStyleLookup, ContractsPoStyleLookup>();

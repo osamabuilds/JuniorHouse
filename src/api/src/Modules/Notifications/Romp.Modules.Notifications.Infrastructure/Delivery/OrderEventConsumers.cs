@@ -44,6 +44,13 @@ internal sealed class OrderCancelledNotificationConsumer(NtfyDbContext dbContext
         OrderEventIntake.RunAsync(OrderEventMapper.Map(domainEvent), "NotifyOnOrderCancelled", dbContext, guard, create, cancellationToken);
 }
 
+/// <summary>A line of an order is waiting for restock (a pick exception or a shortage at allocation): tell the customer (PEX-3, Q-FUL-5).</summary>
+internal sealed class OrderLineDelayedNotificationConsumer(NtfyDbContext dbContext, InboxGuard guard, CreateNotification create) : IOutboxMessageHandler<Romp.Modules.Fulfilment.Contracts.OrderLineDelayedEvent>
+{
+    public Task HandleAsync(Romp.Modules.Fulfilment.Contracts.OrderLineDelayedEvent domainEvent, CancellationToken cancellationToken) =>
+        OrderEventIntake.RunAsync(OrderEventMapper.Map(domainEvent), "NotifyOnOrderLineDelayed", dbContext, guard, create, cancellationToken);
+}
+
 internal sealed class CodConfirmationRequestedNotificationConsumer(NtfyDbContext dbContext, InboxGuard guard, CreateNotification create) : IOutboxMessageHandler<CodConfirmationRequestedEvent>
 {
     public Task HandleAsync(CodConfirmationRequestedEvent domainEvent, CancellationToken cancellationToken) =>

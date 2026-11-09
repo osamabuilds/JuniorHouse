@@ -50,6 +50,7 @@ public sealed class OrdersModule : IModule
         services.AddScoped<Application.OrderLookup.ILookupAddressHasher, OrderLookup.LookupAddressHasher>();
         services.AddScoped<IOrderNotificationQueries, OrderNotificationQueries>();
         services.AddScoped<IOrderContactSummaries, OrderContactSummaries>();
+        services.AddScoped<IOrderFulfilmentQueries, OrderFulfilmentQueries>();
         services.AddScoped<IProductSalesQueries, ProductSalesQueries>();
         services.AddScoped<ICodCustomerResponses, CodCustomerResponses>();
         services.AddHostedService<CodConfirmationWorker>();

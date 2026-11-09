@@ -115,3 +115,26 @@ public sealed class PublishedPageSitemapSource(IStorefrontDbContext db, IPublish
             .Select(p => new Contracts.PublishedPageRef(p.Key, JsonNode.Parse(p.Value)!["title"]!.GetValue<string>(), document.PublishedAt))];
     }
 }
+
+/// <summary>The shop details a packing slip prints (SLP-4), from the current published settings through the Storefront contract.</summary>
+public sealed class PublishedShopSettingsSource(IStorefrontDbContext db, IPublishedDocumentCache cache) : Contracts.IShopSettingsQueries
+{
+    public async Task<Contracts.ShopSlipSettings?> GetAsync(CancellationToken cancellationToken)
+    {
+        var document = await PublishedDocumentLoader.GetAsync(db, cache, cancellationToken);
+        if (document is null)
+        {
+            return null;
+        }
+
+        var root = JsonNode.Parse(document.SettingsJson)!;
+        var brand = root["brand"];
+        static string? Text(JsonNode? node) => node?.GetValue<string>() is { Length: > 0 } value ? value : null;
+        return new Contracts.ShopSlipSettings(
+            Text(brand?["name"]) ?? "Romp",
+            Text(brand?["whatsapp"]),
+            Text(brand?["email"]),
+            Text(brand?["hours"]),
+            root["exchange"]?["windowDays"]?.GetValue<int>() ?? 0);
+    }
+}

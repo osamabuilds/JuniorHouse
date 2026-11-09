@@ -1,0 +1,64 @@
+@if (list(); as l) {
+  <h1>Pick order {{ l.orderNumber }}</h1>
+  <p class="page-intro"><a routerLink="/fulfilment/pick">Back to the pick queue</a></p>
+} @else {
+  <h1>Pick order</h1>
+  <p class="page-intro"><a routerLink="/fulfilment/pick">Back to the pick queue</a></p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (heldBy()) {
+  <p class="banner banner--error" role="alert">You cannot pick this order. {{ heldBy() }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (loading() && !list()) {
+  <p role="status">Loading the pick list…</p>
+} @else if (list(); as l) {
+  @if (l.putBackRequired) {
+    <p class="banner banner--error" role="alert">This order was cancelled. Put the items you scanned back on the shelf.</p>
+  }
+
+  <section class="card" aria-labelledby="ps-scan">
+    <h2 id="ps-scan">Scan</h2>
+    @if (canScan()) {
+      <app-scan-box
+        inputId="ps-scan-input"
+        label="Scan a shelf or an item"
+        [hint]="l.nextBin ? 'Next shelf: ' + l.nextBin : null"
+        [busy]="busy()"
+        (scanned)="scan($event)"
+      />
+    } @else {
+      <p>Scanning is off for this order.</p>
+    }
+    @if (lastScan(); as s) {
+      <app-scan-banner [accepted]="s.accepted" [message]="s.message" />
+      <p>{{ s.pickedUnits }} of {{ s.totalUnits }} items picked.</p>
+    }
+  </section>
+
+  <section aria-labelledby="ps-list">
+    <h2 id="ps-list">Pick list</h2>
+    <app-pick-rows [rows]="l.rows" [currentBin]="l.currentBin" />
+  </section>
+
+  @if (canScan()) {
+    <div class="form-actions">
+      <button type="button" class="button button--primary" [disabled]="!l.readyToComplete || busy()" (click)="complete()">Complete the pick</button>
+      <button type="button" class="button" [disabled]="busy() || flaggable().length === 0" (click)="flagging.set(true)">The shelf does not match</button>
+      <button type="button" class="button" [disabled]="busy()" (click)="release()">Let go of this order</button>
+    </div>
+    @if (flagging() && flaggable().length > 0) {
+      <app-raise-exception-form [lines]="flaggable()" [busy]="busy()" (raised)="flag($event)" (cancelled)="flagging.set(false)" />
+    }
+  }
+} @else {
+  <p>This pick list could not be shown.</p>
+}

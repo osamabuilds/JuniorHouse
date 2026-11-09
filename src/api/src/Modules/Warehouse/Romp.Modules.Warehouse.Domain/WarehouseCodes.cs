@@ -26,13 +26,15 @@ public static class MovementKinds
 {
     public const short Putaway = 1;
     public const short Adjustment = 2;
+    public const short Pick = 3;
 
-    public static bool IsKnown(short id) => id is Putaway or Adjustment;
+    public static bool IsKnown(short id) => id is Putaway or Adjustment or Pick;
 
     public static string CodeOf(short id) => id switch
     {
         Putaway => "PUTAWAY",
         Adjustment => "ADJUSTMENT",
+        Pick => "PICK",
         _ => throw new DomainException($"Unknown movement kind {id}."),
     };
 }

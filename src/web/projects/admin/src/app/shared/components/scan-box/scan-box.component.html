@@ -1,0 +1,24 @@
+<form class="scan-box" (submit)="submit($event)" novalidate>
+  <label [for]="inputId()">{{ label() }}</label>
+  <div class="scan-box__row">
+    <input
+      #field
+      [id]="inputId()"
+      type="text"
+      autocomplete="off"
+      autocapitalize="characters"
+      spellcheck="false"
+      enterkeyhint="go"
+      maxlength="40"
+      [readOnly]="busy()"
+      [attr.aria-busy]="busy()"
+      [attr.aria-describedby]="hint() ? inputId() + '-hint' : null"
+      [value]="value()"
+      (input)="type($event)"
+    />
+    <button type="submit" class="button button--primary" [disabled]="busy()">Scan</button>
+  </div>
+  @if (hint()) {
+    <small class="field-hint" [id]="inputId() + '-hint'">{{ hint() }}</small>
+  }
+</form>

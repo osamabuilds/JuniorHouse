@@ -1,0 +1,26 @@
+<h1>Pick queue</h1>
+<p class="page-intro">Orders that are confirmed and have stock set aside, oldest first. Open one to pick it: you scan each shelf and each item as you go.</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<div class="card">
+  <button type="button" class="button" (click)="refresh()">Refresh the queue</button>
+</div>
+
+<section aria-labelledby="pq-heading">
+  <h2 id="pq-heading">{{ total() }} {{ total() === 1 ? 'order' : 'orders' }} waiting</h2>
+  @if (loading() && rows().length === 0) {
+    <p role="status">Loading…</p>
+  } @else {
+    <app-queue-table [rows]="rows()" [me]="me()" actionLabel="Pick" (open)="open($event)" />
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>
