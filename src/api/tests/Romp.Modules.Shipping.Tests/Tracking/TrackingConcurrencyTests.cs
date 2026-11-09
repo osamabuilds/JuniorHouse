@@ -56,7 +56,8 @@ public sealed class TrackingConcurrencyTests(ShippingPostgres postgres)
 
         Assert.Equal(1, results.Count(r => r));
         await using var db = postgres.NewContext();
-        Assert.Equal(1, await db.Shipments.CountAsync(s => s.Waybill == waybill.ToUpperInvariant()));
+        var stored = waybill.ToUpperInvariant();
+        Assert.Equal(1, await db.Shipments.CountAsync(s => s.Waybill == stored));
     }
 
     [Fact]

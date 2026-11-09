@@ -23,16 +23,16 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 - [x] **N1** Notifications: shipped and delivery-attempt-failed kinds and consumers. *Proof:* `ShipmentNoticeTests` (TRK-7, OHS-7).
 
 ## Admin app
-- [ ] **A1** Shipments list and detail with the timeline. *Proof:* component and reducer specs (TRK-13).
-- [ ] **A2** Manual booking queue. *Proof:* specs (MBQ-1, 3, 4, 6).
-- [ ] **A3** Label page. *Proof:* spec (LBL-1, 3, 4, 6).
-- [ ] **A4** Manifests list, detail, count. *Proof:* specs (MNF-5, 6, 8).
-- [ ] **A5** Customer tracking block on the storefront order screens and the track-by-number page. *Proof:* storefront specs (OHS-1, 3, TRK-9).
+- [x] **A1** Shipments list and detail with the timeline. *Proof:* component and reducer specs (TRK-13).
+- [x] **A2** Manual booking queue. *Proof:* specs (MBQ-1, 3, 4, 6).
+- [x] **A3** Label page. *Proof:* spec (LBL-1, 3, 4, 6).
+- [x] **A4** Manifests list, detail, count. *Proof:* specs (MNF-5, 6, 8).
+- [x] **A5** Customer tracking block on the storefront order screens and the track-by-number page. *Proof:* storefront specs (OHS-1, 3, TRK-9).
 - [ ] **A6** Playwright journey: packed order to delivered, with an outage fallback. *Proof:* `e2e/journeys/ship-track.e2e.spec.ts`.
 
 ## Tests beyond unit and integration
 - [x] **T1** Security and concurrency: webhook forgery and replay, concurrent pushes, double booking. *Proof:* `ShippingSecurityTests`, `ShippingConcurrencyTests`.
-- [ ] **T2** Pen test script. *Proof:* `scripts/security/shipping-pentest.mjs`.
+- [ ] **T2** Pen test script. *Proof:* `scripts/security/shipping-pentest.mjs`. *Deferred by the owner (2026-11-10): the pen test and vulnerability tests run once on the whole system.*
 
 ## Close-out
 - [ ] **Z1** Architecture tests green; build with 0 warnings; tests green; spec "As built"; README "Try Sprint 15"; docker rebuilt; memory note.
