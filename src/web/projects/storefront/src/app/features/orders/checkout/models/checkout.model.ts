@@ -42,6 +42,8 @@ export interface CheckoutSummary {
   readonly problems: readonly string[];
   readonly paymentMethods: readonly PaymentMethod[];
   readonly savedAddresses: readonly SavedAddress[];
+  /** True when online payment is switched on but the gateway is unwell: the page says only Cash on Delivery is available for now (PAY-7). */
+  readonly onlinePaymentsPaused?: boolean;
 }
 
 export interface Province {
@@ -97,7 +99,14 @@ export type FieldErrors = Readonly<Record<string, string>>;
 
 /** Every way placing an order can end, so a page never has to catch anything. */
 export type PlaceResult =
-  | { readonly status: 'placed'; readonly orderNumber: string; readonly wasRepeat: boolean; readonly confirmToken: string | null }
+  | {
+      readonly status: 'placed';
+      readonly orderNumber: string;
+      readonly wasRepeat: boolean;
+      readonly confirmToken: string | null;
+      /** Set for an online order only: lets this shopper open and follow the payment of this one order (PAY-3). */
+      readonly payToken: string | null;
+    }
   | { readonly status: 'refused'; readonly reason: string; readonly messages: readonly string[]; readonly shortVariantIds: readonly number[] }
   | { readonly status: 'invalid'; readonly errors: FieldErrors; readonly message: string | null }
   | { readonly status: 'error' };

@@ -19,6 +19,14 @@ services:
       Site__AdminBaseUrl: http://localhost:4201
       # Signs the confirm links of cash on delivery orders (orders D5). A local demo value only: real deployments set a secret.
       Orders__LinkSigningKey: local-demo-orders-link-signing-key-0123456789
+      # Online payment against the pretend gateway (orders payments Y1-Y9): a demo page that pays, declines, or pays but loses the callback.
+      # Only allowed in Development: the host refuses to start with it anywhere else (PAY-15). Real deployments leave the provider empty
+      # (Cash on Delivery only) until a real gateway is configured.
+      Orders__GatewayProvider: fake
+      Orders__FakeGatewayWebhookSecret: local-demo-fake-gateway-secret-0123456789
+      Orders__EnabledOnlineMethods__0: CARD
+      Orders__EnabledOnlineMethods__1: EASY
+      Orders__EnabledOnlineMethods__2: JAZZ
       Email__Smtp__Host: mailpit
       Email__Smtp__Port: "1025"
       Email__Smtp__FromAddress: no-reply@romp.local

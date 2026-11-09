@@ -8,6 +8,7 @@ using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Cart.Contracts;
 using Romp.Modules.Customers.Contracts;
 using Romp.Modules.Orders.Application.Abstractions;
+using Romp.Modules.Orders.Application.Payments;
 using Romp.Modules.Orders.Domain.Orders;
 using Romp.Modules.Reference.Contracts;
 using Romp.Modules.Warehouse.Contracts;
@@ -62,9 +63,10 @@ public sealed record PlaceOrderResult(
     PlaceOrderRefusal Refusal,
     IReadOnlyList<string> Messages,
     IReadOnlyList<long> ShortVariantIds,
-    string? ConfirmToken = null)
+    string? ConfirmToken = null,
+    string? PayToken = null)
 {
-    public static PlaceOrderResult Placed(long id, string number, bool repeat, string? confirmToken = null) => new(PlaceOrderOutcome.Placed, id, number, repeat, PlaceOrderRefusal.None, [], [], confirmToken);
+    public static PlaceOrderResult Placed(long id, string number, bool repeat, string? confirmToken = null, string? payToken = null) => new(PlaceOrderOutcome.Placed, id, number, repeat, PlaceOrderRefusal.None, [], [], confirmToken, payToken);
 
     public static PlaceOrderResult Refused(PlaceOrderRefusal why, IReadOnlyList<string> messages, IReadOnlyList<long>? shortVariants = null) =>
         new(PlaceOrderOutcome.Refused, null, null, false, why, messages, shortVariants ?? []);
@@ -110,6 +112,7 @@ public sealed partial class PlaceOrderCommandHandler(
     IDiscountRedemptions redemptions,
     IStockReservations reservations,
     ICodLinks links,
+    IPaymentLinks paymentLinks,
     TimeProvider clock,
     ICurrentCustomerAccessor customers,
     ICustomerAddressQueries savedAddresses,
@@ -122,14 +125,15 @@ public sealed partial class PlaceOrderCommandHandler(
         var callerKey = await pricing.GetCallerKeyAsync(cancellationToken);
         if (callerKey is null)
         {
-            return PlaceOrderResult.Refused(PlaceOrderRefusal.EmptyBasket, ["Your bag is empty."]);
+            // No basket belongs to this caller: it is empty, or the session that held it timed out. Nothing is placed or charged either way (CHK-5).
+            return PlaceOrderResult.Refused(PlaceOrderRefusal.EmptyBasket, ["Your bag is empty. If you were signed in, your session may have timed out: please refresh the page or sign in again."]);
         }
 
         var placementKey = DerivePlacementKey(callerKey, request.IdempotencyKey);
         var earlier = await FindAsync(placementKey, cancellationToken);
         if (earlier is not null)
         {
-            return PlaceOrderResult.Placed(earlier.Value.Id, earlier.Value.Number, repeat: true, TokenFor(request, earlier.Value.Number));
+            return PlaceOrderResult.Placed(earlier.Value.Id, earlier.Value.Number, repeat: true, TokenFor(request, earlier.Value.Number), PayTokenFor(request, earlier.Value.Number));
         }
 
         // The address: a saved one (the caller's own, SEC-05) or the typed one, always checked against the geography lookups (CHK-8).
@@ -192,14 +196,14 @@ public sealed partial class PlaceOrderCommandHandler(
             var data = new CreateOrderCommand(
                 placementKey, customerId, contact, address.Value!, priced, hold.Applied ? hold.Code : null, request.PaymentMethodId);
             var created = await sender.Send(data, cancellationToken);
-            return PlaceOrderResult.Placed(created.OrderId, created.OrderNumber, repeat: false, TokenFor(request, created.OrderNumber));
+            return PlaceOrderResult.Placed(created.OrderId, created.OrderNumber, repeat: false, TokenFor(request, created.OrderNumber), PayTokenFor(request, created.OrderNumber));
         }
         catch (DbUpdateException)
         {
             var twin = await FindAsync(placementKey, cancellationToken);
             if (twin is not null)
             {
-                return PlaceOrderResult.Placed(twin.Value.Id, twin.Value.Number, repeat: true, TokenFor(request, twin.Value.Number));
+                return PlaceOrderResult.Placed(twin.Value.Id, twin.Value.Number, repeat: true, TokenFor(request, twin.Value.Number), PayTokenFor(request, twin.Value.Number));
             }
 
             await CompensateAsync(placementKey);
@@ -215,6 +219,10 @@ public sealed partial class PlaceOrderCommandHandler(
     /// <summary>A cash on delivery order gets a signed confirm link for its page button and email (COD-12); other orders get none.</summary>
     private string? TokenFor(PlaceOrderCommand request, string orderNumber) =>
         PaymentMethods.IsCashOnDelivery(request.PaymentMethodId) ? links.Create(orderNumber, clock.GetUtcNow()) : null;
+
+    /// <summary>An online order gets a signed token that lets its shopper start and follow the payment of that one order, with no account needed (PAY-3).</summary>
+    private string? PayTokenFor(PlaceOrderCommand request, string orderNumber) =>
+        PaymentMethods.IsCashOnDelivery(request.PaymentMethodId) ? null : paymentLinks.Create(orderNumber, clock.GetUtcNow());
 
     /// <summary>The same person sending the same key gets the same placement key; a different person never collides with it (ADR 0025).</summary>
     public static string DerivePlacementKey(string callerKey, string idempotencyKey) =>

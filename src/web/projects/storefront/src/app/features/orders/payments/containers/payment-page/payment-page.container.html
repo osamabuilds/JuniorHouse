@@ -1,0 +1,160 @@
+<div class="rp-wrap">
+  <section class="rp-placed" aria-labelledby="payment-heading">
+    @if (token === '') {
+      <div>
+        <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">We could not find that payment</h1>
+        <p class="rp-lead">This link is not complete. If you were paying for an order, you can look it up with your order number and mobile number.</p>
+      </div>
+      <div class="rp-placed__actions">
+        <a rpBtn="primary" routerLink="/track-order">Track your order</a>
+        <a rpBtn="ghost" routerLink="/">Back to the shop</a>
+      </div>
+    } @else if (mode === 'start') {
+      @if (startKind(); as kind) {
+        @switch (kind) {
+          @case ('GatewayUnavailable') {
+            <div>
+              <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">Online payment is unavailable for a moment</h1>
+              <p class="rp-lead" role="status">Your order is saved and nothing has been charged. Try again in a minute, or go back to your bag and choose Cash on Delivery instead.</p>
+            </div>
+            <div class="rp-placed__actions">
+              <button rpBtn="primary" type="button" [disabled]="starting()" (click)="tryAgain()">Try again</button>
+              <a rpBtn="ghost" routerLink="/cart">Back to your bag</a>
+            </div>
+          }
+          @case ('UnderReview') {
+            <div>
+              <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">We are checking your payment</h1>
+              <p class="rp-lead" role="status">Please do not pay again. We will message you as soon as it is confirmed.</p>
+            </div>
+            <div class="rp-placed__actions"><a rpBtn="ghost" routerLink="/">Back to the shop</a></div>
+          }
+          @default {
+            <div>
+              <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">This payment can no longer be made</h1>
+              <p class="rp-lead" role="status">
+                @if (kind === 'TooManyAttempts') {
+                  The payment did not go through after several tries, so the order was not kept.
+                } @else {
+                  The time to pay for this order has passed, so it was not kept and your items are available again.
+                }
+                Nothing has been charged. You can start again from your bag.
+              </p>
+            </div>
+            <div class="rp-placed__actions"><a rpBtn="primary" routerLink="/cart">Back to your bag</a></div>
+          }
+        }
+      } @else if (start()?.status === 'invalid' || start()?.status === 'error') {
+        <div>
+          <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">We could not open the payment page</h1>
+          <p class="rp-lead" role="status">Nothing has been charged. Please try again in a moment.</p>
+        </div>
+        <div class="rp-placed__actions">
+          <button rpBtn="primary" type="button" [disabled]="starting()" (click)="tryAgain()">Try again</button>
+          <a rpBtn="ghost" routerLink="/cart">Back to your bag</a>
+        </div>
+      } @else {
+        <div>
+          <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">Taking you to the secure payment page</h1>
+          <p class="rp-lead" role="status">Please wait. Do not close this page or press Back.</p>
+        </div>
+        @if (redirectUrl(); as url) {
+          <p class="rp-help">Not moved on? <a class="rp-link" [href]="url">Continue to payment</a>.</p>
+        }
+      }
+    } @else {
+      @switch (payment()?.state) {
+        @case ('paid') {
+          <span class="rp-placed__check"><rp-icon name="check" /></span>
+          <div>
+            <p class="rp-eyebrow">Order {{ payment()!.orderNumber }}</p>
+            <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">Payment received</h1>
+            <p class="rp-lead" role="status">Thank you. We have your payment of Rs. {{ payment()!.total | number }} and will message you as your order moves along.</p>
+          </div>
+          <div class="rp-placed__actions">
+            <a rpBtn="primary" [routerLink]="['/order-placed', payment()!.orderNumber]">View your order</a>
+            <a rpBtn="ghost" routerLink="/new-in">Continue shopping</a>
+          </div>
+        }
+        @case ('failed') {
+          <div>
+            <p class="rp-eyebrow">Order {{ payment()!.orderNumber }}</p>
+            <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">Your payment did not go through</h1>
+            <p class="rp-lead" role="status">
+              @if (payment()!.canRetry) {
+                Nothing was taken, or it will be returned to you. Your order is kept for a short while: you can try again now.
+              } @else {
+                Nothing was taken. The order was cancelled and your items are available again.
+              }
+            </p>
+          </div>
+          <div class="rp-placed__actions">
+            @if (payment()!.canRetry) {
+              <button rpBtn="primary" type="button" (click)="retry()">Try paying again</button>
+            }
+            <a rpBtn="ghost" routerLink="/cart">Back to your bag</a>
+          </div>
+        }
+        @case ('expired') {
+          <div>
+            <p class="rp-eyebrow">Order {{ payment()!.orderNumber }}</p>
+            <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">The time to pay has passed</h1>
+            <p class="rp-lead" role="status">The order was not kept and your items are available again. Nothing has been charged. You can start again from your bag.</p>
+          </div>
+          <div class="rp-placed__actions"><a rpBtn="primary" routerLink="/cart">Back to your bag</a></div>
+        }
+        @case ('cancelled') {
+          <div>
+            <p class="rp-eyebrow">Order {{ payment()!.orderNumber }}</p>
+            <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">This order was cancelled</h1>
+            <p class="rp-lead" role="status">Nothing has been charged for it. You can start again from your bag.</p>
+          </div>
+          <div class="rp-placed__actions"><a rpBtn="primary" routerLink="/cart">Back to your bag</a></div>
+        }
+        @case ('review') {
+          <div>
+            <p class="rp-eyebrow">Order {{ payment()!.orderNumber }}</p>
+            <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">We are checking your payment</h1>
+            <p class="rp-lead" role="status">Please do not pay again. We will message you as soon as it is confirmed.</p>
+          </div>
+          <div class="rp-placed__actions"><a rpBtn="ghost" routerLink="/track-order">Track your order</a></div>
+        }
+        @case ('confirming') {
+          <div>
+            <p class="rp-eyebrow">Order {{ payment()!.orderNumber }}</p>
+            @if (gaveUp()) {
+              <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">We have not heard back yet</h1>
+              <p class="rp-lead" role="status">Your bank has not told us the result yet. Please do not pay again: if the payment went through we will message you.</p>
+            } @else {
+              <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">Confirming your payment</h1>
+              <p class="rp-lead" role="status">This usually takes a few seconds. Please do not press Back or pay again.</p>
+            }
+          </div>
+          @if (gaveUp()) {
+            <div class="rp-placed__actions"><a rpBtn="ghost" routerLink="/track-order">Track your order</a></div>
+          }
+        }
+        @default {
+          @if (status() === 'invalid' || status() === 'error') {
+            <div>
+              <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">{{ status() === 'invalid' ? 'We could not find that payment' : 'We could not check your payment' }}</h1>
+              <p class="rp-lead" role="status">
+                @if (status() === 'invalid') {
+                  This link is not one of ours or has expired. If you were paying for an order, you can look it up with your order number and mobile number.
+                } @else {
+                  Please wait a moment and refresh the page. Please do not pay again.
+                }
+              </p>
+            </div>
+            <div class="rp-placed__actions"><a rpBtn="primary" routerLink="/track-order">Track your order</a></div>
+          } @else {
+            <div>
+              <h1 class="rp-display-lg" id="payment-heading" tabindex="-1">Checking your payment</h1>
+              <p class="rp-lead" role="status">One moment.</p>
+            </div>
+          }
+        }
+      }
+    }
+  </section>
+</div>

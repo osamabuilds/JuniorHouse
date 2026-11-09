@@ -2,6 +2,7 @@ import { isDevMode } from '@angular/core';
 import { Routes, UrlMatcher, UrlSegment } from '@angular/router';
 import { signedInGuard, signedOutGuard } from './core/customer-auth';
 import { provideCodConfirm } from './features/orders/cod-confirm/cod-confirm.providers';
+import { providePayments } from './features/orders/payments/payment.providers';
 import { provideCheckout } from './features/orders/checkout/checkout.providers';
 import { provideOrderLookup } from './features/orders/order-lookup/order-lookup.providers';
 import { provideAddresses } from './features/customers/addresses/addresses.providers';
@@ -57,6 +58,8 @@ export const routes: Routes = [
   },
   // Sign-in screens (accounts S9). Signed-in customers are sent on to their account; the screens are noindex (ACT-16).
   { path: 'cod/confirm', data: { shell: 'slim' }, providers: [provideCodConfirm()], loadComponent: () => import('./features/orders/cod-confirm/containers/cod-confirm-page/cod-confirm-page.container').then((m) => m.CodConfirmPageContainer) },
+  { path: 'checkout/pay', data: { shell: 'slim', mode: 'start' }, providers: [providePayments()], loadComponent: () => import('./features/orders/payments/containers/payment-page/payment-page.container').then((m) => m.PaymentPageContainer) },
+  { path: 'checkout/payment-return', data: { shell: 'slim', mode: 'return' }, providers: [providePayments()], loadComponent: () => import('./features/orders/payments/containers/payment-page/payment-page.container').then((m) => m.PaymentPageContainer) },
   { path: 'checkout', data: { shell: 'slim' }, providers: [provideCheckout()], loadComponent: () => import('./features/orders/checkout/containers/checkout-page/checkout-page.container').then((m) => m.CheckoutPageContainer) },
   { path: 'order-placed/:number', data: { shell: 'slim' }, providers: [provideCodConfirm()], loadComponent: () => import('./features/orders/confirmation/containers/order-placed-page/order-placed-page.container').then((m) => m.OrderPlacedPageContainer) },
   { path: 'track-order', providers: [provideOrderLookup()], loadComponent: () => import('./features/orders/order-lookup/containers/track-order-page/track-order-page.container').then((m) => m.TrackOrderPageContainer) },

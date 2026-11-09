@@ -445,3 +445,12 @@ Reused as they are: `RECM` (recommended, also used for "recommendation"), `EVNT`
 | similar | SMLR | | click | CLK |
 | score | SCOR | | calculated | CALC |
 | rank | RANK | | added (to the bag) | ADD |
+
+### Added in Sprint 12b (Orders payments)
+
+Reused as they are: `PAYM` (payment), `ATMP`, `WBHK`, `ORDR`, `STS`, `LKP`, `RSN`, `OTCM`, `METH`, `AMT`, `WNDW`, `END`, `STRT`, `PRVD`, `REF`, `EVNT`, `SGNT`, `HASH`, `RCVD`, `IND`, `DTE`, `NO`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| review | RVW | | paid | PAID |
+| verified | VRFD | | url (address of a page) | URL |

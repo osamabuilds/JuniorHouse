@@ -1,0 +1,12 @@
+# Load testing only: raises the per-address rate limits so a load test measures what the payment endpoints can really do, not the limiter.
+# Never use this for anything but a throwaway local run:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.secure.yml -f docker-compose.loadtest.yml up -d api
+#   REQUESTS=2000 CONCURRENCY=100 node scripts/perf/payments-load.mjs
+#   docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d api     # back to the normal limits
+services:
+  api:
+    environment:
+      RateLimit__PerMinute: "10000000"
+      RateLimit__StrictPerMinute: "10000000"
+      RateLimit__WebhookPerMinute: "10000000"

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Options;
 using Romp.Modules.Cart.Contracts;
 using Romp.Modules.Customers.Contracts;
+using Romp.Modules.Orders.Application.Payments;
 using Romp.Modules.Orders.Domain.Orders;
 
 namespace Romp.Modules.Orders.Application.Checkout;
@@ -40,6 +41,41 @@ public sealed class OrdersOptions
     /// <summary>The secret that signs confirm and view links (at least 32 characters). A development default is used only in Development.</summary>
     public string LinkSigningKey { get; set; } = string.Empty;
 
+    /// <summary>How long an unpaid online order holds its stock before it expires (PAY-11, Q-RSV-2). Default 30.</summary>
+    public int PaymentWindowMinutes { get; set; } = 30;
+
+    /// <summary>Gateway sessions one order may open before it is cancelled as payment failed. Default 3.</summary>
+    public int PaymentMaxAttempts { get; set; } = 3;
+
+    /// <summary>One gateway call may take this long before it counts as a failure (SEC-21). Default 10.</summary>
+    public int GatewayTimeoutSeconds { get; set; } = 10;
+
+    /// <summary>Reconciliation looks at attempts still unanswered after this many minutes (Q-PAY-3). Default 10.</summary>
+    public int ReconcileAfterMinutes { get; set; } = 10;
+
+    /// <summary>...and stops after this many hours. Default 24.</summary>
+    public int ReconcileMaxAgeHours { get; set; } = 24;
+
+    /// <summary>The circuit opens after this many failures inside <see cref="CircuitWindowSeconds"/> (Q-PAY-5). Default 5.</summary>
+    public int CircuitFailureThreshold { get; set; } = 5;
+
+    public int CircuitWindowSeconds { get; set; } = 60;
+
+    /// <summary>Seconds the circuit stays open before one trial call. Default 30.</summary>
+    public int CircuitOpenSeconds { get; set; } = 30;
+
+    /// <summary>The payment gateway to use: empty for none (Cash on Delivery only) or <c>fake</c> (Development and Testing only, PAY-15).</summary>
+    public string GatewayProvider { get; set; } = string.Empty;
+
+    /// <summary>At most this many rejected (forged or stale) callbacks are stored a minute across the host; the rest are only logged. Default 60.</summary>
+    public int RejectedWebhooksStoredPerMinute { get; set; } = 60;
+
+    /// <summary>Rejected-callback records older than this many days are deleted. Default 30.</summary>
+    public int RejectedWebhookRetentionDays { get; set; } = 30;
+
+    /// <summary>The secret the fake gateway signs its callbacks with (at least 16 characters). Only read by the fake.</summary>
+    public string FakeGatewayWebhookSecret { get; set; } = string.Empty;
+
     public CodPolicy CodPolicy => new(
         TimeSpan.FromMinutes(CodFirstCallDelayMinutes), TimeSpan.FromMinutes(CodRetryGapMinutes), CodMaxAttempts, TimeSpan.FromHours(CodFinalWaitHours),
         TimeSpan.FromMinutes(WhatsAppConfirmAfterMinutes));
@@ -49,7 +85,13 @@ public sealed class OrdersOptions
         && options.CodFirstCallDelayMinutes is >= 1 and <= 1440 && options.CodRetryGapMinutes is >= 1 and <= 1440
         && options.CodMaxAttempts is >= 1 and <= 5 && options.CodFinalWaitHours is >= 1 and <= 168
         && options.WhatsAppConfirmAfterMinutes is >= 1 and <= 1440 && options.RefusalFlagThreshold is >= 1 and <= 20
-        && options.HighValueFlagAmount >= 0 && options.CodLinkDays is >= 1 and <= 30;
+        && options.HighValueFlagAmount >= 0 && options.CodLinkDays is >= 1 and <= 30
+        && options.PaymentWindowMinutes is >= 5 and <= 1440 && options.PaymentMaxAttempts is >= 1 and <= 10 && options.GatewayTimeoutSeconds is >= 1 and <= 60
+        && options.ReconcileAfterMinutes is >= 1 and <= 120 && options.ReconcileMaxAgeHours is >= 1 and <= 168
+        && options.CircuitFailureThreshold is >= 1 and <= 100 && options.CircuitWindowSeconds is >= 1 and <= 3600 && options.CircuitOpenSeconds is >= 1 and <= 3600
+        && options.RejectedWebhooksStoredPerMinute is >= 1 and <= 100000 && options.RejectedWebhookRetentionDays is >= 1 and <= 3650
+        && options.GatewayProvider is "" or "none" or "fake"
+        && (options.EnabledOnlineMethods.Length == 0 || options.GatewayProvider is "fake");
 }
 
 public sealed record PaymentMethodDto(string Code, short Id, string Name, bool IsOnline);
@@ -66,14 +108,16 @@ public sealed record CheckoutSummaryDto(
     bool CanOrder,
     IReadOnlyList<string> Problems,
     IReadOnlyList<PaymentMethodDto> PaymentMethods,
-    IReadOnlyList<CheckoutAddressDto> SavedAddresses);
+    IReadOnlyList<CheckoutAddressDto> SavedAddresses,
+    bool OnlinePaymentsPaused = false);
 
 public sealed record GetCheckoutSummaryQuery(int? CityId, string? MethodCode) : IRequest<CheckoutSummaryDto>;
 
 /// <summary>The methods a shopper may choose now.</summary>
 public static class PaymentMethodCatalog
 {
-    public static IReadOnlyList<PaymentMethodDto> Available(OrdersOptions options) =>
+    /// <summary>The methods on offer. <paramref name="gatewayAvailable"/> is false while no gateway works (none switched on, or its circuit is open): then only Cash on Delivery is offered (PAY-7, PAY-14).</summary>
+    public static IReadOnlyList<PaymentMethodDto> Available(OrdersOptions options, bool gatewayAvailable = true) =>
     [
         new("COD", PaymentMethods.CashOnDelivery, "Cash on Delivery", false),
         .. new[]
@@ -81,7 +125,7 @@ public static class PaymentMethodCatalog
             new PaymentMethodDto("EASY", PaymentMethods.Easypaisa, "Easypaisa", true),
             new PaymentMethodDto("JAZZ", PaymentMethods.JazzCash, "JazzCash", true),
             new PaymentMethodDto("CARD", PaymentMethods.Card, "Card", true),
-        }.Where(m => options.EnabledOnlineMethods.Contains(m.Code)),
+        }.Where(m => gatewayAvailable && options.EnabledOnlineMethods.Contains(m.Code)),
     ];
 
     public static short? IdOf(string? code) => code?.Trim().ToUpperInvariant() switch
@@ -94,7 +138,7 @@ public static class PaymentMethodCatalog
     };
 }
 
-public sealed class GetCheckoutSummaryQueryHandler(ICheckoutPricing pricing, ICurrentCustomerAccessor customers, ICustomerAddressQueries addresses, IOptions<OrdersOptions> options)
+public sealed class GetCheckoutSummaryQueryHandler(ICheckoutPricing pricing, ICurrentCustomerAccessor customers, ICustomerAddressQueries addresses, IOptions<OrdersOptions> options, IGatewayAvailability gateway)
     : IRequestHandler<GetCheckoutSummaryQuery, CheckoutSummaryDto>
 {
     public async Task<CheckoutSummaryDto> Handle(GetCheckoutSummaryQuery request, CancellationToken cancellationToken)
@@ -114,6 +158,6 @@ public sealed class GetCheckoutSummaryQueryHandler(ICheckoutPricing pricing, ICu
 
         return new CheckoutSummaryDto(
             priced.Lines, priced.Subtotal, priced.Discount, priced.ShippingKnown ? priced.Shipping : null, priced.Total, priced.CanOrder, priced.Problems,
-            PaymentMethodCatalog.Available(options.Value), saved);
+            PaymentMethodCatalog.Available(options.Value, gateway.IsAvailable), saved, gateway.IsPaused);
     }
 }

@@ -1,6 +1,6 @@
 # 0027 — Payment gateway port, signed webhooks and reconciliation
 
-- Status: Proposed (owner approved one aggregator for cards, Easypaisa and JazzCash; which one is still open, Q-PAY-1)
+- Status: Accepted and built against the fake gateway (S12b, 2026-11-09). The owner approved one aggregator for cards, Easypaisa and JazzCash; which one is still open (Q-PAY-1), so the real adapter is not written yet.
 - Date: 2026-11-02
 
 ## Context
@@ -27,3 +27,13 @@ Launch methods are Cash on Delivery, Easypaisa, JazzCash and debit or credit car
 
 - The sprint ends with COD working end to end and online payment working against the fake; going live with real payments needs only the adapter, the merchant account, the webhook secret and a sandbox run.
 - The webhook path and its URL must be registered with the provider; that is a deployment step recorded in the runbook.
+
+## Amendments made while building (S12b)
+
+1. **An attempt table.** Each gateway session is its own row (`PAYM_ATMP`, unique gateway reference, unique per payment and attempt number). A late message about an old try is still matched, and a second charge is seen and flagged instead of lost. One order has one `PAYM_MAIN` row.
+2. **Exactly once by row lock.** The webhook, the reconciliation job and the expiry job all take a database row lock on the payment (`SELECT ... FOR UPDATE`) inside the Orders transaction before they read or change it, and all end in one settlement routine. This replaces "idempotent on the gateway reference" alone: the reference check still exists (a unique index on the provider's event id), but the lock is what makes two different messages about one payment safe.
+3. **No second session.** Starting a payment returns the open session if there is one; the gateway call is idempotent on `<order number>-A<attempt>`; the database allows each attempt number once.
+4. **The breaker sits on the port, not on an `HttpClient`.** A small circuit breaker with an injected clock (5 failures in 60 s open it; one trial after 30 s) wraps create-session, status and refund. `Microsoft.Extensions.Http.Resilience` may still be used inside a real HTTP adapter.
+5. **The expiry job asks before it cancels.** Before cancelling an unpaid order it asks the gateway about every open attempt; a paid order is settled instead, and when the gateway cannot answer the order waits for the next run.
+6. **A refund method exists on the port** (idempotent on its key) so S17 does not change the port.
+7. **A fake that is allowed only in Development and Testing.** The host refuses to start with it anywhere else.

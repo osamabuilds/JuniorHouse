@@ -13,6 +13,8 @@ using Romp.Modules.Customers.Contracts;
 using Microsoft.Extensions.Options;
 using Romp.Modules.Orders.Application.Checkout;
 using Romp.Modules.Orders.Application.Orders;
+using Romp.Modules.Orders.Application.Payments;
+using Romp.Modules.Orders.Infrastructure.Payments;
 using Romp.Modules.Orders.Application;
 using Romp.Modules.Orders.Application.Abstractions;
 using Romp.Modules.Orders.Infrastructure.Orders;
@@ -151,6 +153,16 @@ internal sealed class OrdersHost : IDisposable
         Options = new OrdersOptions();
         services.AddSingleton<IOptions<OrdersOptions>>(Microsoft.Extensions.Options.Options.Create(Options));
         services.AddSingleton<ICodLinks>(new FakeCodLinks());
+        services.AddSingleton<IPaymentLinks>(new FakePaymentLinks());
+        Options.GatewayProvider = "fake";
+        Options.FakeGatewayWebhookSecret = "test-only-fake-gateway-secret-0123456789";
+        Gateway = new FakeGateway(Microsoft.Extensions.Options.Options.Create(Options), Time);
+        Circuit = new GatewayCircuit(Time, Options.CircuitFailureThreshold, TimeSpan.FromSeconds(Options.CircuitWindowSeconds), TimeSpan.FromSeconds(Options.CircuitOpenSeconds));
+        Resilient = new ResilientPaymentGateway(Gateway, Circuit, Microsoft.Extensions.Options.Options.Create(Options));
+        services.AddSingleton<IPaymentGateway>(Resilient);
+        services.AddSingleton<IGatewayAvailability>(Resilient);
+        services.AddScoped<PaymentSettler>();
+        services.AddSingleton<WebhookRejectionBudget>();
         Captcha = new FakeCaptcha();
         services.AddSingleton<Romp.BuildingBlocks.Application.Captcha.ICaptchaVerifier>(Captcha);
         services.AddSingleton<Romp.Modules.Orders.Application.OrderLookup.ILookupAddressHasher>(new FakeAddressHasher());
@@ -183,6 +195,15 @@ internal sealed class OrdersHost : IDisposable
 
     public OrdersOptions Options { get; }
 
+    public FakeGateway Gateway { get; }
+
+    public GatewayCircuit Circuit { get; }
+
+    public ResilientPaymentGateway Resilient { get; }
+
+    /// <summary>The root provider, for tests that need several scopes at once (concurrent messages).</summary>
+    public IServiceProvider Services => _root;
+
     public FakeCaptcha Captcha { get; }
 
     public FakePricing Pricing { get; }
@@ -204,6 +225,16 @@ internal sealed class OrdersHost : IDisposable
     }
 
     public void Dispose() => _root.Dispose();
+}
+
+/// <summary>Payment links made without a secret: a token is the order number behind a prefix, so a test can build and break one.</summary>
+internal sealed class FakePaymentLinks : IPaymentLinks
+{
+    public string Create(string orderNumber, DateTimeOffset now) => $"pay-{orderNumber}";
+
+    public string? TryRead(string? token, DateTimeOffset now) => token is not null && token.StartsWith("pay-", StringComparison.Ordinal) ? token[4..] : null;
+
+    public string ReturnUrl(string token) => $"/checkout/payment-return?token={token}";
 }
 
 internal sealed class FixedTime(DateTimeOffset now) : TimeProvider

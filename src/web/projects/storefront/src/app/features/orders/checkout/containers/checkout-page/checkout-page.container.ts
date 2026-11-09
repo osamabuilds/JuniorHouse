@@ -134,7 +134,7 @@ export class CheckoutPageContainer {
       if (!r) return;
       untracked(() => {
         if (r.status === 'placed') {
-          this.finish(r.orderNumber, r.confirmToken);
+          this.finish(r.orderNumber, r.confirmToken, r.payToken);
         } else {
           if (r.status === 'refused') this.store.dispatch(CartActions.load());
           this.focusFirstProblem();
@@ -195,7 +195,7 @@ export class CheckoutPageContainer {
     this.store.dispatch(CheckoutActions.submitted({ form: this.form(), key: this.key }));
   }
 
-  private finish(orderNumber: string, confirmToken: string | null): void {
+  private finish(orderNumber: string, confirmToken: string | null, payToken: string | null): void {
     const s = this.summary();
     const f = this.form();
     const saved = this.savedAddresses().find((a) => a.id === f.savedAddressId);
@@ -210,7 +210,10 @@ export class CheckoutPageContainer {
       discount: s?.discount ?? 0,
       shipping: s?.shipping ?? null,
     };
-    void this.router.navigate(['/order-placed', orderNumber], { state: { placed } });
+    // An online order goes to its payment: the pay page opens the gateway's hosted page. Anything else goes to its confirmation.
+    void (payToken
+      ? this.router.navigate(['/checkout/pay'], { queryParams: { token: payToken }, state: { placed } })
+      : this.router.navigate(['/order-placed', orderNumber], { state: { placed } }));
   }
 
   /** Moves focus to the first message so a keyboard or screen reader user lands on what needs fixing (CHK-11). */

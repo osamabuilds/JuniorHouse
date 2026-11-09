@@ -426,6 +426,37 @@ public sealed class Order : AggregateRoot<long>, IAuditable
     }
 
 
+    /// <summary>A payment message for this order looked wrong (amount, duplicate, late): staff are alerted through the outbox. Carries a code only (SEC-25).</summary>
+    public void FlagPaymentSuspect(string reasonCode)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reasonCode);
+        Raise(new OrderPaymentSuspectEvent(Id, OrderNumber, reasonCode));
+    }
+
+    /// <summary>True while an online order is waiting for its payment, i.e. a payment may still be accepted for it.</summary>
+    public bool IsAwaitingPayment => StatusId == OrderStatuses.PaymentPending;
+
+    /// <summary>
+    /// The gateway reported a verified payment for the full total (OCF-3): Payment Pending becomes Paid and <see cref="OrderPaidEvent"/> is raised
+    /// once. A repeat is <see cref="OrderTransition.Unchanged"/>; any other state (for example already cancelled) is
+    /// <see cref="OrderTransition.NotAllowed"/> and the caller holds the payment for review instead.
+    /// </summary>
+    public OrderTransition MarkPaid(DateTimeOffset at)
+    {
+        if (PaymentMethods.IsCashOnDelivery(PaymentMethodId))
+        {
+            return OrderTransition.NotAllowed;
+        }
+
+        var result = MoveTo(OrderStatuses.Paid, ActorKinds.Gateway, null, null, "Payment received", at);
+        if (result == OrderTransition.Changed)
+        {
+            Raise(new OrderPaidEvent(Id, OrderNumber));
+        }
+
+        return result;
+    }
+
     /// <summary>
     /// Records how a cash on delivery confirmation ended (COD-3, COD-4, COD-8, COD-12 to COD-15). A confirmation moves the order to Confirmed and
     /// raises <see cref="OrderConfirmedEvent"/>; a refusal or a customer cancellation cancels it; a no-answer schedules the next call or, after

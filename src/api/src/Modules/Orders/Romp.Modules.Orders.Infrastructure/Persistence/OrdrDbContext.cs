@@ -3,6 +3,7 @@ using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Orders.Application.Abstractions;
 using Romp.Modules.Orders.Domain.Orders;
+using Romp.Modules.Orders.Domain.Payments;
 
 namespace Romp.Modules.Orders.Infrastructure.Persistence;
 
@@ -21,6 +22,21 @@ public sealed class OrdrDbContext(DbContextOptions<OrdrDbContext> options) : DbC
     public DbSet<CodRisk> CodRisks => Set<CodRisk>();
 
     public DbSet<LookupAttempt> LookupAttempts => Set<LookupAttempt>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<PaymentAttempt> PaymentAttempts => Set<PaymentAttempt>();
+
+    public DbSet<PaymentWebhook> PaymentWebhooks => Set<PaymentWebhook>();
+
+    /// <inheritdoc />
+    async Task IOrdersDbContext.LockPaymentAsync(long paymentId, CancellationToken cancellationToken)
+    {
+        // Every identifier is quoted (docs/db/naming.md). The id is a bound parameter, never text built into the SQL.
+        await Database.ExecuteSqlInterpolatedAsync($"""SELECT 1 FROM "ORDR"."PAYM_MAIN" WHERE "ID" = {paymentId} FOR UPDATE""", cancellationToken);
+    }
+
+    void IOrdersDbContext.DiscardChanges() => ChangeTracker.Clear();
 
     async Task IOrdersDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);

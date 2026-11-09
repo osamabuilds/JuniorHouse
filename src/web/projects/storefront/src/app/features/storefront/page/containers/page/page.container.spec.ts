@@ -160,4 +160,48 @@ describe('PageContainer', () => {
     expect(init.status).toBe(404);
     expect(el.querySelector('h1')).not.toBeNull();
   });
+
+  describe('legal pages the business has not supplied yet (orders H5, NFR-16)', () => {
+    for (const [slug, title] of [['terms', 'Terms and conditions'], ['privacy', 'Privacy policy']] as const) {
+      it('a missing ' + slug + ' page shows a short notice (still a 404 for search engines, ST-8), with one h1 and a way to get help', () => {
+        const { f, el, seo, init } = render({ slug });
+        TestBed.inject(Store).dispatch(PageActions.loaded({ slug, result: { status: 'notFound' } }));
+        f.detectChanges();
+
+        expect(el.querySelectorAll('h1').length).toBe(1);
+        expect(el.querySelector('h1')!.textContent).toBe(title);
+        expect(el.textContent).toContain('being prepared');
+        expect(el.querySelector('a[href="/contact"]')).not.toBeNull();
+        expect(el.querySelector('a[href="/delivery"]')).not.toBeNull();
+        expect(init.status).toBe(404);
+        expect(seo.set).toHaveBeenLastCalledWith(expect.objectContaining({ title, noindex: true, path: '/' + slug }));
+      });
+    }
+
+    it('the notice never invents legal terms', () => {
+      const { f, el } = render({ slug: 'terms' });
+      TestBed.inject(Store).dispatch(PageActions.loaded({ slug: 'terms', result: { status: 'notFound' } }));
+      f.detectChanges();
+
+      expect(el.textContent ?? '').not.toMatch(/liab|governing law|indemn|warrant/i);
+    });
+
+    it('once the real page is published it replaces the notice and is indexable', () => {
+      const { f, el, seo, init } = render({ slug: 'terms' });
+      TestBed.inject(Store).dispatch(PageActions.loaded({ slug: 'terms', result: { status: 'ok', page: { slug: 'terms', title: 'Terms', description: 'Our terms.', status: 'published' as const, blocks: [] } } }));
+      f.detectChanges();
+
+      expect(el.textContent).not.toContain('being prepared');
+      expect(init.status).toBe(200);
+      expect(seo.set).toHaveBeenLastCalledWith(expect.not.objectContaining({ noindex: true }));
+    });
+
+    it('any other missing page is still a real 404', () => {
+      const { f, init } = render({ slug: 'no-such-page' });
+      TestBed.inject(Store).dispatch(PageActions.loaded({ slug: 'no-such-page', result: { status: 'notFound' } }));
+      f.detectChanges();
+
+      expect(init.status).toBe(404);
+    });
+  });
 });

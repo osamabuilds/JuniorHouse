@@ -1211,6 +1211,520 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.Payment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("AMT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<short>("MethodId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("PAYM_METH_ID");
+
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ORDR_ID");
+
+                    b.Property<DateTimeOffset?>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("PAID_DTE");
+
+                    b.Property<short?>("ReviewReasonId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("RVW_RSN_ID");
+
+                    b.Property<short>("StatusId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("PAYM_STS_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<DateTimeOffset?>("WindowEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("WNDW_END_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MethodId")
+                        .HasDatabaseName("IX_PAYM_MAIN_PAYM_METH_ID");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_PAYM_MAIN_ORDR_ID");
+
+                    b.HasIndex("ReviewReasonId")
+                        .HasDatabaseName("IX_PAYM_MAIN_RVW_RSN_ID");
+
+                    b.HasIndex("StatusId", "WindowEndsAt")
+                        .HasDatabaseName("IX_PAYM_MAIN_PAYM_STS_ID_WNDW_END_DTE");
+
+                    b.ToTable("PAYM_MAIN", "ORDR", t =>
+                        {
+                            t.HasCheckConstraint("CK_PAYM_MAIN_AMT", "\"AMT\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.PaymentAttempt", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("AttemptNo")
+                        .HasColumnType("integer")
+                        .HasColumnName("ATMP_NO");
+
+                    b.Property<string>("GatewayRef")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("PRVD_REF");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<long>("PaymentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PAYM_ID");
+
+                    b.Property<string>("RedirectUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("URL");
+
+                    b.Property<DateTimeOffset?>("SettledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("END_DTE");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("STRT_DTE");
+
+                    b.Property<short>("StatusId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("PAYM_STS_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GatewayRef")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_PAYM_ATMP_PRVD_REF");
+
+                    b.HasIndex("PaymentId", "AttemptNo")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_PAYM_ATMP_PAYM_ID_ATMP_NO");
+
+                    b.HasIndex("StatusId", "StartedAt")
+                        .HasDatabaseName("IX_PAYM_ATMP_PAYM_STS_ID_STRT_DTE");
+
+                    b.ToTable("PAYM_ATMP", "ORDR");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.PaymentReviewReasonLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PAYM_RVW_LKP", "ORDR");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "AMNT",
+                            Description = "The gateway amount is not the order total",
+                            IsActive = true,
+                            Name = "Amount mismatch",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "LATE",
+                            Description = "Money arrived for an order that was already cancelled or expired",
+                            IsActive = true,
+                            Name = "Order not payable",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "DUPL",
+                            Description = "A second attempt was charged after the order was already paid",
+                            IsActive = true,
+                            Name = "Duplicate charge",
+                            SortSeq = (short)3
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.PaymentStatusLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("PAYM_STS_LKP", "ORDR");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "INIT",
+                            Description = "The payment exists but no gateway session has been opened",
+                            IsActive = true,
+                            Name = "Initiated",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "PEND",
+                            Description = "Waiting for the gateway (online) or for the courier (cash on delivery)",
+                            IsActive = true,
+                            Name = "Pending",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "PAID",
+                            Description = "The gateway confirmed the full amount",
+                            IsActive = true,
+                            Name = "Paid",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "FAIL",
+                            Description = "The gateway declined; the shopper may try again",
+                            IsActive = true,
+                            Name = "Failed",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "EXPR",
+                            Description = "The payment window passed without payment",
+                            IsActive = true,
+                            Name = "Expired",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "REVW",
+                            Description = "Held for staff: wrong amount, late payment or a duplicate charge",
+                            IsActive = true,
+                            Name = "In review",
+                            SortSeq = (short)6
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.PaymentWebhook", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("BodyHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("HASH");
+
+                    b.Property<string>("EventId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("EVNT_ID");
+
+                    b.Property<string>("GatewayRef")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("PRVD_REF");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<short>("OutcomeId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("WBHK_OTCM_ID");
+
+                    b.Property<long?>("PaymentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("PAYM_ID");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("PRVD");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("RCVD_DTE");
+
+                    b.Property<bool>("SignatureVerified")
+                        .HasColumnType("boolean")
+                        .HasColumnName("SGNT_VRFD_IND");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutcomeId")
+                        .HasDatabaseName("IX_PAYM_WBHK_WBHK_OTCM_ID");
+
+                    b.HasIndex("PaymentId")
+                        .HasDatabaseName("IX_PAYM_WBHK_PAYM_ID");
+
+                    b.HasIndex("ReceivedAt")
+                        .HasDatabaseName("IX_PAYM_WBHK_RCVD_DTE");
+
+                    b.HasIndex("Provider", "EventId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_PAYM_WBHK_PRVD_EVNT_ID")
+                        .HasFilter("\"EVNT_ID\" IS NOT NULL");
+
+                    b.ToTable("PAYM_WBHK", "ORDR");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.WebhookOutcomeLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("WBHK_OTCM_LKP", "ORDR");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "RJCT",
+                            Description = "Missing, bad or stale signature, or unreadable",
+                            IsActive = true,
+                            Name = "Rejected",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "APLD",
+                            Description = "Verified and applied to the payment",
+                            IsActive = true,
+                            Name = "Applied",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "DUPL",
+                            Description = "The same event was already handled",
+                            IsActive = true,
+                            Name = "Duplicate",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "UNMT",
+                            Description = "Verified, but about a payment attempt we do not know",
+                            IsActive = true,
+                            Name = "Unmatched",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "FLAG",
+                            Description = "Verified, but held for staff review",
+                            IsActive = true,
+                            Name = "Flagged",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "IGNR",
+                            Description = "Verified, but nothing to change",
+                            IsActive = true,
+                            Name = "Ignored",
+                            SortSeq = (short)6
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Orders.Infrastructure.Orders.OrderNumberSequence", b =>
                 {
                     b.Property<short>("Year")
@@ -1313,6 +1827,69 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                         .HasConstraintName("FK_ORDR_LINE_ORDR_MAIN");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.Payment", b =>
+                {
+                    b.HasOne("Romp.Modules.Orders.Domain.Orders.PaymentMethodLookup", null)
+                        .WithMany()
+                        .HasForeignKey("MethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PAYM_MAIN_PAYM_METH_LKP");
+
+                    b.HasOne("Romp.Modules.Orders.Domain.Orders.Order", null)
+                        .WithOne()
+                        .HasForeignKey("Romp.Modules.Orders.Domain.Payments.Payment", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PAYM_MAIN_ORDR_MAIN");
+
+                    b.HasOne("Romp.Modules.Orders.Domain.Payments.PaymentReviewReasonLookup", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewReasonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_PAYM_MAIN_PAYM_RVW_LKP");
+
+                    b.HasOne("Romp.Modules.Orders.Domain.Payments.PaymentStatusLookup", null)
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PAYM_MAIN_PAYM_STS_LKP");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.PaymentAttempt", b =>
+                {
+                    b.HasOne("Romp.Modules.Orders.Domain.Payments.Payment", null)
+                        .WithMany("Attempts")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PAYM_ATMP_PAYM_MAIN");
+
+                    b.HasOne("Romp.Modules.Orders.Domain.Payments.PaymentStatusLookup", null)
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PAYM_ATMP_PAYM_STS_LKP");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.PaymentWebhook", b =>
+                {
+                    b.HasOne("Romp.Modules.Orders.Domain.Payments.WebhookOutcomeLookup", null)
+                        .WithMany()
+                        .HasForeignKey("OutcomeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PAYM_WBHK_WBHK_OTCM_LKP");
+
+                    b.HasOne("Romp.Modules.Orders.Domain.Payments.Payment", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_PAYM_WBHK_PAYM_MAIN");
+                });
+
             modelBuilder.Entity("Romp.Modules.Orders.Domain.Orders.Order", b =>
                 {
                     b.Navigation("CodAttempts");
@@ -1320,6 +1897,11 @@ namespace Romp.Modules.Orders.Infrastructure.Migrations
                     b.Navigation("History");
 
                     b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Orders.Domain.Payments.Payment", b =>
+                {
+                    b.Navigation("Attempts");
                 });
 #pragma warning restore 612, 618
         }

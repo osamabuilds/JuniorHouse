@@ -333,6 +333,29 @@ docker compose up -d --build api admin storefront   # admin :4201, storefront :4
 3. Reload http://localhost:4000 within a minute: your menu and pages are there; an archived page answers 410.
 4. Opening hours, the four delivery cities and the exchange window are **placeholders**: replace them under Settings and Delivery before launch. The settings screens have no login until Sprint 8, so they must not be deployed publicly yet.
 
+## Try online payment (orders S12b, against the pretend gateway)
+Card, Easypaisa and JazzCash orders go through a **pretend payment gateway** on the local stack, so every path can be tried without a merchant account. The real gateway is wired in later ([third-party checklist](docs/roadmap/third-party-integrations.md), [payments spec](docs/specs/orders/payments/spec.md)). The pretend gateway only exists in Development: the API refuses to start with it anywhere else, and with no gateway configured the shop sells Cash on Delivery only.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build   # storefront :4000, API :8080, admin :4201
+```
+
+1. Open http://localhost:4000, add a product to the bag (a size with stock) and go to checkout.
+2. Fill in the form and choose **Card** (or Easypaisa, JazzCash), then **Place order**. You land on a test payment page.
+3. Try each button:
+   - **Pay now**: you come back to a "Payment received" page and the order is Paid in the admin.
+   - **Decline the card**: "Your payment did not go through", with **Try paying again**. Three declines cancel the order and give the stock back.
+   - **Pay, but lose the callback**: the page keeps saying "Confirming your payment" and never shows paid on the browser coming back. A background job asks the gateway after ten minutes and completes the order exactly once.
+4. Press **Place order** twice quickly, or open the pay page twice for one order: the same payment page opens; no second payment is ever started.
+5. An order left unpaid for 30 minutes is cancelled and its stock and discount come back.
+
+Try the attacks yourself with the automated checks (they need Node and the stack running):
+
+```bash
+node scripts/security/payments-pentest.mjs   # forged, tampered, replayed, oversized and injected calls; expects every one refused
+node scripts/perf/payments-load.mjs          # latency, throughput and error rate under load
+```
+
 ## Tests
 
 ```bash

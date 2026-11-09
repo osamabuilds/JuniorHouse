@@ -17,7 +17,7 @@ class FakeApi {
   summary: (c: number | null, m: string) => Observable<SummaryResult> = (c) => of({ status: 'ok', summary: summary(c ? 250 : null) });
   provinces = (): Observable<readonly Province[]> => of([{ id: 2, code: 'PB', name: 'Punjab' }]);
   cities = (): Observable<readonly City[]> => of([{ id: 7, code: 'LHE', name: 'Lahore', provinceId: 2 }]);
-  place: (f: CheckoutForm, k: string) => Observable<PlaceResult> = () => of({ status: 'placed', orderNumber: 'RMP-2026-00001-4', wasRepeat: false, confirmToken: null });
+  place: (f: CheckoutForm, k: string) => Observable<PlaceResult> = () => of({ status: 'placed', orderNumber: 'RMP-2026-00001-4', wasRepeat: false, confirmToken: null, payToken: null });
 }
 
 function setUp(api = new FakeApi()) {
@@ -69,10 +69,10 @@ describe('checkout store', () => {
 
     expect(sent).toBe(1);
     expect(store.selectSignal(selectCheckoutPlacing)()).toBe(true);
-    wait.next({ status: 'placed', orderNumber: 'RMP-2026-00001-4', wasRepeat: false, confirmToken: null });
+    wait.next({ status: 'placed', orderNumber: 'RMP-2026-00001-4', wasRepeat: false, confirmToken: null, payToken: null });
     wait.complete();
     expect(store.selectSignal(selectCheckoutPlacing)()).toBe(false);
-    expect(store.selectSignal(selectCheckoutResult)()).toEqual({ status: 'placed', orderNumber: 'RMP-2026-00001-4', wasRepeat: false, confirmToken: null });
+    expect(store.selectSignal(selectCheckoutResult)()).toEqual({ status: 'placed', orderNumber: 'RMP-2026-00001-4', wasRepeat: false, confirmToken: null, payToken: null });
   });
 
   it('ORD-3 a refusal is kept for the page to show, and the bag figures stay', () => {
