@@ -24,7 +24,7 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 - [x] **F10** Pack: open, scan, weight, complete, packed event, idempotent. *Proof:* `PackStationTests` (PAK-1 to 13).
 - [x] **F11** Packing slip from Orders at print time, print through the printer port. *Proof:* `PackingSlipTests` (SLP-1 to 8).
 - [ ] **F12** Endpoints, permissions, authorization matrix rows. *Proof:* `FulfilmentEndpointsTests`, matrix test (APP-1, 2).
-- [ ] **F13** Notifications consumer for `OrderLineDelayedEvent` with a template. *Proof:* `DelayedLineNotificationTests` (PEX-3).
+- [x] **F13** Notifications consumer for `OrderLineDelayedEvent` with a template. *Proof:* `DelayedLineNotificationTests` (PEX-3).
 - [x] **F14** Scan log purge job. *Proof:* `ScanLogPurgeTests`.
 
 ## Admin app

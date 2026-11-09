@@ -15,6 +15,7 @@ Shelve (BRD §5.13-5.14): bins, putaway by scan, the stock ledger, reason-coded 
 | [cycle-counts](cycle-counts/README.md) · [spec](cycle-counts/spec.md) | Partial recounts that raise adjustments | Implemented |
 | [stock-alerts](stock-alerts/README.md) · [spec](stock-alerts/spec.md) | Low-stock and stock-out alerts per variant | Implemented |
 | [reservations](reservations/spec.md) | Reserve stock on order placement, release on cancel or expiry; available = on-hand minus reserved (Sprint 12) | Approved; [plan](reservations/plan.md) drafted |
+| [allocations](allocations/README.md) | The bin-level half of Fulfilment allocation: FIFO claims, release, the pick decrement, bins under review (Sprint 14) | Built; spec is [fulfilment/allocations](../fulfilment/allocations/spec.md) |
 
 ## Requirement IDs for the module
 

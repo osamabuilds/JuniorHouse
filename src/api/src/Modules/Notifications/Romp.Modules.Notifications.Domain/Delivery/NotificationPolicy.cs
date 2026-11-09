@@ -11,6 +11,7 @@ public static class NotificationPolicy
         NotificationKind.OrderConfirmation => TimeSpan.FromDays(7),
         NotificationKind.OrderCancelled => TimeSpan.FromHours(24),
         NotificationKind.CodConfirmationRequest => TimeSpan.FromHours(24),
+        NotificationKind.OrderDelayed => TimeSpan.FromHours(48),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
@@ -20,6 +21,7 @@ public static class NotificationPolicy
         NotificationKind.OrderConfirmation => 0,
         NotificationKind.OrderCancelled => 0,
         NotificationKind.CodConfirmationRequest => 1,
+        NotificationKind.OrderDelayed => 0,
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 }

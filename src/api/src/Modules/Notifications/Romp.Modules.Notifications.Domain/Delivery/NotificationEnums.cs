@@ -6,6 +6,7 @@ public enum NotificationKind
     OrderConfirmation,
     OrderCancelled,
     CodConfirmationRequest,
+    OrderDelayed,
 }
 
 /// <summary>The way a message travels. Email always; WhatsApp only with opt-in (CHN-1, CHN-2).</summary>
@@ -45,6 +46,7 @@ public static class NotificationCodes
         NotificationKind.OrderConfirmation => "ORCF",
         NotificationKind.OrderCancelled => "ORCN",
         NotificationKind.CodConfirmationRequest => "CODR",
+        NotificationKind.OrderDelayed => "ORDL",
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 

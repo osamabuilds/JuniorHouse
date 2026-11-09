@@ -24,6 +24,7 @@ public sealed class PlainMessageRenderer : IMessageRenderer
             NotificationKind.OrderConfirmation => ($"Your Romp order {order.OrderNumber}", "Thank you for your order."),
             NotificationKind.OrderCancelled => ($"Your Romp order {order.OrderNumber} was cancelled", "Your order has been cancelled."),
             NotificationKind.CodConfirmationRequest => ($"Please confirm your Romp order {order.OrderNumber}", "Please confirm your cash on delivery order."),
+            NotificationKind.OrderDelayed => ($"Part of your Romp order {order.OrderNumber} is delayed", "One item in your order is waiting for stock, so it will ship a little later. We will tell you as soon as it is on its way."),
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
 
