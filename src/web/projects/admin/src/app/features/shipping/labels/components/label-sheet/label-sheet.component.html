@@ -1,0 +1,40 @@
+<article class="label" aria-label="Shipping label">
+  @if (label().isReprint) {
+    <p class="label__reprint"><strong>Reprint</strong> (printed {{ label().printCount }} {{ label().printCount === 1 ? 'time' : 'times' }})</p>
+  }
+
+  <section class="label__to" aria-label="Deliver to">
+    <p class="label__name">{{ label().recipientName }}</p>
+    <p>{{ label().addressLine1 }}</p>
+    @if (label().addressLine2) {
+      <p>{{ label().addressLine2 }}</p>
+    }
+    <p>{{ label().city }}, {{ label().province }} {{ label().postalCode }}</p>
+    <p class="label__phone">Phone {{ label().phone }}</p>
+    @if (label().deliveryNote) {
+      <p>Note: {{ label().deliveryNote }}</p>
+    }
+  </section>
+
+  @if (label().isCashOnDelivery) {
+    <section class="label__pay label__pay--cod" aria-label="Cash to collect">
+      <p>Cash to collect</p>
+      <p class="label__amount">{{ label().cashToCollect | currency: 'PKR ' : 'symbol' : '1.0-0' }}</p>
+    </section>
+  } @else {
+    <section class="label__pay" aria-label="Payment">
+      <p class="label__amount">Paid</p>
+    </section>
+  }
+
+  <section class="label__code" aria-label="Courier waybill">
+    <svg role="img" [attr.aria-label]="'Barcode of ' + label().waybill" [attr.viewBox]="'0 0 ' + (modules() + quiet * 2) + ' 40'" preserveAspectRatio="none" class="label__barcode">
+      <rect x="0" y="0" [attr.width]="modules() + quiet * 2" height="40" fill="#fff" />
+      @for (bar of bars(); track bar.x) {
+        <rect [attr.x]="bar.x + quiet" y="0" [attr.width]="bar.width" height="40" fill="#000" />
+      }
+    </svg>
+    <p class="label__waybill">{{ label().courierName }}: {{ label().waybill }}</p>
+    <p>Order {{ label().orderNumber }} · {{ label().weightGrams }} g</p>
+  </section>
+</article>

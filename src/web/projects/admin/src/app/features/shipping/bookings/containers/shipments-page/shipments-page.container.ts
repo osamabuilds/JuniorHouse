@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { PaginationComponent, inputValue } from '@shared';
 import { ShipmentsTableComponent } from '../../components/shipments-table/shipments-table.component';
@@ -12,7 +12,7 @@ import { ShipmentsPageActions, selectError, selectLoading, selectPage, selectPag
  */
 @Component({
   selector: 'app-shipments-page',
-  imports: [PaginationComponent, ShipmentsTableComponent],
+  imports: [PaginationComponent, RouterLink, ShipmentsTableComponent],
   templateUrl: './shipments-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
