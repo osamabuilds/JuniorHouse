@@ -1,0 +1,65 @@
+<p class="page-intro"><a routerLink="/dispatch/shipments">Back to the shipments</a></p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (loading() && !detail()) {
+  <h1>Shipment</h1>
+  <p role="status">Loading…</p>
+} @else if (detail(); as d) {
+  <h1>Shipment for {{ d.row.orderNumber }}</h1>
+
+  <section class="card" aria-labelledby="sd-summary">
+    <h2 id="sd-summary">Where it is</h2>
+    <dl>
+      <dt>Status</dt>
+      <dd>{{ d.row.statusName }}, since {{ d.row.statusAt | date: 'd MMM y, HH:mm' }}</dd>
+      <dt>Courier</dt>
+      <dd>{{ d.row.courierName ?? 'Not booked yet' }}</dd>
+      <dt>Waybill</dt>
+      <dd>{{ d.row.waybill ?? '-' }}</dd>
+      <dt>Weight</dt>
+      <dd>{{ d.weightGrams }} g</dd>
+      <dt>Cash to collect</dt>
+      <dd>{{ d.row.cashToCollect > 0 ? (d.row.cashToCollect | currency: 'PKR ' : 'symbol' : '1.0-0') : 'Paid, nothing to collect' }}</dd>
+      @if (d.bookingSource) {
+        <dt>Booked</dt>
+        <dd>{{ d.bookingSource === 'MANUAL' ? 'By hand' : 'By the courier' }}{{ d.bookedAt ? ' on ' + (d.bookedAt | date: 'd MMM y, HH:mm') : '' }}</dd>
+      }
+    </dl>
+    @if (d.row.waybill) {
+      <p><a class="button button--primary" [routerLink]="['/dispatch/label', d.row.id]">Open the shipping label</a></p>
+    }
+  </section>
+
+  @if (d.row.status === 'PENDING_BOOKING') {
+    <section class="card" aria-labelledby="sd-wait">
+      <h2 id="sd-wait">Waiting for a booking</h2>
+      <p>
+        {{ reason(d.lastError) || 'Waiting to be tried.' }}. Tried {{ d.attempts }} {{ d.attempts === 1 ? 'time' : 'times' }}.
+        @if (d.lastNote) {
+          The courier said: {{ d.lastNote }}.
+        }
+        The parcel waits in the pending-booking area; do not ship it without a label.
+      </p>
+      <div *hasPermission="'shipping.ops'">
+        <button type="button" class="button button--primary" [disabled]="retrying()" (click)="retry()">Try again now</button>
+        <a routerLink="/dispatch/queue">Enter a waybill by hand</a>
+      </div>
+    </section>
+  }
+
+  <section aria-labelledby="sd-timeline">
+    <h2 id="sd-timeline">Courier timeline</h2>
+    <app-tracking-timeline [events]="d.events" />
+  </section>
+} @else {
+  <h1>Shipment</h1>
+  <p>This shipment could not be shown.</p>
+}

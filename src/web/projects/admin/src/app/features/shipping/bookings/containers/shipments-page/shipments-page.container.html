@@ -1,0 +1,35 @@
+<h1>Shipments</h1>
+<p class="page-intro">Every parcel handed to a courier, with where it is. A parcel waiting for a booking is in the <a href="/dispatch/queue">booking queue</a>.</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<div class="card">
+  <div class="form-field">
+    <label for="sh-status">Status</label>
+    <select id="sh-status" (change)="chooseStatus($event)">
+      <option value="" [selected]="status() === ''">Any status</option>
+      @for (s of statuses; track s.code) {
+        <option [value]="s.code" [selected]="status() === s.code">{{ s.name }}</option>
+      }
+    </select>
+  </div>
+  <button type="button" class="button" (click)="refresh()">Refresh</button>
+</div>
+
+<section aria-labelledby="sh-heading">
+  <h2 id="sh-heading">{{ total() }} {{ total() === 1 ? 'shipment' : 'shipments' }}</h2>
+  @if (loading() && rows().length === 0) {
+    <p role="status">Loading…</p>
+  } @else {
+    <app-shipments-table [rows]="rows()" (open)="open($event)" />
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>
