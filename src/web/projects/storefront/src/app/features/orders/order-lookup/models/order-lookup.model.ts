@@ -1,3 +1,5 @@
+import { ShipmentTracking } from './shipment-tracking.model';
+
 /** One line of a tracked order. */
 export interface TrackedLine {
   readonly name: string;
@@ -24,6 +26,8 @@ export interface TrackedOrder {
   readonly shipping: number;
   readonly total: number;
   readonly lines: readonly TrackedLine[];
+  /** Where the parcel is, once a courier has it; absent while it is being prepared (OHS-3). */
+  readonly tracking?: ShipmentTracking | null;
 }
 
 export interface LookupInput {
