@@ -3,13 +3,13 @@
 Test-first. Each task names the test that proves it. Tick a task only when its test passes. Tests are tagged with the criterion IDs.
 
 ## Warehouse (allocation and pick decrement)
-- [ ] **W1** `IStockAllocator` contract (`Warehouse.Contracts`) and the FIFO query (oldest putaway first, per bin, fixed lock order). *Proof:* `StockAllocatorTests` (ALC-3, 4, 9, 10) against PostgreSQL.
-- [ ] **W2** Idempotent allocate and release by order key; short lines reported, not thrown (ALC-8). *Proof:* `StockAllocatorTests` (ALC-5, 6, 8).
-- [ ] **W3** `ConfirmPickAsync`: ledger decrement per bin once, reservation converted. *Proof:* `ConfirmPickTests` (PCK-7, 8, RSV-9).
-- [ ] **W4** `FlagBinAsync` and "under review" bins skipped by allocation. *Proof:* `StockAllocatorTests` (PEX-6).
+- [x] **W1** `IStockAllocator` contract (`Warehouse.Contracts`) and the FIFO query (oldest putaway first, per bin, fixed lock order). *Proof:* `StockAllocatorTests` (ALC-3, 4, 9, 10) against PostgreSQL.
+- [x] **W2** Idempotent allocate and release by order key; short lines reported, not thrown (ALC-8). *Proof:* `StockAllocatorTests` (ALC-5, 6, 8).
+- [x] **W3** `ConfirmPickAsync`: ledger decrement per bin once, reservation converted. *Proof:* `ConfirmPickTests` (PCK-7, 8, RSV-9).
+- [x] **W4** `FlagBinAsync` and "under review" bins skipped by allocation. *Proof:* `StockAllocatorTests` (PEX-6).
 
 ## Orders contract
-- [ ] **O1** `IOrderFulfilmentQueries` (lines, totals, method, recipient name and city) in `Orders.Contracts`, implemented in Orders. *Proof:* `OrderFulfilmentQueriesTests`.
+- [x] **O1** `IOrderFulfilmentQueries` (lines, totals, method, recipient name and city) in `Orders.Contracts`, implemented in Orders. *Proof:* `OrderFulfilmentQueriesTests`.
 
 ## Fulfilment module
 - [ ] **F1** Module skeleton, ADR 0030, `ModuleNames`, glossary words, `FULF` schema, domain model and lookups, migration. *Proof:* architecture and naming tests; `FulfilmentMigrationTests`.

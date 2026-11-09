@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Warehouse.Domain;
 using Romp.Modules.Warehouse.Domain.Adjustments;
+using Romp.Modules.Warehouse.Domain.Allocations;
 using Romp.Modules.Warehouse.Domain.Bins;
 using Romp.Modules.Warehouse.Domain.CycleCounts;
 using Romp.Modules.Warehouse.Domain.Putaway;
@@ -43,6 +44,8 @@ public interface IWarehouseDbContext
     DbSet<StockReservation> Reservations { get; }
 
     DbSet<ReservedBalance> ReservedBalances { get; }
+
+    DbSet<StockAllocation> Allocations { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

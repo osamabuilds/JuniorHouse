@@ -3,6 +3,7 @@ using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Warehouse.Application.Abstractions;
 using Romp.Modules.Warehouse.Domain.Adjustments;
+using Romp.Modules.Warehouse.Domain.Allocations;
 using Romp.Modules.Warehouse.Domain.Bins;
 using Romp.Modules.Warehouse.Domain.StockAlerts;
 using Romp.Modules.Warehouse.Domain.CycleCounts;
@@ -45,6 +46,8 @@ public sealed class WhseDbContext(DbContextOptions<WhseDbContext> options) : DbC
     public DbSet<StockReservation> Reservations => Set<StockReservation>();
 
     public DbSet<ReservedBalance> ReservedBalances => Set<ReservedBalance>();
+
+    public DbSet<StockAllocation> Allocations => Set<StockAllocation>();
 
     async Task IWarehouseDbContext.SaveChangesAsync(CancellationToken cancellationToken) =>
         await SaveChangesAsync(cancellationToken);

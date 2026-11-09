@@ -61,6 +61,8 @@ public sealed class WarehouseModule : IModule
         services.AddScoped<Romp.Modules.Warehouse.Application.Reservations.IReservationLedger, Romp.Modules.Warehouse.Infrastructure.Reservations.ReservationLedger>();
         services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockReservations, Romp.Modules.Warehouse.Infrastructure.Reservations.StockReservations>();
         services.AddHostedService<Romp.Modules.Warehouse.Infrastructure.Reservations.ReservationSweeper>();
+        services.AddScoped<Romp.Modules.Warehouse.Application.Allocations.IAllocationCandidates, Romp.Modules.Warehouse.Infrastructure.Allocations.AllocationCandidates>();
+        services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockAllocator, Romp.Modules.Warehouse.Infrastructure.Allocations.StockAllocator>();
         services.AddScoped<IAdjustmentPoster, AdjustmentPoster>();
         services.AddScoped<ICountNumberAllocator, CountNumberAllocator>();
         services.AddScoped<AlertEvaluator>();

@@ -18,6 +18,7 @@ internal sealed class BinConfiguration : IEntityTypeConfiguration<Bin>
         builder.Property(b => b.Shelf).HasColumnName("SHLF").HasMaxLength(2).IsRequired();
         builder.Property(b => b.IsActive).HasColumnName("ACT_IND").IsRequired();
         builder.Property(b => b.LastCountedAt).HasColumnName("LAST_CNT_DTE");
+        builder.Property(b => b.ReviewReason).HasColumnName("RVW_RSN").HasMaxLength(30);
 
         // BIN-2: one bin per printed code. The database decides concurrent creates; the handler's check only gives a friendly message.
         builder.HasIndex(b => b.BinCode).IsUnique();
