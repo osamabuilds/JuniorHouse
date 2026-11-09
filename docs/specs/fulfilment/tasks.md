@@ -23,7 +23,7 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 - [x] **F9** Pick exceptions: raise, hold, resolve, delayed-line event, bin flag. *Proof:* `PickExceptionTests` (PEX-1 to 10).
 - [x] **F10** Pack: open, scan, weight, complete, packed event, idempotent. *Proof:* `PackStationTests` (PAK-1 to 13).
 - [x] **F11** Packing slip from Orders at print time, print through the printer port. *Proof:* `PackingSlipTests` (SLP-1 to 8).
-- [ ] **F12** Endpoints, permissions, authorization matrix rows. *Proof:* `FulfilmentEndpointsTests`, matrix test (APP-1, 2).
+- [x] **F12** Endpoints, permissions, authorization matrix rows. *Proof:* `FulfilmentEndpointsTests`, matrix test (APP-1, 2).
 - [x] **F13** Notifications consumer for `OrderLineDelayedEvent` with a template. *Proof:* `DelayedLineNotificationTests` (PEX-3).
 - [x] **F14** Scan log purge job. *Proof:* `ScanLogPurgeTests`.
 
@@ -35,9 +35,9 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 - [ ] **A5** Playwright journey: confirmed order to packed parcel, with a scan refusal and an exception; axe. *Proof:* `e2e/fulfilment/pick-pack.e2e.spec.ts`.
 
 ## Tests beyond unit and integration (as for S12b)
-- [ ] **T1** Security tests: permission on every route, no cross-role access, hostile scan input, oversized bodies. *Proof:* `FulfilmentSecurityTests`.
-- [ ] **T2** Concurrency: two pickers, two orders for the last unit, repeated completion. *Proof:* `FulfilmentConcurrencyTests`.
-- [ ] **T3** Performance: scan latency p95 under 300 ms; 200 orders allocated at once. *Proof:* `FulfilmentPerformanceTests`.
+- [x] **T1** Security tests: permission on every route, no cross-role access, hostile scan input, oversized bodies. *Proof:* `FulfilmentSecurityTests`.
+- [x] **T2** Concurrency: two pickers, two orders for the last unit, repeated completion. *Proof:* `FulfilmentConcurrencyTests`.
+- [x] **T3** Performance: scan latency p95 under 300 ms; 200 orders allocated at once. *Proof:* `FulfilmentPerformanceTests`.
 - [ ] **T4** Pen test script for the fulfilment routes. *Proof:* `scripts/security/fulfilment-pentest.mjs`.
 
 ## Close-out

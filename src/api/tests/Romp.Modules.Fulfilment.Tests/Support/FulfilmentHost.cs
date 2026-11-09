@@ -104,7 +104,17 @@ internal sealed class FakeStockAllocator : IStockAllocator
     public void Stocked(long variantId, string gtin, params (long BinId, string BinCode, string WalkKey, int Quantity)[] bins) =>
         Stock[variantId] = (gtin, $"SKU-{variantId}", [.. bins]);
 
+    private readonly object _gate = new();
+
     public Task<AllocationResult> AllocateAsync(string orderKey, IReadOnlyList<AllocationLineRequest> lines, CancellationToken cancellationToken)
+    {
+        lock (_gate)
+        {
+            return Task.FromResult(AllocateLocked(orderKey, lines));
+        }
+    }
+
+    private AllocationResult AllocateLocked(string orderKey, IReadOnlyList<AllocationLineRequest> lines)
     {
         AllocateCalls++;
         var claims = Claims.TryGetValue(orderKey, out var existing) ? existing : Claims[orderKey] = [];
@@ -144,7 +154,7 @@ internal sealed class FakeStockAllocator : IStockAllocator
         }
 
         var wanted = lines.Select(l => l.VariantId).ToHashSet();
-        return Task.FromResult(new AllocationResult([.. claims.Where(c => wanted.Contains(c.VariantId))], shortages));
+        return new AllocationResult([.. claims.Where(c => wanted.Contains(c.VariantId))], shortages);
     }
 
     public Task ReleaseAsync(string orderKey, CancellationToken cancellationToken)
@@ -156,9 +166,12 @@ internal sealed class FakeStockAllocator : IStockAllocator
 
     public Task ConfirmPickAsync(string orderKey, IReadOnlyList<PickedUnit> picks, string staff, CancellationToken cancellationToken)
     {
-        if (Confirmed.All(c => c.Key != orderKey))
+        lock (_gate)
         {
-            Confirmed.Add((orderKey, picks, staff));
+            if (Confirmed.All(c => c.Key != orderKey))
+            {
+                Confirmed.Add((orderKey, picks, staff));
+            }
         }
 
         return Task.CompletedTask;
