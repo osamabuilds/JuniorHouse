@@ -336,11 +336,21 @@ const ordersMethods: Readonly<Record<string, readonly string[]>> = {
   '/customer-api/orders/cod/cancel': ['POST'],
   '/customer-api/orders/lookup': ['POST'],
   '/customer-api/orders/lookup/link': ['GET'],
+  // Online payment (orders payments Y3): start or reopen the hosted page, and follow the result. The gateway's own webhook is never reachable
+  // from the browser origin: it talks to the API directly.
+  '/customer-api/orders/payments/start': ['POST'],
+  '/customer-api/orders/payments/status': ['GET'],
   '/customer-api/orders': ['POST'],
 };
 
-app.all('/customer-api/orders{/*splat}', express.json({ limit: '9kb' }), async (req, res) => {
-  const allowed = ordersMethods[req.path] ?? [];
+/**
+ * The pretend payment page of the fake gateway (local stack only; the API maps it only when the fake gateway is on, and refuses to start
+ * with it anywhere else). It lives on this origin so the browser can reach it and come back with its cookies. Exactly one shape is allowed.
+ */
+const fakePaymentPage = /^\/customer-api\/orders\/payments\/fake\/fk_[0-9a-f]{24}(\/complete)?$/;
+
+app.all('/customer-api/orders{/*splat}', express.json({ limit: '9kb' }), express.urlencoded({ extended: false, limit: '1kb' }), async (req, res) => {
+  const allowed = ordersMethods[req.path] ?? (fakePaymentPage.test(req.path) ? (req.path.endsWith('/complete') ? ['POST'] : ['GET']) : []);
   if (!allowed.includes(req.method)) {
     res.status(404).end();
     return;
@@ -353,19 +363,34 @@ app.all('/customer-api/orders{/*splat}', express.json({ limit: '9kb' }), async (
     }
     const forwardedFor = [req.header('x-forwarded-for'), req.socket.remoteAddress].filter(Boolean).join(', ');
     if (forwardedFor) headers['x-forwarded-for'] = forwardedFor;
-    const sendsJson = req.method === 'POST' && req.body && Object.keys(req.body).length > 0;
+    const sendsJson = req.method === 'POST' && req.is('application/json') !== false && req.body && Object.keys(req.body).length > 0;
+    const sendsForm = req.method === 'POST' && !!req.is('application/x-www-form-urlencoded') && req.body && Object.keys(req.body).length > 0;
     if (sendsJson) headers['content-type'] = 'application/json';
+    if (sendsForm) headers['content-type'] = 'application/x-www-form-urlencoded';
     const target = new URL(req.path.replace('/customer-api/orders', '/api/orders'), apiBaseUrl);
     target.search = new URL(req.originalUrl, apiBaseUrl).search;
     const upstream = await fetch(target, {
       method: req.method,
       headers,
-      body: sendsJson ? JSON.stringify(req.body) : undefined,
+      body: sendsJson ? JSON.stringify(req.body) : sendsForm ? new URLSearchParams(req.body as Record<string, string>).toString() : undefined,
       redirect: 'manual',
     });
     res.status(upstream.status);
     const type = upstream.headers.get('content-type');
     if (type) res.setHeader('content-type', type);
+    // Only the pretend payment page redirects, and only back to a path on this shop: never to anywhere else the API might name.
+    const location = upstream.headers.get('location');
+    if (location && location.startsWith('/') && !location.startsWith('//')) {
+      res.setHeader('location', location);
+    } else if (location) {
+      // The API may name the shop by its public address: that is allowed only when it is this very host, and it is sent on as a plain path.
+      try {
+        const target = new URL(location);
+        if ((target.protocol === 'http:' || target.protocol === 'https:') && target.host === req.get('host')) res.setHeader('location', `${target.pathname}${target.search}`);
+      } catch {
+        // not an address: no redirect
+      }
+    }
     const cookies = upstream.headers.getSetCookie();
     if (cookies.length > 0) res.setHeader('set-cookie', cookies);
     res.setHeader('cache-control', 'private, no-store');

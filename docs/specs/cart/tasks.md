@@ -47,7 +47,7 @@ Plan: [plan.md](plan.md) (approved 2026-11-02) · Specs: [carts](carts/spec.md),
 - [x] **D3** Apply and remove on the cart, second code refused, code dropped with a notice when rules stop holding. *Proof:* `ApplyDiscountTests` (DSC-4, 13).
 - [x] **D4** `discount-apply` rate limiter (10 per 15 minutes per address and per owner). *Proof:* `SecurityBaselineTests` discount policy + `DiscountEndpointsTests` (DSC-8).
 - [x] **D5** Redemption `HoldAsync` / `ReleaseAsync` (row lock, caps, per-customer limit, guests by mobile hash) and the sweeper. *Proof:* `RedemptionHoldTests` against PostgreSQL: two holds for the last redemption, one wins (DSC-10); the sweeper test in the same class.
-- [ ] **D6** Event handlers `OrderPlacedEvent` (confirm, empty cart) and `OrderCancelledEvent` (release) through `OrderEventMapper`, behind the inbox. *Proof:* `RedemptionEventHandlerTests` incl. redelivery.
+- [x] **D6** Event handlers `OrderPlacedEvent` (confirm, empty cart) and `OrderCancelledEvent` (release) through `OrderEventMapper`, behind the inbox. *Proof:* `RedemptionEventHandlerTests` incl. redelivery.
 - [x] **D7** Admin endpoints `/api/discounts` create, change, deactivate, list (paged), audited; `discounts.manage`. *Proof:* `DiscountAdminEndpointsTests`, matrix test. Audit (DSC-11) is the Cart context audit interceptor, already proved for the module.
 - [x] **D8** Storefront code box (cart and checkout) with specific inline reasons; admin `features/cart/discount-codes`. *Proof:* component specs, `discount.e2e.spec.ts`.
 

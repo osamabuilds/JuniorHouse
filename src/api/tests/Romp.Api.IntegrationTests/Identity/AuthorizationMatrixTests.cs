@@ -42,6 +42,9 @@ public sealed class AuthorizationMatrixTests(ProductionApiFixture api)
         "POST /api/orders/cod/cancel",
         "POST /api/orders/lookup/", // guest order look-up (orders/order-lookup L4): order number + mobile, CAPTCHA after failures, strict rate limit, Origin check, one generic mismatch
         "GET /api/orders/lookup/link", // the signed track link from the order email: the signature is the authority and names one order
+        "POST /api/orders/payments/webhook/{provider}", // the payment gateway callback: no session, the proof is the signature on the body, checked before it is read (orders payments PAY-4, SEC-10)
+        "POST /api/orders/payments/start", // open or reopen the hosted payment page: the signed token from placing the order names one order (PAY-3, SEC-05)
+        "GET /api/orders/payments/status", // the return page state: the same signed token, only the stored state is shown (PAY-10)
         "POST /api/newsletter/subscribe", // newsletter consent (customers/newsletter NL7): a visitor's email, strict rate limit, Origin check
         "GET /api/newsletter/unsubscribe", // the signed link in an email: the signature is the authority and names one record
         "POST /api/newsletter/unsubscribe", // the one-click form mail clients send (List-Unsubscribe-Post)

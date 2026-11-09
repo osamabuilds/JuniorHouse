@@ -49,8 +49,8 @@ export class CheckoutApi {
           },
       paymentMethod: form.paymentMethod,
     };
-    return this.http.post<{ orderNumber: string; wasRepeat: boolean; confirmToken?: string | null }>(ORDERS, body, { headers: { 'Idempotency-Key': key } }).pipe(
-      map((r): PlaceResult => ({ status: 'placed', orderNumber: r.orderNumber, wasRepeat: r.wasRepeat, confirmToken: r.confirmToken ?? null })),
+    return this.http.post<{ orderNumber: string; wasRepeat: boolean; confirmToken?: string | null; payToken?: string | null }>(ORDERS, body, { headers: { 'Idempotency-Key': key } }).pipe(
+      map((r): PlaceResult => ({ status: 'placed', orderNumber: r.orderNumber, wasRepeat: r.wasRepeat, confirmToken: r.confirmToken ?? null, payToken: r.payToken ?? null })),
       catchError((e: unknown) => of(toFailure(e))),
     );
   }

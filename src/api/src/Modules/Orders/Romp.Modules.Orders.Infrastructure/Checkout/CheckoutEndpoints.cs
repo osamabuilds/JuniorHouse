@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Romp.BuildingBlocks.Web;
 using Romp.Modules.Orders.Application.Checkout;
 using Romp.Modules.Orders.Application.Orders;
+using Romp.Modules.Orders.Application.Payments;
 
 namespace Romp.Modules.Orders.Infrastructure.Checkout;
 
@@ -19,7 +20,8 @@ public sealed record PlaceOrderRequest(CheckoutContact? Contact, CheckoutAddress
 /// <summary>What the browser gets for a refused order: why, in words, and which variants were short so the bag can point at them.</summary>
 public sealed record OrderRefusedResponse(string Reason, IReadOnlyList<string> Messages, IReadOnlyList<long> ShortVariantIds);
 
-public sealed record OrderPlacedResponse(string OrderNumber, bool WasRepeat, string? ConfirmToken);
+/// <summary><see cref="PayToken"/> is set for an online order only: it lets this shopper start and follow the payment of this one order (PAY-3).</summary>
+public sealed record OrderPlacedResponse(string OrderNumber, bool WasRepeat, string? ConfirmToken, string? PayToken = null);
 
 /// <summary>The signed link from the confirmation page or email. It carries only the token; the order is inside it.</summary>
 public sealed record CodResponseRequest(string? Token);
@@ -54,7 +56,7 @@ internal static class CheckoutEndpoints
         orders.MapGet("/checkout", async (ISender sender, CancellationToken cancellationToken, int? cityId = null, string? method = null) =>
             Results.Ok(await sender.Send(new GetCheckoutSummaryQuery(cityId, method), cancellationToken)));
 
-        orders.MapGet("/payment-methods", (IOptions<OrdersOptions> options) => Results.Ok(PaymentMethodCatalog.Available(options.Value)));
+        orders.MapGet("/payment-methods", (IOptions<OrdersOptions> options, IGatewayAvailability gateway) => Results.Ok(PaymentMethodCatalog.Available(options.Value, gateway.IsAvailable)));
 
         endpoints.MapSecuredGroup("/api/orders", Policies.Public)
             .WithTags("Orders")
@@ -65,11 +67,12 @@ internal static class CheckoutEndpoints
                 [FromHeader(Name = "Idempotency-Key")] string? key,
                 ISender sender,
                 IOptions<OrdersOptions> options,
+                IGatewayAvailability gateway,
                 CancellationToken cancellationToken) =>
             {
                 // Only a method the shop offers now can be chosen: an online method stays off until a payment gateway is switched on (PAY-7).
                 if (PaymentMethodCatalog.IdOf(body.PaymentMethod) is not { } methodId
-                    || PaymentMethodCatalog.Available(options.Value).All(m => m.Id != methodId))
+                    || PaymentMethodCatalog.Available(options.Value, gateway.IsAvailable).All(m => m.Id != methodId))
                 {
                     return Results.ValidationProblem(new Dictionary<string, string[]> { ["paymentMethod"] = ["Choose a payment method."] });
                 }
@@ -78,7 +81,7 @@ internal static class CheckoutEndpoints
                     new PlaceOrderCommand(key ?? string.Empty, body.Contact ?? new CheckoutContact(null, null, null, false), body.Address, body.SavedAddressId, methodId),
                     cancellationToken);
                 return result.Outcome == PlaceOrderOutcome.Placed
-                    ? Results.Json(new OrderPlacedResponse(result.OrderNumber!, result.WasRepeat, result.ConfirmToken), statusCode: result.WasRepeat ? StatusCodes.Status200OK : StatusCodes.Status201Created)
+                    ? Results.Json(new OrderPlacedResponse(result.OrderNumber!, result.WasRepeat, result.ConfirmToken, result.PayToken), statusCode: result.WasRepeat ? StatusCodes.Status200OK : StatusCodes.Status201Created)
                     : Results.Json(new OrderRefusedResponse(result.Refusal.ToString(), result.Messages, result.ShortVariantIds), statusCode: StatusCodes.Status409Conflict);
             })
             .AddEndpointFilter<OrdersOriginCheckFilter>()

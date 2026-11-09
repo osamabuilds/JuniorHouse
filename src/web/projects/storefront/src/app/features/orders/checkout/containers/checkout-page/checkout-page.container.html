@@ -124,6 +124,12 @@
 
           <section class="rp-step" aria-labelledby="co-payment">
             <h2 class="rp-step__h" id="co-payment"><span class="rp-step__n" aria-hidden="true">3</span>Payment</h2>
+            @if (s.onlinePaymentsPaused) {
+              <div class="rp-notice" role="status">
+                <rp-icon name="alert" />
+                <div><b>Online payment is unavailable for a moment</b><br />Cash on Delivery is still available, and online payment will be back shortly.</div>
+              </div>
+            }
             <fieldset class="rp-optgroup">
               <legend class="sr-only">Payment method</legend>
               @for (m of s.paymentMethods; track m.code) {

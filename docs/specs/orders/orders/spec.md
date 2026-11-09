@@ -60,3 +60,12 @@ Pick/pack/dispatch statuses beyond a placeholder for "dispatched" (S14/S15), ret
 - [x] **Q-ORD-4 Status set.** Proposed lookup: Pending Confirmation, Confirmed, Cancelled, Payment Pending, Paid, Dispatched, Delivered (later sprints add the rest). Confirm names. **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-ORD-5 Stock decrement vs reservation.** Does placement decrement on-hand or only reserve (available = on-hand − reserved) until pick? Recommendation: reserve only; on-hand decreases at pick/dispatch in the ledger (S14). See [reservations](../../warehouse/reservations/spec.md). **Approved (owner, 2026-11-02: approve all recommendations).**
 - [x] **Q-ORD-6 Partition key** for the orders table: confirm placement date by month (BRD §12.6). **Approved (owner, 2026-11-02: approve all recommendations).**
+
+## As built: a customer reads their own orders (S12b, 2026-11-09)
+
+ORD-13 and ORD-14 for the customer side (the staff side was built with the queue):
+
+- `GET /api/orders/mine` (paged, newest first) and `GET /api/orders/mine/{orderNumber}`, behind the customer policy; never cached. The customer is the one on the session: no route, query or body carries a customer id, and the customer is part of the same SQL statement that reads the rows. Another customer's order, a guest's order, an unknown number and a malformed number are all the same `404` (SEC-05).
+- A page is two statements however many orders there are (a count, and the page with the line count and payment status as subqueries); one order is a few statements (`AsSplitQuery`). Page size is clamped to 1 to 100, never rejected.
+- The detail shows the status, payment status (an order under review says "Being checked" and never why), totals, the delivery name and address, the lines and a simple status timeline. It carries no email, mobile number or staff note.
+- Proof: `MyOrdersTests` (including the query counts) and `PaymentEndpointsTests` (another customer and a guest over HTTP). The storefront "My orders" screen belongs to S15 (FR-36); only the API exists now.

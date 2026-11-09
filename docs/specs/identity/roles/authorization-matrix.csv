@@ -45,6 +45,11 @@ POST,/api/orders/cod/confirm,anonymous
 POST,/api/orders/cod/cancel,anonymous
 POST,/api/orders/lookup/,anonymous
 GET,/api/orders/lookup/link,anonymous
+POST,/api/orders/payments/webhook/{provider},anonymous
+POST,/api/orders/payments/start,anonymous
+GET,/api/orders/payments/status,anonymous
+GET,/api/orders/mine/,customer
+GET,/api/orders/mine/{orderNumber},customer
 POST,/api/newsletter/subscribe,anonymous
 GET,/api/newsletter/unsubscribe,anonymous
 POST,/api/newsletter/unsubscribe,anonymous
@@ -261,6 +266,8 @@ GET,/api/storefront/menu,anonymous
 GET,/api/storefront/pages/{slug},anonymous
 GET,/api/storefront/products/by-path,anonymous
 GET,/api/storefront/products/summaries,anonymous
+GET,/api/storefront/products/recommendations/,anonymous
+POST,/api/storefront/products/recommendations/events,anonymous
 GET,/api/storefront/search/,anonymous
 GET,/api/storefront/search/sku,anonymous
 GET,/api/storefront/search/suggest,anonymous

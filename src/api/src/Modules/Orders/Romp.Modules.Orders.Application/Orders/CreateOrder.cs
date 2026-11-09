@@ -5,6 +5,7 @@ using Romp.Modules.Cart.Contracts;
 using Romp.Modules.Orders.Application.Abstractions;
 using Romp.Modules.Orders.Application.Checkout;
 using Romp.Modules.Orders.Domain.Orders;
+using Romp.Modules.Orders.Domain.Payments;
 
 namespace Romp.Modules.Orders.Application.Orders;
 
@@ -66,6 +67,12 @@ public sealed class CreateOrderCommandHandler(IOrdersDbContext dbContext, IOrder
 
         // The event carries the new id, so the order is saved first and then marked placed in the same transaction.
         order.MarkPlaced();
+
+        // The payment row is written in the same transaction (Y2): owed on delivery for cash on delivery, or waiting for a gateway session with a window
+        // that expires the order if it stays unpaid (PAY-11). The amount is the server-priced order total, never anything from the client (SEC-09).
+        dbContext.Payments.Add(isCod
+            ? Payment.ForCashOnDelivery(order.Id, order.Total)
+            : Payment.ForOnline(order.Id, request.PaymentMethodId, order.Total, now.AddMinutes(settings.PaymentWindowMinutes)));
         await dbContext.SaveChangesAsync(cancellationToken);
         return new CreatedOrder(order.Id, order.OrderNumber);
     }

@@ -21,4 +21,8 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Persistence\Romp.BuildingBlocks.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Romp.Modules.Cart.Tests" />
+  </ItemGroup>
+
 </Project>

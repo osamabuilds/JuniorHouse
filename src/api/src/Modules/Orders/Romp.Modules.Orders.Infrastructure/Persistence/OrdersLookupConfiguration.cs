@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Romp.Modules.Orders.Domain.Orders;
+using Romp.Modules.Orders.Domain.Payments;
 
 namespace Romp.Modules.Orders.Infrastructure.Persistence;
 
@@ -26,6 +27,27 @@ internal static class OrdersLookupConfiguration
             (PaymentMethods.Easypaisa, "EASY", "Easypaisa", "Pay online with Easypaisa"),
             (PaymentMethods.JazzCash, "JAZZ", "JazzCash", "Pay online with JazzCash"),
             (PaymentMethods.Card, "CARD", "Card", "Pay online with a debit or credit card"));
+
+        Configure<PaymentStatusLookup>(modelBuilder, "PAYM_STS_LKP",
+            (PaymentStatuses.Initiated, "INIT", "Initiated", "The payment exists but no gateway session has been opened"),
+            (PaymentStatuses.Pending, "PEND", "Pending", "Waiting for the gateway (online) or for the courier (cash on delivery)"),
+            (PaymentStatuses.Paid, "PAID", "Paid", "The gateway confirmed the full amount"),
+            (PaymentStatuses.Failed, "FAIL", "Failed", "The gateway declined; the shopper may try again"),
+            (PaymentStatuses.Expired, "EXPR", "Expired", "The payment window passed without payment"),
+            (PaymentStatuses.InReview, "REVW", "In review", "Held for staff: wrong amount, late payment or a duplicate charge"));
+
+        Configure<PaymentReviewReasonLookup>(modelBuilder, "PAYM_RVW_LKP",
+            (PaymentReviewReasons.AmountMismatch, "AMNT", "Amount mismatch", "The gateway amount is not the order total"),
+            (PaymentReviewReasons.OrderNotPayable, "LATE", "Order not payable", "Money arrived for an order that was already cancelled or expired"),
+            (PaymentReviewReasons.DuplicateCharge, "DUPL", "Duplicate charge", "A second attempt was charged after the order was already paid"));
+
+        Configure<WebhookOutcomeLookup>(modelBuilder, "WBHK_OTCM_LKP",
+            (WebhookOutcomes.Rejected, "RJCT", "Rejected", "Missing, bad or stale signature, or unreadable"),
+            (WebhookOutcomes.Applied, "APLD", "Applied", "Verified and applied to the payment"),
+            (WebhookOutcomes.Duplicate, "DUPL", "Duplicate", "The same event was already handled"),
+            (WebhookOutcomes.Unmatched, "UNMT", "Unmatched", "Verified, but about a payment attempt we do not know"),
+            (WebhookOutcomes.Flagged, "FLAG", "Flagged", "Verified, but held for staff review"),
+            (WebhookOutcomes.Ignored, "IGNR", "Ignored", "Verified, but nothing to change"));
 
         Configure<CancelReasonLookup>(modelBuilder, "CNCL_RSN_LKP",
             (CancelReasons.Staff, "STAF", "Staff", "Cancelled by a member of staff"),
