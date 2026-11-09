@@ -45,16 +45,18 @@ public sealed class SearchListingQueryHandler(
 
         var projected = ListingTiles.Project(db, products, matching);
 
-        // Every sort ends in the unique id, so pages never repeat or skip a product.
+        // In-stock products come first, then the chosen sort applies inside each group (SLD-2). Every sort ends in the unique id,
+        // so pages never repeat or skip a product.
+        var grouped = projected.OrderBy(x => !x.InStock);
         var ordered = filter.Sort switch
         {
-            ListingSort.PriceAscending => projected.OrderBy(x => x.From).ThenBy(x => x.Id),
-            ListingSort.PriceDescending => projected.OrderByDescending(x => x.From).ThenBy(x => x.Id),
-            _ => projected.OrderByDescending(x => x.PublishedAt).ThenByDescending(x => x.Id),
+            ListingSort.PriceAscending => grouped.ThenBy(x => x.From).ThenBy(x => x.Id),
+            ListingSort.PriceDescending => grouped.ThenByDescending(x => x.From).ThenBy(x => x.Id),
+            _ => grouped.ThenByDescending(x => x.PublishedAt).ThenByDescending(x => x.Id),
         };
 
         var page = await ordered.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync(cancellationToken);
-        var tiles = await ListingTiles.BuildAsync(db, page, cancellationToken);
+        var tiles = await ListingTiles.BuildAsync(db, page, new TileContext(filter.Colours, settings.LowStockThreshold, cutoff), cancellationToken);
 
         var maxSaving = tiles.Count == 0 ? 0 : tiles.Max(t => t.SavingPercent);
         var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)filter.PageSize));
@@ -80,6 +82,11 @@ public sealed class SearchListingQueryHandler(
             ListingScopeKind.Audience => BreadcrumbTrail.For(gender, null, null),
             ListingScopeKind.Category => BreadcrumbTrail.For(gender, new MenuCategoryRef(s.Category!.Code, s.Category.Name), null),
             ListingScopeKind.NewIn or ListingScopeKind.Sale => (IReadOnlyList<Crumb>)[new Crumb(BreadcrumbTrail.HomeLabel, "/"), new Crumb(s.Gender!.Name, "/" + CodeSegment.Of(s.Gender.Code)), new Crumb(s.Title, null)],
+            ListingScopeKind.CollectionCategory => (IReadOnlyList<Crumb>)[
+                new Crumb(BreadcrumbTrail.HomeLabel, "/"),
+                new Crumb("Collections", "/collections"),
+                new Crumb(s.Collection!.Name, "/collections/" + CodeSegment.Of(s.Collection.Code)),
+                new Crumb(s.Category!.Name, null)],
             _ => BreadcrumbTrail.ForPage(s.Title),
         };
         return trail.Select(c => new BreadcrumbDto(c.Label, c.Path)).ToList();

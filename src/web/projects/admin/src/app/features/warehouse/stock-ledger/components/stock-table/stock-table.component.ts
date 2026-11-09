@@ -39,7 +39,12 @@ import { StockVariantRowDto } from '../../models';
                 {{ row.onHand }}
                 <br /><small>{{ row.onHandAccepted }} accepted, {{ row.onHandConcession }} concession</small>
               </td>
-              <td data-label="Available">{{ row.available }}</td>
+              <td data-label="Available">
+                {{ row.available }}
+                @if (row.reserved > 0) {
+                  <br /><small>{{ row.reserved }} reserved for orders</small>
+                }
+              </td>
               <td data-label="Where it is">
                 @if (row.bins.length === 0) {
                   <span class="badge badge--muted">In no bin</span>

@@ -1,15 +1,19 @@
 import { RESPONSE_INIT } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { provideStore } from '@ngrx/store';
+import { Store, provideState, provideStore } from '@ngrx/store';
+import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
 import { of } from 'rxjs';
 import { provideSiteSettings } from '../../../site-settings';
 import { ListingResult, ListingTile } from '../../models/listing.model';
+import { EMPTY_FILTER, listingKey } from '../../models/listing-query';
 import { ListingsApi } from '../../services/listings-api.service';
+import { ListingsActions } from '../../store/listings.actions';
 import { provideListings } from '../../listings.providers';
 import { ListingPageContainer } from './listing-page.container';
 
 const tile = (n: number, extra: Partial<ListingTile> = {}): ListingTile => ({
+  productId: n,
   path: `/girls/dresses/dress-${n}`,
   name: `Dress ${n}`,
   price: 800,
@@ -34,12 +38,13 @@ const ok = (tiles: ListingTile[], over: Record<string, unknown> = {}): ListingRe
   empty: tiles.length === 0 ? { suggestions: [{ label: 'New in', path: '/girls/new-in' }] } : null,
 });
 
-function render(result: ListingResult, query: Record<string, string | string[]> = {}, responseInit?: ResponseInit): { el: HTMLElement; get: ReturnType<typeof vi.fn> } {
+function render(result: ListingResult, query: Record<string, string | string[]> = {}, responseInit?: ResponseInit, route: { params?: Record<string, string>; kind?: string } = {}): { el: HTMLElement; get: ReturnType<typeof vi.fn>; fixture: ComponentFixture<ListingPageContainer> } {
   const get = vi.fn(() => of(result));
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
       provideStore({}),
+      provideState(wishlistFeature),
       provideSiteSettings(),
       provideListings(),
       { provide: ListingsApi, useValue: { get } },
@@ -47,9 +52,9 @@ function render(result: ListingResult, query: Record<string, string | string[]> 
       {
         provide: ActivatedRoute,
         useValue: {
-          paramMap: of(convertToParamMap({ gender: 'girls', category: 'dresses' })),
+          paramMap: of(convertToParamMap(route.params ?? { gender: 'girls', category: 'dresses' })),
           queryParamMap: of(convertToParamMap(query)),
-          data: of({ kind: 'category' }),
+          data: of({ kind: route.kind ?? 'category' }),
           snapshot: {},
         },
       },
@@ -59,10 +64,75 @@ function render(result: ListingResult, query: Record<string, string | string[]> 
   fixture.detectChanges();
   TestBed.flushEffects?.();
   fixture.detectChanges();
-  return { el: fixture.nativeElement as HTMLElement, get };
+  return { el: fixture.nativeElement as HTMLElement, get, fixture };
 }
 
+describe('ListingPageContainer season category', () => {
+  const season = { params: { code: 'winter', category: 'jackets' }, kind: 'collection' };
+  const crumbs = [{ label: 'Home', path: '/' }, { label: 'Collections', path: '/collections' }, { label: 'Winter', path: '/collections/winter' }, { label: 'Jackets', path: null }];
+
+  it('SLD-10 /collections/winter/jackets asks for the collection scope with the category and shows the four-level breadcrumb', () => {
+    const { el, get } = render(ok([tile(1)], { title: 'Winter Jackets', scopeKind: 'Collection', breadcrumbs: crumbs }), {}, undefined, season);
+    expect(get).toHaveBeenCalledWith({ kind: 'collection', collection: 'winter', category: 'jackets' }, expect.anything());
+    const items = [...el.querySelectorAll('nav[aria-label="Breadcrumb"] li')].map((li) => li.textContent!.trim());
+    expect(items).toEqual(['Home', 'Collections', 'Winter', 'Jackets']);
+    expect(el.querySelector('nav[aria-label="Breadcrumb"] [aria-current="page"]')!.textContent).toContain('Jackets');
+    expect(el.querySelector('h1')!.textContent).toContain('Winter Jackets');
+  });
+
+  it('SLD-10 its filter form posts to the season category address', () => {
+    const { el } = render(ok([tile(1)], { title: 'Winter Jackets', breadcrumbs: crumbs }), {}, undefined, season);
+    expect(el.querySelector('.rp-filterbar__desktop form')!.getAttribute('action')).toBe('/collections/winter/jackets');
+  });
+});
+
+describe('ListingPageContainer in stock only', () => {
+  it('SLD-4 stock=in is kept in the URL, sent to the API and shown as a removable chip', () => {
+    const { el, get } = render(ok([tile(1)]), { stock: 'in' });
+    expect(get).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ inStockOnly: true }));
+    const chip = [...el.querySelectorAll('rp-active-filters a.rp-chip')].find((a) => a.textContent!.includes('In stock only'))!;
+    expect(chip).toBeTruthy();
+    expect(chip.getAttribute('href')).toBe('/girls/dresses');
+  });
+});
+
 describe('ListingPageContainer', () => {
+  it('FLT-5 while a new filter loads, the previous cards stay, dimmed and marked busy, and the page never flashes blank', () => {
+    const { el, fixture } = render(ok([tile(1), tile(2)]));
+    expect(el.querySelector('[aria-busy="true"]')).toBeNull();
+    // The visitor changes the filter: a request for another key of the same listing is under way.
+    const scope = { kind: 'category' as const, gender: 'girls', category: 'dresses' };
+    const filter = { ...EMPTY_FILTER, sizes: ['5-6y'] };
+    TestBed.inject(Store).dispatch(ListingsActions.load({ key: listingKey(scope, filter), scope, filter }));
+    fixture.detectChanges();
+    const grid = el.querySelector('[aria-busy="true"]')!;
+    expect(grid).not.toBeNull();
+    expect(grid.classList.contains('is-loading')).toBe(true);
+    expect(grid.querySelectorAll('rp-product-tile').length).toBe(2);
+    expect(el.textContent).not.toContain('Loading');
+  });
+
+  it('FLT-5 a different listing never shows the previous listing page', () => {
+    const { el, fixture } = render(ok([tile(1)]));
+    const scope = { kind: 'category' as const, gender: 'boys', category: 'shirts' };
+    TestBed.inject(Store).dispatch(ListingsActions.load({ key: listingKey(scope, EMPTY_FILTER), scope, filter: EMPTY_FILTER }));
+    fixture.detectChanges();
+    expect(el.querySelector('rp-product-tile')).toBeNull();
+    expect(el.textContent).toContain('Loading');
+  });
+
+  it('FLT-8 shows how many of the pieces this page holds under the grid', () => {
+    const { el } = render(ok([tile(1), tile(2)], { total: 48, page: 2, pageSize: 24, totalPages: 2 }));
+    expect(el.querySelector('.rp-range')!.textContent!.trim()).toBe('Showing 25-26 of 48');
+  });
+
+  it('LST-12 headings never skip a level: the product names sit under an h2, not straight under the h1', () => {
+    const { el } = render(ok([tile(1), tile(2)]));
+    const levels = [...el.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => Number(h.tagName[1]));
+    expect(levels[0]).toBe(1);
+    levels.forEach((l, i) => i > 0 && expect(l - levels[i - 1]).toBeLessThanOrEqual(1));
+  });
+
   it('LST-12 shows one h1, the breadcrumb, and the tiles as articles in a list', () => {
     const { el } = render(ok([tile(1), tile(2)]));
     expect(el.querySelectorAll('h1').length).toBe(1);
@@ -90,10 +160,11 @@ describe('ListingPageContainer', () => {
 
   it('LST-12 the filters are a real GET form with labelled fieldsets, working without scripting', () => {
     const { el } = render(ok([tile(1)]));
-    const form = el.querySelector('form.rp-filters')!;
+    const form = el.querySelector('.rp-filterbar__phone form')!;
+    expect(el.querySelector('.rp-filterbar__desktop form')!.getAttribute('method')).toBe('get');
     expect(form.getAttribute('method')).toBe('get');
     expect(form.getAttribute('action')).toBe('/girls/dresses');
-    expect([...form.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Size', 'Colour', 'Price (Rs.)', 'Sort']);
+    expect([...form.querySelectorAll('legend')].map((l) => l.textContent!.trim())).toEqual(['Size', 'Colour', 'Price (Rs.)', 'Availability', 'Sort']);
     expect(form.querySelector('input[type="checkbox"][name="size"]')).not.toBeNull();
     expect(form.querySelector('button[type="submit"]')).not.toBeNull();
   });

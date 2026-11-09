@@ -1,6 +1,11 @@
+import { provideHttpClient } from '@angular/common/http';
+import { WishlistActions } from '../../features/customers/wishlist/store/wishlist.actions';
+import { wishlistFeature } from '../../features/customers/wishlist/store/wishlist.reducer';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideCart } from '../../features/cart/carts/cart.providers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideStore } from '@ngrx/store';
+import { provideStore, provideState } from '@ngrx/store';
 import { NavigationActions, provideNavigation } from '../../features/storefront/navigation';
 import { sampleMenu } from '../../features/storefront/navigation/testing/sample-menu';
 import { Menu } from '../../features/storefront/navigation/models/menu.model';
@@ -9,10 +14,12 @@ import { SiteSettingsActions } from '../../features/storefront/site-settings';
 import { launchSettings } from '../../shared/data/launch-settings';
 import { SiteHeaderComponent } from './site-header.component';
 import { Store } from '@ngrx/store';
+import { CustomerAuthActions } from '../../core/customer-auth/store/customer-auth.actions';
+import { customerAuthFeature } from '../../core/customer-auth/store/customer-auth.reducer';
 
 function render(menu: Menu = sampleMenu): ComponentFixture<SiteHeaderComponent> {
   TestBed.configureTestingModule({
-    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings(), provideNavigation()],
+    providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideState(wishlistFeature), provideState(customerAuthFeature), provideSiteSettings(), provideNavigation(), provideHttpClient(), provideHttpClientTesting(), provideCart()],
   });
   const store = TestBed.inject(Store);
   store.dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));
@@ -104,6 +111,22 @@ describe('SiteHeaderComponent', () => {
     expect(input.getAttribute('aria-label')).toBe('Search');
   });
 
+  it('SC-10 the desktop search field opens the overlay on click and Enter, never on focus (closing returns focus to it, which would reopen the overlay)', () => {
+    const f = render();
+    let opened = 0;
+    f.componentInstance.searchOpen.subscribe(() => opened++);
+    const field = q(f, '.rp-search input') as HTMLInputElement;
+
+    field.focus();
+    field.dispatchEvent(new FocusEvent('focus'));
+    expect(opened).toBe(0);
+
+    field.click();
+    expect(opened).toBe(1);
+    field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+    expect(opened).toBe(2);
+  });
+
   it('SC-7 the menu and search icon buttons emit so the shell can open the dialogs', () => {
     const f = render();
     let menu = 0, search = 0;
@@ -135,10 +158,47 @@ describe('SiteHeaderComponent', () => {
     expect(q(f, '.rp-search-btn').getAttribute('aria-label')).toBe('Search');
   });
 
-  it('CR-5 has no account or bag control and no newsletter form until those features exist', () => {
+  it('HDR-1 on a phone the account is one 44px icon link: to sign-in for a guest, to the account page when signed in', () => {
+    const f = render();
+    const store = TestBed.inject(Store);
+    store.dispatch(CustomerAuthActions.sessionLoaded({ result: { status: 'signedOut' } }));
+    f.detectChanges();
+    const guest = q(f, 'a.rp-acct-icon');
+    expect(guest.getAttribute('href')).toBe('/account/sign-in');
+    expect(guest.getAttribute('aria-label')).toBe('Sign in');
+    expect(guest.classList.contains('rp-icon-btn')).toBe(true);
+    store.dispatch(CustomerAuthActions.sessionLoaded({ result: { status: 'ok', session: { firstName: 'Ayesha', emailVerified: true, csrfToken: 'x' } } }));
+    f.detectChanges();
+    const member = q(f, 'a.rp-acct-icon');
+    expect(member.getAttribute('href')).toBe('/account');
+    expect(member.getAttribute('aria-label')).toBe('Your account');
+  });
+
+  it('HDR-1 the icon is not drawn until the session is known, so a signed-in visitor never sees Sign in flash', () => {
+    const f = render();
+    expect(q(f, 'a.rp-acct-icon')).toBeNull();
+  });
+
+  it('CR-5 has a bag button that names its count, no account control and no newsletter form until those features exist', () => {
     const f = render();
     const labels = qa(f, 'button, a').map((e) => (e.getAttribute('aria-label') ?? '').toLowerCase());
-    expect(labels.some((l) => l.includes('account') || l.includes('bag'))).toBe(false);
+    expect(labels.some((l) => l.includes('account'))).toBe(false);
+    expect(labels).toContain('bag, 0 items');
     expect(q(f, 'input[type="email"]')).toBeNull();
+  });
+
+  it('WSL-1 the wishlist link names its count and shows a badge like the bag, for a guest too', () => {
+    const f = render();
+    const link = q(f, 'a[href="/wishlist"]');
+    expect(link.getAttribute('aria-label')).toBe('Wishlist, 0 products saved');
+    expect(link.querySelector('.rp-count')).toBeNull();
+
+    const store = TestBed.inject(Store);
+    store.dispatch(WishlistActions.sessionKnown({ signedIn: false }));
+    store.dispatch(WishlistActions.guestLoaded({ ids: [4, 5, 6] }));
+    f.detectChanges();
+
+    expect(link.getAttribute('aria-label')).toBe('Wishlist, 3 products saved');
+    expect(link.querySelector('.rp-count')!.textContent!.trim()).toBe('3');
   });
 });

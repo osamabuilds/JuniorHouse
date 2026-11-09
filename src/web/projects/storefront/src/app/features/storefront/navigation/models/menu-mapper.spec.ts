@@ -44,3 +44,25 @@ describe('toNavItems', () => {
     expect(baby.children[0].children[0].target).toEqual({ kind: 'path', path: '/baby/rompers' });
   });
 });
+
+describe('toNavItems tiles', () => {
+  const tile = {
+    eyebrow: 'New in',
+    line: 'Just arrived',
+    path: '/girls/new-in',
+    image: { altText: 'A red dress', width: 800, height: 1000, sources: [{ width: 640, webp: '/media/a-640.webp', jpeg: '/media/a-640.jpg' }] },
+  };
+
+  it('MGT-1 an audience that has a tile hands it to its entry, and one without leaves the entry as before', () => {
+    const menu = { ...sampleMenu, audiences: [{ ...sampleMenu.audiences[0], tile }, sampleMenu.audiences[1]] };
+    const items = toNavItems(menu);
+    expect(items[0].tile).toEqual(tile);
+    expect(items[1].tile).toBeUndefined();
+    expect('tile' in items[1]).toBe(false);
+  });
+
+  it('MGT-3 a null tile from the server is no tile', () => {
+    const menu = { ...sampleMenu, audiences: [{ ...sampleMenu.audiences[0], tile: null }] };
+    expect(toNavItems(menu)[0].tile).toBeUndefined();
+  });
+});

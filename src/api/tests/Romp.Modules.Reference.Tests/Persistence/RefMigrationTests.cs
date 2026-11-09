@@ -38,7 +38,7 @@ public sealed class RefMigrationTests : IAsyncLifetime
         Assert.Equal(3, await context.Set<GenderLookup>().CountAsync());
         Assert.Equal(5, await context.Set<AgeBracketLookup>().CountAsync());
         Assert.Equal(6, await context.Set<CategoryLookup>().CountAsync());
-        Assert.Equal(7, await context.Set<CityLookup>().CountAsync());
+        Assert.Equal(27, await context.Set<CityLookup>().CountAsync()); // 7 original + 20 seeded with their provinces (customers A1)
         Assert.Equal(4, await context.Set<PaymentTermLookup>().CountAsync());
         Assert.Equal(3, await context.Set<VendorSpecialisationLookup>().CountAsync());
         Assert.Equal(8, await context.Set<PoStatusLookup>().CountAsync()); // Sprint 3 added InProduction..Closed (ids 5-8)

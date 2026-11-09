@@ -28,15 +28,63 @@
             <rp-colour-options [path]="p.path" [colours]="p.colours" [selected]="p.selectedColour" />
           }
           @if (p.sizes.length > 0) {
-            <rp-size-options [path]="p.path" [sizes]="p.sizes" [colour]="p.selectedColour" [selected]="p.selectedSize" />
+            <rp-size-options #sizesArea [path]="p.path" [sizes]="p.sizes" [colour]="p.selectedColour" [selected]="p.selectedSize" />
           }
           <rp-availability-note [size]="chosenSize()" [isAvailable]="p.isAvailable" />
+          @if (chosenSize(); as size) {
+            @if (size.availability === 'SoldOut') {
+              <rp-notify-me-form [variantId]="size.variantId" [sizeName]="size.name" />
+            }
+          }
 
+          @if (p.isAvailable) {
+            <div #addArea class="pdp-add">
+              <div class="rp-buy__actions">
+                <button rpBtn="action" type="button" [block]="true" [disabled]="!canAdd() || bagBusy()" [reasonId]="canAdd() ? '' : 'pdp-add-hint'" (click)="addToBag()">Add to bag</button>
+                <button rpWishlistHeart variant="page" [productId]="p.productId" [productName]="p.name"></button>
+              </div>
+              @if (!canAdd()) {
+                <p class="rp-help" id="pdp-add-hint">{{ addHint() }}</p>
+              }
+              @if (bagMessage(); as text) {
+                <p class="rp-error" role="alert"><rp-icon name="alert" />{{ text }}</p>
+              }
+            </div>
+          }
+
+          @if (!p.isAvailable) {
+            <div class="pdp-add">
+              <div class="rp-buy__actions pdp-save-only">
+                <button rpWishlistHeart variant="page" [productId]="p.productId" [productName]="p.name"></button>
+              </div>
+            </div>
+          }
+
+          <rp-product-perks [perks]="perks()" />
           <rp-size-chart [chart]="p.sizeChart" />
           <rp-composition-care [composition]="p.composition" [care]="p.care" [note]="p.careNote" />
         </div>
       </article>
     </div>
+    <rp-product-recommendations
+      headingId="pdp-similar-h"
+      heading="You may also like"
+      eyebrow="More to love"
+      [tiles]="recommendations().similar"
+      (opened)="recommendationOpened('SIMILAR', $event)"
+      (added)="recommendationAdded('SIMILAR', $event)"
+    />
+    <rp-product-recommendations
+      headingId="pdp-trending-h"
+      heading="Trending now"
+      eyebrow="Popular this fortnight"
+      [tiles]="recommendations().trending"
+      (opened)="recommendationOpened('TRENDING', $event)"
+      (added)="recommendationAdded('TRENDING', $event)"
+    />
+    @if (barVisible()) {
+      <rp-buy-bar [price]="price()" [busy]="bagBusy() || barBlocked()" [hint]="barHint()" [message]="bagMessage()" (add)="barAdd()" />
+    }
   } @else if (r.status !== 'moved') {
     <div class="rp-wrap rp-page">
       <rp-not-found [kind]="r.status === 'error' ? 'error' : r.status === 'gone' ? 'product-gone' : 'page-missing'" [links]="links()" />

@@ -82,6 +82,7 @@ Note: there is no `_AT` suffix in this convention — every timestamp column, au
 | Quality Control | `QC` |
 | SKU & Barcode | `SKU` |
 | Warehouse | `WHSE` |
+| Cart (basket, discount codes, shipping rates) | `CART` |
 | Orders | `ORDR` |
 | Payments | `PAYM` |
 | Customers (storefront accounts) | `CUST` |
@@ -90,6 +91,7 @@ Note: there is no `_AT` suffix in this convention — every timestamp column, au
 | Logistics | `LOGS` |
 | Returns | `RTRN` |
 | Notifications | `NTFY` |
+| Fulfilment | `FULF` |
 | Outbox (per module) | the module's own schema, table `OUTB_MSG` |
 | Inbox (per module, once a module registers a handler with a DB effect) | the module's own schema, table `INBX`, composite PK (`MSG_ID`, `HNDL_NAME`) |
 
@@ -346,3 +348,125 @@ Keep this sorted alphabetically by word, and add new words when you need them.
 | IP address | IP | | temporary | TEMP |
 | login | LGIN | | token | TOKN |
 | multi-factor authentication | MFA | | used | USED |
+| rotated | ROTD | | | |
+
+### Added in Sprint 10 (Customers)
+
+`CUST`, `ADDR`, `EML`, `PHON`, `NAME`, `LINE`, `CITY`, `DFLT`, `IND`, `LKP`, `SORT`, `SEQ` and `ACT` already existed. Only the words below are new; more are added with the features that need them (wishlist, newsletter, notify-me).
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| postcode | PCDE | | recipient | RCPT |
+| province | PROV | | two | TWO |
+| one | ONE | | | |
+
+### Added with customer sign-in (Customers, accounts)
+
+`PWD`, `HASH`, `SESS`, `ACSS`, `RFSH`, `TOKN`, `EXPY`, `STRT`, `ROTD`, `RVKD`, `RSN`, `CLNT`, `AGNT`, `ABS`, `USED`, `ATMP`, `OTCM`, `LGIN`, `PREV`, `IP`, `LAST`, `EML` and `DTE` already existed (the staff sign-in uses them) and keep their abbreviation. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| reset | RSET | | verified (verify) | VRFY |
+| keep (keep me signed in) | KEEP | | issued | ISSD |
+
+### Added in Sprint 11 (SCRUM-202, cart, orders, notifications)
+
+Reused as they are: `DISC` (discount), `EXPY` (expiry), `RATE`, `THRS` (threshold), `CNFM` (confirmed), `TYP`, `HASH`, `KEY`, `LAST`, `USED`, `CODE`, `LINE`, `QTY`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| cart | CART | | guest | GST |
+| seen | SEEN | | shipping | SHPG |
+| settings | SETG | | fee | FEE |
+| cash on delivery | COD | | spend | SPND |
+| inclusive | INCL | | sale | SALE |
+| cap | CAP | | scope | SCOP |
+| redemption | RDMP | | placement | PLCE |
+| held | HELD | | released | RLSD |
+| use | USE | | | |
+| reservation | RSRV | | until | UNTL |
+
+### Added in Sprint 12 (SCRUM-202, orders, warehouse reservations)
+
+Reused as they are: `CNTC` (contact), `PAYM` (payment), `PRDT` (product), `CLR`, `PRIC`, `RCPT`, `LINE_ONE`, `LINE_TWO`, `PCDE`, `CNCL`, `HIST`, `ACTR`, `KIND`. The orders plan wrote `CONT` and `PYMT`; the glossary's `CNTC` and `PAYM` win.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| subtotal | SUBT | | whatsapp | WHTS |
+| opt-in | OPTN | | method | METH |
+| webhook | WBHK | | | |
+| risk | RISK | | look-up | LOOK |
+
+### Added in Sprint 13 (SCRUM-202, notifications)
+
+Reused as they are: `CHNL`, `ATMP`, `LEAS` (lease), `NXT` (next), `MSG`, `ERR`, `CATG`, `KIND`, `REF`, `EVNT`, `EXPY`, `CNT`, `DAY`, `DT`, `SENT`, `VER`, `NO`, `STS`, `LKP`, `WBHK`, `WHTS`, `DEDL` (dead-letter), `TEXT`, `BLCK` (blocked number list), `HASH`, `RCVD`, `PROC`, `VRFY`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| notification | NTFY | | template | TMPL |
+| provider | PRVD | | fallback | FLBK |
+| priority | PRIO | | language | LANG |
+| subject | SUBJ | | body | BODY |
+| HTML | HTML | | resent | RSND |
+| of (e.g. fallback of) | OF | | signature | SGNT |
+
+### Added with the wishlist (Customers)
+
+Reused as they are: `CUST`, `PRDT` (product), `PRIC`, `AMT`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| wishlist | WSHL | | saved | SAVD |
+
+
+### Added with the newsletter (Customers)
+
+Reused as they are: `CUST`, `EML`, `STS`, `SRC`, `HIST`, `SENT`, `CHNG`, `OCCR`, `LKP`, `DTE`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| newsletter | NWSL | | subscription | SUBS |
+| action | ACTN | | welcome | WLCM |
+
+### Added with notify-me (Customers)
+
+Reused as they are: `CUST`, `EML`, `STS`, `VRNT`, `REQ`, `SENT`, `LKP`, `DTE`, `OPEN`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| notify-me (back-in-stock request) | NTFM | | notified | NTFD |
+| expired | EXPD | | | |
+
+### Added with product recommendations (Storefront)
+
+Reused as they are: `RECM` (recommended, also used for "recommendation"), `EVNT`, `SALE`, `DAY`, `UNIT`, `QTY`, `CNT`, `GRP`, `VAL`, `NO`, `STRT`, `END`, `PRDT`, `LKP`, `DTE`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| similar | SMLR | | click | CLK |
+| score | SCOR | | calculated | CALC |
+| rank | RANK | | added (to the bag) | ADD |
+
+### Added in Sprint 12b (Orders payments)
+
+Reused as they are: `PAYM` (payment), `ATMP`, `WBHK`, `ORDR`, `STS`, `LKP`, `RSN`, `OTCM`, `METH`, `AMT`, `WNDW`, `END`, `STRT`, `PRVD`, `REF`, `EVNT`, `SGNT`, `HASH`, `RCVD`, `IND`, `DTE`, `NO`.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| review | RVW | | paid | PAID |
+| verified | VRFD | | url (address of a page) | URL |
+
+### Added in Sprint 14 (SCRUM-100, fulfilment: allocations, pick, pack)
+
+Reused as they are: `ORDR`, `LINE`, `QTY`, `BIN`, `SKU`, `GTIN`, `SCAN`, `STS`, `LKP`, `RSN`, `OTCM`, `CLM`, `WGHT`, `EXPC`, `NOTE`, `KIND`, `SIZE`, `UNIT`, `PRIC`, `COD`, `AMT`, `RVW` (review), `SYS` (system), `PLCE`, `KEY`, `BY`, `DTE`, `IND`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| allocation | ALOC | | pick | PICK |
+| deviation | DVTN | | queued | QUED |
+| exception | EXCP | | resolved | RSLV |
+| found | FND | | stage | STG |
+| fulfilment | FULF | | walk (walking order) | WALK |
+| gram | GRM | | pack | PACK |
+| slip (packing slip) | SLIP | | put-back | PTBK |
+| raised | RAIS | | restocked | RSTK |

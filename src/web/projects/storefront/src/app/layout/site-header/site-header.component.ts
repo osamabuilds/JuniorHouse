@@ -3,6 +3,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter } from 'rxjs';
+import { CustomerAuthActions, selectAuthSession, selectAuthStatus } from '../../core/customer-auth';
+import { CartActions } from '../../features/cart/carts/store/cart.actions';
+import { selectCartItemCount } from '../../features/cart/carts/store/cart.selectors';
+import { selectWishlistCount } from '../../features/customers/wishlist/store/wishlist.selectors';
 import { selectMenuEntries } from '../../features/storefront/navigation';
 import { selectBrand } from '../../features/storefront/site-settings';
 import { NavItem } from '../../shared/models/site-settings.model';
@@ -29,6 +33,11 @@ export class SiteHeaderComponent {
 
   protected readonly entries = this.store.selectSignal(selectMenuEntries);
   protected readonly brand = this.store.selectSignal(selectBrand);
+  protected readonly auth = this.store.selectSignal(selectAuthStatus);
+  private readonly session = this.store.selectSignal(selectAuthSession);
+  protected readonly bagCount = this.store.selectSignal(selectCartItemCount);
+  protected readonly wishlistCount = this.store.selectSignal(selectWishlistCount);
+  private readonly router = inject(Router);
 
   /** The key of the entry whose panel is open, or null. */
   protected readonly openKey = signal<string | null>(null);
@@ -40,6 +49,21 @@ export class SiteHeaderComponent {
     inject(Router)
       .events.pipe(filter((e) => e instanceof NavigationStart), takeUntilDestroyed(inject(DestroyRef)))
       .subscribe(() => this.openKey.set(null));
+  }
+
+  protected greeting(): string {
+    const name = this.session()?.firstName;
+    return name ? `Hi, ${name}` : 'Account';
+  }
+
+  protected signOut(): void {
+    this.store.dispatch(CustomerAuthActions.signOutSubmitted());
+    // The account pages are for a signed-in customer, so leave them.
+    if (this.router.url.startsWith('/account')) void this.router.navigateByUrl('/');
+  }
+
+  protected openBag(): void {
+    this.store.dispatch(CartActions.openDrawer());
   }
 
   protected href(item: NavItem): string | null {

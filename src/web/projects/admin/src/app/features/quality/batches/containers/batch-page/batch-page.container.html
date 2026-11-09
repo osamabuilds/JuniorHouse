@@ -137,7 +137,7 @@
     }
 
     @if (!first() && panel() !== 'inspect') {
-      <button type="button" class="button button--primary" (click)="openInspect()">Inspect the batch</button>
+      <button *hasPermission="'qc.write'" type="button" class="button button--primary" (click)="openInspect()">Inspect the batch</button>
     }
 
     @if (panel() === 'inspect' || (panel() === 'reinspect' && targetPart())) {
@@ -162,7 +162,7 @@
       @if (!first()) {
         <p class="state-message">Inspect the batch first: an outcome cannot be recorded without an inspection.</p>
       } @else if (panel() !== 'decide') {
-        <button type="button" class="button button--primary" (click)="openPanel('decide')">Record the outcome</button>
+        <button *hasPermission="'qc.write'" type="button" class="button button--primary" (click)="openPanel('decide')">Record the outcome</button>
       } @else {
         <app-outcome-panel
           [lines]="batch.lines"

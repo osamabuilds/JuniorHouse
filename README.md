@@ -289,6 +289,38 @@ Every action asks for your name (kept in this browser), because there is no sign
 enforced then. Publishing writes an event through the outbox; the storefront that reads it arrives in Sprint 9. Open questions (defaults
 adopted, see `docs/specs/catalog/README.md`): the age-band names (Q-AGE-2), the launch fibre and care lists, and the URL shape for unisex.
 
+## Try Sprint 8 (sign-in, two-step verification, roles and the audit trail)
+
+Sprint 8 puts a login in front of the admin (`docs/specs/identity/`). The normal stack keeps the stand-in user so the earlier demos
+still work; the **secure** stack turns real sign-in on:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build
+# Create the first Owner (once). The password comes from the environment, never the command line; it must be changed at first sign-in.
+docker compose -f docker-compose.yml -f docker-compose.secure.yml run --rm -T `
+  -e ROMP_OWNER_USERNAME=owner -e "ROMP_OWNER_DISPLAY_NAME=The Owner" -e ROMP_OWNER_PASSWORD=<a long passphrase> api create-owner
+```
+
+**Demo script** (admin app at http://localhost:4201):
+
+1. **Sign in** as the Owner. You are made to choose your own password, then to set up two-step verification: scan the QR code with an
+   authenticator app (or type the key), enter the first code, and save the **recovery codes** shown once.
+2. **Staff.** Add a person with a role (Catalogue, Order operations, Support, Marketing). The temporary password is shown **once**; they
+   must change it and set up two-step verification at their first sign-in. Open the person to change roles, deactivate them (their open
+   session stops at once), make a new temporary password, or clear their two-step verification.
+3. **Roles.** The Roles page is a table of who can do what. Sign in as a Catalogue person: the menu shows only their sections, a page they
+   may not use says "no access", and read-only people see no buttons that change things (the server refuses a direct call anyway).
+4. **Audit.** The **Audit** page (Owner) lists every change in every part of Romp: who, when, which record, and the **names** of the
+   columns that changed, never the values. Filter by person, module, record type, key and dates. Entries appear a few seconds after the
+   change. Nothing can edit or delete an entry, not even with database access (triggers refuse it).
+5. **Security page.** Your account's two-step status and regenerated recovery codes.
+6. **If you lock yourself out.** On the server, with access to the database:
+   `docker compose -f docker-compose.yml -f docker-compose.secure.yml run --rm -T -e ROMP_OWNER_USERNAME=owner -e ROMP_OWNER_PASSWORD=<new passphrase> api reset-owner --password --mfa`
+   (the step is recorded in the audit trail as `operator-cli`).
+
+Nothing is deployed yet: the staging server needs the domain, the VPS and the accounts (`docs/specs/platform/`). Open questions are in
+the specs ("Open questions" and "As built" of each identity feature).
+
 ## Try Sprint 9 (storefront settings)
 Staff change the shop's menu, ages, footer, contact, delivery and exchange facts and content pages in the admin app; a publish puts the whole set on the shop within a minute (SCRUM-206, [spec](docs/specs/storefront/storefront-settings/spec.md)).
 
@@ -300,6 +332,29 @@ docker compose up -d --build api admin storefront   # admin :4201, storefront :4
 2. Open **Publish**, add a note and press **Publish now**. Until the first publish the shop shows its built-in launch set.
 3. Reload http://localhost:4000 within a minute: your menu and pages are there; an archived page answers 410.
 4. Opening hours, the four delivery cities and the exchange window are **placeholders**: replace them under Settings and Delivery before launch. The settings screens have no login until Sprint 8, so they must not be deployed publicly yet.
+
+## Try online payment (orders S12b, against the pretend gateway)
+Card, Easypaisa and JazzCash orders go through a **pretend payment gateway** on the local stack, so every path can be tried without a merchant account. The real gateway is wired in later ([third-party checklist](docs/roadmap/third-party-integrations.md), [payments spec](docs/specs/orders/payments/spec.md)). The pretend gateway only exists in Development: the API refuses to start with it anywhere else, and with no gateway configured the shop sells Cash on Delivery only.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build   # storefront :4000, API :8080, admin :4201
+```
+
+1. Open http://localhost:4000, add a product to the bag (a size with stock) and go to checkout.
+2. Fill in the form and choose **Card** (or Easypaisa, JazzCash), then **Place order**. You land on a test payment page.
+3. Try each button:
+   - **Pay now**: you come back to a "Payment received" page and the order is Paid in the admin.
+   - **Decline the card**: "Your payment did not go through", with **Try paying again**. Three declines cancel the order and give the stock back.
+   - **Pay, but lose the callback**: the page keeps saying "Confirming your payment" and never shows paid on the browser coming back. A background job asks the gateway after ten minutes and completes the order exactly once.
+4. Press **Place order** twice quickly, or open the pay page twice for one order: the same payment page opens; no second payment is ever started.
+5. An order left unpaid for 30 minutes is cancelled and its stock and discount come back.
+
+Try the attacks yourself with the automated checks (they need Node and the stack running):
+
+```bash
+node scripts/security/payments-pentest.mjs   # forged, tampered, replayed, oversized and injected calls; expects every one refused
+node scripts/perf/payments-load.mjs          # latency, throughput and error rate under load
+```
 
 ## Tests
 
@@ -317,3 +372,13 @@ Features follow spec-driven development: spec → plan → tasks → test-first 
 
 - One branch per Jira issue, e.g. `SCRUM-162-ef-core-wiring`, and a PR into `main`.
 - CI (GitHub Actions) must pass before merging.
+
+## Try Sprint 14 (pick and pack)
+
+1. Start the stack (`docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build`) and sign in to the admin app (http://localhost:4201) as the Owner.
+2. In the storefront (http://localhost:4000) place a cash on delivery order and press "Confirm my order". The order enters the queue with its stock set aside in a bin, oldest putaway first.
+3. Admin, **Pick**: open the order. The scan box has the focus. Type (or scan) the shelf code, then the item barcode (13 digits) and press Enter. A wrong shelf or item is refused in words and nothing is counted. When every unit is scanned, "Complete the pick" turns the reserved stock into a real decrement.
+4. "The shelf does not match" flags a line instead of forcing the pick: the line waits for restock, the customer is told and the bin is marked for review. Staff close it under **Pick exceptions**.
+5. Admin, **Pack**: open the picked order, scan every item again, weigh the parcel (a weight that does not fit needs a note), seal it, then open the packing slip (cash to collect is printed large).
+6. The numbers are settings (`Fulfilment:PolyBagMaxGrams`, `PolyBagMaxItems`, `WeightTolerancePercent`, `WeightToleranceGrams`, `GarmentGrams`, `PackagingGrams`). On a phone, "Add to home screen" installs the admin app.
+7. Tests: `dotnet test` in the Linux SDK container (see the notes), `node scripts/security/fulfilment-pentest.mjs`, and `npx playwright test e2e/journeys/pick-pack.e2e.spec.ts` (needs `E2E_OWNER_PASSWORD`).

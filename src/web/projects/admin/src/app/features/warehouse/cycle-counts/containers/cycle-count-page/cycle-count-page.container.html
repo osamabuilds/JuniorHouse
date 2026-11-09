@@ -49,7 +49,7 @@
         <button type="button" class="button button--primary" [disabled]="reviewLoading()" (click)="openReview()">
           {{ reviewLoading() ? 'Loading the review…' : 'Review the differences' }}
         </button>
-        <button type="button" class="button button--danger" [disabled]="confirming()" (click)="cancel()">Cancel this count</button>
+        <button *hasPermission="'inventory.write'" type="button" class="button button--danger" [disabled]="confirming()" (click)="cancel()">Cancel this count</button>
       </div>
     }
   }

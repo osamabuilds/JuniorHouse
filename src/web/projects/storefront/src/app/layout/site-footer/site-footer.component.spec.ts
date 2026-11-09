@@ -4,10 +4,11 @@ import { Store, provideStore } from '@ngrx/store';
 import { SiteSettingsActions, provideSiteSettings } from '../../features/storefront/site-settings';
 import { launchSettings } from '../../shared/data/launch-settings';
 import { SiteSettings } from '../../shared/models/site-settings.model';
+import { provideNewsletter } from '../../features/customers/newsletter/newsletter.providers';
 import { SiteFooterComponent } from './site-footer.component';
 
 function render(settings: SiteSettings = launchSettings): ComponentFixture<SiteFooterComponent> {
-  TestBed.configureTestingModule({ providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings()] });
+  TestBed.configureTestingModule({ providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings(), provideNewsletter()] });
   TestBed.inject(Store).dispatch(SiteSettingsActions.loadSuccess({ settings, source: 'api' }));
   const f = TestBed.createComponent(SiteFooterComponent);
   f.detectChanges();
@@ -27,7 +28,7 @@ describe('SiteFooterComponent', () => {
     expect(hrefs).toEqual(expect.arrayContaining(['/new-in', '/delivery', '/exchanges', '/size-guide', '/contact', '/our-story', '/made-in-pakistan']));
   });
 
-  it('SC-11 O-7 shows a WhatsApp link built from the brand number', () => {
+  it('SC-11 O-7 CR-4 shows a WhatsApp link built from the brand number', () => {
     const f = render();
     const wa = [...el(f).querySelectorAll('a')].find((a) => a.getAttribute('href') === 'https://wa.me/923315613217');
     expect(wa).toBeTruthy();
@@ -39,10 +40,16 @@ describe('SiteFooterComponent', () => {
     expect(el(f).querySelector('a[href^="https://wa.me"]:not([data-footer-link])')).toBeNull();
   });
 
-  it('O-5 has no newsletter form', () => {
+  it('NLS-1 NLS-6 has a labelled subscribe form that posts to the server, so it works without JavaScript', () => {
     const f = render();
-    expect(el(f).querySelector('form')).toBeNull();
-    expect(el(f).querySelector('input[type="email"]')).toBeNull();
+    const form = el(f).querySelector('form')!;
+    expect(form.getAttribute('method')).toBe('post');
+    expect(form.getAttribute('action')).toBe('/newsletter/subscribe');
+    const input = form.querySelector<HTMLInputElement>('input[type="email"]')!;
+    expect(input.name).toBe('email');
+    expect(input.required).toBe(true);
+    expect(form.querySelector(`label[for="${input.id}"]`)).toBeTruthy();
+    expect(form.querySelector('[role="status"]')).toBeTruthy();
   });
 
   it('CR-3 shows the configured brand name as a heading and has no decorative wordmark', () => {

@@ -1,0 +1,100 @@
+<h1>Orders</h1>
+<p class="page-intro">
+  Every order, newest first. Cash on delivery orders waiting for a confirmation call are marked, and the "Call due now" filter shows the ones to ring next.
+</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<form class="card" (submit)="submitSearch($event)" aria-label="Filter orders" novalidate>
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="oq-search">Search</label>
+      <input id="oq-search" type="search" autocomplete="off" placeholder="Order number, mobile or name" [value]="search()" (input)="search.set($any($event.target).value)" />
+    </div>
+    <div class="form-field">
+      <label for="oq-status">Status</label>
+      <select id="oq-status" (change)="chooseStatus($event)">
+        <option value="0" [selected]="filters().status === null">Any status</option>
+        @for (s of statuses; track s.id) {
+          <option [value]="s.id" [selected]="filters().status === s.id">{{ s.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="oq-method">Payment method</label>
+      <select id="oq-method" (change)="chooseMethod($event)">
+        <option value="0" [selected]="filters().method === null">Any method</option>
+        @for (m of methods; track m.id) {
+          <option [value]="m.id" [selected]="filters().method === m.id">{{ m.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+  <div class="actions">
+    <label class="checkbox"><input type="checkbox" [checked]="filters().callDueNow" (change)="toggle('callDueNow', $event)" /> Call due now</label>
+    <label class="checkbox"><input type="checkbox" [checked]="filters().flagged" (change)="toggle('flagged', $event)" /> Flagged for staff</label>
+    <button type="submit" class="button button--primary">Search</button>
+    @if (hasFilters()) {
+      <button type="button" class="button" (click)="clear()">Clear filters</button>
+    }
+  </div>
+</form>
+
+<section aria-labelledby="oq-list-heading">
+  <h2 id="oq-list-heading">{{ total() }} {{ total() === 1 ? 'order' : 'orders' }}</h2>
+  @if (loading() && orders().length === 0) {
+    <p role="status">Loading…</p>
+  } @else if (orders().length === 0) {
+    <p>No orders match. {{ hasFilters() ? 'Try clearing the filters.' : 'Orders appear here as soon as customers place them.' }}</p>
+  } @else {
+    <table class="table">
+      <caption class="sr-only">Orders, newest first</caption>
+      <thead>
+        <tr>
+          <th scope="col">Order</th>
+          <th scope="col">Placed</th>
+          <th scope="col">Customer</th>
+          <th scope="col">Status</th>
+          <th scope="col">Payment</th>
+          <th scope="col" class="num">Total (Rs.)</th>
+          <th scope="col">Needs attention</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (o of orders(); track o.id) {
+          <tr>
+            <th scope="row"><a [routerLink]="['/orders', o.id]">{{ o.orderNumber }}</a></th>
+            <td>{{ o.placedAt | date: 'd MMM y, h:mm a' }}</td>
+            <td>{{ o.contactName }}<br /><small>{{ o.cityName }} · {{ o.itemCount }} {{ o.itemCount === 1 ? 'item' : 'items' }}</small></td>
+            <td><span class="badge" [class.badge--muted]="o.statusId === 5">{{ o.statusName }}</span></td>
+            <td>{{ o.methodName }}</td>
+            <td class="num">{{ o.total | number }}</td>
+            <td>
+              @if (isOverdue(o)) {
+                <span class="badge">Call due now</span>
+              }
+              @if (o.isRefusalFlagged) {
+                <span class="badge">Refused before</span>
+              }
+              @if (o.isHighValue) {
+                <span class="badge">High value</span>
+              }
+              @if (o.isFirstOrder) {
+                <span class="badge badge--muted">First order</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>

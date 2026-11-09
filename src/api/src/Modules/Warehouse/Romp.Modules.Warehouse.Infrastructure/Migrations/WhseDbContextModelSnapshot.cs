@@ -301,6 +301,202 @@ namespace Romp.Modules.Warehouse.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Allocations.AllocationLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("AllocationId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("ALOC_ID");
+
+                    b.Property<long>("BinId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("BIN_ID");
+
+                    b.Property<short>("GradeId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("GRD_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("QTY");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<long>("VariantRefId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("VRNT_REF_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BinId")
+                        .HasDatabaseName("IX_STCK_ALOC_LINE_BIN_ID");
+
+                    b.HasIndex("VariantRefId", "GradeId", "BinId")
+                        .HasDatabaseName("IX_STCK_ALOC_LINE_VRNT_REF_ID_GRD_ID_BIN_ID");
+
+                    b.HasIndex("AllocationId", "VariantRefId", "GradeId", "BinId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_STCK_ALOC_LINE_ALOC_VRNT_GRD_BIN");
+
+                    b.ToTable("STCK_ALOC_LINE", "WHSE", t =>
+                        {
+                            t.HasCheckConstraint("CK_STCK_ALOC_LINE_QTY", "\"QTY\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Allocations.AllocationStatusLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("ALOC_STS_LKP", "WHSE");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "ACTIVE",
+                            Description = "Units are set aside in bins for the order",
+                            IsActive = true,
+                            Name = "Active",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "PICKED",
+                            Description = "The pick was confirmed and the ledger decremented",
+                            IsActive = true,
+                            Name = "Picked",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "RELEASED",
+                            Description = "Given back: the order was cancelled",
+                            IsActive = true,
+                            Name = "Released",
+                            SortSeq = (short)3
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Allocations.StockAllocation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("OrderKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("ORDR_KEY");
+
+                    b.Property<short>("StatusId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ALOC_STS_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderKey")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_STCK_ALOC_ORDR_KEY");
+
+                    b.HasIndex("StatusId")
+                        .HasDatabaseName("IX_STCK_ALOC_ALOC_STS_ID");
+
+                    b.ToTable("STCK_ALOC", "WHSE");
+                });
+
             modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Bins.Bin", b =>
                 {
                     b.Property<long>("Id")
@@ -339,6 +535,11 @@ namespace Romp.Modules.Warehouse.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("LastCountedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("LAST_CNT_DTE");
+
+                    b.Property<string>("ReviewReason")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("RVW_RSN");
 
                     b.Property<string>("Shelf")
                         .IsRequired()
@@ -789,6 +990,15 @@ namespace Romp.Modules.Warehouse.Infrastructure.Migrations
                             IsActive = true,
                             Name = "Adjustment",
                             SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "PICK",
+                            Description = "Picked for an order: the reservation became a decrement",
+                            IsActive = true,
+                            Name = "Pick",
+                            SortSeq = (short)3
                         });
                 });
 
@@ -1032,6 +1242,252 @@ namespace Romp.Modules.Warehouse.Infrastructure.Migrations
                             Name = "Complete",
                             SortSeq = (short)3
                         });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Reservations.ReservationLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("QTY");
+
+                    b.Property<long>("ReservationId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("RSRV_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<long>("VariantRefId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("VRNT_REF_ID");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VariantRefId")
+                        .HasDatabaseName("IX_STCK_RSRV_LINE_VRNT_REF_ID");
+
+                    b.HasIndex("ReservationId", "VariantRefId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_STCK_RSRV_LINE_RSRV_ID_VRNT_REF_ID");
+
+                    b.ToTable("STCK_RSRV_LINE", "WHSE", t =>
+                        {
+                            t.HasCheckConstraint("CK_STCK_RSRV_LINE_QTY", "\"QTY\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Reservations.ReservationStatusLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("RSRV_STS_LKP", "WHSE");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "HELD",
+                            Description = "Stock set aside while the order is being placed",
+                            IsActive = true,
+                            Name = "Held",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "CONFIRMED",
+                            Description = "The order exists; the units are promised to it",
+                            IsActive = true,
+                            Name = "Confirmed",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "CONVERTED",
+                            Description = "Picked: the ledger has been decremented",
+                            IsActive = true,
+                            Name = "Converted",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "RELEASED",
+                            Description = "Given back: the order was cancelled or never came",
+                            IsActive = true,
+                            Name = "Released",
+                            SortSeq = (short)4
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Reservations.ReservedBalance", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasColumnName("VRNT_REF_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("RSRV_QTY");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("STCK_RSRV_BAL", "WHSE", t =>
+                        {
+                            t.HasCheckConstraint("CK_STCK_RSRV_BAL_RSRV_QTY", "\"RSRV_QTY\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Reservations.StockReservation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset?>("HeldUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("HELD_UNTL_DTE");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("OrderNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("ORDR_NO");
+
+                    b.Property<string>("PlacementKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("PLCE_KEY");
+
+                    b.Property<short>("StatusId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("RSRV_STS_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlacementKey")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_STCK_RSRV_PLCE_KEY");
+
+                    b.HasIndex("StatusId", "HeldUntil")
+                        .HasDatabaseName("IX_STCK_RSRV_RSRV_STS_ID_HELD_UNTL_DTE");
+
+                    b.ToTable("STCK_RSRV", "WHSE");
                 });
 
             modelBuilder.Entity("Romp.Modules.Warehouse.Domain.StockAlerts.AlertLevelLookup", b =>
@@ -1565,6 +2021,40 @@ namespace Romp.Modules.Warehouse.Infrastructure.Migrations
                         .HasConstraintName("FK_ADJ_MAIN_VRNT_REF");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Allocations.AllocationLine", b =>
+                {
+                    b.HasOne("Romp.Modules.Warehouse.Domain.Allocations.StockAllocation", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("AllocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_STCK_ALOC_LINE_STCK_ALOC");
+
+                    b.HasOne("Romp.Modules.Warehouse.Domain.Bins.Bin", null)
+                        .WithMany()
+                        .HasForeignKey("BinId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_STCK_ALOC_LINE_BIN_MAIN");
+
+                    b.HasOne("Romp.Modules.Warehouse.Domain.StockLedger.VariantRef", null)
+                        .WithMany()
+                        .HasForeignKey("VariantRefId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_STCK_ALOC_LINE_VRNT_REF");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Allocations.StockAllocation", b =>
+                {
+                    b.HasOne("Romp.Modules.Warehouse.Domain.Allocations.AllocationStatusLookup", null)
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_STCK_ALOC_ALOC_STS_LKP");
+                });
+
             modelBuilder.Entity("Romp.Modules.Warehouse.Domain.CycleCounts.CountBin", b =>
                 {
                     b.HasOne("Romp.Modules.Warehouse.Domain.Bins.Bin", null)
@@ -1674,6 +2164,43 @@ namespace Romp.Modules.Warehouse.Infrastructure.Migrations
                         .HasConstraintName("FK_PUT_RCRD_PUT_ITEM");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Reservations.ReservationLine", b =>
+                {
+                    b.HasOne("Romp.Modules.Warehouse.Domain.Reservations.StockReservation", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_STCK_RSRV_LINE_STCK_RSRV");
+
+                    b.HasOne("Romp.Modules.Warehouse.Domain.StockLedger.VariantRef", null)
+                        .WithMany()
+                        .HasForeignKey("VariantRefId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_STCK_RSRV_LINE_VRNT_REF");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Reservations.ReservedBalance", b =>
+                {
+                    b.HasOne("Romp.Modules.Warehouse.Domain.StockLedger.VariantRef", null)
+                        .WithOne()
+                        .HasForeignKey("Romp.Modules.Warehouse.Domain.Reservations.ReservedBalance", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_STCK_RSRV_BAL_VRNT_REF");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Reservations.StockReservation", b =>
+                {
+                    b.HasOne("Romp.Modules.Warehouse.Domain.Reservations.ReservationStatusLookup", null)
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_STCK_RSRV_RSRV_STS_LKP");
+                });
+
             modelBuilder.Entity("Romp.Modules.Warehouse.Domain.StockAlerts.LowStockThreshold", b =>
                 {
                     b.HasOne("Romp.Modules.Warehouse.Domain.StockLedger.VariantRef", null)
@@ -1763,10 +2290,20 @@ namespace Romp.Modules.Warehouse.Infrastructure.Migrations
                         .HasConstraintName("FK_STCK_MVMT_VRNT_REF");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Allocations.StockAllocation", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
             modelBuilder.Entity("Romp.Modules.Warehouse.Domain.CycleCounts.CycleCount", b =>
                 {
                     b.Navigation("Bins");
 
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Warehouse.Domain.Reservations.StockReservation", b =>
+                {
                     b.Navigation("Lines");
                 });
 #pragma warning restore 612, 618

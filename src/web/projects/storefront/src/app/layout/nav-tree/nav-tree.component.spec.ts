@@ -5,6 +5,15 @@ import { NavItem } from '../../shared/models/site-settings.model';
 import { NavTreeComponent } from './nav-tree.component';
 
 const boys = launchSettings.navigation.find((n) => n.key === 'boys')!;
+const leaf = (key: string, label: string, path: string, children: NavItem[] = []): NavItem => ({
+  key, label, kind: children.length > 0 ? 'group' : 'link', target: { kind: 'path', path }, enabled: true, sort: 1, children,
+});
+/** A three-level tree: the launch set is two levels, but the component still supports further members. */
+const nested: NavItem[] = [
+  leaf('tees', 'Tees and shirts', '/boys/tees-and-shirts', [leaf('polos', 'Polo shirts', '/boys/tees-and-shirts/polo-shirts')]),
+  leaf('bottoms', 'Bottoms', '/boys/bottoms', [leaf('shorts', 'Shorts', '/boys/bottoms/shorts')]),
+  leaf('casual', 'Casual shirts', '/boys/casual-shirts'),
+];
 
 function render(items: readonly NavItem[], mode: 'list' | 'accordion' = 'list'): ComponentFixture<NavTreeComponent> {
   TestBed.configureTestingModule({ providers: [provideRouter([{ path: '**', children: [] }])] });
@@ -18,7 +27,7 @@ const links = (f: ComponentFixture<unknown>): string[] => [...(f.nativeElement a
 
 describe('NavTreeComponent', () => {
   it('SC-3a lists members and their further members as real links, nested in lists', () => {
-    const f = render(boys.children);
+    const f = render(nested);
     const out = links(f);
     expect(out).toContain('Tees and shirts=/boys/tees-and-shirts');
     expect(out).toContain('Polo shirts=/boys/tees-and-shirts/polo-shirts');
@@ -27,7 +36,7 @@ describe('NavTreeComponent', () => {
   });
 
   it('SC-7 accordion mode wraps each member that has members in details/summary, with a link to the member itself', () => {
-    const f = render(boys.children, 'accordion');
+    const f = render(nested, 'accordion');
     const el = f.nativeElement as HTMLElement;
     const summaries = [...el.querySelectorAll('summary')].map((s) => s.textContent!.trim());
     expect(summaries).toEqual(expect.arrayContaining(['Tees and shirts', 'Bottoms']));

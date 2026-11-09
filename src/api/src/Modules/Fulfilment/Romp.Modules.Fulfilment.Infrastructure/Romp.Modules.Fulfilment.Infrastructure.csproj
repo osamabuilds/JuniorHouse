@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Romp.Modules.Fulfilment.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Romp.Modules.Fulfilment.Application/Romp.Modules.Fulfilment.Application.csproj" />
+    <ProjectReference Include="../Romp.Modules.Fulfilment.Contracts/Romp.Modules.Fulfilment.Contracts.csproj" />
+    <ProjectReference Include="../../Warehouse/Romp.Modules.Warehouse.Contracts/Romp.Modules.Warehouse.Contracts.csproj" />
+    <ProjectReference Include="../../Orders/Romp.Modules.Orders.Contracts/Romp.Modules.Orders.Contracts.csproj" />
+    <ProjectReference Include="../../Storefront/Romp.Modules.Storefront.Contracts/Romp.Modules.Storefront.Contracts.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/Romp.BuildingBlocks.Persistence/Romp.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/Romp.BuildingBlocks.Web/Romp.BuildingBlocks.Web.csproj" />
+  </ItemGroup>
+
+</Project>

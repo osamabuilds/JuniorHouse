@@ -19,6 +19,7 @@ import {
   selectSelectedType,
   selectVisibleItems,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * SCRUM-174: one screen for the staff-facing REF lookups - a type selector, a searchable table, and
@@ -26,7 +27,7 @@ import {
  */
 @Component({
   selector: 'app-reference-data-page',
-  imports: [LookupTypeTabsComponent, LookupTableComponent, LookupFormComponent, PaginationComponent],
+  imports: [HasPermissionDirective, LookupTypeTabsComponent, LookupTableComponent, LookupFormComponent, PaginationComponent],
   templateUrl: './reference-data-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

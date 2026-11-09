@@ -24,6 +24,8 @@ public sealed class ProductionApiFixture : IAsyncLifetime
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine").Build();
     private WebApplicationFactory<Program>? _factory;
 
+    public WebApplicationFactory<Program> Factory => _factory!;
+
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public HttpClient Client { get; private set; } = null!;
@@ -66,6 +68,14 @@ public sealed class ProductionApiFixture : IAsyncLifetime
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Labelling.Infrastructure.Persistence.SkuDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Warehouse.Infrastructure.Persistence.WhseDbContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<Romp.Modules.Storefront.Infrastructure.Persistence.StfrDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Identity.Infrastructure.Persistence.IdntDbContext>().Database.MigrateAsync();
+        var customers = scope.ServiceProvider.GetRequiredService<Romp.Modules.Customers.Infrastructure.Persistence.CustDbContext>();
+        await customers.Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Cart.Infrastructure.Persistence.CartDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Orders.Infrastructure.Persistence.OrdrDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Notifications.Infrastructure.Persistence.NtfyDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<Romp.Modules.Fulfilment.Infrastructure.Persistence.FulfDbContext>().Database.MigrateAsync();
+        await Romp.Modules.Customers.Infrastructure.Accounts.StandInCustomer.SeedAsync(customers, CancellationToken.None);
 
         var style = new Style("STY-IT-001", "Integration Dress", "Test", categoryId: 3, genderId: 2, ageBracketId: 3, fabricId: 1, targetUnitCost: 450m, targetRetailPrice: 1200m);
         style.SetColourSizeAndTargets([1, 2], [4, 5], [(4, 1, 50), (4, 2, 40), (5, 1, 30), (5, 2, 25)]);

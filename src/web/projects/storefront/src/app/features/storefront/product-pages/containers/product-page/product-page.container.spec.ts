@@ -1,15 +1,28 @@
+import { provideHttpClient } from '@angular/common/http';
+import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
+import { notifyMeFeature } from '../../../../../features/customers/notify-me/store/notify-me.reducer';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideCart } from '../../../../cart/carts/cart.providers';
+import { CartActions } from '../../../../cart/carts/store/cart.actions';
+import { Store, provideState } from '@ngrx/store';
 import { RESPONSE_INIT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, UrlSegment } from '@angular/router';
 import { provideStore } from '@ngrx/store';
 import { of } from 'rxjs';
-import { provideSiteSettings } from '../../../site-settings';
+import { SiteSettingsActions, provideSiteSettings } from '../../../site-settings';
+import { launchSettings } from '../../../../../shared/data/launch-settings';
 import { ProductPage, ProductPageResult } from '../../models/product-page.model';
 import { provideProductPages } from '../../product-pages.providers';
 import { ProductPagesApi } from '../../services/product-pages-api.service';
+import { ProductRecommendationsApi } from '../../services/product-recommendations-api.service';
+import { NO_RECOMMENDATIONS, ProductRecommendations } from '../../models/product-recommendations.model';
+import { ListingTile } from '../../../listings/models/listing.model';
+import { Observable, throwError } from 'rxjs';
 import { ProductPageContainer } from './product-page.container';
 
 const basePage: ProductPage = {
+  productId: 1,
   path: '/girls/dresses/floral-summer-dress',
   name: 'Floral Summer Dress',
   description: 'A light cotton dress.',
@@ -28,9 +41,9 @@ const basePage: ProductPage = {
   sku: 'SKU-1',
   colours: [{ code: 'red', name: 'Red', inStock: true }, { code: 'navy', name: 'Navy', inStock: false }],
   sizes: [
-    { code: '5-6y', name: '5-6 Years', availability: 'InStock', selectable: true },
-    { code: '7-8y', name: '7-8 Years', availability: 'SoldOut', selectable: false },
-    { code: '9-10y', name: '9-10 Years', availability: 'NotYetAvailable', selectable: false },
+    { code: '5-6y', name: '5-6 Years', availability: 'InStock', selectable: true, variantId: 501 },
+    { code: '7-8y', name: '7-8 Years', availability: 'SoldOut', selectable: true, variantId: 502 },
+    { code: '9-10y', name: '9-10 Years', availability: 'NotYetAvailable', selectable: false, variantId: 503 },
   ],
   images: [
     { altText: 'Front', width: 1200, height: 1600, sources: [{ width: 320, webp: '/media/a-320.webp', jpeg: '/media/a-320.jpg' }, { width: 640, webp: '/media/a-640.webp', jpeg: '/media/a-640.jpg' }] },
@@ -49,15 +62,22 @@ const basePage: ProductPage = {
   isAvailable: true,
 };
 
-function render(result: ProductPageResult, query: Record<string, string> = {}, responseInit?: ResponseInit) {
+function render(result: ProductPageResult, query: Record<string, string> = {}, responseInit?: ResponseInit, recs: Observable<ProductRecommendations> = of(NO_RECOMMENDATIONS)) {
   const get = vi.fn(() => of(result));
+  const recsGet = vi.fn(() => recs);
   TestBed.configureTestingModule({
     providers: [
       provideRouter([]),
       provideStore({}),
+      provideState(wishlistFeature),
+      provideState(notifyMeFeature),
+      provideHttpClient(),
+      provideHttpClientTesting(),
+      provideCart(),
       provideSiteSettings(),
       provideProductPages(),
       { provide: ProductPagesApi, useValue: { get } },
+      { provide: ProductRecommendationsApi, useValue: { get: recsGet } },
       ...(responseInit ? [{ provide: RESPONSE_INIT, useValue: responseInit }] : []),
       {
         provide: ActivatedRoute,
@@ -75,7 +95,7 @@ function render(result: ProductPageResult, query: Record<string, string> = {}, r
   fixture.detectChanges();
   TestBed.flushEffects?.();
   fixture.detectChanges();
-  return { el: fixture.nativeElement as HTMLElement, get };
+  return { el: fixture.nativeElement as HTMLElement, get, recsGet, fixture };
 }
 
 const found = (over: Partial<ProductPage> = {}): ProductPageResult => ({ status: 'found', page: { ...basePage, ...over } });
@@ -149,13 +169,13 @@ describe('ProductPageContainer', () => {
     expect(links[1].textContent).toContain('sold out');
   });
 
-  it('PDP-4 a sold-out size and a size not yet available are text, not links, and say why', () => {
+  it('PDP-4 NTM-1 a sold-out size is a link worded Sold out, and a size not yet available is text that says why', () => {
     const { el } = render(found());
     const sizes = [...el.querySelectorAll('rp-size-options li')];
 
     expect(sizes[0].querySelector('a')!.getAttribute('href')).toBe('/girls/dresses/floral-summer-dress?colour=red&size=5-6y');
     expect(sizes[0].querySelector('a')!.getAttribute('aria-current')).toBe('true');
-    expect(sizes[1].querySelector('a')).toBeNull();
+    expect(sizes[1].querySelector('a')!.getAttribute('href')).toBe('/girls/dresses/floral-summer-dress?colour=red&size=7-8y');
     expect(sizes[1].textContent).toContain('Sold out');
     expect(sizes[2].querySelector('a')).toBeNull();
     expect(sizes[2].textContent).toContain('Not yet available');
@@ -198,20 +218,61 @@ describe('ProductPageContainer', () => {
   });
 
   it('PDP-16 a product with nothing in stock shows a sold-out state and keeps the page', () => {
-    const { el } = render(found({ isAvailable: false, selectedSize: null, sku: null, sizes: basePage.sizes.map((s) => ({ ...s, selectable: false, availability: 'SoldOut' })) }));
+    const { el } = render(found({ isAvailable: false, selectedSize: null, sku: null, sizes: basePage.sizes.map((s) => ({ ...s, selectable: true, availability: 'SoldOut' })) }));
 
     expect(el.querySelector('rp-sold-out-state')!.textContent).toContain('Sold out');
     expect(el.querySelector('h1')!.textContent).toContain('Floral Summer Dress');
-    expect(el.querySelectorAll('rp-size-options a').length).toBe(0);
-    expect(el.querySelector('button')).toBeNull();
+    expect(el.querySelectorAll('rp-size-options a').length).toBe(basePage.sizes.length);
+    expect(el.querySelector('rp-size-options a')!.textContent).toContain('Sold out');
+    expect([...el.querySelectorAll('button')].filter((b) => /add to bag/i.test(b.textContent ?? '')).length).toBe(0);
   });
 
-  it('PDP-17 words availability as a guide and shows no purchase control or count', () => {
+  it('PDP-17 words availability as a guide and shows no count or reservation wording', () => {
     const { el } = render(found());
 
     expect(el.querySelector('rp-availability-note')!.textContent).toContain('Size 5-6 Years: in stock.');
     expect(el.querySelector('rp-availability-note')!.textContent).toContain('guide');
-    expect(el.textContent).not.toMatch(/reserved|\d+ left|add to (cart|bag)/i);
+    expect(el.textContent).not.toMatch(/reserved|d+ left/i);
+  });
+
+  it('CRT-1 Add to bag is offered for a size that can be bought and sends that size\'s variant, one at a time', () => {
+    const { el } = render(found());
+    const dispatch = vi.spyOn(TestBed.inject(Store), 'dispatch');
+    const button = [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Add to bag')!;
+
+    expect(button).toBeTruthy();
+    expect(button.disabled).toBe(false);
+    button.click();
+
+    expect(dispatch).toHaveBeenCalledWith(CartActions.add({ variantId: 501, quantity: 1 }));
+  });
+
+  it('CRT-4 with no size chosen Add to bag waits and says why, in words', () => {
+    const { el } = render(found({ selectedSize: null }));
+    const button = [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Add to bag')!;
+
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute('aria-describedby')).toBe('pdp-add-hint');
+    expect(el.querySelector('#pdp-add-hint')!.textContent).toContain('Choose a size');
+  });
+
+  it('CRT-4 a size that is sold out cannot be added', () => {
+    const { el } = render(found({ selectedSize: '7-8y' }));
+    const button = [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Add to bag')!;
+
+    expect(button.disabled).toBe(true);
+    expect(el.querySelector('#pdp-add-hint')!.textContent).toContain('not available');
+  });
+
+  it('NTM-1 a sold-out size shows the Notify me form for that size, and an in-stock size does not', () => {
+    const sold = render(found({ selectedSize: '7-8y' })).el;
+    const form = sold.querySelector('rp-notify-me-form');
+    expect(form).not.toBeNull();
+    expect(form!.querySelector('input[name=variantId]')).not.toBeNull();
+    TestBed.resetTestingModule();
+
+    const inStock = render(found()).el;
+    expect(inStock.querySelector('rp-notify-me-form')).toBeNull();
   });
 
   it('PDP-13 answers 200 for a page, 404 for a missing one and 410 for a removed one', () => {
@@ -260,5 +321,187 @@ describe('ProductPageContainer', () => {
     render({ status: 'error' }, {}, init);
 
     expect(init.status).toBe(503);
+  });
+});
+
+class FakeIntersectionObserver {
+  static all: FakeIntersectionObserver[] = [];
+  constructor(public cb: (entries: { isIntersecting: boolean }[]) => void) {
+    FakeIntersectionObserver.all.push(this);
+  }
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+class FakeResizeObserver {
+  constructor(public cb: () => void) {}
+  observe(): void {}
+  disconnect(): void {}
+}
+
+function stubViewport(narrow = true): void {
+  FakeIntersectionObserver.all = [];
+  vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+  vi.stubGlobal('ResizeObserver', FakeResizeObserver);
+  vi.stubGlobal('matchMedia', () => ({ matches: narrow, addEventListener: () => undefined, removeEventListener: () => undefined }));
+  Element.prototype.scrollIntoView = vi.fn();
+}
+/** Tell the page that its main Add to bag button is (or is not) on screen. */
+function mainButtonInView(fixture: { detectChanges(): void }, visible: boolean): void {
+  const observer = FakeIntersectionObserver.all[FakeIntersectionObserver.all.length - 1];
+  observer.cb([{ isIntersecting: visible }]);
+  fixture.detectChanges();
+}
+const bar = (el: HTMLElement) => el.querySelector<HTMLElement>('rp-buy-bar .rp-buybar');
+const barButton = (el: HTMLElement) => el.querySelector<HTMLButtonElement>('rp-buy-bar button');
+
+describe('ProductPageContainer buy bar and perks', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    document.documentElement.style.scrollPaddingBottom = '';
+    document.body.style.paddingBottom = '';
+  });
+
+  it('BUY-2 the bar is not drawn while the main Add to bag button is in view', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    mainButtonInView(fixture, true);
+    expect(bar(el)).toBeNull();
+  });
+
+  it('BUY-1 BUY-6 when the main button leaves the screen the bar appears with the server price', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    expect(bar(el)).toBeNull();
+    mainButtonInView(fixture, false);
+    expect(bar(el)).not.toBeNull();
+    expect(bar(el)!.querySelector('.rp-buybar__price')!.textContent).toContain('1,299');
+    expect(bar(el)!.querySelector('s')!.textContent).toContain('1,599');
+  });
+
+  it('BUY-9 at 64rem or wider the bar is never drawn', () => {
+    stubViewport(false);
+    const { el, fixture } = render(found());
+    mainButtonInView(fixture, false);
+    expect(bar(el)).toBeNull();
+  });
+
+  it('BUY-5 a sold-out product has no bar (its page shows the sold-out state and the Notify me form)', () => {
+    stubViewport();
+    const { el } = render(found({ isAvailable: false, selectedSize: null, sizes: basePage.sizes.map((s) => ({ ...s, availability: 'SoldOut' })) }));
+    // There is no main button to watch on a sold-out page, so the bar can never be asked for.
+    expect(FakeIntersectionObserver.all.length).toBe(0);
+    expect(bar(el)).toBeNull();
+  });
+
+  it('BUY-4 with a size chosen the bar adds that size through the same action, once', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    const dispatch = vi.spyOn(TestBed.inject(Store), 'dispatch');
+    mainButtonInView(fixture, false);
+    barButton(el)!.click();
+    const adds = dispatch.mock.calls.filter(([a]) => (a as unknown as { type: string }).type === CartActions.add.type);
+    expect(adds).toEqual([[CartActions.add({ variantId: 501, quantity: 1 })]]);
+  });
+
+  it('BUY-3 with no size chosen the bar scrolls to the sizes, says why, and adds nothing', () => {
+    stubViewport();
+    const { el, fixture } = render(found({ selectedSize: null }));
+    const dispatch = vi.spyOn(TestBed.inject(Store), 'dispatch');
+    mainButtonInView(fixture, false);
+    barButton(el)!.click();
+    fixture.detectChanges();
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    expect(bar(el)!.textContent).toContain('Choose a size');
+    expect(dispatch.mock.calls.some(([a]) => (a as unknown as { type: string }).type === CartActions.add.type)).toBe(false);
+  });
+
+  it('BUY-5 a chosen size that is sold out leaves the bar button disabled with the reason', () => {
+    stubViewport();
+    const { el, fixture } = render(found({ selectedSize: '7-8y' }));
+    mainButtonInView(fixture, false);
+    expect(barButton(el)!.disabled).toBe(true);
+    expect(bar(el)!.textContent).toContain('not available');
+  });
+
+  it('BUY-7 while the bar shows, scroll padding and bottom padding are set from its height, and both are cleared when it goes', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    expect(document.documentElement.style.scrollPaddingBottom).toBe('');
+    mainButtonInView(fixture, false);
+    expect(bar(el)).not.toBeNull();
+    // jsdom has no layout, so the measured height is 0; the real height is checked in the browser test.
+    expect(document.documentElement.style.scrollPaddingBottom).toBe('0px');
+    expect(document.body.style.paddingBottom).toBe('0px');
+    mainButtonInView(fixture, true);
+    expect(document.documentElement.style.scrollPaddingBottom).toBe('');
+    expect(document.body.style.paddingBottom).toBe('');
+  });
+
+  it('BUY-10 BUY-11 the perks follow the settings, and a missing fact leaves its line out', () => {
+    stubViewport();
+    const { el, fixture } = render(found());
+    const store = TestBed.inject(Store);
+    store.dispatch(SiteSettingsActions.loadSuccess({ settings: { ...launchSettings, delivery: [{ city: 'Lahore', minDays: 2, maxDays: 4, charge: 200, courier: 'TCS', enabled: true }], exchange: { windowDays: 7, conditions: [] } }, source: 'api' }));
+    fixture.detectChanges();
+    const lines = [...el.querySelectorAll('.rp-perks li')].map((li) => li.textContent!.trim());
+    expect(lines).toEqual(['Delivery in 2-4 days', 'Exchange within 7 days', 'Questions? Message us on WhatsApp']);
+
+    store.dispatch(SiteSettingsActions.loadSuccess({ settings: { ...launchSettings, delivery: [], exchange: { windowDays: 0, conditions: [] }, brand: { ...launchSettings.brand, whatsapp: '' } }, source: 'api' }));
+    fixture.detectChanges();
+    expect(el.querySelector('.rp-perks')).toBeNull();
+  });
+});
+
+const recTile = (id: number): ListingTile => ({
+  productId: id,
+  path: `/girls/dresses/p-${id}`,
+  name: `Dress ${id}`,
+  price: 800,
+  compareAtPrice: null,
+  savingPercent: 0,
+  savingAmount: 0,
+  colourCount: 1,
+  hasSoldOutSizes: false,
+  sizes: [{ code: '2y', name: '2Y', soldOut: false, variantId: id * 10, availability: 'InStock', colourName: 'Rose' }],
+  image: null,
+});
+
+describe('ProductPageContainer recommendations', () => {
+  it('REC-1 REC-9 REC-14 shows both rows under the product, headings running h1 then h2 with nothing skipped', () => {
+    const { el } = render(found(), {}, undefined, of({ similar: [recTile(2), recTile(3)], trending: [recTile(4)] }));
+
+    const headings = [...el.querySelectorAll('h1, h2, h3')].map((h) => h.tagName);
+    expect(headings[0]).toBe('H1');
+    expect(headings.filter((h) => h === 'H1').length).toBe(1);
+    // Each row is an h2 followed by card names at h3: no level is skipped.
+    expect([...el.querySelectorAll('rp-product-recommendations h2, rp-product-recommendations h3')].map((h) => h.tagName).slice(0, 2)).toEqual(['H2', 'H3']);
+    expect([...el.querySelectorAll('rp-product-recommendations section h2')].map((h) => h.textContent!.trim())).toEqual(['You may also like', 'Trending now']);
+    expect(el.querySelectorAll('rp-product-recommendations ul.rp-rail > li').length).toBe(3);
+    // The rows come after the composition and care block, inside the page but not inside the buying column.
+    const care = el.querySelector('rp-composition-care')!;
+    const firstRow = el.querySelector('rp-product-recommendations')!;
+    expect(care.compareDocumentPosition(firstRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('REC-10 the page is complete when the recommendations call fails, with no rows and no error shown', () => {
+    const { el } = render(found(), {}, undefined, throwError(() => new Error('down')));
+
+    expect(el.querySelector('h1')!.textContent).toContain('Floral Summer Dress');
+    expect(el.querySelector('rp-product-recommendations section')).toBeNull();
+    expect(el.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('REC-10 an empty row leaves out its heading, and the other row still shows', () => {
+    const { el } = render(found(), {}, undefined, of({ similar: [], trending: [recTile(4)] }));
+
+    expect([...el.querySelectorAll('rp-product-recommendations section h2')].map((h) => h.textContent!.trim())).toEqual(['Trending now']);
+  });
+
+  it('REC-11 asks for the rows once for the product, not again when a colour or size is chosen', () => {
+    const { recsGet } = render(found(), { colour: 'navy' });
+
+    expect(recsGet).toHaveBeenCalledTimes(1);
+    expect(recsGet).toHaveBeenCalledWith('/girls/dresses/floral-summer-dress');
   });
 });

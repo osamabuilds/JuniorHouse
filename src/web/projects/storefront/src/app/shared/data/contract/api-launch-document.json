@@ -14,6 +14,176 @@
     },
     "navigation": [
       {
+        "key": "winter",
+        "label": "Winter",
+        "kind": "group",
+        "target": {
+          "kind": "path",
+          "path": "/collections/winter"
+        },
+        "enabled": true,
+        "sort": 1,
+        "children": [
+          {
+            "key": "winter-t-shirts",
+            "label": "T-shirts",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/winter/t-shirts"
+            },
+            "enabled": true,
+            "sort": 1,
+            "children": []
+          },
+          {
+            "key": "winter-sweaters",
+            "label": "Sweaters",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/winter/sweaters"
+            },
+            "enabled": true,
+            "sort": 2,
+            "children": []
+          },
+          {
+            "key": "winter-jackets",
+            "label": "Jackets",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/winter/jackets"
+            },
+            "enabled": true,
+            "sort": 3,
+            "children": []
+          },
+          {
+            "key": "winter-trousers",
+            "label": "Trousers",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/winter/trousers"
+            },
+            "enabled": true,
+            "sort": 4,
+            "children": []
+          },
+          {
+            "key": "winter-shorts",
+            "label": "Shorts",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/winter/shorts"
+            },
+            "enabled": true,
+            "sort": 5,
+            "children": []
+          },
+          {
+            "key": "winter-dresses",
+            "label": "Dresses",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/winter/dresses"
+            },
+            "enabled": true,
+            "sort": 6,
+            "children": []
+          }
+        ]
+      },
+      {
+        "key": "summer",
+        "label": "Summer",
+        "kind": "group",
+        "target": {
+          "kind": "path",
+          "path": "/collections/summer"
+        },
+        "enabled": true,
+        "sort": 2,
+        "children": [
+          {
+            "key": "summer-t-shirts",
+            "label": "T-shirts",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/summer/t-shirts"
+            },
+            "enabled": true,
+            "sort": 1,
+            "children": []
+          },
+          {
+            "key": "summer-sweaters",
+            "label": "Sweaters",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/summer/sweaters"
+            },
+            "enabled": true,
+            "sort": 2,
+            "children": []
+          },
+          {
+            "key": "summer-jackets",
+            "label": "Jackets",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/summer/jackets"
+            },
+            "enabled": true,
+            "sort": 3,
+            "children": []
+          },
+          {
+            "key": "summer-trousers",
+            "label": "Trousers",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/summer/trousers"
+            },
+            "enabled": true,
+            "sort": 4,
+            "children": []
+          },
+          {
+            "key": "summer-shorts",
+            "label": "Shorts",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/summer/shorts"
+            },
+            "enabled": true,
+            "sort": 5,
+            "children": []
+          },
+          {
+            "key": "summer-dresses",
+            "label": "Dresses",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/collections/summer/dresses"
+            },
+            "enabled": true,
+            "sort": 6,
+            "children": []
+          }
+        ]
+      },
+      {
         "key": "girls",
         "label": "Girls",
         "kind": "group",
@@ -22,8 +192,68 @@
           "path": "/girls"
         },
         "enabled": true,
-        "sort": 1,
+        "sort": 3,
         "children": [
+          {
+            "key": "girls-t-shirts",
+            "label": "T-shirts",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/girls/t-shirts"
+            },
+            "enabled": true,
+            "sort": 1,
+            "children": []
+          },
+          {
+            "key": "girls-sweaters",
+            "label": "Sweaters",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/girls/sweaters"
+            },
+            "enabled": true,
+            "sort": 2,
+            "children": []
+          },
+          {
+            "key": "girls-jackets",
+            "label": "Jackets",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/girls/jackets"
+            },
+            "enabled": true,
+            "sort": 3,
+            "children": []
+          },
+          {
+            "key": "girls-trousers",
+            "label": "Trousers",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/girls/trousers"
+            },
+            "enabled": true,
+            "sort": 4,
+            "children": []
+          },
+          {
+            "key": "girls-shorts",
+            "label": "Shorts",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/girls/shorts"
+            },
+            "enabled": true,
+            "sort": 5,
+            "children": []
+          },
           {
             "key": "girls-dresses",
             "label": "Dresses",
@@ -33,82 +263,8 @@
               "path": "/girls/dresses"
             },
             "enabled": true,
-            "sort": 1,
+            "sort": 6,
             "children": []
-          },
-          {
-            "key": "girls-tops",
-            "label": "Tops and tees",
-            "kind": "group",
-            "target": {
-              "kind": "path",
-              "path": "/girls/tops-and-tees"
-            },
-            "enabled": true,
-            "sort": 2,
-            "children": [
-              {
-                "key": "girls-tees",
-                "label": "T-shirts",
-                "kind": "link",
-                "target": {
-                  "kind": "path",
-                  "path": "/girls/tops-and-tees/t-shirts"
-                },
-                "enabled": true,
-                "sort": 1,
-                "children": []
-              },
-              {
-                "key": "girls-blouses",
-                "label": "Blouses",
-                "kind": "link",
-                "target": {
-                  "kind": "path",
-                  "path": "/girls/tops-and-tees/blouses"
-                },
-                "enabled": true,
-                "sort": 2,
-                "children": []
-              }
-            ]
-          },
-          {
-            "key": "girls-bottoms",
-            "label": "Bottoms",
-            "kind": "group",
-            "target": {
-              "kind": "path",
-              "path": "/girls/bottoms"
-            },
-            "enabled": true,
-            "sort": 3,
-            "children": [
-              {
-                "key": "girls-skirts",
-                "label": "Skirts",
-                "kind": "link",
-                "target": {
-                  "kind": "path",
-                  "path": "/girls/bottoms/skirts"
-                },
-                "enabled": true,
-                "sort": 1,
-                "children": []
-              },
-              {
-                "key": "girls-trousers",
-                "label": "Trousers",
-                "kind": "link",
-                "target": {
-                  "kind": "path",
-                  "path": "/girls/bottoms/trousers"
-                },
-                "enabled": true,
-                "sort": 2,
-                "children": []
-              }
-            ]
           }
         ],
         "showAges": true
@@ -122,92 +278,66 @@
           "path": "/boys"
         },
         "enabled": true,
-        "sort": 2,
+        "sort": 4,
         "children": [
           {
-            "key": "boys-tees",
-            "label": "Tees and shirts",
-            "kind": "group",
-            "target": {
-              "kind": "path",
-              "path": "/boys/tees-and-shirts"
-            },
-            "enabled": true,
-            "sort": 1,
-            "children": [
-              {
-                "key": "boys-t-shirts",
-                "label": "T-shirts",
-                "kind": "link",
-                "target": {
-                  "kind": "path",
-                  "path": "/boys/tees-and-shirts/t-shirts"
-                },
-                "enabled": true,
-                "sort": 1,
-                "children": []
-              },
-              {
-                "key": "boys-polos",
-                "label": "Polo shirts",
-                "kind": "link",
-                "target": {
-                  "kind": "path",
-                  "path": "/boys/tees-and-shirts/polo-shirts"
-                },
-                "enabled": true,
-                "sort": 2,
-                "children": []
-              }
-            ]
-          },
-          {
-            "key": "boys-bottoms",
-            "label": "Bottoms",
-            "kind": "group",
-            "target": {
-              "kind": "path",
-              "path": "/boys/bottoms"
-            },
-            "enabled": true,
-            "sort": 2,
-            "children": [
-              {
-                "key": "boys-jeans",
-                "label": "Jeans",
-                "kind": "link",
-                "target": {
-                  "kind": "path",
-                  "path": "/boys/bottoms/jeans"
-                },
-                "enabled": true,
-                "sort": 1,
-                "children": []
-              },
-              {
-                "key": "boys-shorts",
-                "label": "Shorts",
-                "kind": "link",
-                "target": {
-                  "kind": "path",
-                  "path": "/boys/bottoms/shorts"
-                },
-                "enabled": true,
-                "sort": 2,
-                "children": []
-              }
-            ]
-          },
-          {
-            "key": "boys-casual",
-            "label": "Casual shirts",
+            "key": "boys-t-shirts",
+            "label": "T-shirts",
             "kind": "link",
             "target": {
               "kind": "path",
-              "path": "/boys/casual-shirts"
+              "path": "/boys/t-shirts"
+            },
+            "enabled": true,
+            "sort": 1,
+            "children": []
+          },
+          {
+            "key": "boys-sweaters",
+            "label": "Sweaters",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/boys/sweaters"
+            },
+            "enabled": true,
+            "sort": 2,
+            "children": []
+          },
+          {
+            "key": "boys-jackets",
+            "label": "Jackets",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/boys/jackets"
             },
             "enabled": true,
             "sort": 3,
+            "children": []
+          },
+          {
+            "key": "boys-trousers",
+            "label": "Trousers",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/boys/trousers"
+            },
+            "enabled": true,
+            "sort": 4,
+            "children": []
+          },
+          {
+            "key": "boys-shorts",
+            "label": "Shorts",
+            "kind": "link",
+            "target": {
+              "kind": "path",
+              "path": "/boys/shorts"
+            },
+            "enabled": true,
+            "sort": 5,
             "children": []
           }
         ],
@@ -222,19 +352,7 @@
           "path": "/new-in"
         },
         "enabled": true,
-        "sort": 3,
-        "children": []
-      },
-      {
-        "key": "collections",
-        "label": "Collections",
-        "kind": "collection-list",
-        "target": {
-          "kind": "path",
-          "path": "/collections"
-        },
-        "enabled": true,
-        "sort": 4,
+        "sort": 5,
         "children": []
       },
       {
@@ -246,7 +364,7 @@
           "path": "/sale"
         },
         "enabled": true,
-        "sort": 5,
+        "sort": 6,
         "children": []
       }
     ],
@@ -380,6 +498,14 @@
             "target": {
               "kind": "page",
               "slug": "contact"
+            },
+            "enabled": true
+          },
+          {
+            "label": "Track order",
+            "target": {
+              "kind": "path",
+              "path": "/track-order"
             },
             "enabled": true
           },

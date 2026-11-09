@@ -1,7 +1,7 @@
 export { provideListings } from './listings.providers';
 export { ActiveFiltersComponent, type FilterChip } from './components/active-filters/active-filters.component';
 export { EmptyStateComponent } from './components/empty-state/empty-state.component';
-export { FilterPanelComponent } from './components/filter-panel/filter-panel.component';
+export { FilterBarComponent } from './components/filter-bar/filter-bar.component';
 export { PaginationComponent } from './components/pagination/pagination.component';
 export { ProductTileComponent } from './components/product-tile/product-tile.component';
 export { ListingsActions } from './store/listings.actions';

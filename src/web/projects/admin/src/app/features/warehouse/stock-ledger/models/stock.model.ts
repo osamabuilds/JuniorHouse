@@ -7,7 +7,7 @@ export interface StockBinQuantityDto {
   readonly quantity: number;
 }
 
-/** Stock of one variant (docs/specs/warehouse/stock-ledger/spec.md, LED-5). Available equals on hand until reservations exist. */
+/** Stock of one variant (docs/specs/warehouse/stock-ledger/spec.md, LED-5). Available is on hand minus the units reserved for orders. */
 export interface StockVariantRowDto {
   readonly variantRefId: number;
   readonly variantId: number;
@@ -18,6 +18,8 @@ export interface StockVariantRowDto {
   readonly available: number;
   readonly onHandAccepted: number;
   readonly onHandConcession: number;
+  /** Units promised to orders. Available is on hand minus this (RSV-7). */
+  readonly reserved: number;
   readonly bins: readonly StockBinQuantityDto[];
 }
 

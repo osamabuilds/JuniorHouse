@@ -40,12 +40,13 @@ test.describe('chrome in the server HTML (no scripting)', () => {
     expect(html).toMatch(/<form[^>]*class="rp-search"[^>]*action="\/search"[^>]*method="get"|<form[^>]*action="\/search"[^>]*method="get"[^>]*class="rp-search"/);
   });
 
-  test('SC-11 the footer links to the help and brand pages, shows WhatsApp and has no newsletter form', async ({ request }) => {
+  test('SC-11 the footer links to the help and brand pages, shows WhatsApp and a newsletter form that posts without JavaScript', async ({ request }) => {
     const html = await (await request.get(PAGE)).text();
     for (const href of ['/delivery', '/exchanges', '/size-guide', '/contact', '/our-story', '/made-in-pakistan']) expect(html).toContain(`href="${href}"`);
     expect(html).toContain('href="https://wa.me/923315613217"');
     const footer = html.slice(html.indexOf('<footer'), html.indexOf('</footer>'));
-    expect(footer).not.toMatch(/type="email"|<form/);
+    expect(footer).toMatch(/<form[^>]*method="post"[^>]*action="\/newsletter\/subscribe"|<form[^>]*action="\/newsletter\/subscribe"[^>]*method="post"/);
+    expect(footer).toMatch(/type="email"/);
   });
 });
 
@@ -53,7 +54,31 @@ for (const vp of VIEWPORTS) {
   test.describe(`chrome at ${vp.name} (${vp.width}px)`, () => {
     test.use({ baseURL: BASE, viewport: { width: vp.width, height: vp.height } });
 
-    test('SC-16 SC-19 no horizontal scroll, no axe violations, every chrome control is at least 44px', async ({ page }) => {
+    test('CR-1 CR-2 header layout: desktop is wordmark, nav, search on one row; below 64rem it is menu button, search icon, then the centred wordmark', async ({ page }) => {
+      await page.goto(PAGE);
+      const box = async (sel: string) => page.locator(`header ${sel}`).first().boundingBox();
+      const wordmark = await box('a[aria-label], .rp-wordmark, a:has(.rp-wordmark)');
+      if (vp.desktop) {
+        const nav = await box('nav');
+        const search = await box('form[role="search"], form:has(input[type="search"])');
+        expect(wordmark && nav && search).toBeTruthy();
+        // One row: their vertical centres sit within a few pixels of each other, left to right.
+        const mid = (b: { y: number; height: number }) => b.y + b.height / 2;
+        expect(Math.abs(mid(wordmark!) - mid(nav!))).toBeLessThan(12);
+        expect(Math.abs(mid(search!) - mid(nav!))).toBeLessThan(12);
+        expect(wordmark!.x).toBeLessThan(nav!.x);
+        expect(nav!.x).toBeLessThan(search!.x);
+      } else {
+        const menu = await page.locator('header button[aria-label*="enu" i]').first().boundingBox();
+        const searchIcon = await page.locator('header button[aria-label*="earch" i]').first().boundingBox();
+        expect(menu && wordmark && searchIcon).toBeTruthy();
+        expect(menu!.x).toBeLessThan(wordmark!.x);
+        expect(menu!.x).toBeLessThan(searchIcon!.x);
+        expect(searchIcon!.x).toBeLessThan(wordmark!.x);
+      }
+    });
+
+    test('SC-16 SC-19 CR-6 no horizontal scroll, no axe violations, every chrome control is at least 44px', async ({ page }) => {
       await page.goto(PAGE);
       const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
       expect(summary(results)).toEqual([]);

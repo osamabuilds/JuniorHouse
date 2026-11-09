@@ -1,0 +1,32 @@
+# Sprint 8 (secure): the same local stack with real staff sign-in instead of the development stand-in user.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build
+#
+# Create the first Owner once (see "Try Sprint 8" in the README). Plain-HTTP cookies are allowed here only because this is a local stack
+# on localhost; the host refuses that setting anywhere else. To go back to the open stack, start with docker-compose.yml alone.
+services:
+  api:
+    environment:
+      Identity__UseRealAuthentication: "true"
+      Identity__AllowInsecureCookies: "true"
+      # Customer sign-in (accounts S11): real sessions on the storefront origin; mail goes to Mailpit (UI on :8025).
+      Customers__Auth__UseRealSignIn: "true"
+      Customers__Auth__AllowInsecureCookies: "true"
+      Customers__PublicBaseUrl: http://localhost:4000
+      # The storefront address: the basket and sign-in writes check the browser Origin against it (cart C7).
+      Site__PublicBaseUrl: http://localhost:4000
+      # The admin app address: staff sign-in checks the browser Origin against it, not the storefront's.
+      Site__AdminBaseUrl: http://localhost:4201
+      # Signs the confirm links of cash on delivery orders (orders D5). A local demo value only: real deployments set a secret.
+      Orders__LinkSigningKey: local-demo-orders-link-signing-key-0123456789
+      # Online payment against the pretend gateway (orders payments Y1-Y9): a demo page that pays, declines, or pays but loses the callback.
+      # Only allowed in Development: the host refuses to start with it anywhere else (PAY-15). Real deployments leave the provider empty
+      # (Cash on Delivery only) until a real gateway is configured.
+      Orders__GatewayProvider: fake
+      Orders__FakeGatewayWebhookSecret: local-demo-fake-gateway-secret-0123456789
+      Orders__EnabledOnlineMethods__0: CARD
+      Orders__EnabledOnlineMethods__1: EASY
+      Orders__EnabledOnlineMethods__2: JAZZ
+      Email__Smtp__Host: mailpit
+      Email__Smtp__Port: "1025"
+      Email__Smtp__FromAddress: no-reply@romp.local

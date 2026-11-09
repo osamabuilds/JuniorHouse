@@ -6,6 +6,7 @@ import { ControlErrorsComponent, FieldErrorsComponent, inputChecked, inputValue,
 import { BatchLineDto, InspectionDto, RecordSafetyValue, SafetyCheckDto } from '../../models';
 import { CHECK_FAIL, CHECK_NOT_APPLICABLE, CHECK_PASS, CHECK_RESULT_LABELS, SAFETY_TYPES } from '../../batches.constants';
 import { lineKey } from '../../utils';
+import { HasPermissionDirective } from '@core/auth';
 
 interface SafetyRow {
   readonly resultId: number;
@@ -22,7 +23,7 @@ interface SafetyRow {
  */
 @Component({
   selector: 'app-safety-checks-panel',
-  imports: [ReactiveFormsModule, ControlErrorsComponent, FieldErrorsComponent],
+  imports: [HasPermissionDirective, ReactiveFormsModule, ControlErrorsComponent, FieldErrorsComponent],
   template: `
     <section class="card" aria-labelledby="safety-heading">
       <h3 id="safety-heading">Child-safety checks</h3>
@@ -56,7 +57,7 @@ interface SafetyRow {
           }
         </ul>
         @if (canChange()) {
-          <button type="button" class="button button--small" (click)="startEditing()">Correct the safety checks</button>
+          <button *hasPermission="'qc.write'" type="button" class="button button--small" (click)="startEditing()">Correct the safety checks</button>
         }
       } @else if (!canChange()) {
         <p class="state-message">These results are final: a decision has already been recorded for this quantity.</p>

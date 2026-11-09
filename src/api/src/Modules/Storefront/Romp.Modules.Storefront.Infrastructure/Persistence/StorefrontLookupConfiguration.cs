@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Romp.Modules.Storefront.Domain.ProductRecommendations;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
 using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
@@ -62,6 +63,10 @@ internal static class StorefrontLookupConfiguration
             (RebuildStatus.Running, "RUNNING", "Running", "Reading the Catalog and Warehouse contracts"),
             (RebuildStatus.Completed, "COMPLETED", "Completed", "Every row was written and the old ones swept"),
             (RebuildStatus.Failed, "FAILED", "Failed", "Stopped; the previous rows keep serving"));
+
+        Configure<RecommendationRowLookup, RecommendationRowId>(modelBuilder, "RECM_ROW_LKP",
+            (RecommendationRowId.Similar, "SIMILAR", "You may also like", "Products like the one being viewed"),
+            (RecommendationRowId.Trending, "TRENDING", "Trending now", "Products selling well lately"));
 
         Configure<FactLookup, short>(modelBuilder, "FACT_LKP",
             SettingsFacts.Keys.Select((key, i) => ((short)(i + 1), key, key, (string?)"Quoted by fact blocks; empty facts block publishing")).ToArray());

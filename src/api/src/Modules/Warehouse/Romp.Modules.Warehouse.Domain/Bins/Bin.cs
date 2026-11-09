@@ -69,6 +69,9 @@ public sealed class Bin : AggregateRoot<long>, IAuditable
 
     public bool IsActive { get; private set; }
 
+    /// <summary>Why the bin is "under review" (PEX-6), or null. A bin under review is skipped by allocation until it is cleared.</summary>
+    public string? ReviewReason { get; private set; }
+
     /// <summary>When a cycle count last covered this bin (written by cycle-counts through <c>IBinCountMarker</c>).</summary>
     public DateTimeOffset? LastCountedAt { get; private set; }
 
@@ -100,6 +103,18 @@ public sealed class Bin : AggregateRoot<long>, IAuditable
     }
 
     public void MarkCounted(DateTimeOffset countedAt) => LastCountedAt = countedAt;
+
+    public void FlagForReview(string reasonCode)
+    {
+        if (string.IsNullOrWhiteSpace(reasonCode) || reasonCode.Length > 30)
+        {
+            throw new DomainException("A review flag needs a reason code of up to 30 characters.");
+        }
+
+        ReviewReason = reasonCode;
+    }
+
+    public void ClearReview() => ReviewReason = null;
 
     private static string Normalise(string? part) => (part ?? string.Empty).Trim().ToUpperInvariant();
 }

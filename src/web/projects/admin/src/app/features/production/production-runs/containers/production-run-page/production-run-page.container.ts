@@ -33,6 +33,7 @@ import {
   selectSaving,
 } from '../../store';
 import { runFlags } from '../../utils';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * Sprint 3: one production run. The milestone timeline, the pre-production sample rounds, the expected completion date and
@@ -41,7 +42,7 @@ import { runFlags } from '../../utils';
  */
 @Component({
   selector: 'app-production-run-page',
-  imports: [
+  imports: [HasPermissionDirective, 
     RouterLink,
     AppDatePipe,
     RunFlagBadgesComponent,

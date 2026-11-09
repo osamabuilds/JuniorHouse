@@ -23,11 +23,12 @@ import {
   selectSelectedBinIds,
   selectStatusFilter,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Cycle counts (docs/specs/warehouse/cycle-counts/spec.md): the counts so far, and choosing bins to start a new one (CC-1, CC-3, CC-11). */
 @Component({
   selector: 'app-cycle-counts-page',
-  imports: [SectionNavComponent, CountListComponent, BinPickerComponent, PaginationComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, CountListComponent, BinPickerComponent, PaginationComponent],
   templateUrl: './cycle-counts-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

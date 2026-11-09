@@ -19,7 +19,7 @@ internal static class LookupEndpoints
     public static void MapLookupType<TLookup>(this IEndpointRouteBuilder endpoints, string routeSegment, bool mutable)
         where TLookup : Lookup
     {
-        var group = endpoints.MapSecuredGroup($"/api/ref/{routeSegment}").WithTags("Reference");
+        var group = endpoints.MapSecuredGroup($"/api/ref/{routeSegment}", Permissions.RefRead).WithTags("Reference");
 
         group.MapGet("/", async (ISender sender, CancellationToken cancellationToken, bool includeInactive = false) =>
             Results.Ok(await sender.Send(new ListLookupQuery<TLookup>(includeInactive), cancellationToken)));
@@ -30,7 +30,7 @@ internal static class LookupEndpoints
         }
 
         group.MapPost("/", async (CreateLookupCommand<TLookup> command, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(command, cancellationToken)));
+            Results.Ok(await sender.Send(command, cancellationToken))).RequirePermission(Permissions.RefWrite);
 
         group.MapPut("/{id}", async (
                 short id,
@@ -39,12 +39,12 @@ internal static class LookupEndpoints
                 CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(
                 new UpdateLookupCommand<TLookup>(id, body.Name, body.Description, body.SortSeq, body.ParentCategoryId, body.DefaultAdvancePercent),
-                cancellationToken)));
+                cancellationToken))).RequirePermission(Permissions.RefWrite);
 
         group.MapPost("/{id}/retire", async (short id, ISender sender, CancellationToken cancellationToken) =>
         {
             await sender.Send(new RetireLookupCommand<TLookup>(id), cancellationToken);
             return Results.NoContent();
-        });
+        }).RequirePermission(Permissions.RefWrite);
     }
 }

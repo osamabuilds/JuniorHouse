@@ -14,7 +14,7 @@ internal static class QcBatchEndpoints
 {
     public static void MapQcBatchEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/quality").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality", Permissions.QcRead).WithTags("Quality");
 
         group.MapGet("/batches", async (
                 short? statusId,

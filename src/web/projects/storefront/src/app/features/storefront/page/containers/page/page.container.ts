@@ -13,6 +13,17 @@ import { PageBlockComponent } from '../../components/page-block/page-block.compo
 
 const STATUS: Record<PageResult['status'], number> = { ok: 200, notFound: 404, gone: 410, error: 503 };
 
+/**
+ * Terms and Privacy are legal text the business supplies (checkout shows a link to each, NFR-16). Until the owner publishes the real page in the
+ * admin app, the link shows this short notice to the shopper instead of the generic "not found" screen, and it replaces itself the moment the
+ * real page is published. The HTTP status stays 404 until then (ST-8: a draft page is not served), so search engines never index it, and the
+ * notice makes no legal promise of its own.
+ */
+export const LEGAL_PLACEHOLDERS: Readonly<Record<string, { readonly title: string; readonly description: string }>> = {
+  terms: { title: 'Terms and conditions', description: 'Our terms and conditions are being prepared.' },
+  privacy: { title: 'Privacy policy', description: 'Our privacy policy is being prepared.' },
+};
+
 /** Shows one content page by slug, with the real HTTP status for pages that are missing, removed or failed. */
 @Component({
   selector: 'rp-page',
@@ -41,6 +52,12 @@ export class PageContainer {
     return this.results()[slug] ?? null;
   });
 
+  /** The notice shown for a legal page that is not published yet (Terms, Privacy), instead of a not-found. */
+  protected readonly placeholder = computed(() => {
+    const slug = this.slug();
+    return this.result()?.status === 'notFound' && slug && LEGAL_PLACEHOLDERS[slug] ? LEGAL_PLACEHOLDERS[slug] : null;
+  });
+
   constructor() {
     effect(() => {
       const slug = this.slug();
@@ -50,13 +67,21 @@ export class PageContainer {
     effect(() => {
       const r = this.result();
       if (!r) return;
-      if (this.responseInit) this.responseInit.status = STATUS[r.status];
       const siteName = this.brand().name;
+      const holding = this.placeholder();
+      if (holding) {
+        // A page the business has not supplied yet: the shopper sees a notice, the server still says 404, and it is kept out of search.
+        if (this.responseInit) this.responseInit.status = STATUS[r.status];
+        const path = `/${this.slug()}`;
+        this.seo.set({ title: holding.title, description: holding.description, path, siteName, crumbs: [{ name: 'Home', path: '/' }, { name: holding.title, path }], noindex: true });
+        return;
+      }
+      if (this.responseInit) this.responseInit.status = STATUS[r.status];
       if (r.status === 'ok') {
         const path = `/${r.page.slug}`;
         this.seo.set({ title: r.page.title, description: r.page.description, path, siteName, crumbs: [{ name: 'Home', path: '/' }, { name: r.page.title, path }] });
       } else {
-        this.seo.set({ title: r.status === 'error' ? 'Something went wrong' : 'Page not found', description: 'This page is not available.', path: this.slug() ? `/${this.slug()}` : '/', siteName, crumbs: [], noindex: true });
+        this.seo.set({ title: r.status === 'error' ? 'Something went wrong' : 'Page not found', description: 'This page is not available.', path: this.slug() ? `/${this.slug()}` : '/', siteName, crumbs: [], noindex: true, error: true });
       }
     });
   }

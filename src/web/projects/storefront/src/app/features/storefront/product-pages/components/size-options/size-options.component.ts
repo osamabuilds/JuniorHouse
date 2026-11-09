@@ -10,7 +10,7 @@ const NOTES: Record<SizeAvailability, string | null> = {
 };
 
 /**
- * The sizes of the chosen colour (PDP-3, 4, 5, 11). A size that can be bought is a link to the same page with `?colour=&size=`; one that
+ * The sizes of the chosen colour (PDP-3, 4, 5, 11). A size that can be chosen is a link to the same page with `?colour=&size=`; a sold-out one is a link too, worded "Sold out", so the shopper can ask to be told when it is back (NTM-1) but cannot buy it; one that
  * cannot is plain text that says why ("Sold out", "Not yet available"), struck through, and has no link, so it cannot be chosen. State is
  * always written as text, never colour alone.
  */
@@ -30,6 +30,7 @@ const NOTES: Record<SizeAvailability, string | null> = {
                 [routerLink]="path()"
                 [queryParams]="{ colour: colour(), size: size.code }"
                 [attr.aria-current]="size.code === selected() ? 'true' : null"
+                [class.size--sold]="size.availability === 'SoldOut'"
                 replaceUrl
                 >{{ size.name }}@if (note(size); as n) { <span class="size__note">{{ n }}</span> }</a
               >
@@ -46,6 +47,7 @@ const NOTES: Record<SizeAvailability, string | null> = {
     .size { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 56px; min-height: 48px; padding: var(--space-1) var(--space-3); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); font: 400 14px/20px var(--font-sans); text-decoration: none; color: var(--ink); }
     a.size:hover { border-color: var(--ink); }
     a.size[aria-current='true'] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+    a.size--sold { color: var(--ink-muted); }
     a.size:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
     .size--off { color: var(--ink-muted); border-color: var(--line); text-decoration: line-through; }
     .size__note { font: 400 11px/14px var(--font-sans); text-decoration: none; display: block; }

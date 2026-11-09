@@ -26,7 +26,7 @@ public sealed class SearchPerformanceTests(StorefrontPostgres postgres)
         await using var context = StorefrontPostgres.NewContext(host.ConnectionString, counter);
         var handler = new SearchProductsQueryHandler(
             context, new ProductSearchIndex(context), new SynonymCache(TimeProvider.System), new FakeSearchSettings(),
-            host.Lookups, new CatalogLookupCache(TimeProvider.System));
+            host.Lookups, new CatalogLookupCache(TimeProvider.System), new FakeListingSettings(), TimeProvider.System);
 
         var cases = new[]
         {

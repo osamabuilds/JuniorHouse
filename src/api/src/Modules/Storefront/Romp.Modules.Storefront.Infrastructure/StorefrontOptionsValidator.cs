@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Romp.Modules.Storefront.Domain.ProductRecommendations;
 
 namespace Romp.Modules.Storefront.Infrastructure;
 
@@ -82,7 +83,35 @@ public sealed class StorefrontOptionsValidator : IValidateOptions<StorefrontOpti
         RequireBetween(failures, nameof(options.ImageWorkerPollInterval), options.ImageWorkerPollInterval, TimeSpan.FromSeconds(1), MaxPollInterval);
         RequireBetween(failures, nameof(options.ReconcileInterval), options.ReconcileInterval, MinReconcileInterval, MaxJobInterval);
 
+        ValidateRecommendations(options, failures);
+
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
+    }
+
+    private static void ValidateRecommendations(StorefrontOptions options, List<string> failures)
+    {
+        try
+        {
+            SimilarityBlend.Validate([options.RecommendationFieldWeight, options.RecommendationMeaningWeight, options.RecommendationSalesWeight]);
+        }
+        catch (ArgumentException)
+        {
+            failures.Add("Storefront:RecommendationFieldWeight, RecommendationMeaningWeight and RecommendationSalesWeight must not be negative, and at least one must be above 0.");
+        }
+
+        if (options.RecommendationRowSize is < 4 or > SimilarProduct.MaxRank)
+        {
+            failures.Add($"Storefront:RecommendationRowSize must be between 4 and {SimilarProduct.MaxRank}.");
+        }
+
+        if (options.RecommendationSalesWindowDays is < 1 or > 90)
+        {
+            failures.Add("Storefront:RecommendationSalesWindowDays must be between 1 and 90.");
+        }
+
+        RequireBetween(failures, nameof(options.RecommendationRefreshInterval), options.RecommendationRefreshInterval, MinReconcileInterval, MaxJobInterval);
+        RequireBetween(failures, nameof(options.RecommendationRunBudget), options.RecommendationRunBudget, TimeSpan.FromSeconds(10), TimeSpan.FromHours(6));
+        RequireBetween(failures, nameof(options.RecommendationGroupMaxAge), options.RecommendationGroupMaxAge, TimeSpan.FromHours(1), TimeSpan.FromDays(30));
     }
 
     private static void ValidateWidths(int[]? widths, List<string> failures)

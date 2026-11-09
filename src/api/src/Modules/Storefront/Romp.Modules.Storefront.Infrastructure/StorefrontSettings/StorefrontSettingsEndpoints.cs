@@ -67,26 +67,26 @@ public static class StorefrontSettingsEndpoints
 
     public static void MapAdminStorefrontSettingsEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup(AdminPrefix, Policies.StorefrontSettings).WithTags("Storefront settings")
+        var group = endpoints.MapSecuredGroup(AdminPrefix, Permissions.CatalogRead).WithTags("Storefront settings")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/draft", async (ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetDraftSettingsQuery(), cancellationToken)));
 
         group.MapPut("/navigation", async (SaveNavigationCommand body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body, cancellationToken)));
+            Results.Ok(await sender.Send(body, cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/ages", async (SaveAgeStepsCommand body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body, cancellationToken)));
+            Results.Ok(await sender.Send(body, cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/footer", async (SaveFooterCommand body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body, cancellationToken)));
+            Results.Ok(await sender.Send(body, cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/contact", async (SaveContactSettingsCommand body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body, cancellationToken)));
+            Results.Ok(await sender.Send(body, cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/delivery", async (SaveDeliveryAndExchangeCommand body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body, cancellationToken)));
+            Results.Ok(await sender.Send(body, cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapGet("/pages", async (
                 ISender sender,
@@ -103,24 +103,24 @@ public static class StorefrontSettingsEndpoints
         {
             var page = await sender.Send(body, cancellationToken);
             return Results.Created($"{AdminPrefix}/pages/{page.Id}", page);
-        });
+        }).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/pages/{id:long}", async (long id, UpdatePageRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new UpdatePageCommand(id, body.RowVersion, body.Slug, body.Title, body.MetaDescription, body.Blocks), cancellationToken)));
+            Results.Ok(await sender.Send(new UpdatePageCommand(id, body.RowVersion, body.Slug, body.Title, body.MetaDescription, body.Blocks), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapPut("/pages/{id:long}/status", async (long id, ChangePageStatusRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new ChangePageStatusCommand(id, body.RowVersion, body.Status), cancellationToken)));
+            Results.Ok(await sender.Send(new ChangePageStatusCommand(id, body.RowVersion, body.Status), cancellationToken))).RequirePermission(Permissions.CatalogWrite);
 
         group.MapGet("/preview", async (ISender sender, CancellationToken cancellationToken) =>
                 Results.Content(await sender.Send(new PreviewSettingsQuery(), cancellationToken), "application/json"))
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapPost("/publish", async (PublishSettingsCommand body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(body, cancellationToken)))
+                Results.Ok(await sender.Send(body, cancellationToken))).RequirePermission(Permissions.CatalogWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapPost("/restore", async (RestoreSnapshotCommand body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(body, cancellationToken)))
+                Results.Ok(await sender.Send(body, cancellationToken))).RequirePermission(Permissions.CatalogWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapGet("/snapshots", async (

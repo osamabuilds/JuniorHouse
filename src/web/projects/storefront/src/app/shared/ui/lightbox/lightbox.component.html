@@ -1,0 +1,40 @@
+<dialog rpDialog class="rp-lb-dialog" aria-label="Product pictures" (closed)="onClosed()" (keydown)="onKey($event)">
+  @if (current(); as image) {
+    <div class="rp-lb" [class.is-zoomed]="isZoomed()">
+      <div class="rp-lb__top">
+        <span role="status" aria-live="polite">{{ (index() ?? 0) + 1 }} / {{ count() }}</span>
+        <button type="button" class="rp-lb__btn" aria-label="Close" (click)="close()"><rp-icon name="close" /></button>
+      </div>
+
+      <div class="rp-lb__stage">
+        @if (count() > 1) {
+          <button type="button" class="rp-lb__btn rp-lb__nav rp-lb__nav--prev" aria-label="Previous picture" [disabled]="index() === 0" (click)="move(-1)"><rp-icon name="arrow-left" /></button>
+          <button type="button" class="rp-lb__btn rp-lb__nav rp-lb__nav--next" aria-label="Next picture" [disabled]="index() === count() - 1" (click)="move(1)"><rp-icon name="arrow" /></button>
+        }
+        <div
+          #frame
+          class="rp-lb__img"
+          [style.transform]="transform()"
+          (pointerdown)="onPointerDown($event)"
+          (pointermove)="onPointerMove($event)"
+          (pointerup)="onPointerUp($event)"
+          (pointercancel)="onPointerCancel($event)"
+        >
+          <picture>
+            <source type="image/webp" [attr.srcset]="image.src" />
+            <img [src]="image.fallback ?? image.src" [attr.width]="image.width" [attr.height]="image.height" [alt]="image.alt" decoding="async" draggable="false" />
+          </picture>
+        </div>
+      </div>
+
+      <div class="rp-lb__bottom">
+        <div class="rp-lb__tools">
+          <button type="button" class="rp-lb__btn" aria-label="Zoom out" (click)="zoomBy(-1)">−</button>
+          <button type="button" class="rp-lb__btn rp-lb__reset" aria-label="Reset zoom" [disabled]="!isZoomed()" (click)="reset()">1×</button>
+          <button type="button" class="rp-lb__btn" aria-label="Zoom in" (click)="zoomBy(1)">+</button>
+        </div>
+        <p class="rp-lb__hint">Pinch or double-tap to zoom</p>
+      </div>
+    </div>
+  }
+</dialog>

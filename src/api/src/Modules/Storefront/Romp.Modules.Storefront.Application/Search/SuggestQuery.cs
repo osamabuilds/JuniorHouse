@@ -62,7 +62,7 @@ public sealed class SuggestQueryHandler(
             }
 
             var ids = hits.Select(h => h.ProductId).ToList();
-            var products = (await db.Products.AsNoTracking().Where(p => p.IsListable && ids.Contains(p.Id)).Select(p => new { p.Id, p.Name, p.Path, p.MinPrice }).ToListAsync(cancellationToken))
+            var products = (await db.Products.AsNoTracking().Where(p => p.IsListable && p.IsAvailable && ids.Contains(p.Id)).Select(p => new { p.Id, p.Name, p.Path, p.MinPrice }).ToListAsync(cancellationToken))
                 .ToDictionary(p => p.Id);
             var images = await ListingTiles.ImagesAsync(db, ids, cancellationToken);
             items.AddRange(ids.Where(products.ContainsKey).Select(id => new SuggestionItemDto("product", products[id].Name, products[id].Path, images.GetValueOrDefault(id), products[id].MinPrice)));
@@ -85,7 +85,7 @@ public sealed class SuggestQueryHandler(
         }
 
         var pairs = await db.Products.AsNoTracking()
-            .Where(p => p.IsListable && codes.Contains(p.CategoryCode))
+            .Where(p => p.IsListable && p.IsAvailable && codes.Contains(p.CategoryCode))
             .Select(p => new { p.GenderCode, p.GenderName, p.CategoryCode, p.CategoryName })
             .Distinct()
             .OrderBy(p => p.CategoryName).ThenBy(p => p.GenderName)

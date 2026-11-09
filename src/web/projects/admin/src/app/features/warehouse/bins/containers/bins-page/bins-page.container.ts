@@ -20,11 +20,12 @@ import {
   selectTotal,
   selectZone,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Bins (docs/specs/warehouse/bins/spec.md): the shelf locations, how much each holds, and adding or switching them off (BIN-1..7). */
 @Component({
   selector: 'app-bins-page',
-  imports: [SectionNavComponent, BinTableComponent, BinFormComponent, PaginationComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, BinTableComponent, BinFormComponent, PaginationComponent],
   templateUrl: './bins-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

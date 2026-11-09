@@ -1,0 +1,33 @@
+<a class="rp-tile rp-zoomable" [routerLink]="item().path">
+  <div class="rp-zoom">
+    @if (item().image; as image) {
+      <div class="rp-media">
+        <picture>
+          <source type="image/webp" [attr.srcset]="webpSet()" [attr.sizes]="sizes" />
+          @if (jpegSet()) {
+            <source type="image/jpeg" [attr.srcset]="jpegSet()" [attr.sizes]="sizes" />
+          }
+          <img
+            class="rp-tile-img"
+            [src]="fallback()"
+            [attr.width]="image.width"
+            [attr.height]="image.height"
+            [alt]="image.altText"
+            [attr.loading]="eager() ? 'eager' : 'lazy'"
+            decoding="async"
+          />
+        </picture>
+      </div>
+    } @else {
+      <div class="rp-ph rp-ph--sage" aria-hidden="true"></div>
+    }
+  </div>
+  <div class="rp-tile__scrim"></div>
+  <div class="rp-tile__cap">
+    <div>
+      <span class="rp-eyebrow">Collection · {{ item().pieces }} {{ item().pieces === 1 ? 'piece' : 'pieces' }}</span>
+      <h2 class="rp-display-md">{{ item().name }}</h2>
+    </div>
+    <span class="rp-link rp-link--light" aria-hidden="true">View all</span>
+  </div>
+</a>

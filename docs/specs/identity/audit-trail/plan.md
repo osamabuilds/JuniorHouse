@@ -1,5 +1,6 @@
 # SCRUM-202: Audit trail, technical plan
 
+- **Status:** Approved (owner, 2026-10-16, with the Sprint 8 plans and ADRs 0015-0017; recorded 2026-10-26)
 - **Spec:** [spec.md](spec.md) · **Module plan:** [../plan.md](../plan.md) · **ADR:** [0016](../../../adr/0016-audit-trail-through-the-outbox.md)
 
 ## Domain model

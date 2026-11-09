@@ -1,0 +1,25 @@
+<table class="table">
+  <caption class="sr-only">Sizes with customers waiting for them, most waiting first</caption>
+  <thead>
+    <tr>
+      <th scope="col">Product</th>
+      <th scope="col">Colour</th>
+      <th scope="col">Size</th>
+      <th scope="col">SKU</th>
+      <th scope="col" class="num">Waiting</th>
+      <th scope="col">Oldest request</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (r of rows(); track r.variantId) {
+      <tr>
+        <th scope="row">{{ r.productName }}</th>
+        <td>{{ r.colourName || '–' }}</td>
+        <td>{{ r.sizeName || '–' }}</td>
+        <td>{{ r.skuCode ?? '–' }}</td>
+        <td class="num">{{ r.waiting }}</td>
+        <td>{{ r.oldestRequestAt | date: 'd MMM y' }}</td>
+      </tr>
+    }
+  </tbody>
+</table>

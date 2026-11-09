@@ -23,7 +23,7 @@ internal static class PutawayEndpoints
 
     public static void MapPutawayEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/warehouse/putaway").WithTags("Warehouse")
+        var group = endpoints.MapSecuredGroup("/api/warehouse/putaway", Permissions.WarehouseRead).WithTags("Warehouse")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/items", async (
@@ -42,7 +42,7 @@ internal static class PutawayEndpoints
         group.MapPost("/items/{id:long}/confirm", async (long id, ConfirmPutawayRequest body, ISender sender, CancellationToken cancellationToken) =>
                 Results.Ok(await sender.Send(
                     new ConfirmPutawayCommand(id, body.BinCode, body.Quantity, body.Scanned, body.Gtin, body.IdempotencyKey, body.ActingPerson),
-                    cancellationToken)))
+                    cancellationToken))).RequirePermission(Permissions.WarehouseWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapGet("/records", async (

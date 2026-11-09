@@ -9,6 +9,9 @@ public interface IListingSettings
 {
     /// <summary>New In shows products published within this many days (LST-7, Q-LST-3 default 30).</summary>
     int NewArrivalsDays { get; }
+
+    /// <summary>A size with this many units or fewer is low stock: the same threshold the product page uses.</summary>
+    int LowStockThreshold { get; }
 }
 
 /// <summary>One resized picture of the main image: the WebP file and its JPEG fallback at one width. Both are <c>/media/{name}</c> URLs.</summary>
@@ -17,11 +20,12 @@ public sealed record ListingImageSourceDto(int Width, string Webp, string? Jpeg)
 public sealed record ListingImageDto(string AltText, int Width, int Height, IReadOnlyList<ListingImageSourceDto> Sources);
 
 /// <summary>
-/// One product tile (LST-12). The price is the lowest among the variants that match the filter; the compare-at price is the one of that
-/// variant; <c>SavingAmount</c> is the server difference in PKR (SEC-09). There is no stock count: only whether some sizes are sold out (PCT-3)
-/// and, per size, whether it is sold out.
+/// One product tile (LST-12). <c>ProductId</c> is the Catalog product id, for the wishlist heart. The price is the lowest among the variants that match the filter; the compare-at price is the one of that
+/// variant; <c>SavingAmount</c> is the server difference in PKR (SEC-09). There is no stock count: only whether some sizes are sold out (PCT-3),
+/// per size whether it is sold out, and <c>SoldOut</c>: nothing of the product can be bought, so the card shows "Sold out" (SLD-5).
 /// </summary>
 public sealed record ListingTileDto(
+    long ProductId,
     string Path,
     string Name,
     decimal? Price,
@@ -31,10 +35,19 @@ public sealed record ListingTileDto(
     int ColourCount,
     bool HasSoldOutSizes,
     IReadOnlyList<ListingTileSizeDto> Sizes,
-    ListingImageDto? Image);
+    ListingImageDto? Image,
+    bool IsNew = false,
+    bool HasLowStock = false,
+    ListingImageDto? SecondImage = null,
+    bool SoldOut = false);
 
 /// <summary>A size the product comes in. <c>SoldOut</c> is true when no colour of that size can be bought; it is never hidden, so a shopper sees the whole range.</summary>
-public sealed record ListingTileSizeDto(string Code, string Name, bool SoldOut);
+/// <remarks>
+/// <c>VariantId</c>, <c>Availability</c> (InStock, LowStock, SoldOut or NotYetAvailable) and <c>ColourName</c> describe the variant a quick add would put in
+/// the bag: the colour the card shows, or the cheapest buyable one of another colour when the shown colour lacks the size. The server still
+/// decides stock and price when the bag is changed.
+/// </remarks>
+public sealed record ListingTileSizeDto(string Code, string Name, bool SoldOut, long VariantId = 0, string Availability = "", string ColourName = "");
 
 public sealed record BreadcrumbDto(string Label, string? Path);
 
@@ -101,6 +114,7 @@ public sealed record ResolvedScope(ListingScope Scope, LookupRow? Gender, Lookup
         ListingScopeKind.NewIn or ListingScopeKind.AllNewIn => "New in",
         ListingScopeKind.Sale or ListingScopeKind.AllSale => "Sale",
         ListingScopeKind.Collection => Collection!.Name,
+        ListingScopeKind.CollectionCategory => $"{Collection!.Name} {Category!.Name}",
         ListingScopeKind.All => "All products",
         _ => string.Empty,
     };

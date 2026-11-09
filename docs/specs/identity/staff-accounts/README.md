@@ -1,6 +1,6 @@
 # Staff accounts
 
-- **Module:** [`identity`](../README.md) · **Feature:** `staff-accounts` · **Status:** Planned
+- **Module:** [`identity`](../README.md) · **Feature:** `staff-accounts` · **Status:** Implemented
 
 Staff users, Argon2id password hashing, one-time owner bootstrap, administrator-created accounts with a temporary password and forced change.
 

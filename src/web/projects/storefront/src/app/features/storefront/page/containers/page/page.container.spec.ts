@@ -8,6 +8,7 @@ import { launchSettings } from '../../../../../shared/data/launch-settings';
 import { SeoService } from '../../../../../shared/seo/seo.service';
 import { SiteSettingsActions, provideSiteSettings } from '../../../site-settings';
 import { providePage } from '../../page.providers';
+import { PageActions } from '../../store/page.actions';
 import { PageContainer } from './page.container';
 import { vi } from 'vitest';
 
@@ -100,9 +101,107 @@ describe('PageContainer', () => {
     expect(render({ slug: 'contact', settings }).init.status).toBe(410);
   });
 
+  it('PR-14 the facts on the content pages follow the settings: change the value and the page changes, nothing is typed into a template', () => {
+    const changed = {
+      ...launchSettings,
+      brand: { ...launchSettings.brand, whatsapp: '923001112223', email: 'changed@example.com', hours: 'Sundays only' },
+      exchange: { windowDays: 11, conditions: ['Condition from settings'] },
+      delivery: [{ city: 'Quetta', minDays: 4, maxDays: 6, charge: 777, courier: 'Courier Q', enabled: true }],
+    } as typeof launchSettings;
+
+    const contact = render({ slug: 'contact', settings: changed }).el;
+    expect(contact.querySelector('a[href="https://wa.me/923001112223"]')).not.toBeNull();
+    expect(contact.querySelector('a[href="https://wa.me/923315613217"]')).toBeNull();
+    expect(contact.textContent).toContain('changed@example.com');
+    expect(contact.textContent).toContain('Sundays only');
+    TestBed.resetTestingModule();
+
+    const exchanges = render({ slug: 'exchanges', settings: changed }).el.textContent;
+    expect(exchanges).toContain('11 days');
+    expect(exchanges).toContain('Condition from settings');
+    TestBed.resetTestingModule();
+
+    const delivery = render({ slug: 'delivery', settings: changed }).el.textContent!;
+    expect(delivery).toContain('Quetta');
+    expect(delivery).toContain('Rs. 777');
+    expect(delivery).toContain('Courier Q');
+  });
+
+  it('PR-14 with no fact entered in the settings the pages show nothing for it, not a typed-in default', () => {
+    const empty = { ...launchSettings, brand: { name: 'Romp', tagline: '', whatsapp: '' }, delivery: [], exchange: { windowDays: 0, conditions: [] } } as typeof launchSettings;
+
+    const contact = render({ slug: 'contact', settings: empty }).el;
+    expect(contact.querySelector('a[href^="https://wa.me/"]')).toBeNull();
+    expect(contact.textContent).not.toContain('923315613217');
+    TestBed.resetTestingModule();
+    expect(render({ slug: 'exchanges', settings: empty }).el.textContent).not.toMatch(/\d+ days/);
+  });
+
+  it('SC-15 a size guide table lists every configured age, from the settings, with column headers', () => {
+    const ages = launchSettings.ages.filter((a) => a.enabled);
+    const sizeGuide = {
+      slug: 'size-guide', title: 'Size guide', description: 'How to choose.', status: 'published' as const,
+      blocks: [{ type: 'table' as const, caption: 'Measurements', headers: ['Age', 'Chest (cm)', 'Height (cm)'], rows: ages.map((a, i) => [a.label, `${50 + i * 2}`, `${90 + i * 6}`]) }],
+    };
+    const { f, el } = render({ slug: 'size-guide' });
+    // In production the published page comes from the API; hand the store that version.
+    TestBed.inject(Store).dispatch(PageActions.loaded({ slug: 'size-guide', result: { status: 'ok', page: sizeGuide } }));
+    f.detectChanges();
+    const table = el.querySelector('table')!;
+
+    expect(table).not.toBeNull();
+    expect(table.querySelector('caption')!.textContent).toBe('Measurements');
+    expect([...table.querySelectorAll('thead th')].map((h) => h.getAttribute('scope'))).toEqual(['col', 'col', 'col']);
+    expect([...table.querySelectorAll('tbody tr')].map((r) => r.querySelector('td')!.textContent)).toEqual(ages.map((a) => a.label));
+  });
+
   it('ST-8 the catch-all route (no slug) is a 404, never a blank 200', () => {
     const { init, el } = render({ notFoundRoute: true });
     expect(init.status).toBe(404);
     expect(el.querySelector('h1')).not.toBeNull();
+  });
+
+  describe('legal pages the business has not supplied yet (orders H5, NFR-16)', () => {
+    for (const [slug, title] of [['terms', 'Terms and conditions'], ['privacy', 'Privacy policy']] as const) {
+      it('a missing ' + slug + ' page shows a short notice (still a 404 for search engines, ST-8), with one h1 and a way to get help', () => {
+        const { f, el, seo, init } = render({ slug });
+        TestBed.inject(Store).dispatch(PageActions.loaded({ slug, result: { status: 'notFound' } }));
+        f.detectChanges();
+
+        expect(el.querySelectorAll('h1').length).toBe(1);
+        expect(el.querySelector('h1')!.textContent).toBe(title);
+        expect(el.textContent).toContain('being prepared');
+        expect(el.querySelector('a[href="/contact"]')).not.toBeNull();
+        expect(el.querySelector('a[href="/delivery"]')).not.toBeNull();
+        expect(init.status).toBe(404);
+        expect(seo.set).toHaveBeenLastCalledWith(expect.objectContaining({ title, noindex: true, path: '/' + slug }));
+      });
+    }
+
+    it('the notice never invents legal terms', () => {
+      const { f, el } = render({ slug: 'terms' });
+      TestBed.inject(Store).dispatch(PageActions.loaded({ slug: 'terms', result: { status: 'notFound' } }));
+      f.detectChanges();
+
+      expect(el.textContent ?? '').not.toMatch(/liab|governing law|indemn|warrant/i);
+    });
+
+    it('once the real page is published it replaces the notice and is indexable', () => {
+      const { f, el, seo, init } = render({ slug: 'terms' });
+      TestBed.inject(Store).dispatch(PageActions.loaded({ slug: 'terms', result: { status: 'ok', page: { slug: 'terms', title: 'Terms', description: 'Our terms.', status: 'published' as const, blocks: [] } } }));
+      f.detectChanges();
+
+      expect(el.textContent).not.toContain('being prepared');
+      expect(init.status).toBe(200);
+      expect(seo.set).toHaveBeenLastCalledWith(expect.not.objectContaining({ noindex: true }));
+    });
+
+    it('any other missing page is still a real 404', () => {
+      const { f, init } = render({ slug: 'no-such-page' });
+      TestBed.inject(Store).dispatch(PageActions.loaded({ slug: 'no-such-page', result: { status: 'notFound' } }));
+      f.detectChanges();
+
+      expect(init.status).toBe(404);
+    });
   });
 });

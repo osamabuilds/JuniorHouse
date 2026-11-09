@@ -1,0 +1,56 @@
+@if (show('age') && options().ages.length > 0) {
+  <fieldset>
+    <legend>Age</legend>
+    @for (o of options().ages; track o.value) {
+      <label class="rp-check"><input type="radio" name="age" [value]="o.value" [checked]="filter().age === o.value" /> {{ o.label }}</label>
+    }
+  </fieldset>
+}
+@if (show('size') && options().sizes.length > 0) {
+  <fieldset>
+    <legend>Size</legend>
+    @for (o of options().sizes; track o.value) {
+      <label class="rp-check"><input type="checkbox" name="size" [value]="o.value" [checked]="has(filter().sizes, o.value)" /> {{ o.label }}</label>
+    }
+  </fieldset>
+}
+@if (show('colour') && options().colours.length > 0) {
+  <fieldset>
+    <legend>Colour</legend>
+    <div class="rp-swatches">
+      @for (o of options().colours; track o.value) {
+        <label class="rp-swatchbox">
+          <input type="checkbox" name="colour" [value]="o.value" [checked]="has(filter().colours, o.value)" />
+          <span class="rp-swatch" aria-hidden="true">{{ initial(o.label) }}</span>
+          <span class="rp-swatchbox__name">{{ o.label }}</span>
+        </label>
+      }
+    </div>
+  </fieldset>
+}
+@if (show('price') && options().priceMin !== null) {
+  <fieldset>
+    <legend>Price (Rs.)</legend>
+    <label class="rp-field">From <input class="rp-input" type="number" name="priceMin" inputmode="numeric" min="0" [attr.placeholder]="options().priceMin" [value]="filter().priceMin ?? ''" /></label>
+    <label class="rp-field">To <input class="rp-input" type="number" name="priceMax" inputmode="numeric" min="0" [attr.placeholder]="options().priceMax" [value]="filter().priceMax ?? ''" /></label>
+  </fieldset>
+}
+@if (show('stock')) {
+  <fieldset>
+    <legend>Availability</legend>
+    <label class="rp-check"><input type="checkbox" name="stock" value="in" [checked]="filter().inStockOnly" /> In stock only</label>
+  </fieldset>
+}
+@if (show('sort')) {
+  <fieldset>
+    <legend>Sort</legend>
+    <label class="rp-field">
+      <span class="sr-only">Sort by</span>
+      <select class="rp-select" name="sort">
+        <option value="recent" [selected]="filter().sort === 'recent'">{{ defaultSortLabel() }}</option>
+        <option value="price-asc" [selected]="filter().sort === 'price-asc'">Price: low to high</option>
+        <option value="price-desc" [selected]="filter().sort === 'price-desc'">Price: high to low</option>
+      </select>
+    </label>
+  </fieldset>
+}

@@ -3,8 +3,10 @@ import { printJob } from '@app/testing/labelling-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { PrintJobDto } from '../../models';
 import { JobTableComponent } from './job-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('JobTableComponent (spec PJ-2, PJ-3, PJ-6, PJ-13)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(jobs: PrintJobDto[], loading = false, busyId: number | null = null) {
     const fixture = TestBed.createComponent(JobTableComponent);
     fixture.componentRef.setInput('jobs', jobs);

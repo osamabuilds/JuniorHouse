@@ -163,6 +163,16 @@ internal sealed class StorefrontHost : IDisposable
         services.AddSingleton<Romp.Modules.Storefront.Application.Abstractions.ICatalogLookupCache, Romp.Modules.Storefront.Infrastructure.CatalogLookupCache>();
         services.AddScoped<Romp.Modules.Storefront.Contracts.IStorefrontPageQueries, PublishedPageSitemapSource>();
 
+        services.AddSingleton<SettableClock>();
+        services.AddSingleton<TimeProvider>(sp => sp.GetRequiredService<SettableClock>());
+        services.AddSingleton<FakeRecommendationSettings>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.ProductRecommendations.IRecommendationSettings>(sp => sp.GetRequiredService<FakeRecommendationSettings>());
+        services.AddSingleton<FakeTextSimilarityProvider>();
+        services.AddSingleton<Romp.Modules.Storefront.Application.ProductRecommendations.ITextSimilarityProvider>(sp => sp.GetRequiredService<FakeTextSimilarityProvider>());
+        services.AddSingleton<FakeProductSales>();
+        services.AddSingleton<Romp.Modules.Orders.Contracts.IProductSalesQueries>(sp => sp.GetRequiredService<FakeProductSales>());
+        services.AddScoped<Romp.Modules.Storefront.Application.ProductRecommendations.IRecommendationEventStore, Romp.Modules.Storefront.Infrastructure.ProductRecommendations.RecommendationEventStore>();
+
         var applicationAssembly = typeof(AssemblyReference).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);
         services.AddMediatR(cfg =>
@@ -200,6 +210,14 @@ internal sealed class StorefrontHost : IDisposable
     public FakePathQueries Paths => _root.GetRequiredService<FakePathQueries>();
 
     public FakeProductPageMetrics PageMetrics => _root.GetRequiredService<FakeProductPageMetrics>();
+
+    public SettableClock Clock => _root.GetRequiredService<SettableClock>();
+
+    public FakeRecommendationSettings RecoSettings => _root.GetRequiredService<FakeRecommendationSettings>();
+
+    public FakeTextSimilarityProvider Meaning => _root.GetRequiredService<FakeTextSimilarityProvider>();
+
+    public FakeProductSales Sales => _root.GetRequiredService<FakeProductSales>();
 
     /// <summary>Delivers an event the way the dispatcher does: a scope, the outbox row id in the message context, then every handler of that event type.</summary>
     public async Task DeliverAsync<TEvent>(long outboxMessageId, TEvent domainEvent)
@@ -268,6 +286,8 @@ internal sealed class StorefrontHost : IDisposable
 internal sealed class FakeListingSettings : Romp.Modules.Storefront.Application.Listings.IListingSettings
 {
     public int NewArrivalsDays => 30;
+
+    public int LowStockThreshold => 5;
 }
 
 /// <summary>Catalog's path contract, answering what a test says; an unknown path is NotFound.</summary>

@@ -19,7 +19,7 @@ internal static class DeliveryNoteEndpoints
 {
     public static void MapDeliveryNoteEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/production/runs").WithTags("Production");
+        var group = endpoints.MapSecuredGroup("/api/production/runs", Permissions.ProductionRead).WithTags("Production");
 
         group.MapGet("/{id:long}/delivery-notes", async (long id, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(new GetDeliveryNotesQuery(id), cancellationToken)));
@@ -27,6 +27,6 @@ internal static class DeliveryNoteEndpoints
         group.MapPost("/{id:long}/delivery-notes", async (long id, RecordDeliveryNoteRequest body, ISender sender, CancellationToken cancellationToken) =>
             Results.Ok(await sender.Send(
                 new RecordDeliveryNoteCommand(id, body.VendorDnNo, body.DispatchDate, body.IsFinalShipment, body.Lines, body.ActingPerson),
-                cancellationToken)));
+                cancellationToken))).RequirePermission(Permissions.ProductionWrite);
     }
 }

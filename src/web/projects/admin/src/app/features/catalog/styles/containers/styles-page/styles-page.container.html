@@ -31,7 +31,7 @@
       Active only
     </label>
 
-    <button type="button" class="button button--primary" (click)="startCreate()">Add style</button>
+    <button *hasPermission="'catalog.write'" type="button" class="button button--primary" (click)="startCreate()">Add style</button>
   </div>
 
   @if (error()) {

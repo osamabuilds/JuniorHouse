@@ -4,8 +4,10 @@ import { bothSafetyPassed, inspection, qcBatch, subBatch } from '@app/testing/qu
 import { buttonByText, textOf } from '@app/testing/production-fixtures';
 import { QcBatchDto } from '../../models';
 import { SubBatchTableComponent } from './sub-batch-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('SubBatchTableComponent (spec AC-20..AC-27, AC-44)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(batch: QcBatchDto) {
     const fixture = TestBed.createComponent(SubBatchTableComponent);
     fixture.componentRef.setInput('batch', batch);

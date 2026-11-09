@@ -16,6 +16,11 @@ Each feature folder has a `README.md` card (what it is, status, where the code i
 | [identity](identity/README.md) | Staff accounts, sign-in, MFA, roles, audit trail (Sprint 8, specs approved) | staff-accounts, sessions, mfa, roles, audit-trail |
 | [platform](platform/README.md) | Cross-cutting, not a module: staging deployment, health probes, logging policy (Sprint 8, specs approved) | deployment, observability |
 
-| [storefront](storefront/README.md) | Public server-rendered shop: read model, navigation, listings, search, product pages, SEO baseline (Sprint 9; design-foundation, site-chrome and storefront-settings implemented) | design-foundation, site-chrome, storefront-settings, pages-redesign, published-catalog, navigation, listings, search, product-pages, seo |
+| [storefront](storefront/README.md) | Public server-rendered shop: read model, navigation, listings, search, product pages, SEO baseline (Sprint 9; design-foundation, site-chrome and storefront-settings implemented) | design-foundation, site-chrome, storefront-settings, pages-redesign, published-catalog, navigation, listings, search, product-pages, seo, product-recommendations, hydration-state, collections-page, product-buy-bar, product-gallery-lightbox, listing-filter-bar, product-card-quick-add, mega-menu-tile, sold-items-in-listings |
 
-Later sprints add `orders`, `fulfilment`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).
+| [cart](cart/README.md) | Basket, discount codes, server-side totals and shipping (Sprint 11; built 2026-11-02, discount hold confirmation waits for Orders) | carts, discount-codes, totals |
+| [orders](orders/README.md) | Checkout, orders, payments, COD confirmation, admin queue, guest look-up (Sprints 12-13; specs approved, plan drafted 2026-11-02) | checkout, orders, payments, cod-confirmation, order-queue, order-lookup, order-line-images |
+| [notifications](notifications/README.md) | Guaranteed email and WhatsApp delivery, fallback, delivery log and resend (Sprint 13; specs approved, plan drafted 2026-11-02; WhatsApp in scope) | delivery, channels, order-confirmation, delivery-log |
+| [fulfilment](fulfilment/README.md) | Allocation, pick lists, pick exceptions, pack station, packing slips, the warehouse app (Sprint 14; specs written, applied by delegation) | allocations, pick-lists, pick-exceptions, pack-station, packing-slips, warehouse-app |
+
+Later sprints add `shipping`, `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).

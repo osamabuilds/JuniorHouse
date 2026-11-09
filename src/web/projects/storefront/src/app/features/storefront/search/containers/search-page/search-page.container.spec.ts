@@ -1,7 +1,8 @@
 import { RESPONSE_INIT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { provideStore } from '@ngrx/store';
+import { provideState, provideStore } from '@ngrx/store';
+import { wishlistFeature } from '../../../../../features/customers/wishlist/store/wishlist.reducer';
 import { of } from 'rxjs';
 import { ListingTile } from '../../../listings';
 import { provideSiteSettings } from '../../../site-settings';
@@ -11,6 +12,7 @@ import { provideSearch } from '../../search.providers';
 import { SearchPageContainer } from './search-page.container';
 
 const tile = (n: number): ListingTile => ({
+  productId: n,
   path: `/girls/dresses/dress-${n}`,
   name: `Dress ${n}`,
   price: 800,
@@ -47,6 +49,7 @@ function render(result: SearchResult | null, query: Record<string, string | stri
     providers: [
       provideRouter([]),
       provideStore({}),
+      provideState(wishlistFeature),
       provideSiteSettings(),
       provideSearch(),
       { provide: SearchApi, useValue: { find, suggest: () => of({ query: '', items: [] }) } },
@@ -62,6 +65,13 @@ function render(result: SearchResult | null, query: Record<string, string | stri
 }
 
 describe('SearchPageContainer', () => {
+  it('SRC-1 headings never skip a level: the product names sit under an h2, not straight under the h1', () => {
+    const { el } = render(ok([tile(1), tile(2)]));
+    const levels = [...el.querySelectorAll('h1,h2,h3,h4,h5,h6')].map((h) => Number(h.tagName[1]));
+    expect(levels[0]).toBe(1);
+    levels.forEach((l, i) => i > 0 && expect(l - levels[i - 1]).toBeLessThanOrEqual(1));
+  });
+
   it('SRC-1 shows one h1 with the encoded text, a search form and the tiles', () => {
     const { el, find } = render(ok([tile(1), tile(2)]));
 
@@ -85,7 +95,7 @@ describe('SearchPageContainer', () => {
 
     expect(el.querySelector('.rp-empty h2')!.textContent).toContain('Nothing found for “frock”');
     expect([...el.querySelectorAll('.rp-empty a')].map((a) => a.getAttribute('href'))).toEqual(['/new-in']);
-    expect(el.querySelector('rp-filter-panel')).toBeNull();
+    expect(el.querySelector('rp-filter-bar')).toBeNull();
   });
 
   it('SRC-2 filters that remove everything say so and keep the way back', () => {
@@ -98,8 +108,8 @@ describe('SearchPageContainer', () => {
   it('SRC-9 the filter form and the page links keep the search text', () => {
     const { el } = render(ok(Array.from({ length: 24 }, (_, i) => tile(i + 1)), { total: 60, totalPages: 3 }));
 
-    expect(el.querySelector<HTMLInputElement>('rp-filter-panel input[type="hidden"][name="q"]')!.value).toBe('frock');
-    expect(el.querySelector('rp-filter-panel option[value="recent"]')!.textContent).toContain('Best match');
+    expect(el.querySelector<HTMLInputElement>('rp-filter-bar input[type="hidden"][name="q"]')!.value).toBe('frock');
+    expect(el.querySelector('rp-filter-bar option[value="recent"]')!.textContent).toContain('Best match');
     expect(el.querySelector('rp-pagination a[rel="next"]')!.getAttribute('href')).toBe('/search?q=frock&page=2');
   });
 
@@ -151,8 +161,8 @@ describe('SearchPageContainer', () => {
     const { el } = render(ok([tile(1)]));
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    el.querySelector<HTMLInputElement>('rp-filter-panel input[name="size"]')!.click();
-    el.querySelector<HTMLFormElement>('rp-filter-panel form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    el.querySelector<HTMLInputElement>('rp-filter-bar input[name="size"]')!.click();
+    el.querySelector<HTMLFormElement>('rp-filter-bar form')!.dispatchEvent(new Event('submit', { cancelable: true }));
 
     expect(navigate).toHaveBeenCalledWith(['/search'], { queryParams: { q: 'frock', size: ['5-6y'] } });
   });

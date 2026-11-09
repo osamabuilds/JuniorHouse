@@ -100,11 +100,27 @@ public sealed class StockPosting(WhseDbContext dbContext, TimeProvider timeProvi
                 .ToListAsync(cancellationToken);
 
             var variant = await dbContext.VariantRefs.FirstAsync(v => v.Id == group.Key, cancellationToken);
+            var reserved = await dbContext.ReservedBalances.AsNoTracking().Where(b => b.Id == group.Key).Select(b => b.Quantity).FirstOrDefaultAsync(cancellationToken);
             variant.PublishLevel(
                 totals.Where(t => t.Grade == Grades.Accepted).Sum(t => t.Total),
                 totals.Where(t => t.Grade == Grades.Concession).Sum(t => t.Total),
                 MovementKinds.CodeOf(group.First().KindId),
-                versions[group.Key]);
+                versions[group.Key],
+                reserved);
+        }
+
+        // RSV-8: a change that takes on-hand below what is promised to orders is refused, never applied silently.
+        foreach (var variantRefId in posts.Where(p => p.QuantityChange < 0).Select(p => p.VariantRefId).Distinct())
+        {
+            var reservedUnits = await dbContext.ReservedBalances.AsNoTracking().Where(b => b.Id == variantRefId).Select(b => b.Quantity).FirstOrDefaultAsync(cancellationToken);
+            if (reservedUnits > 0)
+            {
+                var onHand = await dbContext.Balances.AsNoTracking().Where(b => b.VariantRefId == variantRefId).SumAsync(b => b.Quantity, cancellationToken);
+                if (onHand < reservedUnits)
+                {
+                    throw new DomainException(StockMessages.BelowReserved);
+                }
+            }
         }
 
         return posted;

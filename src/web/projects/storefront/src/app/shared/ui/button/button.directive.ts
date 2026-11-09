@@ -1,6 +1,6 @@
 import { Directive, input } from '@angular/core';
 
-export type RpBtnVariant = 'primary' | 'ghost' | 'light';
+export type RpBtnVariant = 'primary' | 'action' | 'ghost' | 'light';
 
 /**
  * Design-system button on a native `<button>` or `<a>`: `<button rpBtn>`, `<button rpBtn="ghost" size="sm">`.
@@ -10,6 +10,7 @@ export type RpBtnVariant = 'primary' | 'ghost' | 'light';
   selector: 'button[rpBtn], a[rpBtn]',
   host: {
     class: 'rp-btn',
+    '[class.rp-btn--action]': 'rpBtn() === "action"',
     '[class.rp-btn--ghost]': 'rpBtn() === "ghost"',
     '[class.rp-btn--light]': 'rpBtn() === "light"',
     '[class.rp-btn--sm]': 'size() === "sm"',

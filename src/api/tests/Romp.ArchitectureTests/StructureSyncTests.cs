@@ -46,13 +46,13 @@ public sealed class StructureSyncTests
     {
         var api = ApiFeaturesByModule().ToDictionary(p => Kebab(p.Key), p => p.Value.Select(Kebab).ToHashSet());
         var orphans = new List<string>();
-        foreach (var moduleDir in Directory.GetDirectories(SpecsRoot).Where(d => !IsUnderscored(d)))
+        foreach (var moduleDir in Directory.GetDirectories(SpecsRoot).Where(d => !IsUnderscored(d) && !IsSpecOnlyArea(d)))
         {
             var module = Path.GetFileName(moduleDir);
             foreach (var featureDir in Directory.GetDirectories(moduleDir).Where(d => !IsUnderscored(d)))
             {
                 var feature = Path.GetFileName(featureDir);
-                var hasApi = api.TryGetValue(module, out var set) && set.Contains(feature);
+                var hasApi = api.TryGetValue(module, out var set) && (set.Contains(feature) || BuiltInFeatures(featureDir).Any(set.Contains));
                 if (!hasApi && !IsPlanned(featureDir) && !IsFrontendOnly(featureDir))
                 {
                     orphans.Add($"{module}/{feature}");
@@ -60,7 +60,16 @@ public sealed class StructureSyncTests
             }
         }
 
-        Assert.True(orphans.Count == 0, "Spec features with no API feature (mark the card 'Planned' if not built yet, or '**Scope:** Frontend-only' if it never has a backend):" + Environment.NewLine + string.Join(Environment.NewLine, orphans));
+        Assert.True(orphans.Count == 0, "Spec features with no API feature (mark the card 'Planned' if not built yet, say `**Built in:** <api-feature>` if it amends an existing feature, or '**Scope:** Frontend-only' if it never has a backend):" + Environment.NewLine + string.Join(Environment.NewLine, orphans));
+    }
+
+    [Fact]
+    public void PlatformIsSpecOnly()
+    {
+        // Platform work (deployment, observability) is cross-cutting: it has specs but no module and no admin screens.
+        Assert.True(Directory.Exists(Path.Combine(SpecsRoot, SpecOnlyArea)), "docs/specs/platform is missing");
+        Assert.DoesNotContain(ApiFeaturesByModule(), p => Kebab(p.Key) == SpecOnlyArea);
+        Assert.False(Directory.Exists(Path.Combine(WebFeaturesRoot, SpecOnlyArea)), "platform must not have a web feature folder");
     }
 
     [Fact]
@@ -171,6 +180,10 @@ public sealed class StructureSyncTests
 
     private static string WebFeaturesRoot => Path.Combine(RepoRoot, "src", "web", "projects", "admin", "src", "app", "features");
 
+    private const string SpecOnlyArea = "platform";
+
+    private static bool IsSpecOnlyArea(string dir) => Path.GetFileName(dir) == SpecOnlyArea;
+
     private static bool IsUnderscored(string dir) => Path.GetFileName(dir).StartsWith('_');
 
     private static bool IsLegacyContainer(string name) => name == "_sprint-specs" || name == "_template";
@@ -179,6 +192,19 @@ public sealed class StructureSyncTests
     {
         var card = Path.Combine(featureDir, "README.md");
         return File.Exists(card) && File.ReadAllText(card).Contains("**Status:** Planned", StringComparison.Ordinal);
+    }
+
+    /// <summary>A feature that amends existing API features instead of adding a folder: its card says `**Built in:** listings, search` (kebab-case names, checked against the folders).</summary>
+    private static string[] BuiltInFeatures(string featureDir)
+    {
+        var card = Path.Combine(featureDir, "README.md");
+        if (!File.Exists(card))
+        {
+            return [];
+        }
+
+        var match = Regex.Match(File.ReadAllText(card), @"\*\*Built in:\*\*\s*([a-z0-9, -]+)");
+        return match.Success ? match.Groups[1].Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) : [];
     }
 
     /// <summary>A feature built entirely in the web app (design system, site chrome): its card says `**Scope:** Frontend-only` and it never gets a backend feature.</summary>

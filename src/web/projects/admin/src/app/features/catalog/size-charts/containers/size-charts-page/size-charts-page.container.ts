@@ -20,13 +20,14 @@ import {
   selectSaving,
   selectTotal,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 const LOOKUP_TYPES = ['categories', 'genders', 'sizes'] as const;
 
 /** Size charts (docs/specs/catalog/size-charts/spec.md): the paged list and the chart editor (CHT-1..8). `/size-charts/:id` opens a chart to edit. */
 @Component({
   selector: 'app-size-charts-page',
-  imports: [SectionNavComponent, SizeChartTableComponent, SizeChartEditorComponent, PaginationComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, SizeChartTableComponent, SizeChartEditorComponent, PaginationComponent],
   templateUrl: './size-charts-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

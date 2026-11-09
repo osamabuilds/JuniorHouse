@@ -17,6 +17,7 @@ using Romp.Modules.Catalog.Contracts;
 using Romp.Modules.Warehouse.Contracts;
 using Romp.Modules.Storefront.Infrastructure.Listings;
 using Romp.Modules.Storefront.Infrastructure.Search;
+using Romp.Modules.Storefront.Infrastructure.CollectionsPage;
 using Romp.Modules.Storefront.Infrastructure.Navigation;
 using Romp.Modules.Storefront.Infrastructure.ProductPages;
 using Romp.Modules.Storefront.Infrastructure.PublishedCatalog;
@@ -43,7 +44,8 @@ public sealed class StorefrontModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "STFR"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
         services.AddScoped<IStorefrontDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
         services.AddScoped<IStorefrontReadDbContext>(sp => sp.GetRequiredService<StfrDbContext>());
 
@@ -63,9 +65,15 @@ public sealed class StorefrontModule : IModule
         services.AddSingleton<Search.SearchMissWorker>();
         services.AddSingleton<Application.Search.ISearchMissSink>(sp => sp.GetRequiredService<Search.SearchMissWorker>());
         services.AddHostedService(sp => sp.GetRequiredService<Search.SearchMissWorker>());
+        services.AddSingleton<Application.ProductRecommendations.IRecommendationSettings, RecommendationSettings>();
+        services.AddSingleton<Application.ProductRecommendations.ITextSimilarityProvider, Application.ProductRecommendations.NoTextSimilarityProvider>();
+        services.AddScoped<Application.ProductRecommendations.IRecommendationEventStore, ProductRecommendations.RecommendationEventStore>();
         services.AddMemoryCache();
         services.AddSingleton<IPublishedDocumentCache, PublishedDocumentCache>();
         services.AddScoped<Contracts.IStorefrontPageQueries, Application.StorefrontSettings.PublishedPageSitemapSource>();
+        services.AddScoped<Contracts.IShopSettingsQueries, Application.StorefrontSettings.PublishedShopSettingsSource>();
+        services.AddScoped<Contracts.IStorefrontImageQueries, Application.Listings.StorefrontImageQueries>();
+        services.AddScoped<Contracts.IStorefrontCatalogQueries, Application.Listings.StorefrontCatalogQueries>();
 
         services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(StorefrontTransactionBehavior<,>));
@@ -92,6 +100,11 @@ public sealed class StorefrontModule : IModule
             services.AddHostedService<ReconcileWorker>();
         }
 
+        if (configuration.GetValue("Storefront:RecommendationWorkerEnabled", true))
+        {
+            services.AddHostedService<ProductRecommendations.RecommendationRefreshWorker>();
+        }
+
         services.AddScoped<IOutboxMessageHandler<ProductPublishedEvent>, ProductPublishedConsumer>();
         services.AddScoped<IOutboxMessageHandler<ProductChangedEvent>, ProductChangedConsumer>();
         services.AddScoped<IOutboxMessageHandler<ProductUnpublishedEvent>, ProductUnpublishedConsumer>();
@@ -105,9 +118,11 @@ public sealed class StorefrontModule : IModule
     {
         endpoints.MapPublicStorefrontEndpoints();
         endpoints.MapPublicNavigationEndpoints();
+        endpoints.MapPublicCollectionsEndpoints();
         endpoints.MapPublicListingEndpoints();
         endpoints.MapPublicSearchEndpoints();
         endpoints.MapPublicProductPageEndpoints();
+        ProductRecommendations.RecommendationEndpoints.MapPublicRecommendationEndpoints(endpoints);
 
         var services = endpoints.ServiceProvider;
         var options = services.GetRequiredService<IOptions<StorefrontOptions>>().Value;

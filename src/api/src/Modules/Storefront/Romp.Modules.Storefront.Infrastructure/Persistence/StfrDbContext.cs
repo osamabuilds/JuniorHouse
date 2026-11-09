@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Romp.BuildingBlocks.Persistence.Inbox;
 using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain.ProductRecommendations;
 using Romp.Modules.Storefront.Domain.Search;
 using Romp.Modules.Storefront.Domain;
 using Romp.Modules.Storefront.Domain.StorefrontSettings;
@@ -41,6 +42,14 @@ public sealed class StfrDbContext(DbContextOptions<StfrDbContext> options) : DbC
     public DbSet<SynonymTerm> SynonymTerms => Set<SynonymTerm>();
 
     public DbSet<SearchMiss> SearchMisses => Set<SearchMiss>();
+
+    public DbSet<SimilarProduct> SimilarProducts => Set<SimilarProduct>();
+
+    public DbSet<ProductSaleDay> ProductSaleDays => Set<ProductSaleDay>();
+
+    public DbSet<RecommendationRun> RecommendationRuns => Set<RecommendationRun>();
+
+    public DbSet<RecommendationDay> RecommendationDays => Set<RecommendationDay>();
 
     public DbSet<NavItem> NavItems => Set<NavItem>();
 

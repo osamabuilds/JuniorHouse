@@ -1,0 +1,107 @@
+<div class="rp-wrap">
+  <div class="rp-lhead">
+    <rp-breadcrumbs [crumbs]="crumbs" />
+    <h1 class="rp-display-lg">Wishlist</h1>
+    @if (viewStatus() === 'ready') {
+      <p class="rp-count-note">{{ savedCount() }} saved</p>
+    }
+  </div>
+
+  @if (message(); as text) {
+    <p class="rp-wishlist-note" role="alert">{{ text }}</p>
+  }
+
+  @if (signedIn() === false) {
+    <p class="rp-notice rp-wishlist-notice" role="status">
+      <span>
+        Saved on this device. <a class="rp-link" routerLink="/account/sign-in" [queryParams]="{ returnUrl: here() }">Sign in</a> to keep your wishlist everywhere.
+      </span>
+    </p>
+  }
+
+  @switch (viewStatus()) {
+    @case ('error') {
+      <p class="rp-wishlist-note" role="alert">We could not load your wishlist.</p>
+      <button rpBtn="ghost" type="button" (click)="reload()">Try again</button>
+    }
+    @case ('ready') {
+      @if (items().length === 0) {
+        <p class="rp-wishlist-note">Nothing saved yet. <a class="rp-link" routerLink="/new-in">See what is new in</a>.</p>
+      } @else {
+        <ul class="rp-grid">
+          @for (item of items(); track item.productId) {
+            <li>
+              <article class="rp-card">
+                <div class="rp-media">
+                  @if (item.imageUrl; as image) {
+                    <picture>
+                      <source type="image/webp" [attr.srcset]="image" />
+                      <img
+                        class="rp-tile-img"
+                        [src]="item.imageFallbackUrl ?? image"
+                        [attr.width]="item.imageWidth"
+                        [alt]="item.name ?? 'Product no longer available'"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </picture>
+                  }
+                  @if (has(item, 'OnSale') && percent(item) > 0) {
+                    <span class="rp-tag rp-tag--sale">−{{ percent(item) }}%</span>
+                  }
+                  @if (item.name; as name) {
+                    <button rpWishlistHeart [productId]="item.productId" [productName]="name"></button>
+                  }
+                </div>
+                <div class="rp-card__body">
+                  @if (item.name && item.path) {
+                    <h2 class="rp-card__name"><a [routerLink]="item.path">{{ item.name }}</a></h2>
+                    @if (item.price !== null) {
+                      <span class="rp-price" [class.rp-price--sale]="has(item, 'OnSale')">
+                        @if (has(item, 'OnSale') && item.wasPrice !== null) {
+                          <span class="sr-only">Now </span>Rs. {{ item.price | number }}
+                          <s><span class="sr-only">Was </span>Rs. {{ item.wasPrice | number }}</s>
+                        } @else {
+                          Rs. {{ item.price | number }}
+                        }
+                      </span>
+                    }
+                    @if (has(item, 'OnSale') && saving(item) > 0) {
+                      <p class="rp-save">Save Rs. {{ saving(item) | number }}</p>
+                    }
+                    @if (has(item, 'PriceDropped')) {
+                      <p class="rp-save">Price dropped from Rs. {{ item.savedPrice | number }}</p>
+                    }
+                  } @else {
+                    <h2 class="rp-card__name">No longer available</h2>
+                    <p class="rp-card__meta">This product is not sold any more.</p>
+                  }
+                </div>
+                @if (has(item, 'Unavailable')) {
+                  <button rpBtn="ghost" size="sm" [block]="true" type="button" class="rp-wishlist-action" (click)="remove(item)">Remove from wishlist</button>
+                } @else if (has(item, 'SoldOut')) {
+                  <p class="rp-help rp-wishlist-action">Sold out</p>
+                } @else if (item.path) {
+                  <a rpBtn="ghost" size="sm" [block]="true" class="rp-wishlist-action" [routerLink]="item.path">Choose size</a>
+                }
+              </article>
+            </li>
+          }
+        </ul>
+
+        @if (signedIn() && page(); as p) {
+          @if (p.totalPages > 1) {
+            <nav class="rp-wishlist-pager" aria-label="Wishlist pages">
+              <button rpBtn="ghost" size="sm" type="button" [disabled]="p.page <= 1" (click)="goTo(p.page - 1)">Previous</button>
+              <span>Page {{ p.page }} of {{ p.totalPages }}</span>
+              <button rpBtn="ghost" size="sm" type="button" [disabled]="p.page >= p.totalPages" (click)="goTo(p.page + 1)">Next</button>
+            </nav>
+          }
+        }
+      }
+    }
+    @default {
+      <p class="rp-wishlist-note" role="status">Loading your wishlist…</p>
+    }
+  }
+</div>

@@ -18,13 +18,13 @@
 </div>
 
 @if (query()) {
-  @if (result(); as r) {
+  @if (shown(); as r) {
     @switch (r.status) {
       @case ('ok') {
         @if (r.page.total > 0 || chips().length > 0) {
           <div class="rp-filterbar">
             <div class="rp-wrap">
-              <rp-filter-panel [options]="r.page.options" [filter]="filter()" [action]="path" [extra]="extra()" defaultSortLabel="Best match" [open]="chips().length > 0" (applied)="apply($event)" />
+              <rp-filter-bar [options]="r.page.options" [filter]="filter()" [action]="path" [extra]="extra()" [total]="r.page.total" [countFor]="countFor" defaultSortLabel="Best match" (applied)="apply($event)" />
             </div>
           </div>
         }
@@ -40,11 +40,18 @@
               [message]="chips().length > 0 ? null : 'Check the spelling, try a shorter or more general word, or have a look around.'"
             />
           } @else {
+            <h2 class="sr-only">Search results</h2>
+
+            <div [attr.aria-busy]="loading()" [class.is-loading]="loading()">
             <ul class="rp-grid">
               @for (tile of r.page.tiles; track tile.path; let i = $index) {
-                <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" /></li>
+                <li><rp-product-tile [tile]="tile" [eager]="i < 4" [priority]="i === 0" (stale)="reload()" /></li>
               }
             </ul>
+            @if (range(); as x) {
+              <p class="rp-count-note rp-range" role="status">Showing {{ x.from }}-{{ x.to }} of {{ x.total }}</p>
+            }
+            </div>
             <rp-pagination [page]="r.page.page" [totalPages]="r.page.totalPages" [path]="path" [filter]="filter()" [extra]="extra()" />
           }
         </div>

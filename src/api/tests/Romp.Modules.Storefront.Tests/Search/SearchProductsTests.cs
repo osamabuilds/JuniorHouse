@@ -150,14 +150,15 @@ public sealed class SearchProductsTests(StorefrontPostgres postgres)
 
     [Fact]
     [Trait("Spec", "SRC-14")]
-    public async Task Search_ProductWithNothingInStock_IsNotReturned()
+    [Trait("Spec", "SLD-7")]
+    public async Task Search_ProductWithNothingInStock_IsReturnedAfterTheInStockOnes()
     {
         var host = await ListingSeeder.HostWithLookupsAsync(postgres);
         using var _ = host;
         await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", [new SeedVariant("RED", "5-6Y", 800m, 0)], name: "Sold out frock");
         await ListingSeeder.ListableAsync(host, 2, "GIRLS", "DRESSES", [InStock], name: "Ready frock");
 
-        Assert.Equal(["Ready frock"], Names(await SearchAsync(host, "frock")));
+        Assert.Equal(["Ready frock", "Sold out frock"], Names(await SearchAsync(host, "frock")));
     }
 
     [Fact]

@@ -26,6 +26,8 @@ export interface SizeOption {
   readonly name: string;
   readonly availability: SizeAvailability;
   readonly selectable: boolean;
+  /** The catalogue variant the basket takes for this size in the chosen colour. */
+  readonly variantId: number;
 }
 
 export interface ProductPrice {
@@ -74,6 +76,8 @@ export interface Breadcrumb {
 }
 
 export interface ProductPage {
+  /** The Catalog product id, for the wishlist heart. */
+  readonly productId: number;
   readonly path: string;
   readonly name: string;
   readonly description: string;

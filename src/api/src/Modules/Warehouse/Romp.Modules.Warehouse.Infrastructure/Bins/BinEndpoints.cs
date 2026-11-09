@@ -23,7 +23,7 @@ internal static class BinEndpoints
 
     public static void MapBinEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/warehouse").WithTags("Warehouse")
+        var group = endpoints.MapSecuredGroup("/api/warehouse", Permissions.WarehouseRead).WithTags("Warehouse")
             .WithMetadata(new RequestSizeLimitAttribute(MaxBodyBytes));
 
         group.MapGet("/bins", async (
@@ -39,10 +39,10 @@ internal static class BinEndpoints
             await sender.Send(new GetBinByCodeQuery(code), cancellationToken) is { } bin ? Results.Ok(bin) : Results.NotFound());
 
         group.MapPost("/bins", async (CreateBinRequest body, ISender sender, CancellationToken cancellationToken) =>
-                Results.Ok(await sender.Send(new CreateBinCommand(body.Zone, body.Aisle, body.Shelf, body.ActingPerson), cancellationToken)))
+                Results.Ok(await sender.Send(new CreateBinCommand(body.Zone, body.Aisle, body.Shelf, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.WarehouseWrite)
             .RequireRateLimiting(RateLimitPolicies.Strict);
 
         group.MapPost("/bins/{id:long}/active", async (long id, SetBinActiveRequest body, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SetBinActiveCommand(id, body.Active, body.ActingPerson), cancellationToken)));
+            Results.Ok(await sender.Send(new SetBinActiveCommand(id, body.Active, body.ActingPerson), cancellationToken))).RequirePermission(Permissions.WarehouseWrite);
     }
 }

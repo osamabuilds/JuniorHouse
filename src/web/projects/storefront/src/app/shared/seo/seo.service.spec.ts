@@ -22,6 +22,17 @@ describe('SeoService', () => {
     expect(meta.getTag('name="robots"')).toBeNull();
   });
 
+  it('SEO-04 an error page is noindex and has no canonical or og:url pointing at the missing address, and a later normal page gets them back', () => {
+    const { seo, doc, meta } = setup();
+    seo.set({ title: 'Page not found', description: 'x', path: '/gone', siteName: 'Romp', crumbs: [], noindex: true, error: true });
+    expect(meta.getTag('name="robots"')!.content).toBe('noindex, nofollow');
+    expect(doc.head.querySelector('link[rel="canonical"]')).toBeNull();
+    expect(meta.getTag('property="og:url"')).toBeNull();
+    seo.set({ title: 'Delivery', description: 'd', path: '/delivery', siteName: 'Romp', crumbs: [] });
+    expect(doc.head.querySelector('link[rel="canonical"]')!.getAttribute('href')).toBe('https://shop.example/delivery');
+    expect(meta.getTag('property="og:url"')!.content).toBe('https://shop.example/delivery');
+  });
+
   it('SC-13 writes BreadcrumbList JSON-LD that matches the visible trail', () => {
     const { seo, doc } = setup();
     seo.set({ title: 'Delivery', description: 'd', path: '/delivery', siteName: 'Romp', crumbs: [{ name: 'Home', path: '/' }, { name: 'Delivery', path: '/delivery' }] });

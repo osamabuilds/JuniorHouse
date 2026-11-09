@@ -1,0 +1,33 @@
+<section class="rp-gallery" aria-label="Product images">
+  @if (items().length > 0) {
+    <ul #list class="rp-gallery__list" (scroll)="onScroll()">
+      @for (image of items(); track $index) {
+        <li class="rp-gallery__item">
+          <button type="button" class="rp-gimg" [attr.aria-label]="'View picture ' + ($index + 1) + ' of ' + items().length + ': ' + image.alt" (click)="open($index)">
+            <picture>
+              <source type="image/webp" [attr.srcset]="image.webpSet" [attr.sizes]="sizes" />
+              @if (image.jpegSet) {
+                <source type="image/jpeg" [attr.srcset]="image.jpegSet" [attr.sizes]="sizes" />
+              }
+              <img
+                [src]="image.fallback"
+                [attr.width]="image.width"
+                [attr.height]="image.height"
+                [alt]="image.alt"
+                [attr.loading]="$first ? 'eager' : 'lazy'"
+                [attr.fetchpriority]="$first ? 'high' : null"
+                decoding="async"
+              />
+            </picture>
+          </button>
+        </li>
+      }
+    </ul>
+    @if (items().length > 1) {
+      <p class="rp-gallery__count" aria-live="polite">{{ current() + 1 }} / {{ items().length }}</p>
+    }
+    <rp-lightbox [images]="viewerImages()" />
+  } @else {
+    <p class="rp-gallery__none">Photographs of this piece are on their way.</p>
+  }
+</section>

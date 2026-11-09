@@ -31,7 +31,7 @@
       Active only
     </label>
 
-    <button type="button" class="button button--primary" (click)="startCreate()">Add vendor</button>
+    <button *hasPermission="'procurement.write'" type="button" class="button button--primary" (click)="startCreate()">Add vendor</button>
   </div>
 
   @if (error()) {

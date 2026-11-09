@@ -1,0 +1,76 @@
+<div class="rp-wrap">
+  <nav class="rp-crumbs" aria-label="Breadcrumb">
+    <a routerLink="/">Home</a><span>/</span><span aria-current="page">Bag</span>
+  </nav>
+
+  @if (status() === 'idle' || status() === 'loading') {
+    <h1 class="rp-display-lg">Your bag</h1>
+    <p role="status">Loading your bag…</p>
+  } @else if (status() === 'error') {
+    <h1 class="rp-display-lg">Your bag</h1>
+    <div class="rp-notice rp-notice--error" role="alert">
+      <rp-icon name="alert" />
+      <div><b>We could not load your bag</b><br />Please try again in a moment. <button type="button" class="rp-link" (click)="retry()">Try again</button></div>
+    </div>
+  } @else if (empty()) {
+    <div class="rp-bag-empty">
+      <rp-icon name="bag" />
+      <h1 class="rp-display-lg">Your bag is empty</h1>
+      <p class="rp-lead">Nothing here yet. Find something to love.</p>
+      <a rpBtn="action" routerLink="/new-in">Start shopping</a>
+      <p class="rp-help">Have an account? <a class="rp-link" routerLink="/account/sign-in" [queryParams]="{ returnUrl: '/cart' }">Sign in</a></p>
+    </div>
+  } @else {
+    <div class="rp-lhead">
+      <h1 class="rp-display-lg">Your bag</h1>
+      <p class="rp-count-note">{{ cart().itemCount }} {{ cart().itemCount === 1 ? 'item' : 'items' }}</p>
+    </div>
+
+    @for (notice of cart().notices; track notice) {
+      <div class="rp-notice" role="status"><rp-icon name="alert" /><div>{{ notice }}</div></div>
+    }
+
+    @if (message(); as text) {
+      <div class="rp-notice rp-notice--error" role="alert"><rp-icon name="alert" /><div>{{ text }}</div></div>
+    }
+
+    <div class="rp-split2">
+      <section aria-label="Items in your bag">
+        <ul class="rp-bag-lines">
+          @for (line of cart().lines; track line.variantId) {
+            <li>
+              <rp-cart-line
+                [line]="line"
+                [busy]="busy()"
+                (quantityChange)="setQuantity(line.variantId, $event)"
+                (remove)="remove(line.variantId)"
+              />
+            </li>
+          }
+        </ul>
+      </section>
+
+      <aside class="rp-bag-summary" aria-label="Order summary">
+        <h2 class="rp-display-sm">Summary</h2>
+        <rp-promo-code [appliedCode]="cart().discountCode" [error]="codeError()" [busy]="codeBusy()" (apply)="applyCode($event)" (remove)="removeCode()" />
+        <rp-cart-summary
+          [subtotal]="cart().subtotal"
+          [itemCount]="cart().itemCount"
+          [discount]="cart().discount"
+          [discountCode]="cart().discountCode"
+          [delivery]="cart().delivery"
+          [total]="cart().total"
+        />
+        @if (cart().hasProblems) {
+          <p class="rp-help" id="bag-fix">Fix the items marked above to continue.</p>
+        }
+        @if (cart().hasProblems) {
+          <button rpBtn="action" type="button" [block]="true" disabled reasonId="bag-fix">Checkout</button>
+        } @else {
+          <a rpBtn="action" [block]="true" routerLink="/checkout">Checkout</a>
+        }
+        <p class="rp-help">Check out as a guest or sign in. Delivery is worked out when you choose a city.</p>
+      </aside>
+    </div>
+  }
+</div>

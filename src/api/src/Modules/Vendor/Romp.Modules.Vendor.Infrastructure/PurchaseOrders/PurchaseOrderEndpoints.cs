@@ -12,33 +12,33 @@ internal static class PurchaseOrderEndpoints
 {
     public static void MapPurchaseOrderEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/purchase-orders").WithTags("Vendor");
+        var group = endpoints.MapSecuredGroup("/api/purchase-orders", Permissions.ProcurementRead).WithTags("Vendor");
 
         group.MapPost("/", async (CreatePurchaseOrderCommand command, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(command, cancellationToken)));
+            Results.Ok(await sender.Send(command, cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPut("/{id:long}", async (
                 long id,
                 UpdatePoRequest body,
                 ISender sender,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken)));
+            Results.Ok(await sender.Send(body.ToCommand(id), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPost("/{id:long}/send", async (long id, bool? sendWithoutTechPack, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new SendPurchaseOrderCommand(id, sendWithoutTechPack ?? false), cancellationToken)));
+            Results.Ok(await sender.Send(new SendPurchaseOrderCommand(id, sendWithoutTechPack ?? false), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPost("/{id:long}/acknowledge", async (long id, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new AcknowledgePurchaseOrderCommand(id), cancellationToken)));
+            Results.Ok(await sender.Send(new AcknowledgePurchaseOrderCommand(id), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPost("/{id:long}/close", async (long id, ISender sender, CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new ClosePurchaseOrderCommand(id), cancellationToken)));
+            Results.Ok(await sender.Send(new ClosePurchaseOrderCommand(id), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapPost("/{id:long}/cancel", async (
                 long id,
                 CancelPoRequest body,
                 ISender sender,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await sender.Send(new CancelPurchaseOrderCommand(id, body.CancelReasonId), cancellationToken)));
+            Results.Ok(await sender.Send(new CancelPurchaseOrderCommand(id, body.CancelReasonId), cancellationToken))).RequirePermission(Permissions.ProcurementWrite);
 
         group.MapGet("/{id:long}", async (long id, ISender sender, CancellationToken cancellationToken) =>
         {

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { BinRowDto } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The bin list (BIN-6): one row per bin with its code, how many units it holds, when it was last counted, and an activate or
@@ -8,7 +9,7 @@ import { BinRowDto } from '../../models';
  */
 @Component({
   selector: 'app-bin-table',
-  imports: [DatePipe],
+  imports: [HasPermissionDirective, DatePipe],
   template: `
     @if (loading()) {
       <p class="state-message">Loading…</p>
@@ -52,7 +53,7 @@ import { BinRowDto } from '../../models';
                 }
               </td>
               <td data-label="Actions">
-                <button
+                <button *hasPermission="'warehouse.write'"
                   type="button"
                   class="button button--small"
                   [disabled]="togglingId() === bin.id || (bin.isActive && bin.unitsOnHand > 0)"

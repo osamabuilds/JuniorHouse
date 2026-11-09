@@ -33,6 +33,7 @@ import {
   selectSaving,
 } from '../../store';
 import { firstInspection, hasBothSafetyChecks, nextStep } from '../../utils';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * Sprint 4: one QC batch (BRD 5.11). The batch's lines, each inspection round with its checklist and defects, the mandatory child-safety
@@ -41,7 +42,7 @@ import { firstInspection, hasBothSafetyChecks, nextStep } from '../../utils';
  */
 @Component({
   selector: 'app-batch-page',
-  imports: [
+  imports: [HasPermissionDirective, 
     RouterLink,
     AppDatePipe,
     InspectionFormComponent,

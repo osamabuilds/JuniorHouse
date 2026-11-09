@@ -20,11 +20,13 @@ export interface ListingFilter {
   readonly age: string | null;
   readonly priceMin: number | null;
   readonly priceMax: number | null;
+  /** "In stock only" (`stock=in`): sold-out products are left out. Off by default, so a listing shows the whole range (SLD-4). */
+  readonly inStockOnly: boolean;
   readonly sort: ListingSort;
   readonly page: number;
 }
 
-export const EMPTY_FILTER: ListingFilter = { sizes: [], colours: [], age: null, priceMin: null, priceMax: null, sort: 'recent', page: 1 };
+export const EMPTY_FILTER: ListingFilter = { sizes: [], colours: [], age: null, priceMin: null, priceMax: null, inStockOnly: false, sort: 'recent', page: 1 };
 
 const MAX_VALUES = 20;
 const MAX_PRICE = 1_000_000;
@@ -77,6 +79,7 @@ export function parseFilter(raw: RawQuery): ListingFilter {
     age: codes(all(raw, 'age'))[0] ?? null,
     priceMin,
     priceMax,
+    inStockOnly: all(raw, 'stock')[0]?.trim().toLowerCase() === 'in',
     sort: sort === 'price-asc' || sort === 'price-desc' ? sort : 'recent',
     page,
   };
@@ -89,6 +92,7 @@ export function toCanonicalQuery(filter: ListingFilter, includePage = true): Rec
   if (filter.sizes.length > 0) q['size'] = [...filter.sizes].sort();
   if (filter.colours.length > 0) q['colour'] = [...filter.colours].sort();
   if (filter.priceMin !== null || filter.priceMax !== null) q['price'] = `${filter.priceMin ?? ''}-${filter.priceMax ?? ''}`;
+  if (filter.inStockOnly) q['stock'] = 'in';
   if (filter.sort !== 'recent') q['sort'] = filter.sort;
   if (includePage && filter.page > 1) q['page'] = String(filter.page);
   return q;
@@ -116,7 +120,7 @@ export function listingKey(scope: ListingScope, filter: ListingFilter): string {
   return `${scope.kind}|${scope.gender ?? ''}|${scope.category ?? ''}|${scope.collection ?? ''}|${toQueryString(filter)}`;
 }
 
-/** The path of a scope: /girls, /girls/dresses, /girls/new-in, /new-in, /collections/summer. */
+/** The path of a scope: /girls, /girls/dresses, /girls/new-in, /new-in, /collections/summer, /collections/summer/jackets. */
 export function scopePath(scope: ListingScope): string {
   switch (scope.kind) {
     case 'audience':
@@ -127,6 +131,6 @@ export function scopePath(scope: ListingScope): string {
     case 'sale':
       return scope.gender ? `/${scope.gender}/${scope.kind}` : `/${scope.kind}`;
     case 'collection':
-      return `/collections/${scope.collection}`;
+      return scope.category ? `/collections/${scope.collection}/${scope.category}` : `/collections/${scope.collection}`;
   }
 }

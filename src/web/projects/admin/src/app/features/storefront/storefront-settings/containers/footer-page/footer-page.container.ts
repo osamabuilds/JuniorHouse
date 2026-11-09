@@ -17,11 +17,12 @@ import {
 } from '../../store';
 import { withSort } from '../../utils/list.util';
 import { HasUnsavedChanges } from '../../utils/unsaved-changes.guard';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Footer (S-3, ST-1): columns and links, shown on every page of the shop once published. */
 @Component({
   selector: 'app-footer-page',
-  imports: [SectionNavComponent, FooterEditorComponent, SaveBarComponent, SettingsBannersComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, FooterEditorComponent, SaveBarComponent, SettingsBannersComponent],
   templateUrl: './footer-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

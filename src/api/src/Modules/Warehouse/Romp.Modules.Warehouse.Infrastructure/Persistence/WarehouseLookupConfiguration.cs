@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Romp.Modules.Warehouse.Domain;
 using Romp.Modules.Warehouse.Domain.Adjustments;
+using Romp.Modules.Warehouse.Domain.Allocations;
 using Romp.Modules.Warehouse.Domain.CycleCounts;
 using Romp.Modules.Warehouse.Domain.Putaway;
+using Romp.Modules.Warehouse.Domain.Reservations;
 using Romp.Modules.Warehouse.Domain.StockAlerts;
 
 namespace Romp.Modules.Warehouse.Infrastructure.Persistence;
@@ -22,7 +24,13 @@ internal static class WarehouseLookupConfiguration
 
         Configure<MovementKindLookup>(modelBuilder, "MVMT_KIND_LKP",
             (MovementKinds.Putaway, "PUTAWAY", "Putaway", "Stock shelved by scan"),
-            (MovementKinds.Adjustment, "ADJUSTMENT", "Adjustment", "Reason-coded correction"));
+            (MovementKinds.Adjustment, "ADJUSTMENT", "Adjustment", "Reason-coded correction"),
+            (MovementKinds.Pick, "PICK", "Pick", "Picked for an order: the reservation became a decrement"));
+
+        Configure<AllocationStatusLookup>(modelBuilder, "ALOC_STS_LKP",
+            (AllocationStatuses.Active, "ACTIVE", "Active", "Units are set aside in bins for the order"),
+            (AllocationStatuses.Picked, "PICKED", "Picked", "The pick was confirmed and the ledger decremented"),
+            (AllocationStatuses.Released, "RELEASED", "Released", "Given back: the order was cancelled"));
 
         Configure<PutawayStatusLookup>(modelBuilder, "PUT_STS_LKP",
             (PutawayStatuses.AwaitingGtin, "AWAITING_GTIN", "Awaiting GTIN", "Accepted by QC; Labelling has not assigned the barcode yet"),
@@ -43,6 +51,12 @@ internal static class WarehouseLookupConfiguration
         Configure<AlertLevelLookup>(modelBuilder, "ALRT_LVL_LKP",
             (AlertLevels.Low, "LOW", "Low stock", "Available is at or below the threshold"),
             (AlertLevels.Out, "OUT", "Stock-out", "Nothing available"));
+
+        Configure<ReservationStatusLookup>(modelBuilder, "RSRV_STS_LKP",
+            (ReservationStatuses.Held, "HELD", "Held", "Stock set aside while the order is being placed"),
+            (ReservationStatuses.Confirmed, "CONFIRMED", "Confirmed", "The order exists; the units are promised to it"),
+            (ReservationStatuses.Converted, "CONVERTED", "Converted", "Picked: the ledger has been decremented"),
+            (ReservationStatuses.Released, "RELEASED", "Released", "Given back: the order was cancelled or never came"));
 
         Configure<AlertStatusLookup>(modelBuilder, "ALRT_STS_LKP",
             (AlertStatuses.Open, "OPEN", "Open", "Stock is still low"),

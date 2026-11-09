@@ -15,11 +15,12 @@ import {
   selectPagesStatus,
   selectPagesTotal,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 /** Pages (ST-8): the content pages (delivery, exchanges, size guide, ...), filtered by status and paged. */
 @Component({
   selector: 'app-pages-list-page',
-  imports: [RouterLink, SectionNavComponent, PagesTableComponent, PaginationComponent],
+  imports: [HasPermissionDirective, RouterLink, SectionNavComponent, PagesTableComponent, PaginationComponent],
   templateUrl: './pages-list-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

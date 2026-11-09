@@ -1,0 +1,187 @@
+<p><a routerLink="/orders">&larr; All orders</a></p>
+
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }}
+    <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+@if (loading() && !order()) {
+  <p role="status">Loading…</p>
+} @else if (order(); as o) {
+  <header class="page-header">
+    <h1>Order {{ o.orderNumber }}</h1>
+    <p>
+      <span class="badge" [class.badge--muted]="o.statusId === 5">{{ o.statusName }}</span>
+      <span class="badge badge--muted">{{ o.methodName }}</span>
+      @if (o.isRefusalFlagged) {
+        <span class="badge">Refused before</span>
+      }
+      @if (o.isHighValue) {
+        <span class="badge">High value</span>
+      }
+      @if (o.isFirstOrder) {
+        <span class="badge badge--muted">First order</span>
+      }
+      Placed {{ o.placedAt | date: 'd MMM y, h:mm a' }}
+    </p>
+    <p *hasPermission="'notifications.view'">
+      <a [routerLink]="['/notifications']" [queryParams]="{ orderId: o.id }">Messages sent to this customer</a>
+    </p>
+  </header>
+
+  @if (o.canRecordCodOutcome || o.canCancel) {
+    <section class="card" aria-labelledby="od-actions">
+      <h2 id="od-actions">What to do</h2>
+      @if (o.canRecordCodOutcome) {
+        <p>
+          This cash on delivery order is waiting to be confirmed.
+          @if (o.codNextDueAt) {
+            The next call is due {{ o.codNextDueAt | date: 'd MMM, h:mm a' }}.
+          }
+          @if (o.codAutoCancelAt) {
+            It is cancelled automatically on {{ o.codAutoCancelAt | date: 'd MMM, h:mm a' }} if nobody confirms it.
+          }
+        </p>
+      }
+      <ng-container *hasPermission="'orders.manage'">
+        <div class="form-field">
+          <label for="od-note">Note (optional)</label>
+          <input id="od-note" type="text" maxlength="200" autocomplete="off" [value]="note()" (input)="note.set($any($event.target).value)" />
+          <small class="field-hint">Shown in the order history, for example what the customer said on the call.</small>
+        </div>
+        <div class="actions">
+          @if (o.canRecordCodOutcome) {
+            <button type="button" class="button button--primary" [disabled]="acting()" (click)="record('confirmed')">Customer confirmed</button>
+            <button type="button" class="button" [disabled]="acting()" (click)="record('no-answer')">No answer</button>
+            <button type="button" class="button" [disabled]="acting()" (click)="record('refused')">Customer refused</button>
+          }
+          @if (o.canCancel && !confirmingCancel()) {
+            <button type="button" class="button" [disabled]="acting()" (click)="askCancel()">Cancel order…</button>
+          }
+          @if (o.isRefusalFlagged) {
+            <button type="button" class="button" [disabled]="acting()" (click)="clearFlag()">Clear the refusal flag</button>
+          }
+        </div>
+        @if (confirmingCancel()) {
+          <p class="banner banner--error" role="alert">
+            Cancel this order? The stock and any discount use are given back, and the customer is told. This cannot be undone.
+          </p>
+          <div class="actions">
+            <button type="button" class="button button--primary" [disabled]="acting()" (click)="cancel()">Yes, cancel the order</button>
+            <button type="button" class="button" (click)="keep()">No, keep it</button>
+          </div>
+        }
+      </ng-container>
+    </section>
+  }
+
+  <div class="detail-grid">
+    <section class="card" aria-labelledby="od-customer">
+      <h2 id="od-customer">Customer</h2>
+      <dl class="detail-list">
+        <div><dt>Name</dt><dd>{{ o.contactName }}</dd></div>
+        <div><dt>Mobile</dt><dd>{{ o.contactMobile }}</dd></div>
+        <div><dt>Email</dt><dd>{{ o.contactEmail ?? 'Not given' }}</dd></div>
+        <div><dt>WhatsApp updates</dt><dd>{{ o.whatsAppOptIn ? 'Yes, opted in' : 'No' }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="card" aria-labelledby="od-delivery">
+      <h2 id="od-delivery">Delivery</h2>
+      <dl class="detail-list">
+        <div><dt>Recipient</dt><dd>{{ o.recipientName }}</dd></div>
+        <div><dt>Courier phone</dt><dd>{{ o.recipientPhone }}</dd></div>
+        <div><dt>Address</dt><dd>{{ o.addressLine }}, {{ o.cityName }}, {{ o.provinceName }}{{ o.postalCode ? ' ' + o.postalCode : '' }}</dd></div>
+        @if (o.deliveryNote) {
+          <div><dt>Note</dt><dd>{{ o.deliveryNote }}</dd></div>
+        }
+      </dl>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="od-items">
+    <h2 id="od-items">Items</h2>
+    <table class="table">
+      <caption class="sr-only">Items in order {{ o.orderNumber }}</caption>
+      <thead>
+        <tr>
+          <th scope="col">Item</th>
+          <th scope="col">SKU</th>
+          <th scope="col" class="num">Price (Rs.)</th>
+          <th scope="col" class="num">Qty</th>
+          <th scope="col" class="num">Total (Rs.)</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of o.lines; track l.variantId) {
+          <tr>
+            <th scope="row">{{ l.name }}<br /><small>{{ l.colour }}, {{ l.size }}</small></th>
+            <td>{{ l.sku ?? '—' }}</td>
+            <td class="num">{{ l.unitPrice | number }}</td>
+            <td class="num">{{ l.quantity }}</td>
+            <td class="num">{{ l.lineTotal | number }}</td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr><th scope="row" colspan="4">Subtotal</th><td class="num">{{ o.subtotal | number }}</td></tr>
+        @if (o.discount > 0) {
+          <tr><th scope="row" colspan="4">Discount{{ o.discountCode ? ' (' + o.discountCode + ')' : '' }}</th><td class="num">&minus; {{ o.discount | number }}</td></tr>
+        }
+        <tr><th scope="row" colspan="4">Delivery</th><td class="num">{{ o.shipping | number }}</td></tr>
+        <tr><th scope="row" colspan="4">Total</th><td class="num"><strong>{{ o.total | number }}</strong></td></tr>
+      </tfoot>
+    </table>
+  </section>
+
+  @if (o.isCashOnDelivery) {
+    <section class="card" aria-labelledby="od-calls">
+      <h2 id="od-calls">Confirmation calls</h2>
+      @if (o.codAttempts.length === 0) {
+        <p>No call or confirmation has been recorded yet.</p>
+      } @else {
+        <table class="table">
+          <caption class="sr-only">Confirmation attempts</caption>
+          <thead>
+            <tr><th scope="col">#</th><th scope="col">Outcome</th><th scope="col">By</th><th scope="col">When</th><th scope="col">Note</th></tr>
+          </thead>
+          <tbody>
+            @for (a of o.codAttempts; track a.number) {
+              <tr>
+                <th scope="row">{{ a.number }}</th>
+                <td>{{ a.outcome }}</td>
+                <td>{{ a.actor }}{{ a.actorRef ? ' (' + a.actorRef + ')' : '' }}</td>
+                <td>{{ a.at | date: 'd MMM y, h:mm a' }}</td>
+                <td>{{ a.note ?? '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  }
+
+  <section class="card" aria-labelledby="od-history">
+    <h2 id="od-history">History</h2>
+    <ol class="timeline">
+      @for (h of o.history; track h.at) {
+        <li>
+          <strong>{{ h.toStatus }}</strong>
+          <span class="muted"> · {{ h.at | date: 'd MMM y, h:mm a' }} · {{ h.actor }}{{ h.actorRef ? ' (' + h.actorRef + ')' : '' }}</span>
+          @if (h.reason) {
+            <br /><span>{{ h.reason }}</span>
+          }
+          @if (h.note) {
+            <br /><span class="muted">&ldquo;{{ h.note }}&rdquo;</span>
+          }
+        </li>
+      }
+    </ol>
+  </section>
+}

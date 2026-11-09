@@ -1,0 +1,39 @@
+<form class="card" (submit)="submit($event)" aria-labelledby="raise-title" novalidate>
+  <h2 id="raise-title">The shelf does not match</h2>
+  <p class="page-intro">Do not force the pick. Say what you found; the line waits for restock and the customer is told.</p>
+
+  <div class="form-field">
+    <label for="raise-line">Which item</label>
+    <select id="raise-line" (change)="pick('lineKey', $event)">
+      @for (line of lines(); track line.key) {
+        <option [value]="line.key" [selected]="line.key === selected()?.key">{{ line.label }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-field">
+    <label for="raise-reason">What is wrong</label>
+    <select id="raise-reason" (change)="pick('reason', $event)" [attr.aria-invalid]="tried() && reasonProblem() ? 'true' : null">
+      <option value="" [selected]="reason() === ''">Choose a reason</option>
+      @for (r of reasons; track r.code) {
+        <option [value]="r.code" [selected]="reason() === r.code">{{ r.name }}</option>
+      }
+    </select>
+    @if (tried() && reasonProblem()) {
+      <small class="field-error" role="alert">{{ reasonProblem() }}</small>
+    }
+  </div>
+
+  <div class="form-field">
+    <label for="raise-found">How many did you find on the shelf</label>
+    <input id="raise-found" type="number" inputmode="numeric" min="0" step="1" [value]="found()" (input)="pick('found', $event)" [attr.aria-invalid]="tried() && foundProblem() ? 'true' : null" />
+    @if (tried() && foundProblem()) {
+      <small class="field-error" role="alert">{{ foundProblem() }}</small>
+    }
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button button--primary" [disabled]="busy()">Flag it</button>
+    <button type="button" class="button" (click)="cancelled.emit()">Cancel</button>
+  </div>
+</form>

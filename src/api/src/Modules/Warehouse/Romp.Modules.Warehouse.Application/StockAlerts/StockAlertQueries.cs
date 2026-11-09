@@ -102,7 +102,7 @@ public sealed class SearchThresholdsQueryHandler(IWarehouseDbContext dbContext, 
             .Select(v => new
             {
                 v.Id, v.SkuCode, v.Gtin,
-                Available = dbContext.Balances.Where(b => b.VariantRefId == v.Id).Sum(b => (int?)b.Quantity) ?? 0,
+                Available = Math.Max(0, (dbContext.Balances.Where(b => b.VariantRefId == v.Id).Sum(b => (int?)b.Quantity) ?? 0) - (dbContext.ReservedBalances.Where(r => r.Id == v.Id).Sum(r => (int?)r.Quantity) ?? 0)),
                 Override = dbContext.Thresholds.Where(t => t.VariantRefId == v.Id).Select(t => (int?)t.Quantity).FirstOrDefault(),
             })
             .ToPagedResultAsync(new PageRequest(request.Page, request.PageSize), cancellationToken);

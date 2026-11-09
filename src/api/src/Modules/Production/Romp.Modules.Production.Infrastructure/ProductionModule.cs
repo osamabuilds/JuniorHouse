@@ -37,7 +37,8 @@ public sealed class ProductionModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "PROD"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
 
         services.AddScoped<IProductionDbContext>(sp => sp.GetRequiredService<ProductionDbContext>());
         services.AddScoped<IProductionQueries, ProductionQueries>();

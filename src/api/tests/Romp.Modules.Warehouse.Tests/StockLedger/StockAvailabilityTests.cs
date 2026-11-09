@@ -146,6 +146,35 @@ public sealed class StockAvailabilityTests(WarehousePostgres postgres)
         Assert.Equal([1, 2, 3], first.Concat(second.Take(1)).Select(a => a.Available).Order());
     }
 
+
+    [Fact]
+    [Trait("Spec", "FR-10")]
+    public async Task GetMany_ReturnsOnlyVariantsWithStock_InOneCall()
+    {
+        using var host = new WarehouseHost(postgres);
+        var stocked = await host.NewVariantAsync();
+        var other = await host.NewVariantAsync();
+        var never = await host.NewVariantAsync();
+        var bin = await host.NewBinAsync();
+        await host.SendAsync(new TestPostCommand([Put(stocked.RefId, bin.Id, 7), Put(other.RefId, bin.Id, 3)]));
+
+        var rows = await QueriesAsync(host, q => q.GetManyAsync([stocked.VariantId, other.VariantId, never.VariantId, long.MaxValue, -1], CancellationToken.None));
+
+        Assert.Equal(new[] { stocked.VariantId, other.VariantId }.Order(), rows.Select(r => r.VariantId).Order());
+        Assert.Equal(7, rows.Single(r => r.VariantId == stocked.VariantId).Available);
+        Assert.Equal(3, rows.Single(r => r.VariantId == other.VariantId).Available);
+    }
+
+    [Fact]
+    [Trait("Spec", "FR-10")]
+    public async Task GetMany_RefusesMoreThanTheLimit_AndAcceptsAnEmptyList()
+    {
+        using var host = new WarehouseHost(postgres);
+        var tooMany = Enumerable.Range(1, IStockAvailabilityQueries.MaxIds + 1).Select(i => (long)i).ToList();
+
+        await Assert.ThrowsAsync<ArgumentException>(() => QueriesAsync(host, q => q.GetManyAsync(tooMany, CancellationToken.None)));
+        Assert.Empty(await QueriesAsync(host, q => q.GetManyAsync(Array.Empty<long>(), CancellationToken.None)));
+    }
     [Fact]
     [Trait("Spec", "PCT-5")]
     public void APayloadWrittenBeforeTheVersionExisted_StillReads_AsVersionZero()

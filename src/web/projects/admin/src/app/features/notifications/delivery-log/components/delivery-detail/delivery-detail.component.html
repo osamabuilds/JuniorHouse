@@ -1,0 +1,79 @@
+<section class="card" aria-labelledby="dl-detail-heading">
+  <h2 id="dl-detail-heading">{{ kind(detail().row.kind) }} · {{ channel(detail().row.channel) }}</h2>
+
+  <dl class="detail-list">
+    <div><dt>Order</dt><dd>{{ detail().row.orderNumber ?? 'Unknown order' }}</dd></div>
+    <div><dt>Sent to</dt><dd>{{ detail().row.recipient ?? 'Not known' }}</dd></div>
+    <div><dt>Status</dt><dd>{{ status(detail().row.status) }}@if (detail().row.lastError) { <span> · {{ error(detail().row.lastError) }}</span> }</dd></div>
+    <div><dt>Attempts</dt><dd>{{ detail().row.attempts }}</dd></div>
+    <div><dt>Created</dt><dd>{{ detail().row.createdAt | date: 'd MMM y, h:mm a' }}</dd></div>
+    <div><dt>Useful until</dt><dd>{{ detail().expiresAt | date: 'd MMM y, h:mm a' }}</dd></div>
+    @if (detail().row.isResend) {
+      <div><dt>Resent by</dt><dd>{{ detail().row.resentBy ?? 'Unknown' }}</dd></div>
+    }
+    @if (detail().deadAt) {
+      <div>
+        <dt>Gave up</dt>
+        <dd>
+          {{ detail().deadAt | date: 'd MMM y, h:mm a' }}
+          @if (detail().resentAt) {
+            <span> · resent by {{ detail().resentBy }} on {{ detail().resentAt | date: 'd MMM y, h:mm a' }}</span>
+          }
+        </dd>
+      </div>
+    }
+  </dl>
+
+  <h3>Attempts</h3>
+  @if (detail().attempts.length === 0) {
+    <p>No attempt has been made yet.</p>
+  } @else {
+    <table class="table">
+      <caption class="sr-only">Attempts to send this message</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="num">No.</th>
+          <th scope="col">Result</th>
+          <th scope="col">Problem</th>
+          <th scope="col">When</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of detail().attempts; track a.attemptNumber) {
+          <tr>
+            <th scope="row" class="num">{{ a.attemptNumber }}</th>
+            <td>{{ status(a.outcome) }}</td>
+            <td>{{ error(a.error) || 'None' }}</td>
+            <td>{{ a.at | date: 'd MMM y, h:mm:ss a' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  <ng-container *hasPermission="'notifications.resend'">
+    @if (detail().row.canResend) {
+      @if (!confirming()) {
+        <div class="actions">
+          <button type="button" class="button button--primary" [disabled]="resending()" (click)="askResend()">Resend…</button>
+          <button type="button" class="button" (click)="closed.emit()">Close</button>
+        </div>
+      } @else {
+        <div class="banner banner--error" role="alert">
+          @if (detail().warnsOfDuplicate) {
+            This message was probably received already. Sending it again gives the customer a second copy. Send it again?
+          } @else {
+            Send this message again? The customer receives a new copy.
+          }
+        </div>
+        <div class="actions">
+          <button type="button" class="button button--primary" [disabled]="resending()" (click)="confirm()">Yes, resend it</button>
+          <button type="button" class="button" (click)="keep()">No, leave it</button>
+        </div>
+      }
+    } @else {
+      <p>This message cannot be resent: it is still waiting to be sent, or it was skipped on purpose.</p>
+      <div class="actions"><button type="button" class="button" (click)="closed.emit()">Close</button></div>
+    }
+  </ng-container>
+</section>

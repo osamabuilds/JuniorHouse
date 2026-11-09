@@ -31,3 +31,9 @@ Sprints 1 to 7 declared authorization policies and satisfied them with a develop
 - The admin proxy must serve `/api` on the same origin as the app (ADR 0017); CORS is no longer needed outside local development.
 - Every protected request costs one session query plus one permission query; acceptable at back-office volume and revisited for the customer storefront.
 - New dependencies (to be pinned in `Directory.Packages.props` after a licence and vulnerability check, named in the plan): an Argon2 implementation, optionally a TOTP library.
+
+## As built (2026-10-26)
+
+- Sessions, MFA, roles and staff accounts follow this decision. TOTP is implemented in-house (RFC 6238, tested against its vectors) rather than through a library, so no new package was added for it; Argon2 is the one new dependency. Permissions are data (`PERM_LKP`, `ROLE_LKP`, `ROLE_PERM_MAP`) read once per request; the old role-shaped policies are gone.
+- Refresh rotation has a 10-second grace for a concurrent retry: the previous refresh value inside the grace answers 409 without revoking; outside it, reuse revokes the session.
+- Write buttons in the admin app are hidden through a `PermissionAccess` check (`*hasPermission`); the server check stays the real control.

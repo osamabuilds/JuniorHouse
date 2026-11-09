@@ -1,0 +1,92 @@
+@if (view(); as v) {
+  <h1>Pack order {{ v.orderNumber }}</h1>
+} @else {
+  <h1>Pack order</h1>
+}
+<p class="page-intro"><a routerLink="/fulfilment/pack">Back to the pack queue</a></p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (blockedReason()) {
+  <p class="banner banner--error" role="alert">You cannot pack this order. {{ blockedReason() }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (loading() && !view()) {
+  <p role="status">Loading the order…</p>
+} @else if (view(); as v) {
+  @if (v.isCashOnDelivery) {
+    <section class="card cash-due" aria-labelledby="pk-cash">
+      <h2 id="pk-cash">Cash to collect</h2>
+      <p class="cash-due__amount">{{ v.cashToCollect | currency: 'PKR ' : 'symbol' : '1.0-0' }}</p>
+      <p>The rider collects this amount at the door.</p>
+    </section>
+  } @else {
+    <p class="banner banner--success">Paid online. Nothing to collect.</p>
+  }
+
+  <section class="card" aria-labelledby="pk-packaging">
+    <h2 id="pk-packaging">Packaging</h2>
+    <p>Use a <strong>{{ packagingName() }}</strong>. The parcel should weigh about {{ v.expectedGrams }} g.</p>
+  </section>
+
+  @if (canWork()) {
+    <section class="card" aria-labelledby="pk-scan">
+      <h2 id="pk-scan">Scan every item again</h2>
+      <app-scan-box inputId="pk-scan-input" label="Scan an item" [busy]="busy()" (scanned)="scan($event)" />
+      @if (lastScan(); as s) {
+        <app-scan-banner [accepted]="s.accepted" [message]="s.message" />
+        <p>{{ s.packedUnits }} of {{ s.totalUnits }} items in the parcel.</p>
+      }
+    </section>
+  }
+
+  <section aria-labelledby="pk-items">
+    <h2 id="pk-items">Items</h2>
+    <app-pack-lines [lines]="v.lines" />
+  </section>
+
+  @if (canWork()) {
+    <form class="card" (submit)="submitWeight($event)" aria-labelledby="pk-weigh" novalidate>
+      <h2 id="pk-weigh">Weigh the parcel</h2>
+      <div class="form-field">
+        <label for="pk-grams">Weight in grams</label>
+        <input id="pk-grams" type="number" inputmode="numeric" min="1" [max]="maxGrams" step="1" [value]="grams()" (input)="type('grams', $event)" />
+        @if (grams() !== '' && gramsProblem()) {
+          <small class="field-error" role="alert">{{ gramsProblem() }}</small>
+        }
+      </div>
+      <button type="submit" class="button" [disabled]="busy() || !!gramsProblem()">Save the weight</button>
+      @if (weight(); as w) {
+        <p [class.field-error]="!w.withinTolerance" role="status">{{ w.message }}</p>
+      } @else if (v.weightGrams !== null) {
+        <p role="status">Recorded: {{ v.weightGrams }} g.</p>
+      }
+    </form>
+
+    @if (needsNote()) {
+      <div class="card">
+        <div class="form-field">
+          <label for="pk-note">The weight does not fit the order. Check the parcel, or say why it is right.</label>
+          <textarea id="pk-note" rows="2" maxlength="200" [value]="note()" (input)="type('note', $event)"></textarea>
+          <small class="field-hint">Completing with a note flags this parcel for staff to look at.</small>
+        </div>
+      </div>
+    }
+
+    <div class="form-actions">
+      <button type="button" class="button button--primary" [disabled]="!canComplete()" (click)="complete()">Seal the parcel</button>
+    </div>
+  }
+
+  @if (packed()) {
+    <p><a class="button button--primary" [routerLink]="['/fulfilment/slip', v.orderId]">Print the packing slip</a></p>
+  } @else if (v.status === 'PACKING') {
+    <p><a [routerLink]="['/fulfilment/slip', v.orderId]">Open the packing slip</a></p>
+  }
+}

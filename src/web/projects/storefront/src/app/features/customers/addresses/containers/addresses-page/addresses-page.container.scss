@@ -1,0 +1,9 @@
+.rp-lhead { display: grid; gap: var(--space-3); padding-block: var(--space-6) var(--space-5); }
+.rp-address-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); }
+.rp-address__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.rp-address__lines { margin: var(--space-2) 0; }
+.rp-address__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
+.rp-address-note { margin-block: var(--space-4); }
+.rp-address-pager { display: flex; align-items: center; justify-content: center; gap: var(--space-4); margin-top: var(--space-5); }
+.rp-address-add { margin-top: var(--space-5); }
+@media (min-width: 40rem) { .rp-address-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

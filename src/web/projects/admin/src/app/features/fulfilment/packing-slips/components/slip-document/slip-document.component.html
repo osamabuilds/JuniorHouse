@@ -1,0 +1,91 @@
+<article class="slip" aria-label="Packing slip">
+  <header class="slip__head">
+    <p class="slip__brand">{{ slip().brandName }}</p>
+    <p class="slip__order">Order <strong>{{ slip().orderNumber }}</strong>, placed {{ slip().placedAt | date: 'd MMM y' }}</p>
+    @if (slip().isReprint) {
+      <p class="slip__reprint"><strong>Reprint</strong> (printed {{ slip().printCount }} {{ slip().printCount === 1 ? 'time' : 'times' }})</p>
+    }
+    <p>For {{ slip().recipientName }}, {{ slip().city }}</p>
+  </header>
+
+  <table class="slip__items">
+    <caption class="sr-only">What is in this parcel</caption>
+    <thead>
+      <tr>
+        <th scope="col">Item</th>
+        <th scope="col">Size</th>
+        <th scope="col">Colour</th>
+        <th scope="col" class="num">Qty</th>
+        <th scope="col" class="num">Price</th>
+        <th scope="col" class="num">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (line of slip().lines; track $index) {
+        <tr>
+          <th scope="row">{{ line.name }} <small>{{ line.sku }}</small></th>
+          <td>{{ line.size }}</td>
+          <td>{{ line.colour }}</td>
+          <td class="num">{{ line.quantity }}</td>
+          <td class="num">{{ line.unitPrice | currency: 'PKR ' : 'symbol' : '1.0-0' }}</td>
+          <td class="num">{{ line.lineTotal | currency: 'PKR ' : 'symbol' : '1.0-0' }}</td>
+        </tr>
+      }
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="row" colspan="5">Subtotal</th>
+        <td class="num">{{ slip().subtotal | currency: 'PKR ' : 'symbol' : '1.0-0' }}</td>
+      </tr>
+      @if (slip().discount > 0) {
+        <tr>
+          <th scope="row" colspan="5">Discount</th>
+          <td class="num">-{{ slip().discount | currency: 'PKR ' : 'symbol' : '1.0-0' }}</td>
+        </tr>
+      }
+      <tr>
+        <th scope="row" colspan="5">Delivery</th>
+        <td class="num">{{ slip().shipping | currency: 'PKR ' : 'symbol' : '1.0-0' }}</td>
+      </tr>
+      <tr>
+        <th scope="row" colspan="5">Total</th>
+        <td class="num"><strong>{{ slip().total | currency: 'PKR ' : 'symbol' : '1.0-0' }}</strong></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  @if (slip().isCashOnDelivery) {
+    <section class="slip__pay slip__pay--cod" aria-label="Cash to collect">
+      <p class="slip__pay-label">Cash to collect</p>
+      <p class="slip__pay-amount">{{ slip().cashToCollect | currency: 'PKR ' : 'symbol' : '1.0-0' }}</p>
+    </section>
+  } @else {
+    <section class="slip__pay slip__pay--paid" aria-label="Payment">
+      <p class="slip__pay-amount">Paid</p>
+      <p>Nothing to collect at the door.</p>
+    </section>
+  }
+
+  <footer class="slip__foot">
+    <h2>Need to exchange or return?</h2>
+    @if (slip().exchangeWindowDays > 0) {
+      <p>You can exchange or return an item within {{ slip().exchangeWindowDays }} days of receiving it, unworn and with its tags.</p>
+    }
+    <p>
+      Write to us:
+      @if (slip().supportWhatsapp; as w) {
+        WhatsApp {{ whatsapp(w) }}
+      }
+      @if (slip().supportEmail; as e) {
+        @if (slip().supportWhatsapp) {
+          or
+        }
+        email {{ e }}
+      }
+      @if (slip().supportHours; as h) {
+        ({{ h }})
+      }
+    </p>
+    <p>Thank you for choosing {{ slip().brandName }}.</p>
+  </footer>
+</article>

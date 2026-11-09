@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Romp.Modules.Cart.Application\Romp.Modules.Cart.Application.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/Romp.BuildingBlocks.Web/Romp.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="..\Romp.Modules.Cart.Contracts\Romp.Modules.Cart.Contracts.csproj" />
+    <ProjectReference Include="..\..\Customers\Romp.Modules.Customers.Contracts\Romp.Modules.Customers.Contracts.csproj" />
+    <ProjectReference Include="../../Orders/Romp.Modules.Orders.Contracts/Romp.Modules.Orders.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Persistence\Romp.BuildingBlocks.Persistence.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Romp.Modules.Cart.Tests" />
+  </ItemGroup>
+
+</Project>

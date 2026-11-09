@@ -14,7 +14,7 @@ internal static class InboundDeliveryEndpoints
 {
     public static void MapInboundDeliveryEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapSecuredGroup("/api/quality/inbound-deliveries").WithTags("Quality");
+        var group = endpoints.MapSecuredGroup("/api/quality/inbound-deliveries", Permissions.QcRead).WithTags("Quality");
 
         group.MapGet("/", async (
                 string? status,

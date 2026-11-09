@@ -47,7 +47,9 @@ public sealed class SearchProductsQueryHandler(
     ISynonymCache synonyms,
     ISearchSettings settings,
     ICatalogLookupQueries lookups,
-    ICatalogLookupCache lookupCache) : IRequestHandler<SearchProductsQuery, SearchProductsResult>
+    ICatalogLookupCache lookupCache,
+    IListingSettings listingSettings,
+    TimeProvider clock) : IRequestHandler<SearchProductsQuery, SearchProductsResult>
 {
     public async Task<SearchProductsResult> Handle(SearchProductsQuery request, CancellationToken cancellationToken)
     {
@@ -89,9 +91,10 @@ public sealed class SearchProductsQueryHandler(
         var rows = await ListingTiles.Project(db, products, matching).ToListAsync(cancellationToken);
         var ordered = filter.Sort switch
         {
-            ListingSort.PriceAscending => rows.OrderBy(x => x.From).ThenBy(x => x.Id),
-            ListingSort.PriceDescending => rows.OrderByDescending(x => x.From).ThenBy(x => x.Id),
-            _ => rows.OrderByDescending(x => ranks[x.Id]).ThenByDescending(x => x.PublishedAt).ThenByDescending(x => x.Id),
+            // Sold-out products match too (SLD-7) but always come after the in-stock ones (SLD-2).
+            ListingSort.PriceAscending => rows.OrderBy(x => !x.InStock).ThenBy(x => x.From).ThenBy(x => x.Id),
+            ListingSort.PriceDescending => rows.OrderBy(x => !x.InStock).ThenByDescending(x => x.From).ThenBy(x => x.Id),
+            _ => rows.OrderBy(x => !x.InStock).ThenByDescending(x => ranks[x.Id]).ThenByDescending(x => x.PublishedAt).ThenByDescending(x => x.Id),
         };
 
         var total = rows.Count;
@@ -107,7 +110,7 @@ public sealed class SearchProductsQueryHandler(
         }
 
         var page = ordered.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToList();
-        var tiles = await ListingTiles.BuildAsync(db, page, cancellationToken);
+        var tiles = await ListingTiles.BuildAsync(db, page, new TileContext(filter.Colours, listingSettings.LowStockThreshold, clock.GetUtcNow().AddDays(-listingSettings.NewArrivalsDays)), cancellationToken);
 
         var lookupRows = await lookupCache.GetOrLoadAsync(ct => CatalogLookups.LoadAsync(lookups, ct), cancellationToken);
         var scopeProducts = db.Products.AsNoTracking().Where(p => p.IsListable && ids.Contains(p.Id));

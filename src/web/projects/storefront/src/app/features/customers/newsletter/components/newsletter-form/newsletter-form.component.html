@@ -1,0 +1,25 @@
+<div class="rp-footer__news">
+  <h2 class="rp-display-md">Be first to see <em>what is new</em></h2>
+  <form method="post" action="/newsletter/subscribe" (submit)="submit($event, field)">
+    <label class="rp-label sr-only" for="rp-newsletter-email">Email address</label>
+    <div class="rp-group">
+      <input
+        #field
+        id="rp-newsletter-email"
+        class="rp-input"
+        type="email"
+        name="email"
+        required
+        maxlength="254"
+        autocomplete="email"
+        placeholder="Your email"
+        aria-describedby="rp-newsletter-help rp-newsletter-status"
+        [attr.aria-invalid]="invalid() ? 'true' : null"
+        (input)="edited()"
+      />
+      <button rpBtn type="submit" [disabled]="status() === 'sending'">Join</button>
+    </div>
+    <p class="rp-help" id="rp-newsletter-help">News and offers now and then. Unsubscribe any time. We never share your address.</p>
+    <p class="rp-help" id="rp-newsletter-status" role="status" aria-live="polite">{{ message() }}</p>
+  </form>
+</div>

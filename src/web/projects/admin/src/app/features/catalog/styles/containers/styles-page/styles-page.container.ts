@@ -22,13 +22,14 @@ import {
   selectStylesSaving,
   StylesPageActions,
 } from '../../store';
+import { HasPermissionDirective } from '@core/auth';
 
 const LOOKUP_TYPES = ['categories', 'genders', 'age-brackets', 'fabrics', 'colours', 'sizes'] as const;
 
 /** SCRUM-174: style list (search/filter) plus a create/edit form with the colour x size target-quantity grid. */
 @Component({
   selector: 'app-styles-page',
-  imports: [StyleTableComponent, StyleFormComponent, PaginationComponent],
+  imports: [HasPermissionDirective, StyleTableComponent, StyleFormComponent, PaginationComponent],
   templateUrl: './styles-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

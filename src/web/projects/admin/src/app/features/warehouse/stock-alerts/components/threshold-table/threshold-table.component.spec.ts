@@ -3,8 +3,10 @@ import { thresholdRow } from '@app/testing/warehouse-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { ThresholdRowDto } from '../../models';
 import { ThresholdChange, ThresholdTableComponent } from './threshold-table.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('ThresholdTableComponent (spec ALR-6)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(rows: ThresholdRowDto[], loading = false, savingVariantId: number | null = null) {
     const fixture = TestBed.createComponent(ThresholdTableComponent);
     fixture.componentRef.setInput('rows', rows);

@@ -7,6 +7,7 @@ import { storefrontSettingsReducer } from '@features/storefront/storefront-setti
 import { STOREFRONT_SETTINGS_FEATURE_KEY } from '@features/storefront/storefront-settings/store/storefront-settings.state';
 import { DraftSettings } from '@features/storefront/storefront-settings/models';
 import { draftSettings } from './storefront-fixtures';
+import { provideAllowAllPermissions } from './provide-allow-all-permissions';
 
 /**
  * A real storefront-settings store with the actions it receives recorded, for container specs. The draft is loaded the way the effect
@@ -14,7 +15,7 @@ import { draftSettings } from './storefront-fixtures';
  */
 export function createStorefrontContainer<T>(component: Type<T>, options: { draft?: DraftSettings | null; routes?: never[]; providers?: Provider[] } = {}) {
   TestBed.configureTestingModule({
-    providers: [provideRouter(options.routes ?? []), provideStore({ [STOREFRONT_SETTINGS_FEATURE_KEY]: storefrontSettingsReducer }), ...(options.providers ?? [])],
+    providers: [provideAllowAllPermissions(), provideRouter(options.routes ?? []), provideStore({ [STOREFRONT_SETTINGS_FEATURE_KEY]: storefrontSettingsReducer }), ...(options.providers ?? [])],
   });
   const store = TestBed.inject(Store);
   const dispatched: Action[] = [];

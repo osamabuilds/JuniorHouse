@@ -1,6 +1,6 @@
 # Multi-factor authentication
 
-- **Module:** [`identity`](../README.md) · **Feature:** `mfa` · **Status:** Planned
+- **Module:** [`identity`](../README.md) · **Feature:** `mfa` · **Status:** Implemented
 
 TOTP authenticator-app enrolment, recovery codes, mandatory for every staff account.
 

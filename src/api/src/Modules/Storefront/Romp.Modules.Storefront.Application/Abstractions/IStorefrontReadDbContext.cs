@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Storefront.Domain.PublishedCatalog;
+using Romp.Modules.Storefront.Domain.ProductRecommendations;
 using Romp.Modules.Storefront.Domain.Search;
 
 namespace Romp.Modules.Storefront.Application.Abstractions;
@@ -39,6 +40,14 @@ public interface IStorefrontReadDbContext
     DbSet<SynonymTerm> SynonymTerms { get; }
 
     DbSet<SearchMiss> SearchMisses { get; }
+
+    DbSet<SimilarProduct> SimilarProducts { get; }
+
+    DbSet<ProductSaleDay> ProductSaleDays { get; }
+
+    DbSet<RecommendationRun> RecommendationRuns { get; }
+
+    DbSet<RecommendationDay> RecommendationDays { get; }
 
     /// <summary>The PostgreSQL row version (<c>xmin</c>) of a loaded synonym group; staff quote it back on their next save.</summary>
     uint RowVersionOf(SynonymGroup group);

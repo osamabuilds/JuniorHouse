@@ -61,4 +61,32 @@ public sealed class GetHomeQueryTests(StorefrontPostgres postgres)
 
         Assert.Equal(12, (await host.SendAsync(new GetHomeQuery())).NewArrivals.Count);
     }
+
+    [Fact]
+    [Trait("Spec", "SLD-11")]
+    public async Task Home_NeverShowsASoldOutProduct_EvenWhenItIsTheNewest_NorInTheFallback()
+    {
+        using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
+        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", publishedAt: DateTimeOffset.UtcNow.AddDays(-3), name: "Ready");
+        await ListingSeeder.ListableAsync(host, 2, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0)], publishedAt: DateTimeOffset.UtcNow.AddDays(-1), name: "Newest but sold out");
+        await ListingSeeder.ListableAsync(host, 3, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0)], publishedAt: DateTimeOffset.UtcNow.AddDays(-90), name: "Old and sold out");
+
+        var home = await host.SendAsync(new GetHomeQuery());
+
+        Assert.False(home.IsFallback);
+        Assert.Equal(["Ready"], home.NewArrivals.Select(t => t.Name).ToArray());
+    }
+
+    [Fact]
+    [Trait("Spec", "SLD-11")]
+    public async Task Home_FallsBack_WhenTheOnlyNewProductsAreSoldOut_AndLeavesTheHeroOutWhenNothingCanBeBought()
+    {
+        using var host = await ListingSeeder.HostWithLookupsAsync(postgres);
+        await ListingSeeder.ListableAsync(host, 1, "GIRLS", "DRESSES", [new("RED", "5-6Y", 800m, 0)], publishedAt: DateTimeOffset.UtcNow.AddDays(-1), name: "New but gone");
+
+        var home = await host.SendAsync(new GetHomeQuery());
+
+        Assert.True(home.IsFallback);
+        Assert.Empty(home.NewArrivals);
+    }
 }

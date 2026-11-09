@@ -1,0 +1,113 @@
+# Customer accounts: registration, sign-in, password reset
+
+- **Status:** Draft, scope revised again (owner, 2026-10-29): **real customer sign-in is no longer parked** and is built in Sprint 10, after addresses and before wishlist. Owner said "go ahead with the recommendations" on 2026-10-29, so the spec is treated as approved with the answers below; Q-ACT-8 and the SSR rate limiter stay open and take their defaults in the plan.
+- **Jira:** SCRUM-59 (FR-38), SCRUM-60 (FR-39), SCRUM-122 and SCRUM-199 (SEC-02) under epic SCRUM-9
+- **BRD sections:** §7.5, §11.2, §6.4 (TC-ACC-01..07), §12.3.1
+- **Requirement IDs:** FR-38, FR-39, SEC-02, SEC-03, SEC-04, NFR-15, SEC-25, NFR-26
+
+## Problem & intent
+A parent needs an account to save addresses, children, wishlist items and later to see orders. Registration and sign-in must be easy, must not reveal whether an email is registered through the sign-in or reset screens, and must resist password guessing without letting an attacker lock a real customer out.
+
+## Scope (owner decision, 2026-10-29: supersedes the split below)
+The owner said real customer sign-in does not need to be parked. ACT-1..ACT-13, ACT-15 and ACT-16 are now in Sprint 10 and the stand-in remains only as the Development/Testing handler. ACT-14 becomes a real merge hook called by sign-in and registration. ACT-17 (start-up refusal while only the stand-in exists) is no longer needed once real sign-in exists; it is replaced by "the stand-in is not registered outside Development/Testing". Answers to the open questions are recorded below.
+
+## Earlier scope split (owner decision, 2026-10-25, superseded)
+**Sprint 10 (now):** the other customer features need to know who the customer is, so this feature delivers only an `ICurrentCustomer` port, a development-only implementation (a seeded test customer, switchable in local runs, refused outside Development exactly like the staff stand-in, ADR 0011), and the rule that no customer endpoint takes a customer id from the request (SEC-05). No registration, sign-in, reset or throttling screens are built. Nothing customer-facing is deployed before real sign-in exists.
+
+**Final auth sprint (with S8):** everything else below (ACT-1..ACT-13, ACT-15, ACT-16 and the Q-ACT-* questions, including FR-39 vs SEC-02) is unchanged and waits for that sprint.
+
+**Sprint 10 acceptance for this feature:** ACT-14 (merge hook as an interface only) and ACT-18. ACT-17 (the start-up gate) is **parked for S8** (owner, 2026-10-25): nothing is deployed before S8, which is already the project rule.
+
+## Requirements (quoted from the BRD)
+> **FR-38:** The system shall support account registration, duplicate-email prevention, login, and a self-service, single-use, expiring password-reset link.
+
+> **FR-39:** The system shall temporarily lock an account after repeated failed logins, with a defined unlock path.
+
+> **SEC-02:** Failed-login handling shall use progressive throttling and CAPTCHA (e.g. after 3 failed attempts) rather than a hard account lockout, to prevent an attacker from denial-of-service-locking a legitimate customer's account by deliberately failing their login.
+
+> **SEC-03:** Session cookies/tokens shall be HttpOnly, Secure, and SameSite=Strict (or Lax where cross-site flows require it), with short-lived access tokens and rotating refresh tokens.
+
+> **SEC-04:** A new session identifier shall be issued on every successful login (session-fixation prevention).
+
+> **NFR-15:** Login attempts shall be logged and rate-limited to mitigate brute-force/credential-stuffing.
+
+## User flow
+1. **Register** (design `AuthScreens`): first and last name, email, mobile number, password, Terms and Privacy checkbox (required), newsletter checkbox (optional, see [newsletter](../newsletter/spec.md)). On success the customer is signed in.
+2. **Sign in:** email, password, "Keep me signed in" `(new, see Q-ACT-4)`. Success returns to the page they came from.
+3. **Forgot password:** enter email; the screen always says "If an account exists for that email address, a reset link is on its way". The link opens "Set a new password". The link works once and expires.
+4. **Sign out**, and after a password change all other sessions end `(new)`.
+5. **Repeated failures:** see AC-8..AC-10; wording depends on Q-ACT-1.
+
+## Acceptance criteria
+
+| ID | Given / When / Then | Source |
+|---|---|---|
+| ACT-1 | Given a valid email and a password that meets the rule, when registering, then the account is created and the customer is signed in. | TC-ACC-01 |
+| ACT-2 | Given a password that breaks the rule (Q-ACT-3), then registration is blocked, and while typing each rule shows met or not met in real time, so the customer sees which one is missing. The server enforces the same rules and returns them by name. | TC-ACC-02 |
+| ACT-3 | Given an email already registered (compared case-insensitively, trimmed), then registration fails with guidance to sign in or reset; no second account exists. | TC-ACC-03, FR-38 |
+| ACT-4 | Given valid credentials, when signing in, then the customer is signed in and sent back to where they were. | TC-ACC-04 |
+| ACT-5 | Given a wrong email or a wrong password, then the response and its timing are the same ("We could not sign you in"); the message never says which was wrong. | NFR-15 (new) |
+| ACT-6 | Given a reset request for any email (known or unknown), then the response is identical and no account existence is revealed; for a known email a link is emailed. | FR-38, design rule |
+| ACT-7 | Given the emailed link, when a new password is set, then the old password stops working and the new one works. | TC-ACC-06 |
+| ACT-8 | Given a reset link already used, or past its lifetime, then it is rejected as expired or invalid and offers a new request. | TC-ACC-07 |
+| ACT-9 | Given repeated failed sign-ins, then the account response follows the answer to Q-ACT-1: **(A, SEC-02)** from the 3rd failure each attempt is delayed and a CAPTCHA is required; the account is never locked; **(B, FR-39 and TC-ACC-05)** after 5 failures the account is temporarily locked and the unlock path is shown. | TC-ACC-05, FR-39, SEC-02 |
+| ACT-10 | Given any sign-in attempt, then one row records the email as typed (truncated, control characters removed), the client IP, the outcome and the time; the password is never recorded. | NFR-15, SEC-25 |
+| ACT-11 | Given a successful sign-in, then a new session is issued and any session cookie sent with the request is discarded; cookies are `HttpOnly`, `Secure`, `SameSite` as SEC-03 and hold only random values whose hashes the server stores. | SEC-03, SEC-04 |
+| ACT-12 | Given a session, then the access cookie is short-lived and the refresh cookie rotates on each use; reuse of a rotated refresh value revokes the session. | SEC-03 |
+| ACT-13 | Given a password change or reset, then every other session of the customer is revoked `(new)`. | SEC-03 (new) |
+| ACT-14 | Given a guest cart or guest wishlist exists when the customer signs in, then the sign-in result carries the hook the cart (S11) and the wishlist ([wishlist](../wishlist/spec.md)) use to merge; nothing is lost. | FR-35, FR-17 |
+| ACT-15 | Given passwords, reset tokens or session values, then none appears in logs, URLs of indexable pages or error bodies; reset tokens are stored hashed. | SEC-25 |
+| ACT-17 *(parked for S8)* | Given a non-Development environment, then the host refuses to start while only the stand-in customer exists. | ADR 0011 (new) |
+| ACT-18 | Given the stand-in, then every customer endpoint reads the customer from `ICurrentCustomer`, and tests prove customer A cannot reach customer B's data through any customer endpoint. | SEC-05 |
+| ACT-19 | ~~Google or Facebook sign-in~~ **Removed (owner, 2026-11-02): no social sign-in for now; email and password only.** Kept for history in git. | - |
+| ACT-20 | ~~Google or Facebook sign-in~~ **Removed (owner, 2026-11-02): no social sign-in for now; email and password only.** Kept for history in git. | - |
+| ACT-21 | ~~Google or Facebook sign-in~~ **Removed (owner, 2026-11-02): no social sign-in for now; email and password only.** Kept for history in git. | - |
+| ACT-22 | ~~Google or Facebook sign-in~~ **Removed (owner, 2026-11-02): no social sign-in for now; email and password only.** Kept for history in git. | - |
+| ACT-23 *(deferred)* | Given a mobile number being verified at sign-up, when "send code" is requested, then a one-time code is sent by SMS; the response is the same for a known and an unknown number; codes are 6 digits, single-use, expire (Q-ACT-11), and are stored hashed. | (new) |
+| ACT-24 | **Paused (owner, 2026-11-02): sign-in with only a mobile number and SMS code is not built for now; SMS codes are used to verify the mobile number at sign-up (ACT-29) only.** Confirm whether it returns later. | - |
+| ACT-25 *(deferred)* | Given repeated code requests or wrong codes, then sends are limited per number and per IP and wrong codes are throttled and need the CAPTCHA, never a lock, so SMS cost and number enumeration are bounded. | SEC-02, NFR-15 (new) |
+| ACT-26 | Given email sign-in, sign-up and the SMS code, then ACT-10 (attempt logged without secrets), ACT-11 and ACT-12 (new session, rotating refresh) apply unchanged, and provider tokens, codes and phone numbers in full never appear in logs. | SEC-04, SEC-25 |
+| ACT-27 | Given a registration by email and password, or an email added after Facebook or SMS sign-up, then a verification link is emailed; the link works once, expires (Q-ACT-15), and marks the email verified; only the hash of the link token is stored and the link is never logged. | Q-ACT-2 (owner), FR-38 |
+| ACT-28 | Given an unverified email, then the customer can ask for a new link (limited per hour, the previous link stops working); a Google or Facebook email the provider marks verified is verified at once; changing the email makes the new one unverified until its link is used. | Q-ACT-2 (new) |
+| ACT-29 | **Revised (owner, 2026-11-02): the mobile number is collected and format-checked (Pakistani mobile) at sign-up but not verified for now.** No SMS is sent at registration. The account is created and the customer signed in as soon as the form is valid; email verification (ACT-27) still applies. Mobile verification by SMS code returns later (ACT-23, ACT-25 are deferred with it). | owner 2026-11-02 |
+| ACT-30 | Given a guest placing an order, then no account is created, the email and mobile number are collected as typed (format-checked, not verified) and are used only to process and track that order; no code or link is sent. | owner 2026-10-29 (new; checkout spec) |
+| ACT-31 | Given a signed-in customer whose email is not yet verified, then a notice bar on every account and storefront page says the email is unverified and offers a button "Verify my email" that sends a fresh link (ACT-28); the notice goes away when verified. Nothing is blocked: browsing, saving addresses, the wishlist and **placing and processing orders all work as for a verified customer**. The notice never appears for guests. | owner 2026-10-29 (new) |
+| ACT-32 | Given a guest order, then the guest's name, email, mobile number and delivery address are stored in the database with the order (as order data, not as an account) so it can be fulfilled, tracked and looked up by order number plus mobile number or by tracking number; they are personal data (NFR-26) and follow the retention rule the orders spec sets. | owner 2026-10-29 (new; orders spec) |
+| ACT-16 | Given the account pages, then they send `noindex`, are disallowed in `robots.txt`, and every form control has a visible label with the right `autocomplete` value. | SEO-05, NFR-19 |
+
+## Non-functional constraints
+- Passwords are hashed with a slow, salted algorithm chosen in the plan; sign-in p95 under 500 ms excluding the intentional hash cost.
+- SEC-03 and SEC-04 apply as written. The SSR storefront calls the API server-side, so cookie forwarding is a plan decision (Q-ACT-5).
+- Rate limiting by IP is applied at Cloudflare and in the SSR layer, not inside the API (storefront decision P-4); per-account throttling is applied in the API. The SSR rate limiter is currently deferred with the `seo` feature, so Q-ACT-6 asks whether it is pulled forward for sign-in.
+- Customer personal data is used only to run the account and fulfil orders (NFR-26).
+
+## Out of scope
+Staff sign-in and MFA (S8); social sign-in other than Google and Facebook; MFA for customers; order history; "remember this device"; account deletion and data export of the whole account (only Child Profile data is covered by NFR-29, see [child-profiles](../child-profiles/spec.md)).
+
+## Open questions
+- [x] **Q-ACT-1 FR-39 vs SEC-02. ANSWERED (owner, 2026-10-29): SEC-02, throttling plus CAPTCHA, no lockout.** FR-39 and TC-ACC-05 are to be amended to match; ACT-9 reading (A) applies. Original question: The BRD contradicts itself: FR-39 and TC-ACC-05 say temporary lock after repeated failures (5+); SEC-02 says progressive throttling and CAPTCHA, explicitly not a lock, because a lock lets an attacker lock a customer out. Recommendation: SEC-02, and amend FR-39/TC-ACC-05 to match (the "unlock path" then becomes "wait out the delay or solve the CAPTCHA", and the password reset is always available). Who decides: owner. Until answered, ACT-9 keeps both readings.
+- [x] **Q-ACT-2 Email verification. ANSWERED (owner, 2026-10-29): the email must be verified.** Every email on an account is verified by a single-use, expiring link (see ACT-27, ACT-28). An unverified customer is not blocked (Q-ACT-14).
+- [x] **Q-ACT-14 What an unverified customer can do. ANSWERED (owner, 2026-10-29): nothing is blocked.** An unverified customer signs in and uses the shop freely; the flow never stops. The email is asked to be confirmed at order placement (an order-time step in the checkout spec, S11), and the **mobile number is the one must-have** at registration and at checkout. Guest checkout (no account) is wanted too; that and order look-up belong to the checkout and orders specs, not to this feature. Order look-up (owner, 2026-10-29), for the orders spec: (1) order number plus mobile number shows order details and tracking; (2) tracking number alone shows courier tracking only, no personal data. Look-up by mobile number plus SMS code is not wanted. Mobile and email checks, owner 2026-10-29: an account holder verifies the mobile number by SMS at sign-up (ACT-29) and the email by link (ACT-27); a guest order only collects both, unverified (ACT-30). This replaces "ask to confirm the email at order placement" for guests. Owner principle (2026-10-29): nothing blocks an order, ever; an unverified account gets a notice with a verify button (ACT-31), and sign-up already requires the mobile and the email link so an unverified account is rare and is never asked a question at checkout.
+- [x] **Q-ACT-3 Password rule. ANSWERED (owner, 2026-10-29): at least 8 characters, with at least one capital letter, one small letter and one digit; special characters are allowed (owner, 2026-11-02: lifted the earlier "letters and digits only"), not required; validated in real time with a message per missing rule.** Spaces are not allowed in a password (owner, 2026-11-02); the maximum length is 128. Original question: TC-ACC-02 says "complexity rule" without stating it. Default: at least 10 characters, not on a common-password list, no composition rules (current NIST advice). Or a stated rule such as 8 characters with a letter and a digit?
+- [x] **Q-ACT-4 "Keep me signed in". ANSWERED: default accepted (30 days refresh, else 12 hours).** The design draws it. Default: it extends the refresh lifetime (30 days instead of 12 hours); session lifetimes otherwise as the staff defaults (15 minutes access, 30 minutes idle).
+- [x] **Q-ACT-5 ANSWERED (owner, 2026-11-02): option 1, the browser holds the cookies on the storefront origin and the SSR server forwards them; SameSite=Lax (ADR 0023 §3).** Original question: Proposal: the browser holds the cookies on the storefront origin and the SSR server forwards them to the API. Alternative: the SSR server holds the session itself. Settled in the plan with an ADR if you have no preference.
+- [x] **Q-ACT-6 CAPTCHA provider. ANSWERED: Cloudflare Turnstile with a fake verifier in tests.** Still open: whether the SSR rate limiter is pulled forward from `seo` task 12. Proposal: Cloudflare Turnstile (free, no image puzzles, already behind Cloudflare), with a fake verifier in tests. Pull the shared SSR rate limiter forward from `seo` task 12 for the sign-in and reset pages?
+- [x] **Q-ACT-7 Mobile number. ANSWERED: required, checked as a Pakistani mobile (+92 3xx xxxxxxx).** The design asks for a mobile number "used for delivery updates". Required or optional at registration? Format check: Pakistani mobile (`+92 3xx xxxxxxx`)?
+- [x] **Q-ACT-9 NARROWED (owner, 2026-11-02): Google and Facebook are dropped, so no Google or Meta accounts are needed; only the Twilio Verify service for the sign-up SMS code. Earlier answer was:** ANSWERED (owner, 2026-10-29, recommendation accepted): the owner creates the Google OAuth client and the Meta app (Meta review started early; Facebook can be switched on by a setting once approved) and the Twilio Verify service (superseded 2026-11-02: no Twilio; own verification plus a Pakistani SMS gateway chosen by the owner); the SMS sender sits behind a port so a local gateway can replace it. Everything is built against fake verifiers first; credentials live in secrets, never in the repo.** Original question: Provider accounts and cost.** Google sign-in needs a Google Cloud OAuth client; Facebook needs a Meta app, which is reviewed before real users can use it and needs a privacy policy URL and a data-deletion callback. The SMS code needs a provider that delivers to Pakistan and is paid per message. Who creates these accounts and which SMS provider (for example Twilio Verify, or a local Pakistani gateway)? Until they exist, tests use fake verifiers and nothing real can be tried.
+- [x] ~~ **Q-ACT-10 ANSWERED (recommendation accepted): option A.** When Google or Facebook returns an email that already has a password account: (A, recommended) sign in only if the provider says the email is verified, and link the provider to that account; otherwise ask for the password first. (B) Always ask for the password to link. (C) Keep them as separate accounts (breaks the one-account-per-email rule, ACT-3).~~ (moot, social sign-in removed)
+- [x] **Q-ACT-11 ANSWERED (default accepted).** Default: 6 digits, valid 5 minutes, at most 3 sends per number per hour and 10 per IP per hour, 5 wrong tries then a new code is needed. OK?
+- [x] ~~ **Q-ACT-12 ANSWERED (default accepted).** A number with no account: create an account (ask first name, last name and email after the code is proven), or refuse and send to register? Default: create after asking for the name and email.~~ (moot, no mobile-only sign-in)
+- [x] **Q-ACT-13 ANSWERED, revised 2026-11-02: while the number is unverified it is NOT unique per account (otherwise anyone could take a stranger's number and block the real owner); it is unique again when verification returns.**** The phone then identifies the account, so it must be unique and Pakistani-mobile only (Q-ACT-7), and a number reassigned by the network operator could reach an old account. Default: unique, and changing it needs a code to the new number. Facebook may not return an email: if absent, ask for it.
+- [ ] **Q-ACT-15 Link lifetime.** Default: verification link valid 24 hours; reset link 60 minutes.
+- [ ] **Q-ACT-8 Terms and Privacy pages. ANSWERED in part (owner, 2026-11-02): the text does not exist yet. The business must supply it (legal content is not invented here). Until then the register checkbox links to placeholder pages marked "to be supplied", and Facebook Login cannot go live without a privacy policy URL, so Facebook is gated on this text.** Original question: The checkbox links to them; do the content pages from `storefront-settings` already cover them, or is text missing from the business?
+
+## As built (2026-11-02)
+
+Where the implementation differs from, or adds to, the text above.
+
+- **Screens** follow `docs/design-system/components/AuthScreens`: slim wordmark header and no footer on the five account routes (route data `shell: 'slim'`), photo panel with one line on the scrim on wide screens, one marigold (`action`) button per screen. The link to the other screen ("Create an account" / "Sign in") is a full-width secondary button below the form (owner request, more visible than the design's help line). The optional newsletter checkbox in the design is not built (no requirement). The live password checklist replaces the design's rules placeholder (owner decision).
+- **Origin check** on the routes with no session accepts `Site:PublicBaseUrl`, else `Customers:PublicBaseUrl` (the storefront address), else the request's own host. The browser talks to the storefront, so the API host is never the right answer.
+- **Rate limits:** register, sign-in, email verify, password reset request and confirm, resend, email change and password change use the strict per-address limit (60 a minute). `/session`, `/refresh`, `/sign-out` and `/password-rules` run on every page view and use only the host-wide limit (1200 a minute), so a few visitors behind one address cannot exhaust the strict allowance.
+- **Reset link:** the token is removed from the address bar in the browser only. On the server a navigation becomes a 302 to the address without the token, which loses it.
+- **Verified in:** `e2e/customers/sign-in.e2e.spec.ts` on the docker secure stack (register, checklist, verify by mailed link, sign out and in, reset, wrong password, `/account` redirect, `noindex`). Docker needs `Customers__Auth__UseRealSignIn`, `Customers__Auth__AllowInsecureCookies`, `Customers__PublicBaseUrl` and `Email__Smtp__*` (see `docker-compose.secure.yml`).
+- **Still open:** real Cloudflare Turnstile and a real SMTP server (owner has no accounts yet); the anonymous `/session` and `/refresh` calls log a 401 in the browser console on every first page view (harmless).

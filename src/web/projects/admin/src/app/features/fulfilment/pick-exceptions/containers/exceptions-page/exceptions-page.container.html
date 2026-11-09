@@ -1,0 +1,43 @@
+<h1>Pick exceptions</h1>
+<p class="page-intro">
+  A picker found less on the shelf than the system says. The line waits for restock and the customer has been told. When the shelf is right again, choose
+  "Stock is back"; if the customer would rather not wait, drop the line. Counting the bin and correcting the stock is a normal adjustment in the warehouse.
+</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+<div class="card">
+  <div class="form-field form-field--inline">
+    <input id="ex-open" type="checkbox" [checked]="openOnly()" (change)="toggleOpenOnly($event)" />
+    <label for="ex-open">Open exceptions only</label>
+  </div>
+  <button type="button" class="button button--small" (click)="refresh()">Refresh</button>
+</div>
+
+<section aria-labelledby="ex-list-heading">
+  <h2 id="ex-list-heading">{{ total() }} {{ total() === 1 ? 'exception' : 'exceptions' }}</h2>
+  @if (loading() && rows().length === 0) {
+    <p role="status">Loading…</p>
+  } @else {
+    <app-exceptions-table
+      [rows]="rows()"
+      [canResolve]="canResolve()"
+      [resolvingId]="resolvingId()"
+      (resolve)="resolve($event)"
+    />
+    <app-pagination
+      [total]="total()"
+      [page]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChanged)="changePage($event)"
+      (pageSizeChanged)="changePageSize($event)"
+    />
+  }
+</section>

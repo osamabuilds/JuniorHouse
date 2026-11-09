@@ -17,6 +17,7 @@ import {
 } from '../../store';
 import { addRoot, applyNavAction, newEntry } from '../../utils/nav-tree.util';
 import { HasUnsavedChanges } from '../../utils/unsaved-changes.guard';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * Navigation (docs/specs/storefront/storefront-settings/spec.md, S-1, ST-1, ST-1a): the header entries as a tree of up to three levels.
@@ -24,7 +25,7 @@ import { HasUnsavedChanges } from '../../utils/unsaved-changes.guard';
  */
 @Component({
   selector: 'app-navigation-page',
-  imports: [SectionNavComponent, NavNodeComponent, SaveBarComponent, SettingsBannersComponent],
+  imports: [HasPermissionDirective, SectionNavComponent, NavNodeComponent, SaveBarComponent, SettingsBannersComponent],
   templateUrl: './navigation-page.container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

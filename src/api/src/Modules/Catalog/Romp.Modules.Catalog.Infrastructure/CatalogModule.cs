@@ -47,7 +47,8 @@ public sealed class CatalogModule : IModule
                 npgsql => npgsql.MigrationsHistoryTable("MIG_HIST", "CTLG"))
             .AddInterceptors(
                 sp.GetRequiredService<AuditSaveChangesInterceptor>(),
-                sp.GetRequiredService<OutboxSaveChangesInterceptor>()));
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditTrailSaveChangesInterceptor>()));
 
         services.AddScoped<ICatalogDbContext>(sp => sp.GetRequiredService<CatalogDbContext>());
         services.AddScoped<IStyleQueries, StyleQueries>();
@@ -67,6 +68,7 @@ public sealed class CatalogModule : IModule
         services.AddScoped<IChartGate, ChartGate>();
         services.AddScoped<ProductAssembler>();
         services.AddScoped<IPublishedProductQueries, PublishedProductQueries>();
+        services.AddScoped<IVariantSalesQueries, VariantSalesQueries>();
         services.AddScoped<ISizeChartQueries, SizeChartQueries>();
         services.AddScoped<LabelledVariantWriter>();
         services.AddScoped<ProductImageMapper>();

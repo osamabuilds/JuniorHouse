@@ -3,8 +3,10 @@ import { product } from '@app/testing/catalog-fixtures';
 import { textOf } from '@app/testing/production-fixtures';
 import { GateFailureDto, ProductDto, ProductTab } from '../../models';
 import { PublishPanelComponent } from './publish-panel.component';
+import { provideAllowAllPermissions } from '@app/testing/provide-allow-all-permissions';
 
 describe('PublishPanelComponent (spec PRD-3, PRD-4, PRD-6, CHT-3)', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideAllowAllPermissions()] }));
   function create(item: ProductDto = product(), failures: readonly GateFailureDto[] = []) {
     const fixture = TestBed.createComponent(PublishPanelComponent);
     fixture.componentRef.setInput('product', item);

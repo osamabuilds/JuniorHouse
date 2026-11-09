@@ -3,6 +3,7 @@ import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { ControlErrorsComponent } from '@shared';
 import { GRADES } from '../../cycle-counts.constants';
 import { CycleCountDto, SubmitLinesValue } from '../../models';
+import { HasPermissionDirective } from '@core/auth';
 
 /**
  * The blind count sheet (CC-2, CC-6, CC-10): pick a bin, then enter what is physically there, barcode and quantity per line. Nothing
@@ -11,7 +12,7 @@ import { CycleCountDto, SubmitLinesValue } from '../../models';
  */
 @Component({
   selector: 'app-count-sheet',
-  imports: [ReactiveFormsModule, ControlErrorsComponent],
+  imports: [HasPermissionDirective, ReactiveFormsModule, ControlErrorsComponent],
   template: `
     <section class="card" aria-labelledby="cs-heading">
       <h2 id="cs-heading">Count the bins</h2>
@@ -77,14 +78,14 @@ import { CycleCountDto, SubmitLinesValue } from '../../models';
                   <app-control-errors [control]="line.controls.quantity" label="Quantity" />
                 </div>
                 <div class="form-field">
-                  <button type="button" class="button button--small" (click)="removeLine(i)">Remove this line</button>
+                  <button *hasPermission="'warehouse.write'" type="button" class="button button--small" (click)="removeLine(i)">Remove this line</button>
                 </div>
               </div>
             }
           </div>
 
           <div class="form-actions">
-            <button type="button" class="button" (click)="addLine()">Add a line</button>
+            <button *hasPermission="'warehouse.write'" type="button" class="button" (click)="addLine()">Add a line</button>
             <button type="submit" class="button button--primary" [disabled]="submitting()">{{ submitting() ? 'Saving…' : 'Save counts for this bin' }}</button>
           </div>
         </form>

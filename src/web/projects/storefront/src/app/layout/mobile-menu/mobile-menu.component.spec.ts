@@ -8,11 +8,13 @@ import { launchSettings } from '../../shared/data/launch-settings';
 import { polyfillDialog } from '../dialog/dialog.testing';
 import { MobileMenuComponent } from './mobile-menu.component';
 
-function render(): ComponentFixture<MobileMenuComponent> {
+const withTile = { ...sampleMenu, audiences: [{ ...sampleMenu.audiences[0], tile: { eyebrow: 'New in', line: 'Just arrived', path: '/girls/new-in', image: { altText: 'A dress', width: 800, height: 1000, sources: [{ width: 640, webp: '/media/a.webp', jpeg: null }] } } }, sampleMenu.audiences[1]] };
+
+function render(menu = sampleMenu): ComponentFixture<MobileMenuComponent> {
   TestBed.configureTestingModule({ providers: [provideRouter([{ path: '**', children: [] }]), provideStore({}), provideSiteSettings(), provideNavigation()] });
   const store = TestBed.inject(Store);
   store.dispatch(SiteSettingsActions.loadSuccess({ settings: launchSettings, source: 'api' }));
-  store.dispatch(NavigationActions.loadMenuSuccess({ menu: sampleMenu }));
+  store.dispatch(NavigationActions.loadMenuSuccess({ menu }));
   const f = TestBed.createComponent(MobileMenuComponent);
   f.detectChanges();
   return f;
@@ -29,6 +31,12 @@ describe('MobileMenuComponent', () => {
     expect(dlg(f).hasAttribute('open')).toBe(true);
     (f.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.rp-icon-btn')!.click();
     expect(dlg(f).hasAttribute('open')).toBe(false);
+  });
+
+  it('MGT-7 the mobile menu never shows the picture tile, even when the menu carries one', () => {
+    const el = render(withTile).nativeElement as HTMLElement;
+    expect(el.querySelector('.rp-mega__tile')).toBeNull();
+    expect(el.querySelector('img')).toBeNull();
   });
 
   it('SC-7 shows every enabled entry, with members as nested accordions', () => {

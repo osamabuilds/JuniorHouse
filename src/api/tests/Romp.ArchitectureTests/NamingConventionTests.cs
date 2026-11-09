@@ -1,9 +1,14 @@
+using Romp.Modules.Cart.Infrastructure.Persistence;
+using Romp.Modules.Notifications.Infrastructure.Persistence;
+using Romp.Modules.Orders.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Romp.Modules.Customers.Infrastructure.Persistence;
 using Romp.Modules.Catalog.Infrastructure.Persistence;
 using Romp.Modules.Identity.Infrastructure.Persistence;
 using Romp.Modules.Labelling.Infrastructure.Persistence;
 using Romp.Modules.Warehouse.Infrastructure.Persistence;
+using Romp.Modules.Fulfilment.Infrastructure.Persistence;
 using Romp.Modules.Storefront.Infrastructure.Persistence;
 using Romp.Modules.Production.Infrastructure.Persistence;
 using Romp.Modules.Quality.Infrastructure;
@@ -43,6 +48,11 @@ public sealed partial class NamingConventionTests
             { "WHSE", BuildModel<WhseDbContext>(options => new WhseDbContext(options)) },
             { "STFR", BuildModel<StfrDbContext>(options => new StfrDbContext(options)) },
             { "IDNT", BuildModel<IdntDbContext>(options => new IdntDbContext(options)) },
+            { "CUST", BuildModel<CustDbContext>(options => new CustDbContext(options)) },
+            { "CART", BuildModel<CartDbContext>(options => new CartDbContext(options)) },
+            { "ORDR", BuildModel<OrdrDbContext>(options => new OrdrDbContext(options)) },
+            { "NTFY", BuildModel<NtfyDbContext>(options => new NtfyDbContext(options)) },
+            { "FULF", BuildModel<FulfDbContext>(options => new FulfDbContext(options)) },
         };
 
         return data;

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Romp.Modules.Notifications.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Romp.Modules.Notifications.Application\Romp.Modules.Notifications.Application.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/Romp.BuildingBlocks.Web/Romp.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="..\Romp.Modules.Notifications.Contracts\Romp.Modules.Notifications.Contracts.csproj" />
+    <ProjectReference Include="../../Orders/Romp.Modules.Orders.Contracts/Romp.Modules.Orders.Contracts.csproj" />
+    <ProjectReference Include="../../Fulfilment/Romp.Modules.Fulfilment.Contracts/Romp.Modules.Fulfilment.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Persistence\Romp.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Romp.BuildingBlocks.Email\Romp.BuildingBlocks.Email.csproj" />
+  </ItemGroup>
+
+</Project>
