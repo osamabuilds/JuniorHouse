@@ -1,0 +1,33 @@
+<table class="table">
+  <caption class="sr-only">Orders waiting, oldest first</caption>
+  <thead>
+    <tr>
+      <th scope="col">Order</th>
+      <th scope="col">Waiting</th>
+      <th scope="col" class="num">Items</th>
+      <th scope="col">Payment</th>
+      <th scope="col">Held by</th>
+      <th scope="col"><span class="sr-only">Action</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.orderId) {
+      <tr>
+        <th scope="row" data-label="Order">{{ row.orderNumber }}</th>
+        <td data-label="Waiting">{{ age(row.ageMinutes) }}</td>
+        <td data-label="Items" class="num">{{ row.unitCount }} in {{ row.lineCount }} {{ row.lineCount === 1 ? 'line' : 'lines' }}</td>
+        <td data-label="Payment">{{ row.isCashOnDelivery ? 'Cash on delivery' : 'Paid' }}</td>
+        <td data-label="Held by">{{ row.claimedBy ?? 'Nobody' }}</td>
+        <td data-label="Action">
+          <button type="button" class="button button--primary" [disabled]="heldByOther(row)" (click)="open.emit(row.orderId)">
+            {{ actionLabel() }}<span class="sr-only"> order {{ row.orderNumber }}</span>
+          </button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="6">Nothing is waiting.</td>
+      </tr>
+    }
+  </tbody>
+</table>

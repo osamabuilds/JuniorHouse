@@ -28,10 +28,10 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 - [x] **F14** Scan log purge job. *Proof:* `ScanLogPurgeTests`.
 
 ## Admin app
-- [ ] **A1** Pick queue and pick list screens with a focused scan box. *Proof:* component specs (APP-3, 4, 5, 8).
-- [ ] **A2** Pack station and slip screens. *Proof:* component specs (PAK, SLP, APP-3).
-- [ ] **A3** Exceptions screen. *Proof:* component specs (PEX-4).
-- [ ] **A4** Web manifest and icons, `noindex` kept. *Proof:* spec (APP-7, APP-10).
+- [x] **A1** Pick queue and pick list screens with a focused scan box. *Proof:* component specs (APP-3, 4, 5, 8).
+- [x] **A2** Pack station and slip screens. *Proof:* component specs (PAK, SLP, APP-3).
+- [x] **A3** Exceptions screen. *Proof:* component specs (PEX-4).
+- [x] **A4** Web manifest and icons, `noindex` kept. *Proof:* spec (APP-7, APP-10).
 - [ ] **A5** Playwright journey: confirmed order to packed parcel, with a scan refusal and an exception; axe. *Proof:* `e2e/fulfilment/pick-pack.e2e.spec.ts`.
 
 ## Tests beyond unit and integration (as for S12b)
