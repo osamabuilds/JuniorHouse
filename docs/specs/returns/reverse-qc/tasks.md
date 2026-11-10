@@ -20,4 +20,4 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 - [x] **A2** Playwright journey: an RTO parcel is received and inspected. *Proof:* `e2e/journeys/returns-reverse-qc.e2e.spec.ts`. (written; not run, it needs a second Owner on the stack)
 
 ## Close-out
-- [ ] **Z1** Architecture tests green; build with 0 warnings; tests green; spec "As built"; README "Try Sprint 17"; docker rebuilt; memory note.
+- [x] **Z1** Architecture tests green; build with 0 warnings; tests green; spec "As built"; README "Try Sprint 17"; docker rebuilt; memory note.
