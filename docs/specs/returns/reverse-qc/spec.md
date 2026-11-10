@@ -51,5 +51,27 @@ See the module README: customer requests, return pickups, refunds, exchange orde
 ## Open questions
 See Q-RET-1 to Q-RET-5 in the module README.
 
+
 ## As built (Sprint 17)
-See the section at the end of this file after implementation.
+
+### What was built
+- **Module `Returns`** (schema `RTRN`, ADR 0033): `src/api/src/Modules/Returns/`, feature folder `ReverseQc`. Tables `RTRN_MAIN`, `RTRN_LINE`, lookups `RTRN_KIND_LKP`, `RTRN_STS_LKP`, `RTRN_DCSN_LKP`, plus the module's outbox and inbox. One case per order and kind, enforced by a unique index.
+- **Opening (RQC-1, RQC-13):** `ShipmentReturnedConsumer` handles `ShipmentStatusChangedEvent` with status `RETURNED_TO_ORIGIN` behind the inbox and sends `OpenReturnCaseCommand`, which reads the order lines once from `IOrderFulfilmentQueries` and keeps variant id, SKU, product name, colour, size and quantity. The order number is kept; no name, city, address or phone is.
+- **Receiving (RQC-2, RQC-3, RQC-9, RQC-10):** the receiver gives the bin and whether the seal is intact. Intact: each line is restocked through Warehouse and decided as Restock, then the case completes in the same unit of work. Not intact: no stock changes and the case waits for inspection. A bin is required in both cases (it is where later restocks go).
+- **Deciding (RQC-4 to RQC-6):** the rules run on the case first (quantity 1 to the ordered quantity, a note for Reject, a line decided once), then Warehouse is asked for Restock or Seconds, then the decision is saved. Seconds uses the existing `CONCESSION` grade (Q-RET-2).
+- **Stock (RQC-4, RQC-9, RQC-10):** Warehouse gained `IStockReturns.RestockAsync` (Warehouse.Contracts). It posts a found-stock adjustment through `IAdjustmentPoster` with an idempotency key derived from `return:{case}:line:{line}`, so a repeat or a crash never restocks twice. An unknown or inactive bin comes back as a plain refusal; the Returns handler raises it as a conflict and nothing is saved. The Warehouse call runs in Warehouse's own transaction, so units already restocked in an earlier line of an intact receive stay restocked after a later failure; the retry finds them by key and adds nothing.
+- **Completing (RQC-7, RQC-8):** completion needs every line decided and publishes `ReturnQcCompletedEvent` (order id, order number, per line the variant, SKU, decision code and quantity) from the aggregate, in the same transaction. Nothing else publishes a result.
+- **Reading (RQC-11):** `GET /api/returns/cases` (paged, `status` filter, newest first, one query for rows and counts) and `GET /api/returns/cases/{id}` (lines and who did what and when).
+- **Access (RQC-12):** reads need `shipping.view`; receive, decide and complete need `shipping.ops` (Q-RET-1). The staff member is taken from the session. Authorization-matrix rows are added.
+- **Admin app:** `features/returns/reverse-qc` (NgRx store, `/returns` list with status filter and paging, `/returns/:id` case page with receive form, a decision form per line and a complete button), a "Returned parcels" menu entry for `shipping.view`.
+
+### Differences from the plan
+- Domain rule violations (a repeat receive, a line decided twice, a missing note) answer with the platform's conflict status (409), like every other module, not 400.
+- The Warehouse port lives in the existing `Adjustments` feature folder of Warehouse, not a new `Returns` folder, so the structure-sync rule needs no extra spec card.
+- Refusals from Warehouse reach the case page as the plain Warehouse message (for example "Bin X does not exist.").
+
+### Tests
+- Warehouse: `StockReturnsTests` (RQC-4, 9, 10). Returns: `ReturnCaseDomainTests` and `ReverseQcFlowTests` against PostgreSQL (RQC-1 to RQC-13, including the constant query count of the list). API: `ReturnsEndpointsTests` and the authorization matrix. Web: `reverse-qc.store.spec.ts`. End to end: `e2e/journeys/returns-reverse-qc.e2e.spec.ts` is written but has not been run (it needs a second Owner on the stack, as for the S15 and S16 journeys).
+
+### Still open
+Q-RET-1 to Q-RET-5 keep the recommendations applied by delegation. Refunds, credits and exchanges (they start from `ReturnQcCompletedEvent`), customer return requests, defect claims, and selling seconds at a discount remain unbuilt.

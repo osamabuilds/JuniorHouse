@@ -403,3 +403,12 @@ Features follow spec-driven development: spec → plan → tasks → test-first 
 5. Resolve a line with a note: it records who and why, and a short or over parcel becomes resolved. Recording the same reference again changes nothing.
 6. A delivered parcel unpaid for more than `Shipping:CodRemitDays` (7) is flagged overdue once a day; tick "Only the overdue ones" to see them.
 7. Tests: `dotnet test` in the Linux SDK container, `npx ng test admin`, and `npx playwright test e2e/journeys/cod-reconciliation.e2e.spec.ts` (needs `E2E_OWNER_PASSWORD`).
+
+## Try Sprint 17 (reverse QC of returned parcels)
+
+1. Start the stack (`docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build`) and sign in to the admin app (http://localhost:4201) as the Owner.
+2. Place, pack and book a parcel as in Sprint 15, then post a signed `RETURNED_TO_ORIGIN` push for its waybill (the development control `POST /dev/shipping/push`). Within a minute a case appears in Admin, **Returned parcels**.
+3. Open the case. **Receive** it with a bin code that exists in the warehouse and tick "The seal is intact" to restock every line as sellable stock and complete the case at once; leave it unticked to inspect line by line.
+4. For each line choose **Restock**, **Restock as seconds** (the concession grade) or **Reject** (a note is required), with a quantity from 1 to what was ordered. A line is decided once; the stock moves once.
+5. **Complete the case** when no line waits. Only then is `ReturnQcCompletedEvent` published; refunds and exchanges, built later, start from it.
+6. Tests: `dotnet test` in the Linux SDK container (`Romp.Modules.Returns.Tests`, `StockReturnsTests`, `ReturnsEndpointsTests`), `npx ng test admin`, and `npx playwright test e2e/journeys/returns-reverse-qc.e2e.spec.ts` (needs `E2E_OWNER_PASSWORD`).
