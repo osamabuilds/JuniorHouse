@@ -481,3 +481,11 @@ Reused as they are: `SHPG` (shipping, also the shipment), `CRER` (courier), `LBL
 | waybill | WYBL | | staff | STAF |
 | needs | NEED | | poll | POLL |
 | handed over | HAND | | | |
+
+### Added in Sprint 16 (shipping: COD reconciliation)
+
+Reused as they are: `COD`, `REF`, `NO`, `TOT`, `AMT`, `RSLV`, `OTCM`, `NOTE`, `BY`, `DTE`, `STS`, `LKP`, `LINE`, `CRER`, `SHPG`, `WYBL`, `DLVR`, `INSR`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| remittance | RMTN | | overdue | OVRD |

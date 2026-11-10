@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Romp.Modules.Shipping.Domain.Bookings;
+using Romp.Modules.Shipping.Domain.CodReconciliation;
 using Romp.Modules.Shipping.Domain.Manifests;
 
 namespace Romp.Modules.Shipping.Application.Abstractions;
@@ -15,6 +16,10 @@ public interface IShippingDbContext
     DbSet<ShipmentEvent> ShipmentEvents { get; }
 
     DbSet<Manifest> Manifests { get; }
+
+    DbSet<CodRemittance> CodRemittances { get; }
+
+    DbSet<CodRemittanceLine> CodRemittanceLines { get; }
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 
@@ -39,6 +44,9 @@ public sealed class ShippingOptions
 
     /// <summary>The business hour (Pakistan time) when the end-of-day manifests are made (Q-MNF-1).</summary>
     public int ManifestHour { get; set; } = 17;
+
+    /// <summary>Days after delivery before an unpaid cash parcel is flagged overdue: the weekly remittance cycle (Q-COD-1).</summary>
+    public int CodRemitDays { get; set; } = 7;
 
     /// <summary>How long one courier call may take before it counts as unreachable (CPT-2).</summary>
     public int CourierTimeoutSeconds { get; set; } = 10;

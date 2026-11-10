@@ -1,0 +1,56 @@
+<p class="page-intro"><a routerLink="/dispatch/cod">Back to COD reconciliation</a></p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">{{ notice() }}</p>
+}
+
+@if (loading() && !detail()) {
+  <p role="status">Loading the statement…</p>
+} @else if (detail(); as d) {
+  <h1>Statement {{ d.summary.reference }}</h1>
+  <p>
+    {{ d.summary.courierName }}, paid on {{ d.summary.remittedOn | date: 'longDate' }}, total {{ d.summary.statedTotal | currency: 'PKR' : 'symbol-narrow' : '1.0-2' }}.
+    Recorded by {{ d.summary.recordedBy }} on {{ d.summary.recordedAt | date: 'medium' }}. {{ d.summary.openCount }} of {{ d.summary.lineCount }} lines need a decision.
+  </p>
+
+  <table class="table">
+    <caption class="sr-only">Statement lines</caption>
+    <thead>
+      <tr>
+        <th scope="col">Waybill</th>
+        <th scope="col">Order</th>
+        <th scope="col" class="num">Paid</th>
+        <th scope="col" class="num">Expected</th>
+        <th scope="col">Outcome</th>
+        <th scope="col">Decision</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (l of d.lines; track l.id) {
+        <tr>
+          <th scope="row" data-label="Waybill">{{ l.waybill }}</th>
+          <td data-label="Order">{{ l.orderNumber ?? 'none' }}</td>
+          <td data-label="Paid" class="num">{{ l.amount | currency: 'PKR' : 'symbol-narrow' : '1.0-2' }}</td>
+          <td data-label="Expected" class="num">{{ l.expectedCash === null ? 'none' : (l.expectedCash | currency: 'PKR' : 'symbol-narrow' : '1.0-2') }}</td>
+          <td data-label="Outcome">{{ words(l.outcome) }}</td>
+          <td data-label="Decision">
+            @if (l.isOpen) {
+              <form (submit)="resolve(l.id, $event)">
+                <label [for]="'cod-dn-' + l.id" class="sr-only">Note for {{ l.waybill }}</label>
+                <input [id]="'cod-dn-' + l.id" type="text" maxlength="200" placeholder="What was decided" (input)="typeNote(l.id, $event)" />
+                <button type="submit" class="button button--small" [disabled]="busy()">Resolve</button>
+              </form>
+            } @else if (l.resolvedAt) {
+              {{ l.resolutionNote }} ({{ l.resolvedBy }}, {{ l.resolvedAt | date: 'mediumDate' }})
+            } @else {
+              None needed
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

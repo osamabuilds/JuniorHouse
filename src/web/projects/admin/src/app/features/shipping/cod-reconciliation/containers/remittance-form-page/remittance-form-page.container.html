@@ -1,0 +1,52 @@
+<p class="page-intro"><a routerLink="/dispatch/cod">Back to COD reconciliation</a></p>
+<h1>Record a courier statement</h1>
+<p class="page-intro">Paste one row per parcel from the courier's settlement statement: the waybill, then the cash it collected.</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<form class="card" (submit)="submit($event)" novalidate>
+  <div class="form-field">
+    <label for="cod-courier">Courier</label>
+    <select id="cod-courier" [value]="courier()" (change)="type('courier', $event)">
+      <option value="PRIMARY">Primary courier</option>
+      <option value="SECONDARY">Secondary courier</option>
+    </select>
+  </div>
+  <div class="form-field">
+    <label for="cod-ref">Statement reference</label>
+    <input id="cod-ref" type="text" maxlength="40" [value]="reference()" (input)="type('reference', $event)" />
+  </div>
+  <div class="form-field">
+    <label for="cod-date">Date paid</label>
+    <input id="cod-date" type="date" [value]="remittedOn()" (input)="type('remittedOn', $event)" />
+  </div>
+  <div class="form-field">
+    <label for="cod-total">Total on the statement (PKR)</label>
+    <input id="cod-total" type="text" inputmode="decimal" [value]="statedTotal()" (input)="type('statedTotal', $event)" />
+  </div>
+  <div class="form-field">
+    <label for="cod-rows">Parcels (waybill, amount)</label>
+    <textarea id="cod-rows" rows="10" [value]="text()" (input)="type('text', $event)" aria-describedby="cod-rows-help"></textarea>
+    <p id="cod-rows-help">For example: PRM-000123, 4700</p>
+  </div>
+
+  @if (parsed().problems.length > 0) {
+    <ul class="banner banner--error" role="alert">
+      @for (p of parsed().problems; track p) {
+        <li>{{ p }}</li>
+      }
+    </ul>
+  }
+  <p role="status">
+    {{ parsed().lines.length }} {{ parsed().lines.length === 1 ? 'parcel' : 'parcels' }}, rows add up to {{ parsed().total | currency: 'PKR' : 'symbol-narrow' : '1.0-2' }}.
+    @if (statedTotal().trim() !== '' && !totalAgrees()) {
+      The total on the statement does not equal the rows.
+    }
+  </p>
+
+  <div class="form-actions">
+    <button type="submit" class="button button--primary" [disabled]="busy() || !canSave()">Record the statement</button>
+  </div>
+</form>

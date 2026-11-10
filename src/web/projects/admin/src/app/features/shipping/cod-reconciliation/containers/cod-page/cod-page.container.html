@@ -1,0 +1,163 @@
+<h1>COD reconciliation</h1>
+<p class="page-intro">
+  The cash couriers collect for delivered parcels, against what they have paid over. Record each settlement statement, then work through what did not match.
+</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+<div class="form-actions">
+  <a class="button button--primary" routerLink="/dispatch/cod/remittances/new">Record a courier statement</a>
+</div>
+
+<section aria-labelledby="cod-sum-heading">
+  <h2 id="cod-sum-heading">Where the cash stands</h2>
+  @if (summary(); as s) {
+    <table class="table">
+      <caption class="sr-only">Cash per courier</caption>
+      <thead>
+        <tr>
+          <th scope="col">Courier</th>
+          <th scope="col" class="num">Awaiting</th>
+          <th scope="col" class="num">Overdue</th>
+          <th scope="col" class="num">Settled</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of s.couriers; track c.courierName) {
+          <tr>
+            <th scope="row" data-label="Courier">{{ c.courierName }}</th>
+            <td data-label="Awaiting" class="num">{{ c.awaitingCash | currency: 'PKR' : 'symbol-narrow' : '1.0-0' }} ({{ c.awaitingCount }})</td>
+            <td data-label="Overdue" class="num">{{ c.overdueCash | currency: 'PKR' : 'symbol-narrow' : '1.0-0' }} ({{ c.overdueCount }})</td>
+            <td data-label="Settled" class="num">{{ c.settledCash | currency: 'PKR' : 'symbol-narrow' : '1.0-0' }} ({{ c.settledCount }})</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4">No cash parcel has been delivered yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <p>{{ s.openExceptions }} {{ s.openExceptions === 1 ? 'statement line needs' : 'statement lines need' }} a decision.</p>
+  } @else {
+    <p role="status">Loading…</p>
+  }
+</section>
+
+<section aria-labelledby="cod-exc-heading">
+  <h2 id="cod-exc-heading">Lines that need a decision</h2>
+  <table class="table">
+    <caption class="sr-only">Unresolved statement lines, oldest first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Waybill</th>
+        <th scope="col">Statement</th>
+        <th scope="col">What happened</th>
+        <th scope="col" class="num">Paid</th>
+        <th scope="col" class="num">Expected</th>
+        <th scope="col">Resolve</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (e of exceptions().rows; track e.lineId) {
+        <tr>
+          <th scope="row" data-label="Waybill">{{ e.waybill }}</th>
+          <td data-label="Statement"><a [routerLink]="['/dispatch/cod/remittances', e.remittanceId]">{{ e.reference }}</a> ({{ e.courierName }})</td>
+          <td data-label="What happened">{{ words(e.outcome) }}@if (e.orderNumber) { · {{ e.orderNumber }} }</td>
+          <td data-label="Paid" class="num">{{ e.amount | currency: 'PKR' : 'symbol-narrow' : '1.0-2' }}</td>
+          <td data-label="Expected" class="num">{{ e.expectedCash === null ? 'none' : (e.expectedCash | currency: 'PKR' : 'symbol-narrow' : '1.0-2') }}</td>
+          <td data-label="Resolve">
+            <form (submit)="resolve(e.lineId, $event)">
+              <label [for]="'cod-note-' + e.lineId" class="sr-only">Note for {{ e.waybill }}</label>
+              <input [id]="'cod-note-' + e.lineId" type="text" maxlength="200" placeholder="What was decided" (input)="typeNote(e.lineId, $event)" />
+              <button type="submit" class="button button--small" [disabled]="busy()">Resolve</button>
+            </form>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6">Nothing needs a decision.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <app-pagination [total]="exceptions().total" [page]="exceptions().page" [pageSize]="pageSize" (pageChanged)="changePage('exceptions', $event)" />
+</section>
+
+<section aria-labelledby="cod-aw-heading">
+  <h2 id="cod-aw-heading">Delivered, cash not yet paid</h2>
+  <div class="form-field">
+    <input id="cod-overdue" type="checkbox" [checked]="overdueOnly()" (change)="toggleOverdue($event)" />
+    <label for="cod-overdue">Only the overdue ones</label>
+  </div>
+  <table class="table">
+    <caption class="sr-only">Delivered cash parcels awaiting payment, oldest first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Order</th>
+        <th scope="col">Waybill</th>
+        <th scope="col">Courier</th>
+        <th scope="col" class="num">Cash</th>
+        <th scope="col">Delivered</th>
+        <th scope="col">Waiting</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (a of awaiting().rows; track a.shipmentId) {
+        <tr>
+          <th scope="row" data-label="Order">{{ a.orderNumber }}</th>
+          <td data-label="Waybill">{{ a.waybill }}</td>
+          <td data-label="Courier">{{ a.courierName }}</td>
+          <td data-label="Cash" class="num">{{ a.cashToCollect | currency: 'PKR' : 'symbol-narrow' : '1.0-0' }}</td>
+          <td data-label="Delivered">{{ a.deliveredAt | date: 'mediumDate' }}</td>
+          <td data-label="Waiting">{{ a.daysWaiting }} {{ a.daysWaiting === 1 ? 'day' : 'days' }}{{ a.overdue ? ', overdue' : '' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6">No unpaid delivered cash parcels.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <app-pagination [total]="awaiting().total" [page]="awaiting().page" [pageSize]="pageSize" (pageChanged)="changePage('awaiting', $event)" />
+</section>
+
+<section aria-labelledby="cod-st-heading">
+  <h2 id="cod-st-heading">Statements recorded</h2>
+  <table class="table">
+    <caption class="sr-only">Courier statements, newest first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Reference</th>
+        <th scope="col">Courier</th>
+        <th scope="col">Date</th>
+        <th scope="col" class="num">Total</th>
+        <th scope="col" class="num">Lines</th>
+        <th scope="col" class="num">Open</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of remittances().rows; track r.id) {
+        <tr>
+          <th scope="row" data-label="Reference"><a [routerLink]="['/dispatch/cod/remittances', r.id]">{{ r.reference }}</a></th>
+          <td data-label="Courier">{{ r.courierName }}</td>
+          <td data-label="Date">{{ r.remittedOn | date: 'mediumDate' }}</td>
+          <td data-label="Total" class="num">{{ r.statedTotal | currency: 'PKR' : 'symbol-narrow' : '1.0-2' }}</td>
+          <td data-label="Lines" class="num">{{ r.lineCount }}</td>
+          <td data-label="Open" class="num">{{ r.openCount }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6">No statements yet.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <app-pagination [total]="remittances().total" [page]="remittances().page" [pageSize]="pageSize" (pageChanged)="changePage('remittances', $event)" />
+</section>

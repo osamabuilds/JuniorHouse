@@ -24,7 +24,7 @@ public sealed class FakeCourierState
     /// <summary>The status a waybill is scripted to report when asked (polling), with its courier event id.</summary>
     public ConcurrentDictionary<string, CourierStatus> Script { get; } = new();
 
-    public string NextWaybill(string prefix) => $"{prefix}-{Interlocked.Increment(ref _counter):000000}-{Random.Shared.Next(1000, 9999)}";
+    public string NextWaybill(string prefix) => $"{prefix}-{Interlocked.Increment(ref _counter):000000}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
 }
 
 /// <summary>

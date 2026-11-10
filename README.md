@@ -393,3 +393,13 @@ Features follow spec-driven development: spec → plan → tasks → test-first 
 6. Tracking: the fake courier posts signed status pushes to `/api/shipping/webhooks/{courier}`. In the storefront, "Track order" shows the timeline under the order status, and http://localhost:4000/track-parcel shows the timeline for a tracking number alone, with no order data.
 7. The numbers are settings (`Shipping:RetryMinutes`, `MaxAttempts`, `PollMinutes`, `ManifestHour`).
 8. Tests: `dotnet test` in the Linux SDK container (see the notes), `npx ng test admin` and `npx ng test storefront`, and `npx playwright test e2e/journeys/ship-track.e2e.spec.ts` (needs `E2E_OWNER_PASSWORD`).
+
+## Try Sprint 16 (COD reconciliation)
+
+1. Start the stack (`docker compose -f docker-compose.yml -f docker-compose.secure.yml up -d --build`) and sign in to the admin app (http://localhost:4201) as the Owner.
+2. Place and pack a cash on delivery order as in Sprint 15, then deliver it: post a signed `DELIVERED` push for its waybill (the development control `POST /dev/shipping/push`, or wait for the fake courier).
+3. Admin, **COD cash**: the overview shows the parcel under "Awaiting" for its courier.
+4. **Record a courier statement**: choose the courier, a reference, the date, the total, and paste a row `WAYBILL, amount`. The page checks the total against the rows. A matching row settles the parcel; a smaller or larger amount, an unknown waybill, a parcel not yet delivered, or a parcel paid before is listed under "Lines that need a decision".
+5. Resolve a line with a note: it records who and why, and a short or over parcel becomes resolved. Recording the same reference again changes nothing.
+6. A delivered parcel unpaid for more than `Shipping:CodRemitDays` (7) is flagged overdue once a day; tick "Only the overdue ones" to see them.
+7. Tests: `dotnet test` in the Linux SDK container, `npx ng test admin`, and `npx playwright test e2e/journeys/cod-reconciliation.e2e.spec.ts` (needs `E2E_OWNER_PASSWORD`).

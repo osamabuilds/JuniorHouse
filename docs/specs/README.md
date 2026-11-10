@@ -22,6 +22,6 @@ Each feature folder has a `README.md` card (what it is, status, where the code i
 | [orders](orders/README.md) | Checkout, orders, payments, COD confirmation, admin queue, guest look-up (Sprints 12-13; specs approved, plan drafted 2026-11-02) | checkout, orders, payments, cod-confirmation, order-queue, order-lookup, order-line-images |
 | [notifications](notifications/README.md) | Guaranteed email and WhatsApp delivery, fallback, delivery log and resend (Sprint 13; specs approved, plan drafted 2026-11-02; WhatsApp in scope) | delivery, channels, order-confirmation, delivery-log |
 | [fulfilment](fulfilment/README.md) | Allocation, pick lists, pick exceptions, pack station, packing slips, the warehouse app (Sprint 14; specs written, applied by delegation) | allocations, pick-lists, pick-exceptions, pack-station, packing-slips, warehouse-app |
-| [shipping](shipping/README.md) | Courier booking, labels, manual booking queue, manifests and tracking (Sprint 15; built 2026-11-10, specs applied by delegation) | courier-port, bookings, labels, manual-booking-queue, manifests, tracking |
+| [shipping](shipping/README.md) | Courier booking, labels, manual booking queue, manifests and tracking (Sprint 15; built 2026-11-10, specs applied by delegation) | courier-port, bookings, labels, manual-booking-queue, manifests, tracking, cod-reconciliation |
 
 Later sprints add `returns` and so on ([sprint plan](../roadmap/sprint-plan.md)).
