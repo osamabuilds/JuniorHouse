@@ -368,6 +368,11 @@ GET,/api/shipping/cod/remittances,shipping.view
 GET,/api/shipping/cod/remittances/{id:long},shipping.view
 POST,/api/shipping/cod/remittances,shipping.ops
 POST,/api/shipping/cod/lines/{id:long}/resolve,shipping.ops
+GET,/api/returns/cases/,shipping.view
+GET,/api/returns/cases/{id:long},shipping.view
+POST,/api/returns/cases/{id:long}/receive,shipping.ops
+POST,/api/returns/cases/{id:long}/lines/{lineId:long}/decide,shipping.ops
+POST,/api/returns/cases/{id:long}/complete,shipping.ops
 GET,/api/shipping/track,anonymous
 POST,/api/shipping/webhooks/{courier},anonymous
 POST,/dev/shipping/outage,anonymous

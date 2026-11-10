@@ -1,0 +1,98 @@
+<p class="page-intro"><a routerLink="/returns">Back to returned parcels</a></p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+@if (notice()) {
+  <p class="banner banner--success" role="status">
+    {{ notice() }} <button type="button" class="button button--small" (click)="dismissNotice()">Dismiss</button>
+  </p>
+}
+
+@if (loading() && !detail()) {
+  <p role="status">Loading the case…</p>
+} @else if (detail(); as d) {
+  <h1>Returned parcel for order {{ d.orderNumber }}</h1>
+  <p>
+    {{ status(d.status) }}. Opened {{ d.openedAt | date: 'medium' }}.
+    @if (d.receivedAt) {
+      Received by {{ d.receivedBy }} on {{ d.receivedAt | date: 'medium' }} into bin {{ d.receivingBinCode }}, {{ d.sealIntact ? 'seal intact' : 'seal not intact' }}.
+    }
+    @if (d.completedAt) {
+      Completed by {{ d.completedBy }} on {{ d.completedAt | date: 'medium' }}.
+    }
+  </p>
+
+  @if (d.status === 'AWAITING_RECEIPT') {
+    <section aria-labelledby="rq-receive-heading">
+      <h2 id="rq-receive-heading">Receive the parcel</h2>
+      <p>If the seal is intact, every line goes straight back to sellable stock and the case is complete. Otherwise you inspect each line.</p>
+      <form (submit)="receive($event)">
+        <div class="form-field">
+          <label for="rq-bin">Bin to put stock into</label>
+          <input id="rq-bin" name="bin" type="text" maxlength="12" required autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <input id="rq-seal" name="seal" type="checkbox" />
+          <label for="rq-seal">The seal is intact</label>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="button button--primary" [disabled]="busy()">Receive</button>
+        </div>
+      </form>
+    </section>
+  }
+
+  <section aria-labelledby="rq-lines-heading">
+    <h2 id="rq-lines-heading">Lines</h2>
+    <table class="table">
+      <caption class="sr-only">Lines of the returned parcel</caption>
+      <thead>
+        <tr>
+          <th scope="col">Item</th>
+          <th scope="col" class="num">Ordered</th>
+          <th scope="col">Decision</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of d.lines; track l.id) {
+          <tr>
+            <th scope="row" data-label="Item">{{ l.name }}, {{ l.colour }}, {{ l.size }} ({{ l.sku ?? 'no SKU' }})</th>
+            <td data-label="Ordered" class="num">{{ l.orderedQuantity }}</td>
+            <td data-label="Decision">
+              @if (l.decision) {
+                {{ decisionWord(l.decision) }}, {{ l.decidedQuantity }} {{ l.decidedQuantity === 1 ? 'unit' : 'units' }}{{ l.note ? ': ' + l.note : '' }}
+                ({{ l.decidedBy }}, {{ l.decidedAt | date: 'medium' }})
+              } @else if (d.status === 'IN_INSPECTION') {
+                <form (submit)="decide(l.id, $event)">
+                  <label [for]="'rq-dc-' + l.id" class="sr-only">Decision for {{ l.name }}</label>
+                  <select [id]="'rq-dc-' + l.id" name="decision">
+                    <option value="RESTOCK">Restock</option>
+                    <option value="SECONDS">Restock as seconds</option>
+                    <option value="REJECT">Reject</option>
+                  </select>
+                  <label [for]="'rq-qt-' + l.id" class="sr-only">Quantity for {{ l.name }}</label>
+                  <input [id]="'rq-qt-' + l.id" name="quantity" type="number" min="1" [max]="l.orderedQuantity" [value]="l.orderedQuantity" required />
+                  <label [for]="'rq-nt-' + l.id" class="sr-only">Note for {{ l.name }}, needed to reject</label>
+                  <input [id]="'rq-nt-' + l.id" name="note" type="text" maxlength="200" placeholder="Note (needed to reject)" />
+                  <button type="submit" class="button button--small" [disabled]="busy()">Decide</button>
+                </form>
+              } @else {
+                Not decided
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  @if (d.status === 'IN_INSPECTION') {
+    <div class="form-actions">
+      <button type="button" class="button button--primary" [disabled]="busy()" (click)="complete()">Complete the case</button>
+      @if (waiting() > 0) {
+        <span>{{ waiting() }} {{ waiting() === 1 ? 'line is' : 'lines are' }} still waiting for a decision.</span>
+      }
+    </div>
+  }
+}

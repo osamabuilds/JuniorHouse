@@ -64,6 +64,7 @@ public sealed class WarehouseModule : IModule
         services.AddScoped<Romp.Modules.Warehouse.Application.Allocations.IAllocationCandidates, Romp.Modules.Warehouse.Infrastructure.Allocations.AllocationCandidates>();
         services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockAllocator, Romp.Modules.Warehouse.Infrastructure.Allocations.StockAllocator>();
         services.AddScoped<IAdjustmentPoster, AdjustmentPoster>();
+        services.AddScoped<Romp.Modules.Warehouse.Contracts.IStockReturns, Romp.Modules.Warehouse.Infrastructure.Adjustments.StockReturns>();
         services.AddScoped<ICountNumberAllocator, CountNumberAllocator>();
         services.AddScoped<AlertEvaluator>();
         services.AddScoped<IStockVariantReader, StockVariantReader>();

@@ -78,6 +78,11 @@ const staffRoutes: Routes = [
     loadChildren: () => import('@features/shipping/cod-reconciliation/cod-reconciliation.routes').then((m) => m.COD_RECONCILIATION_ROUTES),
   },
   {
+    path: 'returns',
+    canActivate: [permissionGuard('shipping.view')],
+    loadChildren: () => import('@features/returns/reverse-qc/reverse-qc.routes').then((m) => m.REVERSE_QC_ROUTES),
+  },
+  {
     path: 'shipping',
     canActivate: [permissionGuard('shipping.manage')],
     loadChildren: () => import('@features/cart/totals/shipping.routes').then((m) => m.SHIPPING_ROUTES),

@@ -1,0 +1,50 @@
+<h1>Returned parcels</h1>
+<p class="page-intro">
+  A parcel that comes back is received, inspected line by line, and only then does stock or money move. Open a case to work on it.
+</p>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error()?.message }}</p>
+}
+
+<div class="form-field">
+  <label for="rq-status">Show</label>
+  <select id="rq-status" (change)="changeStatus($event)">
+    @for (f of filters; track f.code) {
+      <option [value]="f.code" [selected]="f.code === status()">{{ f.label }}</option>
+    }
+  </select>
+</div>
+
+@if (loading() && cases().length === 0) {
+  <p role="status">Loading the cases…</p>
+} @else {
+  <table class="table">
+    <caption class="sr-only">Returned parcels</caption>
+    <thead>
+      <tr>
+        <th scope="col">Order</th>
+        <th scope="col">Where it is</th>
+        <th scope="col" class="num">Lines decided</th>
+        <th scope="col">Opened</th>
+        <th scope="col">Completed</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of cases(); track c.id) {
+        <tr>
+          <th scope="row" data-label="Order"><a [routerLink]="['/returns', c.id]">{{ c.orderNumber }}</a></th>
+          <td data-label="Where it is">{{ word(c.status) }}</td>
+          <td data-label="Lines decided" class="num">{{ c.decidedCount }} of {{ c.lineCount }}</td>
+          <td data-label="Opened">{{ c.openedAt | date: 'medium' }}</td>
+          <td data-label="Completed">{{ c.completedAt ? (c.completedAt | date: 'medium') : 'Not yet' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5">No returned parcel here.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <app-pagination [total]="total()" [page]="page()" [pageSize]="pageSize" (pageChanged)="changePage($event)" />
+}
