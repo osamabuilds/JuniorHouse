@@ -198,6 +198,37 @@ public sealed class ShippingEndpointsTests(ProductionApiFixture api)
     }
 
     [Fact]
+    [Trait("Spec", "COD-2")]
+    [Trait("Spec", "COD-9")]
+    [Trait("Spec", "COD-16")]
+    public async Task ACodStatement_SettlesADeliveredParcel_IsIdempotent_AndRefusesABadBody()
+    {
+        using var client = Client();
+        var (id, waybill) = await BookedAsync();
+        await client.PostAsJsonAsync("/dev/shipping/push", new { courier = "PRIMARY", waybill, status = "DELIVERED" }, Json);
+        var reference = $"IT-{Guid.NewGuid():N}"[..18].ToUpperInvariant();
+        var body = new { courier = "PRIMARY", reference, remittedOn = "2026-11-10", statedTotal = 1500m, lines = new[] { new { waybill, amount = 1500m } } };
+
+        var first = await client.PostAsJsonAsync("/api/shipping/cod/remittances", body, Json);
+        var again = await client.PostAsJsonAsync("/api/shipping/cod/remittances", body, Json);
+        var badTotal = await client.PostAsJsonAsync("/api/shipping/cod/remittances", new { courier = "PRIMARY", reference = reference + "X", remittedOn = "2026-11-10", statedTotal = 1m, lines = new[] { new { waybill, amount = 1500m } } }, Json);
+        var summary = await client.GetAsync("/api/shipping/cod/summary");
+        var list = await BodyAsync(await client.GetAsync("/api/shipping/cod/remittances?pageSize=3"));
+        var detail = await BodyAsync(first);
+
+        Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, again.StatusCode);
+        Assert.True((await BodyAsync(again)).GetProperty("alreadyRecorded").GetBoolean());
+        Assert.True((int)badTotal.StatusCode is >= 400 and < 500);
+        Assert.Equal(HttpStatusCode.OK, summary.StatusCode);
+        Assert.Equal(3, list.GetProperty("pageSize").GetInt32());
+        Assert.Equal("MATCHED", detail.GetProperty("remittance").GetProperty("lines")[0].GetProperty("outcome").GetString());
+        using var scope = api.Services.CreateScope();
+        var shipment = await scope.ServiceProvider.GetRequiredService<ShpgDbContext>().Shipments.AsNoTracking().SingleAsync(s => s.Id == id);
+        Assert.Equal(CodStatuses.Settled, shipment.CodStatusId);
+    }
+
+    [Fact]
     [Trait("Spec", "CPT-6")]
     public async Task TheDevelopmentControls_TakeAPretendCourierDownAndPushSignedStatuses()
     {

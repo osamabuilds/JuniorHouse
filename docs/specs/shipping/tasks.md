@@ -36,3 +36,27 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 
 ## Close-out
 - [ ] **Z1** Architecture tests green; build with 0 warnings; tests green; spec "As built"; README "Try Sprint 15"; docker rebuilt; memory note.
+
+---
+
+# COD reconciliation (Sprint 16)
+
+Test-first. Specs in [cod-reconciliation](cod-reconciliation/spec.md).
+
+## Backend
+- [x] **C1** `CodJudge` pure outcomes. *Proof:* `CodJudgeTests` (COD-2 to 7).
+- [x] **C2** `Shipment` COD state: NotCod / Awaiting at creation, settle, short, over, resolve, overdue flag and clear. *Proof:* `ShipmentCodTests` (COD-1, 11, 12).
+- [x] **C3** `CodRemittance` aggregate rules (total equals lines, limits, resolve once). *Proof:* `CodRemittanceDomainTests` (COD-8, 10, 12, 16).
+- [x] **C4** Persistence, lookups, migration with back-fill, `ModuleNames` unchanged, glossary words. *Proof:* `ShippingMigrationTests`, naming and architecture tests.
+- [x] **C5** `RecordCodRemittanceCommand`. *Proof:* `CodRecordTests` (COD-2 to 9).
+- [x] **C6** `ResolveCodLineCommand`. *Proof:* `CodResolveTests` (COD-12).
+- [x] **C7** `FlagOverdueCodCommand` and the worker. *Proof:* `CodOverdueTests` (COD-11).
+- [x] **C8** Queries: summary, awaiting, exceptions, statements, detail, query counts. *Proof:* `CodQueryTests` (COD-13, 14).
+- [x] **C9** Endpoints, permissions, anonymous refused. *Proof:* `ShippingEndpointsTests` additions (COD-15, 16).
+
+## Admin app
+- [x] **A1** Models, statement parser, API service, store. *Proof:* `cod.store.spec.ts`, `statement-text.spec.ts`.
+- [x] **A2** Pages, route `/dispatch/cod`, nav. *Proof:* `cod-page.container.spec.ts` (COD-13).
+
+## Close-out
+- [ ] **Z1** Playwright journeys (ship-track and COD); build 0 warnings; tests green; spec "As built"; README "Try Sprint 16"; docker rebuilt; memory note.

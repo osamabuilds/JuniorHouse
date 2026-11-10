@@ -113,6 +113,12 @@ public sealed class Shipment : AggregateRoot<long>, IAuditable
 
     public DateTimeOffset? DeliveredAt { get; private set; }
 
+    /// <summary>Where the cash of this parcel stands (FR-SC-17): NotCod when there is nothing to collect, else Awaiting until a courier statement settles it.</summary>
+    public short CodStatusId { get; private set; } = CodStatuses.NotCod;
+
+    /// <summary>When the daily job flagged the unpaid delivered parcel as overdue (COD-11); cleared on settlement.</summary>
+    public DateTimeOffset? CodOverdueAt { get; private set; }
+
     public long? ManifestId { get; private set; }
 
     /// <summary>How many times the label was printed: a second print is a reprint (LBL-5).</summary>
@@ -140,7 +146,16 @@ public sealed class Shipment : AggregateRoot<long>, IAuditable
             throw new DomainException("A shipment needs an order number, a weight and a non-negative amount to collect.");
         }
 
-        return new Shipment { OrderId = orderId, OrderNumber = orderNumber, CashToCollect = cashToCollect, WeightGrams = weightGrams, StatusAt = at, NextAttemptAt = at };
+        return new Shipment
+        {
+            OrderId = orderId,
+            OrderNumber = orderNumber,
+            CashToCollect = cashToCollect,
+            WeightGrams = weightGrams,
+            StatusAt = at,
+            NextAttemptAt = at,
+            CodStatusId = cashToCollect > 0 ? CodStatuses.Awaiting : CodStatuses.NotCod,
+        };
     }
 
     // ---------------------------------------------------------------- booking (BKG-2 to BKG-6, MBQ-2, 6, 8)
@@ -317,6 +332,51 @@ public sealed class Shipment : AggregateRoot<long>, IAuditable
     }
 
     public void RecordPolled(DateTimeOffset at) => PolledAt = at;
+
+    // ---------------------------------------------------------------- COD (COD-1, 2, 3, 11, 12)
+
+    /// <summary>A statement line was judged. Only an awaiting parcel changes: a matched line settles it, a short or over line marks it so (COD-2, COD-3).</summary>
+    public void ApplyRemittance(short outcomeId)
+    {
+        if (CodStatusId != CodStatuses.Awaiting)
+        {
+            return;
+        }
+
+        var next = outcomeId switch
+        {
+            RemittanceOutcomes.Matched => CodStatuses.Settled,
+            RemittanceOutcomes.ShortPaid => CodStatuses.ShortPaid,
+            RemittanceOutcomes.Over => CodStatuses.Over,
+            _ => CodStatuses.Awaiting,
+        };
+        if (next != CodStatuses.Awaiting)
+        {
+            CodStatusId = next;
+            CodOverdueAt = null;
+        }
+    }
+
+    /// <summary>Staff resolved the short or over line: the parcel is closed as resolved (COD-12).</summary>
+    public void ResolveCod()
+    {
+        if (CodStatusId is CodStatuses.ShortPaid or CodStatuses.Over)
+        {
+            CodStatusId = CodStatuses.Resolved;
+        }
+    }
+
+    /// <summary>The daily job: a delivered parcel still awaiting cash after the cycle is flagged once (COD-11). Returns whether it was flagged now.</summary>
+    public bool FlagCodOverdue(DateTimeOffset now, int cycleDays)
+    {
+        if (CodStatusId != CodStatuses.Awaiting || DeliveredAt is not { } delivered || CodOverdueAt is not null || delivered.AddDays(cycleDays) > now)
+        {
+            return false;
+        }
+
+        CodOverdueAt = now;
+        return true;
+    }
 
     private static string? CleanNote(string? note)
     {

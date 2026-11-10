@@ -23,6 +23,7 @@ using Romp.Modules.Shipping.Contracts;
 using Romp.Modules.Shipping.Domain;
 using Romp.Modules.Shipping.Infrastructure.Bookings;
 using Romp.Modules.Shipping.Infrastructure.CourierPort;
+using Romp.Modules.Shipping.Infrastructure.CodReconciliation;
 using Romp.Modules.Shipping.Infrastructure.Manifests;
 using Romp.Modules.Shipping.Infrastructure.Persistence;
 using Romp.Modules.Shipping.Infrastructure.Tracking;
@@ -88,6 +89,7 @@ public sealed class ShippingModule : IModule
     {
         endpoints.MapBookingEndpoints();
         endpoints.MapManifestEndpoints();
+        endpoints.MapCodEndpoints();
         endpoints.MapTrackingEndpoints();
 
         // The pretend couriers' controls: only where pretend couriers exist (like the pretend payment gateway). They let a demo or a test take a courier

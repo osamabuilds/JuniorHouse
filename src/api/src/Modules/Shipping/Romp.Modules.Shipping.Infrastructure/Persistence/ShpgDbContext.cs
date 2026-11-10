@@ -6,6 +6,7 @@ using Romp.BuildingBlocks.Persistence.Outbox;
 using Romp.Modules.Shipping.Application.Abstractions;
 using Romp.Modules.Shipping.Domain;
 using Romp.Modules.Shipping.Domain.Bookings;
+using Romp.Modules.Shipping.Domain.CodReconciliation;
 using Romp.Modules.Shipping.Domain.Manifests;
 
 namespace Romp.Modules.Shipping.Infrastructure.Persistence;
@@ -23,6 +24,10 @@ public sealed class ShpgDbContext(DbContextOptions<ShpgDbContext> options) : DbC
     public DbSet<Manifest> Manifests => Set<Manifest>();
 
     public DbSet<ManifestLine> ManifestLines => Set<ManifestLine>();
+
+    public DbSet<CodRemittance> CodRemittances => Set<CodRemittance>();
+
+    public DbSet<CodRemittanceLine> CodRemittanceLines => Set<CodRemittanceLine>();
 
     async Task IShippingDbContext.SaveChangesAsync(CancellationToken cancellationToken) => await SaveChangesAsync(cancellationToken);
 
@@ -80,6 +85,8 @@ internal sealed class ShipmentConfiguration : IEntityTypeConfiguration<Shipment>
         builder.Property(s => s.ManifestId).HasColumnName("MNFS_ID");
         builder.Property(s => s.LabelPrintCount).HasColumnName("LBL_PRT_CNT").IsRequired();
         builder.Property(s => s.PolledAt).HasColumnName("POLL_DTE");
+        builder.Property(s => s.CodStatusId).HasColumnName("COD_STS_ID").IsRequired();
+        builder.Property(s => s.CodOverdueAt).HasColumnName("COD_OVRD_DTE");
         builder.Ignore(s => s.DomainEvents);
         builder.Ignore(s => s.IsBooked);
 
@@ -91,11 +98,13 @@ internal sealed class ShipmentConfiguration : IEntityTypeConfiguration<Shipment>
         builder.HasIndex(s => new { s.CourierId, s.StatusId }).HasDatabaseName("IX_SHPG_MAIN_CRER_ID_SHPG_STS_ID");
         builder.HasIndex(s => s.ManifestId).HasDatabaseName("IX_SHPG_MAIN_MNFS_ID");
         builder.HasIndex(s => s.BookingSourceId).HasDatabaseName("IX_SHPG_MAIN_BKNG_SRC_ID");
+        builder.HasIndex(s => new { s.CodStatusId, s.DeliveredAt }).HasDatabaseName("IX_SHPG_MAIN_COD_STS_ID_DLVR_DTE");
         builder.HasAuditColumns();
 
         builder.HasOne<ShipmentStatusLookup>().WithMany().HasForeignKey(s => s.StatusId).HasConstraintName("FK_SHPG_MAIN_SHPG_STS_LKP").OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<CourierLookup>().WithMany().HasForeignKey(s => s.CourierId).HasConstraintName("FK_SHPG_MAIN_CRER_LKP").OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<BookingSourceLookup>().WithMany().HasForeignKey(s => s.BookingSourceId).HasConstraintName("FK_SHPG_MAIN_BKNG_SRC_LKP").OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<CodStatusLookup>().WithMany().HasForeignKey(s => s.CodStatusId).HasConstraintName("FK_SHPG_MAIN_COD_STS_LKP").OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Manifest>().WithMany().HasForeignKey(s => s.ManifestId).HasConstraintName("FK_SHPG_MAIN_MNFS_MAIN").OnDelete(DeleteBehavior.Restrict);
         builder.HasMany(s => s.Events).WithOne().HasForeignKey(e => e.ShipmentId).HasConstraintName("FK_SHPG_EVNT_SHPG_MAIN").OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(s => s.Events).UsePropertyAccessMode(PropertyAccessMode.Field);
@@ -174,6 +183,58 @@ internal sealed class ManifestLineConfiguration : IEntityTypeConfiguration<Manif
     }
 }
 
+internal sealed class CodRemittanceConfiguration : IEntityTypeConfiguration<CodRemittance>
+{
+    public void Configure(EntityTypeBuilder<CodRemittance> builder)
+    {
+        builder.ToTable("RMTN_MAIN", table => table.HasCheckConstraint("CK_RMTN_MAIN_TOT_AMT", "\"TOT_AMT\" > 0"));
+        builder.HasKey(r => r.Id);
+        builder.Property(r => r.Id).HasColumnName("ID").ValueGeneratedOnAdd();
+        builder.Property(r => r.CourierId).HasColumnName("CRER_ID").IsRequired();
+        builder.Property(r => r.Reference).HasColumnName("REF_NO").HasMaxLength(CodRemittance.MaxReferenceLength).IsRequired();
+        builder.Property(r => r.RemittedOn).HasColumnName("RMTN_DTE").HasColumnType("date").IsRequired();
+        builder.Property(r => r.StatedTotal).HasColumnName("TOT_AMT").HasColumnType("numeric(12,2)").IsRequired();
+        builder.Ignore(r => r.DomainEvents);
+
+        // The same statement twice is the same statement (COD-9): the database decides a race.
+        builder.HasIndex(r => new { r.CourierId, r.Reference }).IsUnique().HasDatabaseName("UQ_RMTN_MAIN_CRER_ID_REF_NO");
+        builder.HasIndex(r => r.RemittedOn).HasDatabaseName("IX_RMTN_MAIN_RMTN_DTE");
+        builder.HasAuditColumns();
+
+        builder.HasOne<CourierLookup>().WithMany().HasForeignKey(r => r.CourierId).HasConstraintName("FK_RMTN_MAIN_CRER_LKP").OnDelete(DeleteBehavior.Restrict);
+        builder.HasMany(r => r.Lines).WithOne().HasForeignKey(l => l.RemittanceId).HasConstraintName("FK_RMTN_LINE_RMTN_MAIN").OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(r => r.Lines).UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+}
+
+internal sealed class CodRemittanceLineConfiguration : IEntityTypeConfiguration<CodRemittanceLine>
+{
+    public void Configure(EntityTypeBuilder<CodRemittanceLine> builder)
+    {
+        builder.ToTable("RMTN_LINE");
+        builder.HasKey(l => l.Id);
+        builder.Property(l => l.Id).HasColumnName("ID").ValueGeneratedOnAdd();
+        builder.Property(l => l.RemittanceId).HasColumnName("RMTN_ID").IsRequired();
+        builder.Property(l => l.Waybill).HasColumnName("WYBL_NO").HasMaxLength(Shipment.MaxWaybillLength).IsRequired();
+        builder.Property(l => l.Amount).HasColumnName("AMT").HasColumnType("numeric(12,2)").IsRequired();
+        builder.Property(l => l.ShipmentId).HasColumnName("SHPG_ID");
+        builder.Property(l => l.OutcomeId).HasColumnName("RMTN_OTCM_ID").IsRequired();
+        builder.Property(l => l.ResolutionNote).HasColumnName("RSLV_NOTE").HasMaxLength(CodRemittanceLine.MaxNoteLength);
+        builder.Property(l => l.ResolvedBy).HasColumnName("RSLV_BY").HasMaxLength(100);
+        builder.Property(l => l.ResolvedAt).HasColumnName("RSLV_DTE");
+        builder.Ignore(l => l.IsFlagged);
+        builder.Ignore(l => l.IsOpen);
+
+        builder.HasIndex(l => l.RemittanceId).HasDatabaseName("IX_RMTN_LINE_RMTN_ID");
+        builder.HasIndex(l => l.ShipmentId).HasDatabaseName("IX_RMTN_LINE_SHPG_ID");
+        builder.HasIndex(l => new { l.OutcomeId, l.ResolvedAt }).HasDatabaseName("IX_RMTN_LINE_RMTN_OTCM_ID_RSLV_DTE");
+        builder.HasAuditColumns();
+
+        builder.HasOne<Shipment>().WithMany().HasForeignKey(l => l.ShipmentId).HasConstraintName("FK_RMTN_LINE_SHPG_MAIN").OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<RemittanceOutcomeLookup>().WithMany().HasForeignKey(l => l.OutcomeId).HasConstraintName("FK_RMTN_LINE_RMTN_OTCM_LKP").OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
 /// <summary>The system-owned Shipping lookups (docs/db/naming.md standard lookup shape), seeded by migration.</summary>
 internal static class ShippingLookupConfiguration
 {
@@ -208,6 +269,23 @@ internal static class ShippingLookupConfiguration
             (ManifestStatuses.Matched, "MATCHED", "Matched", "The courier took exactly the listed parcels"),
             (ManifestStatuses.Mismatch, "MISMATCH", "Mismatch", "The count differs; staff resolve it"),
             (ManifestStatuses.Closed, "CLOSED", "Closed", "A mismatch that was resolved"));
+
+        Configure<CodStatusLookup>(modelBuilder, "COD_STS_LKP",
+            (CodStatuses.NotCod, "NOT_COD", "Not COD", "Nothing to collect in cash"),
+            (CodStatuses.Awaiting, "AWAITING", "Awaiting cash", "Cash to collect; no courier statement has paid it"),
+            (CodStatuses.Settled, "SETTLED", "Settled", "A courier statement paid exactly the cash"),
+            (CodStatuses.ShortPaid, "SHORT", "Short", "The courier paid less than the cash"),
+            (CodStatuses.Over, "OVER", "Over", "The courier paid more than the cash"),
+            (CodStatuses.Resolved, "RESOLVED", "Resolved", "A short or over payment closed by staff with a note"));
+
+        Configure<RemittanceOutcomeLookup>(modelBuilder, "RMTN_OTCM_LKP",
+            (RemittanceOutcomes.Matched, "MATCHED", "Matched", "Equals the cash to collect"),
+            (RemittanceOutcomes.ShortPaid, "SHORT", "Short", "Less than the cash to collect"),
+            (RemittanceOutcomes.Over, "OVER", "Over", "More than the cash to collect"),
+            (RemittanceOutcomes.Duplicate, "DUPLICATE", "Paid before", "The parcel was already paid"),
+            (RemittanceOutcomes.Unknown, "UNKNOWN", "Unknown waybill", "No parcel of this courier has this waybill"),
+            (RemittanceOutcomes.NotDelivered, "NOT_DELIVERED", "Not delivered yet", "The parcel is not delivered"),
+            (RemittanceOutcomes.NotCod, "NOT_COD", "Not a cash parcel", "The parcel had no cash to collect"));
     }
 
     private static void Configure<TLookup>(ModelBuilder modelBuilder, string tableName, params (short Id, string Code, string Name, string Description)[] rows)

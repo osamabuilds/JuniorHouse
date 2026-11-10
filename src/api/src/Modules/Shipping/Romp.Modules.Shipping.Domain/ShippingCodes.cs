@@ -175,3 +175,65 @@ public sealed class BookingSourceLookup : ShippingLookup;
 public sealed class EventSourceLookup : ShippingLookup;
 
 public sealed class ManifestStatusLookup : ShippingLookup;
+
+/// <summary>SHPG.COD_STS_LKP: where the cash of a parcel stands (FR-SC-17).</summary>
+public static class CodStatuses
+{
+    public const short NotCod = 1;
+    public const short Awaiting = 2;
+    public const short Settled = 3;
+    public const short ShortPaid = 4;
+    public const short Over = 5;
+    public const short Resolved = 6;
+
+    public static string CodeOf(short id) => id switch
+    {
+        NotCod => "NOT_COD",
+        Awaiting => "AWAITING",
+        Settled => "SETTLED",
+        ShortPaid => "SHORT",
+        Over => "OVER",
+        Resolved => "RESOLVED",
+        _ => throw new DomainException($"Unknown COD status {id}."),
+    };
+}
+
+/// <summary>SHPG.RMTN_OTCM_LKP: what a statement line was judged to be.</summary>
+public static class RemittanceOutcomes
+{
+    public const short Matched = 1;
+    public const short ShortPaid = 2;
+    public const short Over = 3;
+    public const short Duplicate = 4;
+    public const short Unknown = 5;
+    public const short NotDelivered = 6;
+    public const short NotCod = 7;
+
+    public static string CodeOf(short id) => id switch
+    {
+        Matched => "MATCHED",
+        ShortPaid => "SHORT",
+        Over => "OVER",
+        Duplicate => "DUPLICATE",
+        Unknown => "UNKNOWN",
+        NotDelivered => "NOT_DELIVERED",
+        NotCod => "NOT_COD",
+        _ => throw new DomainException($"Unknown remittance outcome {id}."),
+    };
+
+    public static string NameOf(short id) => id switch
+    {
+        Matched => "Matched",
+        ShortPaid => "Short: less cash than the parcel needed",
+        Over => "Over: more cash than the parcel needed",
+        Duplicate => "Paid before",
+        Unknown => "Unknown waybill",
+        NotDelivered => "Not delivered yet",
+        NotCod => "Not a cash parcel",
+        _ => throw new DomainException($"Unknown remittance outcome {id}."),
+    };
+}
+
+public sealed class CodStatusLookup : ShippingLookup;
+
+public sealed class RemittanceOutcomeLookup : ShippingLookup;

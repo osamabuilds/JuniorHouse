@@ -208,6 +208,14 @@ namespace Romp.Modules.Shipping.Infrastructure.Migrations
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("CASH_AMT");
 
+                    b.Property<DateTimeOffset?>("CodOverdueAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("COD_OVRD_DTE");
+
+                    b.Property<short>("CodStatusId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("COD_STS_ID");
+
                     b.Property<short?>("CourierId")
                         .HasColumnType("smallint")
                         .HasColumnName("CRER_ID");
@@ -319,6 +327,9 @@ namespace Romp.Modules.Shipping.Infrastructure.Migrations
                         .HasDatabaseName("UQ_SHPG_MAIN_WYBL_NO")
                         .HasFilter("\"WYBL_NO\" IS NOT NULL");
 
+                    b.HasIndex("CodStatusId", "DeliveredAt")
+                        .HasDatabaseName("IX_SHPG_MAIN_COD_STS_ID_DLVR_DTE");
+
                     b.HasIndex("CourierId", "StatusId")
                         .HasDatabaseName("IX_SHPG_MAIN_CRER_ID_SHPG_STS_ID");
 
@@ -402,6 +413,252 @@ namespace Romp.Modules.Shipping.Infrastructure.Migrations
                         .HasDatabaseName("UQ_SHPG_EVNT_SHPG_ID_CRER_EVNT_ID");
 
                     b.ToTable("SHPG_EVNT", "SHPG");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Shipping.Domain.CodReconciliation.CodRemittance", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<short>("CourierId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("CRER_ID");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("REF_NO");
+
+                    b.Property<DateOnly>("RemittedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("RMTN_DTE");
+
+                    b.Property<decimal>("StatedTotal")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("TOT_AMT");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RemittedOn")
+                        .HasDatabaseName("IX_RMTN_MAIN_RMTN_DTE");
+
+                    b.HasIndex("CourierId", "Reference")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_RMTN_MAIN_CRER_ID_REF_NO");
+
+                    b.ToTable("RMTN_MAIN", "SHPG", t =>
+                        {
+                            t.HasCheckConstraint("CK_RMTN_MAIN_TOT_AMT", "\"TOT_AMT\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Romp.Modules.Shipping.Domain.CodReconciliation.CodRemittanceLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("ID");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("AMT");
+
+                    b.Property<string>("InsrBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("INSR_BY");
+
+                    b.Property<DateTimeOffset>("InsrDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("INSR_DTE");
+
+                    b.Property<short>("OutcomeId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("RMTN_OTCM_ID");
+
+                    b.Property<long>("RemittanceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("RMTN_ID");
+
+                    b.Property<string>("ResolutionNote")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("RSLV_NOTE");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("RSLV_DTE");
+
+                    b.Property<string>("ResolvedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("RSLV_BY");
+
+                    b.Property<long?>("ShipmentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("SHPG_ID");
+
+                    b.Property<string>("UpdtBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("UPDT_BY");
+
+                    b.Property<DateTimeOffset?>("UpdtDte")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("UPDT_DTE");
+
+                    b.Property<string>("Waybill")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("WYBL_NO");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RemittanceId")
+                        .HasDatabaseName("IX_RMTN_LINE_RMTN_ID");
+
+                    b.HasIndex("ShipmentId")
+                        .HasDatabaseName("IX_RMTN_LINE_SHPG_ID");
+
+                    b.HasIndex("OutcomeId", "ResolvedAt")
+                        .HasDatabaseName("IX_RMTN_LINE_RMTN_OTCM_ID_RSLV_DTE");
+
+                    b.ToTable("RMTN_LINE", "SHPG");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Shipping.Domain.CodStatusLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("COD_STS_LKP", "SHPG");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "NOT_COD",
+                            Description = "Nothing to collect in cash",
+                            IsActive = true,
+                            Name = "Not COD",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "AWAITING",
+                            Description = "Cash to collect; no courier statement has paid it",
+                            IsActive = true,
+                            Name = "Awaiting cash",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "SETTLED",
+                            Description = "A courier statement paid exactly the cash",
+                            IsActive = true,
+                            Name = "Settled",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "SHORT",
+                            Description = "The courier paid less than the cash",
+                            IsActive = true,
+                            Name = "Short",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "OVER",
+                            Description = "The courier paid more than the cash",
+                            IsActive = true,
+                            Name = "Over",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "RESOLVED",
+                            Description = "A short or over payment closed by staff with a note",
+                            IsActive = true,
+                            Name = "Resolved",
+                            SortSeq = (short)6
+                        });
                 });
 
             modelBuilder.Entity("Romp.Modules.Shipping.Domain.CourierLookup", b =>
@@ -742,6 +999,110 @@ namespace Romp.Modules.Shipping.Infrastructure.Migrations
                     b.ToTable("MNFS_LINE", "SHPG");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Shipping.Domain.RemittanceOutcomeLookup", b =>
+                {
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("CODE");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("DSCR");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ACT_IND");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NAME");
+
+                    b.Property<short>("SortSeq")
+                        .HasColumnType("smallint")
+                        .HasColumnName("SORT_SEQ");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("RMTN_OTCM_LKP", "SHPG");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = (short)1,
+                            Code = "MATCHED",
+                            Description = "Equals the cash to collect",
+                            IsActive = true,
+                            Name = "Matched",
+                            SortSeq = (short)1
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "SHORT",
+                            Description = "Less than the cash to collect",
+                            IsActive = true,
+                            Name = "Short",
+                            SortSeq = (short)2
+                        },
+                        new
+                        {
+                            Id = (short)3,
+                            Code = "OVER",
+                            Description = "More than the cash to collect",
+                            IsActive = true,
+                            Name = "Over",
+                            SortSeq = (short)3
+                        },
+                        new
+                        {
+                            Id = (short)4,
+                            Code = "DUPLICATE",
+                            Description = "The parcel was already paid",
+                            IsActive = true,
+                            Name = "Paid before",
+                            SortSeq = (short)4
+                        },
+                        new
+                        {
+                            Id = (short)5,
+                            Code = "UNKNOWN",
+                            Description = "No parcel of this courier has this waybill",
+                            IsActive = true,
+                            Name = "Unknown waybill",
+                            SortSeq = (short)5
+                        },
+                        new
+                        {
+                            Id = (short)6,
+                            Code = "NOT_DELIVERED",
+                            Description = "The parcel is not delivered",
+                            IsActive = true,
+                            Name = "Not delivered yet",
+                            SortSeq = (short)6
+                        },
+                        new
+                        {
+                            Id = (short)7,
+                            Code = "NOT_COD",
+                            Description = "The parcel had no cash to collect",
+                            IsActive = true,
+                            Name = "Not a cash parcel",
+                            SortSeq = (short)7
+                        });
+                });
+
             modelBuilder.Entity("Romp.Modules.Shipping.Domain.ShipmentStatusLookup", b =>
                 {
                     b.Property<short>("Id")
@@ -872,6 +1233,13 @@ namespace Romp.Modules.Shipping.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_SHPG_MAIN_BKNG_SRC_LKP");
 
+                    b.HasOne("Romp.Modules.Shipping.Domain.CodStatusLookup", null)
+                        .WithMany()
+                        .HasForeignKey("CodStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_SHPG_MAIN_COD_STS_LKP");
+
                     b.HasOne("Romp.Modules.Shipping.Domain.CourierLookup", null)
                         .WithMany()
                         .HasForeignKey("CourierId")
@@ -916,6 +1284,39 @@ namespace Romp.Modules.Shipping.Infrastructure.Migrations
                         .HasConstraintName("FK_SHPG_EVNT_SHPG_STS_LKP");
                 });
 
+            modelBuilder.Entity("Romp.Modules.Shipping.Domain.CodReconciliation.CodRemittance", b =>
+                {
+                    b.HasOne("Romp.Modules.Shipping.Domain.CourierLookup", null)
+                        .WithMany()
+                        .HasForeignKey("CourierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_RMTN_MAIN_CRER_LKP");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Shipping.Domain.CodReconciliation.CodRemittanceLine", b =>
+                {
+                    b.HasOne("Romp.Modules.Shipping.Domain.RemittanceOutcomeLookup", null)
+                        .WithMany()
+                        .HasForeignKey("OutcomeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_RMTN_LINE_RMTN_OTCM_LKP");
+
+                    b.HasOne("Romp.Modules.Shipping.Domain.CodReconciliation.CodRemittance", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("RemittanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_RMTN_LINE_RMTN_MAIN");
+
+                    b.HasOne("Romp.Modules.Shipping.Domain.Bookings.Shipment", null)
+                        .WithMany()
+                        .HasForeignKey("ShipmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_RMTN_LINE_SHPG_MAIN");
+                });
+
             modelBuilder.Entity("Romp.Modules.Shipping.Domain.Manifests.Manifest", b =>
                 {
                     b.HasOne("Romp.Modules.Shipping.Domain.CourierLookup", null)
@@ -953,6 +1354,11 @@ namespace Romp.Modules.Shipping.Infrastructure.Migrations
             modelBuilder.Entity("Romp.Modules.Shipping.Domain.Bookings.Shipment", b =>
                 {
                     b.Navigation("Events");
+                });
+
+            modelBuilder.Entity("Romp.Modules.Shipping.Domain.CodReconciliation.CodRemittance", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("Romp.Modules.Shipping.Domain.Manifests.Manifest", b =>

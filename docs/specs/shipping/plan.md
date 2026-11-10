@@ -76,3 +76,50 @@ Booking retry (every minute: due pending shipments), polling (courier without we
 | Data protection | Ids and codes in events; address and phone read at use; public tracking shows statuses only |
 | Coupling | Contracts only; `Shipping` added to `ModuleNames` |
 | Secrets | Courier webhook secrets come from configuration, never committed |
+
+---
+
+# COD reconciliation (Sprint 16)
+
+- **Spec:** [cod-reconciliation](cod-reconciliation/spec.md) · **ADR:** [0032](../../adr/0032-cod-reconciliation-in-shipping.md) · **Status:** applied by delegation (2026-11-10).
+
+## Domain model (`Shipping.Domain`)
+- **`CodRemittance`** (aggregate, `RMTN_MAIN`): courier, reference (unique with courier), remitted date, stated total, recorded by, lines. Immutable once recorded.
+- **`CodRemittanceLine`** (`RMTN_LINE`): waybill as stated, amount, nullable shipment id, outcome (lookup), resolution note, resolved by and at.
+- **`Shipment`** gains `CodStatusId` (lookup `COD_STS_LKP`: NotCod, Awaiting, Settled, Short, Over, Resolved), `CodOverdueAt` (null or when flagged) and keeps `DeliveredAt` and `CashToCollect` from S15. Existing rows are back-filled by the migration (cash 0 = NotCod, else Awaiting).
+- **`CodJudge`** (pure): `(isCod, delivered, alreadySettled, expected, remitted)` to an outcome.
+- **Rules:** a line is judged once; only Matched changes a parcel to Settled; Short and Over set the parcel to Short or Over unless it is already settled; a flagged line is resolved once with a 1 to 200 character note; a resolved Short or Over parcel becomes Resolved.
+
+## Application layer
+| Command / query | Covers |
+|---|---|
+| `RecordCodRemittanceCommand` | COD-2 to 10, 16 |
+| `ResolveCodLineCommand` | COD-12 |
+| `FlagOverdueCodCommand` (daily worker) | COD-11 |
+| `GetCodSummaryQuery`, `ListCodAwaitingQuery`, `ListCodExceptionsQuery`, `ListCodRemittancesQuery`, `GetCodRemittanceQuery` | COD-13, 14 |
+
+## API
+| Method | Route | Permission |
+|---|---|---|
+| GET | `/api/shipping/cod/summary`, `/awaiting`, `/exceptions`, `/remittances`, `/remittances/{id}` | `shipping.view` |
+| POST | `/api/shipping/cod/remittances`, `/api/shipping/cod/lines/{id}/resolve` | `shipping.ops` |
+
+Body limit 64 KB, at most 500 lines.
+
+## Data (`SHPG`)
+`RMTN_MAIN`, `RMTN_LINE`, lookups `COD_STS_LKP`, `RMTN_OTCM_LKP`; new columns `COD_STS_ID`, `COD_OVRD_DTE` on `SHPG_MAIN`; unique `(CRER_ID, REF_NO)` and unique `(RMTN_ID, WYBL_NO)` where unique per statement is not required (duplicates are lines too, so no unique); indexes on every FK, on `(COD_STS_ID, DLVR_DTE)` for the awaiting list and on `(RMTN_OTCM_ID, RSLV_DTE)` for the exceptions list. Growth: statements are small and weekly; no partitioning needed.
+
+## Worker
+`CodOverdueWorker` (hosted, hourly check, runs the command once a day by its own guard) wraps `FlagOverdueCodCommand`; tests drive the command.
+
+## Frontend (admin app, `features/shipping/cod-reconciliation`, route `/dispatch/cod`)
+`cod-page` (summary, awaiting, exceptions, statements), `remittance-form-page` (paste lines `waybill,amount`), `remittance-detail-page` (lines, resolve). NgRx store, API service, models with the statement-text parser.
+
+## Security & coupling review
+| Area | How this feature meets it |
+|---|---|
+| Authorization | `shipping.view` / `shipping.ops` on every route, actor from the session |
+| Input validation | length, count, amount and waybill pattern; total must equal sum of lines; body size limit |
+| Idempotency | unique `(courier, reference)` plus a check before saving; a race is answered from the database |
+| Data protection | order number and waybill only, no customer data |
+| Coupling | Shipping data only, no other module touched |

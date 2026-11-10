@@ -65,6 +65,7 @@ public sealed class ShippingOptionsValidator : IValidateOptions<ShippingOptions>
         Check(options.MaxAttempts is < 1 or > 200, "MaxAttempts must be between 1 and 200", failures);
         Check(options.PollMinutes is < 1 or > 1440, "PollMinutes must be between 1 and 1440", failures);
         Check(options.ManifestHour is < 0 or > 23, "ManifestHour must be between 0 and 23", failures);
+        Check(options.CodRemitDays is < 1 or > 90, "CodRemitDays must be between 1 and 90", failures);
         Check(options.CourierTimeoutSeconds is < 1 or > 120, "CourierTimeoutSeconds must be between 1 and 120", failures);
         Check(options.ClaimMinutes is < 1 or > 60, "ClaimMinutes must be between 1 and 60", failures);
         Check(options.TrackingFailuresBeforeCaptcha is < 1 or > 100, "TrackingFailuresBeforeCaptcha must be between 1 and 100", failures);

@@ -118,6 +118,7 @@ internal sealed class OrderCancelledShippingConsumer(ISender sender, ShpgDbConte
 public sealed partial class ShippingMaintenanceWorker(IServiceScopeFactory scopes, IOptions<ShippingOptions> options, TimeProvider clock, ILogger<ShippingMaintenanceWorker> logger) : BackgroundService
 {
     private DateOnly _lastManifestDay = DateOnly.MinValue;
+    private DateOnly _lastCodFlagDay = DateOnly.MinValue;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -136,6 +137,13 @@ public sealed partial class ShippingMaintenanceWorker(IServiceScopeFactory scope
                 {
                     await sender.Send(new GenerateManifestsCommand(), stoppingToken);
                     _lastManifestDay = today;
+                }
+
+                // Once a business day: flag delivered cash parcels still unpaid after the courier cycle (COD-11).
+                if (today != _lastCodFlagDay)
+                {
+                    await sender.Send(new Romp.Modules.Shipping.Application.CodReconciliation.FlagOverdueCodCommand(), stoppingToken);
+                    _lastCodFlagDay = today;
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

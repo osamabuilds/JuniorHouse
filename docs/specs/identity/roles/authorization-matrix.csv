@@ -361,6 +361,13 @@ POST,/api/shipping/manifests/generate,shipping.ops
 POST,/api/shipping/manifests/{id:long}/count,shipping.ops
 POST,/api/shipping/manifests/{id:long}/handover,shipping.ops
 POST,/api/shipping/manifests/{id:long}/resolve,shipping.ops
+GET,/api/shipping/cod/summary,shipping.view
+GET,/api/shipping/cod/awaiting,shipping.view
+GET,/api/shipping/cod/exceptions,shipping.view
+GET,/api/shipping/cod/remittances,shipping.view
+GET,/api/shipping/cod/remittances/{id:long},shipping.view
+POST,/api/shipping/cod/remittances,shipping.ops
+POST,/api/shipping/cod/lines/{id:long}/resolve,shipping.ops
 GET,/api/shipping/track,anonymous
 POST,/api/shipping/webhooks/{courier},anonymous
 POST,/dev/shipping/outage,anonymous

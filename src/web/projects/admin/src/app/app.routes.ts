@@ -73,6 +73,11 @@ const staffRoutes: Routes = [
     loadChildren: () => import('@features/shipping/manifests/manifests.routes').then((m) => m.MANIFESTS_ROUTES),
   },
   {
+    path: 'dispatch/cod',
+    canActivate: [permissionGuard('shipping.view')],
+    loadChildren: () => import('@features/shipping/cod-reconciliation/cod-reconciliation.routes').then((m) => m.COD_RECONCILIATION_ROUTES),
+  },
+  {
     path: 'shipping',
     canActivate: [permissionGuard('shipping.manage')],
     loadChildren: () => import('@features/cart/totals/shipping.routes').then((m) => m.SHIPPING_ROUTES),
