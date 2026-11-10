@@ -13,7 +13,7 @@ Test-first. Each task names the test that proves it. Tick a task only when its t
 - [x] **R5** Decide a line. *Proof:* `DecideReturnLineTests` (RQC-4 to 6, 9, 10).
 - [x] **R6** Complete and publish `ReturnQcCompletedEvent`. *Proof:* `CompleteReturnCaseTests` (RQC-7, 8).
 - [x] **R7** Queries (paged, status filter, query count). *Proof:* `ReturnCaseQueryTests` (RQC-11).
-- [ ] **R8** Endpoints, permissions, matrix rows. *Proof:* `ReturnsEndpointsTests`, matrix tests (RQC-12).
+- [x] **R8** Endpoints, permissions, matrix rows. *Proof:* `ReturnsEndpointsTests`, matrix tests (RQC-12).
 
 ## Admin app
 - [ ] **A1** Cases list and case page (receive, decide, complete). *Proof:* store and component specs (RQC-2 to 8, 11).

@@ -3,12 +3,11 @@ using System.Text;
 using MediatR;
 using Romp.BuildingBlocks.Domain;
 using Romp.Modules.Warehouse.Application.Abstractions;
-using Romp.Modules.Warehouse.Application.Adjustments;
 using Romp.Modules.Warehouse.Contracts;
 using Romp.Modules.Warehouse.Domain;
 using Romp.Modules.Warehouse.Domain.Adjustments;
 
-namespace Romp.Modules.Warehouse.Application.Returns;
+namespace Romp.Modules.Warehouse.Application.Adjustments;
 
 /// <summary>
 /// Puts returned units back as a found-stock adjustment (ADR 0033, RQC-4, 9, 10), so every unit has an adjustment and a ledger row. The

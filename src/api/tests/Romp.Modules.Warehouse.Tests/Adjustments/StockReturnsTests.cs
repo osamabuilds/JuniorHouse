@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Romp.Modules.Warehouse.Application.StockLedger;
-using Romp.Modules.Warehouse.Application.Returns;
+using Romp.Modules.Warehouse.Application.Adjustments;
 using Romp.Modules.Warehouse.Contracts;
 using Romp.Modules.Warehouse.Domain;
 using Romp.Modules.Warehouse.Domain.Adjustments;
 using Romp.Modules.Warehouse.Domain.StockLedger;
 using Romp.Modules.Warehouse.Tests.Support;
 
-namespace Romp.Modules.Warehouse.Tests.Returns;
+namespace Romp.Modules.Warehouse.Tests.Adjustments;
 
 [Collection(WarehousePostgresFixtureDefinition.Name)]
 public sealed class StockReturnsTests(WarehousePostgres postgres)

@@ -1,8 +1,8 @@
 using MediatR;
-using Romp.Modules.Warehouse.Application.Returns;
+using Romp.Modules.Warehouse.Application.Adjustments;
 using Romp.Modules.Warehouse.Contracts;
 
-namespace Romp.Modules.Warehouse.Infrastructure.Returns;
+namespace Romp.Modules.Warehouse.Infrastructure.Adjustments;
 
 /// <summary>The Warehouse side of <see cref="IStockReturns"/>: one command, so one Warehouse transaction (ADR 0033).</summary>
 public sealed class StockReturns(ISender sender) : IStockReturns
