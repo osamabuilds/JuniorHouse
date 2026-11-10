@@ -489,3 +489,11 @@ Reused as they are: `COD`, `REF`, `NO`, `TOT`, `AMT`, `RSLV`, `OTCM`, `NOTE`, `B
 | Word | Abbr. | | Word | Abbr. |
 |---|---|---|---|---|
 | remittance | RMTN | | overdue | OVRD |
+
+### Added in Sprint 17 (returns: reverse QC)
+
+Reused as they are: `RTRN` (return, also the case), `KIND`, `STS`, `DCSN`, `RCVD`, `CMPL`, `BIN`, `CODE`, `VRNT`, `SKU`, `NAME`, `CLR`, `SIZE`, `ORDR`, `QTY`, `NOTE`, `BY`, `DTE`, `IND`, `LKP`, `LINE`, `NO`. Only the words below are new.
+
+| Word | Abbr. | | Word | Abbr. |
+|---|---|---|---|---|
+| seal | SEAL | | intact | INTC |
