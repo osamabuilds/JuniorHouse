@@ -3,7 +3,7 @@
 Test-first. Each task names the test that proves it. Tick a task only when its test passes.
 
 ## Warehouse
-- [ ] **W1** `IStockReturns` in `Warehouse.Contracts`, implemented over `IAdjustmentPoster` (found-stock reason, deterministic key, grade). *Proof:* `StockReturnsTests` (RQC-4, 9, 10).
+- [x] **W1** `IStockReturns` in `Warehouse.Contracts`, implemented over `IAdjustmentPoster` (found-stock reason, deterministic key, grade). *Proof:* `StockReturnsTests` (RQC-4, 9, 10).
 
 ## Returns module
 - [ ] **R1** Module skeleton, ADR 0033, `ModuleNames`, glossary, `RTRN` schema, lookups, migration. *Proof:* architecture and naming tests.
