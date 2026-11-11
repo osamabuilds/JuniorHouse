@@ -1,3 +1,6 @@
-Receiving and QC. Status is shown as a `qc-flag` (word + dot, with colour as the second cue): Pass (success), Review (clay-deep), Fail (danger). A failed carton raises a `banner--error` with `role="alert"` and blocks release; the reason is stated.
+Receiving and QC. Each carton has a **result badge**: Pass (green dot), Review (amber dot), Fail (red dot), always the word as well as the dot.
 
-- `qc-repeat` blocks repeat per carton with a two-column field grid on 40rem and up.
+- A failed carton raises a red banner with `role="alert"` that states the **reason and the consequence** ("Release is blocked") and links to the carton. The batch's **Release** button is the single primary action and stays disabled until nothing blocks it; the disabled state explains why.
+- The carton list is the standard list: a table from 40rem, cards on phones (`data-label` captions).
+- The carton form (not drawn) uses the editor's field grid: two columns from 40rem, one on phones, quantity fields right-aligned with tabular figures.
+- The same banner pattern covers the warehouse (stock-alert and count-variance blocks).
